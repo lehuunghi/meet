@@ -1,0 +1,74 @@
+name: CI
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  api:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: ci-only-password
+          MYSQL_DATABASE: meet_test
+        ports: ["3306:3306"]
+        options: --health-cmd="mysqladmin ping -h localhost -pci-only-password" --health-interval=10s --health-retries=30
+      redis:
+        image: redis:7.4-alpine
+        ports: ["6379:6379"]
+        options: --health-cmd="redis-cli ping" --health-interval=5s --health-retries=20
+    defaults:
+      run:
+        working-directory: apps/api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '1.26.x'
+          cache-dependency-path: apps/api/go.sum
+      - run: go vet ./...
+      - run: go run golang.org/x/vuln/cmd/govulncheck@v1.9.0 ./...
+      - run: go test -race -count=1 -v ./...
+        env:
+          TEST_MYSQL_DSN: root:ci-only-password@tcp(127.0.0.1:3306)/meet_test?parseTime=true&loc=UTC
+          TEST_REDIS_URL: redis://127.0.0.1:6379/15
+      - run: go build ./...
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+  containers:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo bash deploy/init-secrets.sh
+      - run: docker compose -f deploy/compose.yaml config --quiet
+        env:
+          APP_ORIGIN: http://localhost:8080
+      - run: docker compose -f deploy/compose.yaml up --build -d
+        env:
+          APP_ORIGIN: http://localhost:8080
+      - run: |
+          for i in $(seq 1 90); do
+            if curl -fsS http://localhost:8080/api/health; then exit 0; fi
+            sleep 2
+          done
+          docker compose -f deploy/compose.yaml logs
+          exit 1
+        env:
+          APP_ORIGIN: http://localhost:8080
+      - run: docker compose -f deploy/compose.yaml down -v
+        if: always()
+        env:
+          APP_ORIGIN: http://localhost:8080

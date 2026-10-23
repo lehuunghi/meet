@@ -1,0 +1,8 @@
+.env
+secrets/
+node_modules/
+dist/
+*.exe
+coverage.out
+*.log
+*.tsbuildinfo

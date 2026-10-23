@@ -1,0 +1,97 @@
+name: meet
+x-api: &api
+  build: ../apps/api
+  environment:
+    MYSQL_DSN_FILE: /run/secrets/mysql_dsn
+    REDIS_URL_FILE: /run/secrets/redis_url
+    APP_ORIGIN: ${APP_ORIGIN:?Set APP_ORIGIN}
+    CF_SFU_APP_ID_FILE: /run/secrets/cf_sfu_app_id
+    CF_SFU_SECRET_FILE: /run/secrets/cf_sfu_secret
+    CF_TURN_KEYS_FILE: /run/secrets/cf_turn_keys
+    R2_ACCOUNT_ID_FILE: /run/secrets/r2_account_id
+    R2_ACCESS_KEY_ID_FILE: /run/secrets/r2_access_key_id
+    R2_SECRET_ACCESS_KEY_FILE: /run/secrets/r2_secret_access_key
+    R2_BUCKET_FILE: /run/secrets/r2_bucket
+  secrets: [mysql_dsn, redis_url, cf_sfu_app_id, cf_sfu_secret, cf_turn_keys, r2_account_id, r2_access_key_id, r2_secret_access_key, r2_bucket]
+  networks: [internal]
+services:
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: meet
+      MYSQL_USER: meet
+      MYSQL_PASSWORD_FILE: /run/secrets/mysql_password
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mysql_root_password
+    secrets: [mysql_password, mysql_root_password]
+    volumes: [mysql_data:/var/lib/mysql]
+    networks: [internal]
+    healthcheck:
+      test: [CMD-SHELL, 'MYSQL_PWD="$$(cat /run/secrets/mysql_password)" mysql -h 127.0.0.1 -u meet -D meet -e "SELECT 1"']
+      interval: 10s
+      timeout: 5s
+      retries: 30
+  redis:
+    image: redis:7.4-alpine
+    restart: unless-stopped
+    command: [sh, -c, 'exec redis-server --appendonly yes --requirepass "$$(cat /run/secrets/redis_password)"']
+    secrets: [redis_password]
+    volumes: [redis_data:/data]
+    networks: [internal]
+    healthcheck:
+      test: [CMD-SHELL, 'REDISCLI_AUTH="$$(cat /run/secrets/redis_password)" redis-cli ping | grep PONG']
+      interval: 10s
+      timeout: 5s
+      retries: 20
+  migrate:
+    <<: *api
+    command: [migrate]
+    depends_on:
+      mysql: {condition: service_healthy}
+    restart: "no"
+  api:
+    <<: *api
+    restart: unless-stopped
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+      redis: {condition: service_healthy}
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+  web:
+    build: ../apps/web
+    restart: unless-stopped
+    depends_on: [api]
+    ports: ["127.0.0.1:8080:80"]
+    networks: [internal]
+  seed:
+    <<: *api
+    command: [seed]
+    profiles: [demo]
+    environment:
+      MYSQL_DSN_FILE: /run/secrets/mysql_dsn
+      ALLOW_DEMO_SEED: "true"
+      DEMO_PASSWORD_FILE: /run/secrets/demo_password
+    secrets: [mysql_dsn, demo_password]
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+    restart: "no"
+networks:
+  internal:
+volumes:
+  mysql_data:
+  redis_data:
+secrets:
+  mysql_password: {file: ../secrets/mysql_password}
+  mysql_root_password: {file: ../secrets/mysql_root_password}
+  mysql_dsn: {file: ../secrets/mysql_dsn}
+  redis_password: {file: ../secrets/redis_password}
+  redis_url: {file: ../secrets/redis_url}
+  demo_password: {file: ../secrets/demo_password}
+  cf_sfu_app_id: {file: ../secrets/cf_sfu_app_id}
+  cf_sfu_secret: {file: ../secrets/cf_sfu_secret}
+  cf_turn_keys: {file: ../secrets/cf_turn_keys}
+  r2_account_id: {file: ../secrets/r2_account_id}
+  r2_access_key_id: {file: ../secrets/r2_access_key_id}
+  r2_secret_access_key: {file: ../secrets/r2_secret_access_key}
+  r2_bucket: {file: ../secrets/r2_bucket}

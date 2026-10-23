@@ -1,0 +1,5 @@
+.git
+secrets
+**/node_modules
+**/dist
+**/*.exe
