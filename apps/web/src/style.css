@@ -1,4 +1,163 @@
 @import url("https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap");
+.preview-switch {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  padding: 18px 20px;
+  background: #fff;
+  border: 1px solid #dce5d5;
+  border-radius: 10px;
+  margin-bottom: 18px;
+}
+.preview-switch strong {
+  font-size: 13px;
+}
+.preview-switch small {
+  display: block;
+  font-size: 10px;
+  color: #819078;
+  margin-top: 7px;
+}
+.preview-switch > div:last-child {
+  display: flex;
+  gap: 7px;
+}
+.preview-switch a {
+  padding: 10px 15px;
+  border-radius: 7px;
+  font-size: 11px;
+  text-decoration: none;
+  background: #f3f6ee;
+  white-space: nowrap;
+}
+.preview-switch a.selected {
+  background: #184f40;
+  color: white;
+}
+.record-thumb {
+  background: #eaf0df;
+  border-radius: 8px;
+  padding: 20px 30px;
+  font-size: 28px;
+  color: #758e4e;
+}
+.preview-classroom {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 25px;
+}
+.preview-stage {
+  background: #e8eedc;
+  min-height: 350px;
+  border-radius: 12px;
+  padding: 25px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.preview-stage > div {
+  text-align: center;
+}
+.preview-stage p {
+  font-size: 30px;
+  color: #527248;
+}
+.preview-stage small {
+  color: #718562;
+  font-size: 11px;
+}
+.graph-symbol {
+  font-size: 70px;
+  color: #88a465;
+}
+.preview-tiles {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 16px;
+}
+.preview-tiles article {
+  padding: 20px 10px;
+  background: #184537;
+  color: #fff;
+  border-radius: 10px;
+  text-align: center;
+}
+.preview-tiles article > span {
+  display: block;
+  margin: 5px auto 15px;
+  background: #66846c;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  line-height: 50px;
+  font-size: 25px;
+}
+.preview-tiles strong {
+  display: block;
+  font-size: 11px;
+}
+.preview-tiles small {
+  display: block;
+  color: #bed0bd;
+  font-size: 9px;
+  margin-top: 7px;
+}
+.preview-room-side {
+  margin: 0;
+}
+.preview-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 25px;
+}
+.preview-tabs button {
+  font-size: 10px;
+  padding: 10px;
+  background: #eff3e8;
+  color: #45633e;
+}
+.preview-tabs button.selected {
+  background: #184f40;
+  color: #fff;
+}
+.preview-person {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 0;
+  border-bottom: 1px solid #edf0e8;
+}
+.preview-person strong {
+  font-size: 11px;
+}
+.preview-person small {
+  display: block;
+  font-size: 10px;
+  color: #7f8c78;
+  margin-top: 7px;
+}
+@media (max-width: 900px) {
+  .preview-classroom {
+    grid-template-columns: 1fr;
+  }
+  .preview-switch {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+@media (max-width: 500px) {
+  .preview-switch a {
+    padding: 10px;
+  }
+  .preview-tiles {
+    grid-template-columns: 1fr;
+  }
+  .preview-stage h1 {
+    font-size: 26px;
+  }
+}
 :root {
   font-family: "Be Vietnam Pro", system-ui, sans-serif;
   color: #243e37;

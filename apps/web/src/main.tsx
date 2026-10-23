@@ -3,6 +3,16 @@ import { createRoot } from "react-dom/client";
 import { api } from "./api";
 import { ClassroomMedia } from "./media";
 import "./style.css";
+import {
+  RoleSwitcher,
+  PreviewAttendance,
+  PreviewRecordings,
+  PreviewRoom,
+  previewRoles,
+  previewUsers,
+  previewCourses,
+  previewClasses,
+} from "./preview";
 type User = { id: string; name: string; role: string; school_id: string };
 type Meeting = {
   id: string;
@@ -14,6 +24,10 @@ type Meeting = {
   recording_allowed: number | boolean;
 };
 const demo = new URLSearchParams(location.search).get("demo") === "1";
+const previewRole =
+  previewRoles.find(
+    (v) => v.id === new URLSearchParams(location.search).get("role"),
+  ) || previewRoles[1];
 const sample: Meeting[] = [
   {
     id: "preview",
@@ -21,8 +35,26 @@ const sample: Meeting[] = [
     course: "Toán học",
     class_name: "10A1",
     starts_at: new Date().toISOString(),
+    status: "live",
+    recording_allowed: true,
+  },
+  {
+    id: "preview-next",
+    title: "Chuyển động thẳng đều",
+    course: "Vật lý",
+    class_name: "10A1",
+    starts_at: new Date(Date.now() + 86400000).toISOString(),
     status: "scheduled",
     recording_allowed: false,
+  },
+  {
+    id: "preview-ended",
+    title: "Ôn tập phương trình bậc hai",
+    course: "Toán học",
+    class_name: "10A1",
+    starts_at: new Date(Date.now() - 86400000).toISOString(),
+    status: "ended",
+    recording_allowed: true,
   },
 ];
 function Video({
@@ -45,31 +77,29 @@ function App() {
       demo
         ? {
             id: "preview",
-            name: "Nguyễn Minh Anh",
-            role: "teacher",
+            name: previewRole.name,
+            role: previewRole.id,
             school_id: "preview",
           }
         : null,
     ),
     [loading, setLoading] = useState(!demo),
     [error, setError] = useState(""),
-    [page, setPage] = useState("overview"),
+    [page, setPage] = useState(
+      demo && previewRole.id === "admin" ? "admin" : "overview",
+    ),
     [meetings, setMeetings] = useState<Meeting[]>(demo ? sample : []),
     [courses, setCourses] = useState<any[]>(
       demo
-        ? [
-            {
-              id: "math",
-              name: "Toán học",
-              class_name: "10A1",
-              teacher: "Nguyễn Minh Anh",
-            },
-          ]
+        ? previewCourses.filter(
+            (c) =>
+              previewRole.id === "admin" || c.teacher === "Nguyễn Minh Anh",
+          )
         : [],
     ),
     [room, setRoom] = useState<Meeting | null>(null),
-    [users, setUsers] = useState<any[]>([]),
-    [classes, setClasses] = useState<any[]>([]),
+    [users, setUsers] = useState<any[]>(demo ? previewUsers : []),
+    [classes, setClasses] = useState<any[]>(demo ? previewClasses : []),
     [notice, setNotice] = useState("");
   const safe = async (fn: () => Promise<void>) => {
     setError("");
@@ -163,6 +193,14 @@ function App() {
         </form>
       </main>
     );
+  if (room && demo)
+    return (
+      <PreviewRoom
+        role={user.role}
+        title={room.title}
+        onExit={() => setRoom(null)}
+      />
+    );
   if (room)
     return (
       <Room
@@ -201,6 +239,18 @@ function App() {
             ["meetings", "◉", "Buổi học"],
             ["settings", "⚙", "Tài khoản"],
             ...(user.role === "admin" ? [["admin", "⇧", "Quản trị"]] : []),
+            ...(demo
+              ? [
+                  [
+                    "attendance",
+                    "◷",
+                    user.role === "student"
+                      ? "Điểm danh của tôi"
+                      : "Báo cáo điểm danh",
+                  ],
+                  ["recordings", "▷", "Bản ghi bài học"],
+                ]
+              : []),
           ].map(([key, icon, label]) => (
             <button
               key={key}
@@ -256,7 +306,11 @@ function App() {
                   ? "Buổi học"
                   : page === "admin"
                     ? "Quản trị"
-                    : "Tài khoản"}
+                    : page === "attendance"
+                      ? "Điểm danh"
+                      : page === "recordings"
+                        ? "Bản ghi bài học"
+                        : "Tài khoản"}
           </span>
           <span className="today">
             {new Intl.DateTimeFormat("vi-VN", { dateStyle: "full" }).format(
@@ -264,7 +318,19 @@ function App() {
             )}
           </span>
         </header>
-        <div className="content">
+        <div
+          className="content"
+          onSubmitCapture={(e) => {
+            if (demo) {
+              e.preventDefault();
+              e.stopPropagation();
+              setNotice(
+                "Đây là bản xem trước. Thao tác lưu dữ liệu cần đăng nhập máy chủ thật.",
+              );
+            }
+          }}
+        >
+          {demo && <RoleSwitcher role={user.role} />}
           {demo && (
             <div className="banner">
               Bản xem trước giao diện · Dữ liệu mẫu, chưa kết nối máy chủ hoặc
@@ -289,7 +355,11 @@ function App() {
                       ? "Buổi học của bạn"
                       : page === "admin"
                         ? "Quản trị trường học"
-                        : "Tài khoản của bạn"}
+                        : page === "attendance"
+                          ? "Điểm danh & thời gian học"
+                          : page === "recordings"
+                            ? "Bản ghi bài học"
+                            : "Tài khoản của bạn"}
               </h1>
               <p>
                 {page === "overview"
@@ -367,7 +437,7 @@ function App() {
                       </div>
                       <button
                         className="secondary"
-                        disabled={demo || m.status === "ended"}
+                        disabled={m.status === "ended"}
                         onClick={() => setRoom(m)}
                       >
                         Vào lớp ↗
@@ -445,6 +515,10 @@ function App() {
               ))}
             </section>
           )}
+          {demo && page === "attendance" && (
+            <PreviewAttendance role={user.role} />
+          )}
+          {demo && page === "recordings" && <PreviewRecordings />}
           {page === "settings" && (
             <section className="section">
               <h2>Đổi mật khẩu</h2>

@@ -33,6 +33,8 @@ Mở `http://localhost:8080`. Mã trường `demo` hoặc `other`. Email: `admin
 
 **Xem trước giao diện:** thêm `?demo=1` vào URL. Chế độ này chỉ hiển thị dữ liệu mẫu; không gọi API, không mô phỏng cuộc gọi thành công.
 
+Có thể chuyển vai trò ngay trong giao diện hoặc mở `?demo=1&role=admin`, `?demo=1&role=teacher`, `?demo=1&role=student`. Bản xem trước bao gồm quản trị, lớp/môn, lịch học, phòng học minh họa, báo cáo điểm danh và thư viện bản ghi. Các biểu mẫu không lưu dữ liệu; phòng mẫu không bật thiết bị hay phát video thật. Những màn hình minh họa này không thay thế nghiệm thu các tính năng thật.
+
 ## Cấu trúc
 
 ```text
