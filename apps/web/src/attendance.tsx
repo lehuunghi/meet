@@ -55,10 +55,15 @@ function mockRows(
     course.class_name === "10A1"
       ? ["Nguyễn Hoàng An", "Lê Thanh Bình", "Phạm Mai Chi"]
       : ["Trần Gia Huy", "Võ Ngọc Mai"];
+  const firstDay = lesson.endsWith("-2") ? "24" : "23";
+  const emails =
+    course.class_name === "10A1"
+      ? ["hoangan", "thanhbinh", "maichi"]
+      : ["giahuy", "ngocmai"];
   return (role === "student" ? names.slice(0, 1) : names).map((name, i) => ({
     id: String(i),
     name,
-    email: ["hoangan", "thanhbinh", "maichi"][i] + "@example.test",
+    email: emails[i] + "@example.test",
     seconds:
       i === 2
         ? 0
@@ -67,8 +72,8 @@ function mockRows(
           (course.id === "physics" ? 370 : 0),
     session_count: lesson ? 1 : 2,
     participated_sessions: i === 2 ? 0 : lesson ? 1 : 2,
-    joined_at: i === 2 ? null : "2026-10-23T01:00:00Z",
-    last_seen: i === 2 ? null : "2026-10-24T01:45:00Z",
+    joined_at: i === 2 ? null : `2026-10-${firstDay}T01:00:00Z`,
+    last_seen: i === 2 ? null : `2026-10-${lesson ? firstDay : "24"}T01:45:00Z`,
     online: 0,
   }));
 }
