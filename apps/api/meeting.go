@@ -29,7 +29,7 @@ func (a *app) access(w http.ResponseWriter, r *http.Request, manage bool) (meeti
 }
 func (a *app) meetings(w http.ResponseWriter, r *http.Request) {
 	u := who(r)
-	a.query(w, r, `SELECT m.id,m.title,m.starts_at,m.status,m.recording_allowed,c.name AS course,cl.name AS class_name FROM meetings m JOIN courses c ON c.id=m.course_id AND c.school_id=m.school_id JOIN classes cl ON cl.id=c.class_id AND cl.school_id=c.school_id WHERE `+courseAccess+` ORDER BY m.starts_at DESC LIMIT 200`, u.School, u.Role, u.Role, u.ID, u.Role, u.ID)
+	a.query(w, r, `SELECT m.id,m.title,m.starts_at,m.status,m.recording_allowed,c.id AS course_id,c.class_id,c.name AS course,cl.name AS class_name FROM meetings m JOIN courses c ON c.id=m.course_id AND c.school_id=m.school_id JOIN classes cl ON cl.id=c.class_id AND cl.school_id=c.school_id WHERE `+courseAccess+` AND (?='' OR c.id=?) ORDER BY m.starts_at DESC LIMIT 200`, u.School, u.Role, u.Role, u.ID, u.Role, u.ID, r.URL.Query().Get("course_id"), r.URL.Query().Get("course_id"))
 }
 func (a *app) createMeeting(w http.ResponseWriter, r *http.Request) {
 	u := who(r)

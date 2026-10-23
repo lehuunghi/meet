@@ -10,6 +10,8 @@
 
 ## Hai trường và ba vai trò
 
+Kiểm tra báo cáo: chọn lớp rồi môn rồi buổi học; khi đổi lớp/môn, lựa chọn phụ thuộc được đặt lại. Thử teacher truy cập môn không phụ trách, trường khác hoặc class/meeting không khớp bằng URL API: trả 404. Student không được nhận dữ liệu người khác. Buổi scheduled không được tính vào tổng; học sinh chưa tham gia có 0 giây. Kiểm tra tổng nhiều buổi và báo cáo một buổi. Trên viewport 360/390 px, bộ lọc xếp dọc, kết quả thành thẻ không tràn ngang, nút/menu ít nhất 44 px và menu tự đóng sau chọn.
+
 1. Seed môi trường riêng. Đăng nhập teacher ở `demo`, teacher ở `other` bằng hai browser profile; mỗi bên chỉ thấy lớp/môn của trường mình.
 2. Admin import 2 student + 1 teacher. Thử một dòng sai email và một email trùng: không dòng nào được thêm. Import lại workbook đúng: lớp/enrollment xuất hiện đầy đủ.
 3. Tạo course và meeting bằng teacher đúng; teacher khác không tạo/điều khiển được. Student không thấy lớp chưa enroll, không gọi API vượt quyền được.

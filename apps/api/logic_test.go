@@ -52,7 +52,7 @@ func TestOriginGuard(t *testing.T) {
 }
 func TestProtectedRoutesRequireSession(t *testing.T) {
 	a := &app{origin: "https://school.example"}
-	for _, path := range []string{"/api/me", "/api/users", "/api/meetings", "/api/catalog", "/api/meetings/x/tracks", "/api/meetings/x/attendance", "/api/meetings/x/recordings"} {
+	for _, path := range []string{"/api/me", "/api/users", "/api/meetings", "/api/catalog", "/api/attendance/report?course_id=x", "/api/meetings/x/tracks", "/api/meetings/x/attendance", "/api/meetings/x/recordings"} {
 		r := httptest.NewRequest("GET", path, nil)
 		w := httptest.NewRecorder()
 		a.routes().ServeHTTP(w, r)

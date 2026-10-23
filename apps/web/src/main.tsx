@@ -3,9 +3,10 @@ import { createRoot } from "react-dom/client";
 import { api } from "./api";
 import { ClassroomMedia } from "./media";
 import "./style.css";
+import "./attendance.css";
+import { AttendanceReport } from "./attendance";
 import {
   RoleSwitcher,
-  PreviewAttendance,
   PreviewRecordings,
   PreviewRoom,
   previewRoles,
@@ -86,14 +87,22 @@ function App() {
     [loading, setLoading] = useState(!demo),
     [error, setError] = useState(""),
     [page, setPage] = useState(
-      demo && previewRole.id === "admin" ? "admin" : "overview",
+      new URLSearchParams(location.search).get("page") === "attendance"
+        ? "attendance"
+        : demo && previewRole.id === "admin"
+          ? "admin"
+          : "overview",
     ),
+    [menuOpen, setMenuOpen] = useState(false),
     [meetings, setMeetings] = useState<Meeting[]>(demo ? sample : []),
     [courses, setCourses] = useState<any[]>(
       demo
         ? previewCourses.filter(
             (c) =>
-              previewRole.id === "admin" || c.teacher === "Nguyễn Minh Anh",
+              previewRole.id === "admin" ||
+              (previewRole.id === "student"
+                ? c.class_name === "10A1"
+                : c.teacher === "Nguyễn Minh Anh"),
           )
         : [],
     ),
@@ -217,6 +226,14 @@ function App() {
   return (
     <div className="shell">
       <aside>
+        <button
+          className="mobile-menu-control secondary"
+          aria-expanded={menuOpen}
+          aria-controls="main-navigation"
+          onClick={() => setMenuOpen(!menuOpen)}
+        >
+          {menuOpen ? "Đóng menu ✕" : "Menu ☰"}
+        </button>
         <span className="brand">
           m<span>●</span> meet
         </span>
@@ -232,31 +249,31 @@ function App() {
           </div>
         </div>
         <small className="nav-label">KHÔNG GIAN CỦA BẠN</small>
-        <nav>
+        <nav id="main-navigation" className={menuOpen ? "mobile-open" : ""}>
           {[
             ["overview", "▦", "Tổng quan"],
             ["courses", "▤", "Lớp & môn học"],
             ["meetings", "◉", "Buổi học"],
             ["settings", "⚙", "Tài khoản"],
             ...(user.role === "admin" ? [["admin", "⇧", "Quản trị"]] : []),
-            ...(demo
-              ? [
-                  [
-                    "attendance",
-                    "◷",
-                    user.role === "student"
-                      ? "Điểm danh của tôi"
-                      : "Báo cáo điểm danh",
-                  ],
-                  ["recordings", "▷", "Bản ghi bài học"],
-                ]
-              : []),
+            [
+              "attendance",
+              "◷",
+              user.role === "student"
+                ? "Điểm danh của tôi"
+                : "Báo cáo điểm danh",
+            ],
+            ...(demo ? [["recordings", "▷", "Bản ghi bài học"]] : []),
           ].map(([key, icon, label]) => (
             <button
               key={key}
               className={page === key ? "active" : ""}
               onClick={() => {
                 setPage(key);
+                setMenuOpen(false);
+                const params = new URLSearchParams(location.search);
+                params.set("page", key);
+                history.replaceState(null, "", "?" + params.toString());
                 if (key === "admin" && !demo)
                   void safe(async () => {
                     setUsers(await api("/users"));
@@ -331,7 +348,7 @@ function App() {
           }}
         >
           {demo && <RoleSwitcher role={user.role} />}
-          {demo && (
+          {demo && page !== "attendance" && (
             <div className="banner">
               Bản xem trước giao diện · Dữ liệu mẫu, chưa kết nối máy chủ hoặc
               Cloudflare. <a href="/">Đăng nhập thật →</a>
@@ -515,8 +532,8 @@ function App() {
               ))}
             </section>
           )}
-          {demo && page === "attendance" && (
-            <PreviewAttendance role={user.role} />
+          {page === "attendance" && (
+            <AttendanceReport role={user.role} courses={courses} demo={demo} />
           )}
           {demo && page === "recordings" && <PreviewRecordings />}
           {page === "settings" && (
@@ -684,7 +701,7 @@ function App() {
               </section>
               <section className="section">
                 <h2>Tài khoản ({users.length})</h2>
-                <table>
+                <table className="attendance-table">
                   <thead>
                     <tr>
                       <th>Họ tên</th>
@@ -696,10 +713,16 @@ function App() {
                   <tbody>
                     {users.map((u) => (
                       <tr key={u.id}>
-                        <td>{u.name}</td>
-                        <td>{u.email}</td>
-                        <td>{u.role}</td>
-                        <td>{u.id}</td>
+                        <td data-label="Họ tên">{u.name}</td>
+                        <td data-label="Email">{u.email}</td>
+                        <td data-label="Vai trò">
+                          {u.role === "teacher"
+                            ? "Giáo viên"
+                            : u.role === "student"
+                              ? "Học sinh"
+                              : "Admin"}
+                        </td>
+                        <td data-label="ID">{u.id}</td>
                       </tr>
                     ))}
                   </tbody>

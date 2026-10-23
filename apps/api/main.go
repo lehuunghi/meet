@@ -144,6 +144,7 @@ func (a *app) routes() http.Handler {
 		a.query(w, r, "SELECT actor_id,action,target,at FROM audit_log WHERE school_id=? ORDER BY id DESC LIMIT 200", who(r).School)
 	}))
 	m.HandleFunc("GET /api/meetings", a.auth(a.meetings))
+	m.HandleFunc("GET /api/attendance/report", a.auth(a.attendanceReport))
 	m.HandleFunc("POST /api/meetings", a.auth(a.createMeeting))
 	m.HandleFunc("POST /api/meetings/{id}/state", a.auth(a.meetingState))
 	m.HandleFunc("POST /api/meetings/{id}/presence", a.auth(a.presence))

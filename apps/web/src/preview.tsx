@@ -44,21 +44,31 @@ export const previewClasses = [
 export const previewCourses = [
   {
     id: "math",
+    class_id: "class-10a1",
     name: "Toán học",
     class_name: "10A1",
     teacher: "Nguyễn Minh Anh",
   },
   {
     id: "physics",
+    class_id: "class-10a1",
     name: "Vật lý",
     class_name: "10A1",
     teacher: "Nguyễn Minh Anh",
   },
   {
     id: "english",
+    class_id: "class-10a2",
     name: "Tiếng Anh",
     class_name: "10A2",
     teacher: "Trần Ngọc Lan",
+  },
+  {
+    id: "math-10a2",
+    class_id: "class-10a2",
+    name: "Toán học",
+    class_name: "10A2",
+    teacher: "Nguyễn Minh Anh",
   },
 ];
 export function RoleSwitcher({ role }: { role: string }) {
@@ -75,7 +85,7 @@ export function RoleSwitcher({ role }: { role: string }) {
           <a
             className={v.id === role ? "selected" : ""}
             key={v.id}
-            href={`?demo=1&role=${v.id}`}
+            href={`?demo=1&role=${v.id}${new URLSearchParams(location.search).get("page") === "attendance" ? "&page=attendance" : ""}`}
           >
             {v.label}
           </a>
@@ -107,50 +117,6 @@ const roster = [
     status: "Chưa tham gia",
   },
 ];
-export function PreviewAttendance({ role }: { role: string }) {
-  const list = role === "student" ? roster.slice(0, 1) : roster;
-  return (
-    <section className="section">
-      <div className="section-title">
-        <div>
-          <h2>
-            {role === "student" ? "Thời gian học của tôi" : "Báo cáo điểm danh"}
-          </h2>
-          <p>Toán học · 10A1 · Hàm số và đồ thị · Dữ liệu minh họa</p>
-        </div>
-        <span className="pill">Buổi học đã kết thúc</span>
-      </div>
-      <table>
-        <thead>
-          <tr>
-            <th>Học sinh</th>
-            <th>Vào lớp</th>
-            <th>Rời lớp</th>
-            <th>Thời gian kết nối</th>
-            <th>Trạng thái</th>
-          </tr>
-        </thead>
-        <tbody>
-          {list.map((v) => (
-            <tr key={v.name}>
-              <td>{v.name}</td>
-              <td>{v.joined}</td>
-              <td>{v.left}</td>
-              <td>{v.time}</td>
-              <td>
-                <span className="pill">{v.status}</span>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <p>
-        Thời gian kết nối được tính theo heartbeat. Học sinh chỉ được xem dữ
-        liệu của mình.
-      </p>
-    </section>
-  );
-}
 export function PreviewRecordings() {
   const [selected, setSelected] = useState(false);
   return (

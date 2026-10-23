@@ -96,6 +96,48 @@ func TestIntegration(t *testing.T) {
 	if w = request("POST", "/api/meetings/demo-meeting/state", `{"status":"ended"}`, teacher); w.Code != 200 {
 		t.Fatalf("end: %s", w.Body)
 	}
+	// Reports are scoped to a subject in a class, including students with no presence.
+	for _, q := range []string{
+		"INSERT IGNORE INTO users(id,school_id,email,name,password_hash,role) SELECT 'demo-second','school-demo','second@example.test','Second student',password_hash,'student' FROM users WHERE id='demo-teacher'",
+		"INSERT IGNORE INTO enrollments VALUES('school-demo','demo-class','demo-second')",
+		"INSERT IGNORE INTO users(id,school_id,email,name,password_hash,role) SELECT 'demo-alt-teacher','school-demo','alt@example.test','Other teacher',password_hash,'teacher' FROM users WHERE id='demo-teacher'",
+		"INSERT IGNORE INTO courses(id,school_id,class_id,teacher_id,name) VALUES('demo-alt-course','school-demo','demo-class','demo-alt-teacher','English')",
+		"INSERT IGNORE INTO meetings(id,school_id,course_id,title,starts_at,status) VALUES('demo-second-lesson','school-demo','demo-math','Lesson 2',UTC_TIMESTAMP(),'ended')",
+		"INSERT IGNORE INTO meetings(id,school_id,course_id,title,starts_at,status) VALUES('demo-future-lesson','school-demo','demo-math','Future lesson',UTC_TIMESTAMP(),'scheduled')",
+		"UPDATE presence SET seconds=125 WHERE school_id='school-demo' AND meeting_id='demo-meeting' AND user_id='demo-student'",
+	} {
+		if _, e = db.Exec(q); e != nil {
+			t.Fatal(e)
+		}
+	}
+	for _, test := range []struct {
+		path   string
+		cookie *http.Cookie
+		code   int
+	}{
+		{"/api/attendance/report?course_id=demo-math", other, 404},
+		{"/api/attendance/report?course_id=demo-alt-course", teacher, 404},
+		{"/api/attendance/report?course_id=demo-math&class_id=other-class", teacher, 404},
+		{"/api/attendance/report?course_id=demo-math&meeting_id=other-meeting", teacher, 404},
+		{"/api/attendance/report?course_id=demo-math&page=-1", teacher, 400},
+		{"/api/attendance/report", teacher, 400},
+	} {
+		if got := request("GET", test.path, "", test.cookie); got.Code != test.code {
+			t.Fatalf("report %s: got %d want %d: %s", test.path, got.Code, test.code, got.Body)
+		}
+	}
+	w = request("GET", "/api/attendance/report?course_id=demo-math", "", student)
+	if w.Code != 200 || json.Unmarshal(w.Body.Bytes(), &records) != nil || len(records) != 1 || records[0]["id"] != "demo-student" || records[0]["seconds"] != "125" || records[0]["session_count"] != float64(2) {
+		t.Fatalf("student aggregate report: %s", w.Body)
+	}
+	w = request("GET", "/api/attendance/report?course_id=demo-math&meeting_id=demo-meeting", "", teacher)
+	if w.Code != 200 || json.Unmarshal(w.Body.Bytes(), &records) != nil || len(records) != 2 || records[0]["session_count"] != float64(1) {
+		t.Fatalf("teacher meeting report: %s", w.Body)
+	}
+	administrator := login("demo", "admin")
+	if w = request("GET", "/api/attendance/report?course_id=demo-alt-course", "", administrator); w.Code != 200 {
+		t.Fatalf("admin report scope: %s", w.Body)
+	}
 	if w = request("POST", "/api/meetings/demo-meeting/presence", `{"kind":"heartbeat"}`, student); w.Code != 409 {
 		t.Fatal("ended meeting credited")
 	}

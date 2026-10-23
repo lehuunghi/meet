@@ -1,0 +1,330 @@
+.mobile-menu-control {
+  display: none;
+}
+@media (max-width: 700px) {
+  .content:has(.attendance-report) .heading .leaf,
+  .content:has(.attendance-report) .heading p {
+    display: none;
+  }
+  .content:has(.attendance-report) .heading {
+    margin: 12px 0 18px;
+  }
+  .content:has(.attendance-report) .heading h1 {
+    font-size: 24px;
+    margin-bottom: 0;
+  }
+  .content:has(.attendance-report) .heading .eyebrow {
+    margin-bottom: 10px;
+  }
+}
+.attendance-filters {
+  display: grid;
+  grid-template-columns: 1fr 1fr 2fr;
+  gap: 16px;
+  padding: 20px;
+  background: #f6f8f1;
+  border-radius: 10px;
+}
+.attendance-filters label {
+  font-size: 12px;
+  font-weight: 600;
+  min-width: 0;
+}
+.attendance-filters select {
+  min-height: 46px;
+  width: 100%;
+  font-size: 13px;
+  background: #fff;
+}
+.report-context {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 25px 0 18px;
+}
+.report-context > strong {
+  font-size: 16px;
+}
+.report-context > strong span {
+  color: #9aa98a;
+  margin: 0 10px;
+}
+.report-context small {
+  color: #7b8c70;
+}
+.attendance-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+.attendance-summary article {
+  padding: 17px;
+  border: 1px solid #e4eadd;
+  border-radius: 9px;
+}
+.attendance-summary strong {
+  display: block;
+  font-size: 25px;
+  font-weight: 500;
+}
+.attendance-summary small {
+  display: block;
+  font-size: 11px;
+  color: #7b8c70;
+  margin-top: 8px;
+  line-height: 1.6;
+}
+.attendance-table {
+  display: table;
+  table-layout: fixed;
+  font-size: 12px;
+}
+.attendance-table th:first-child {
+  width: 24%;
+}
+.attendance-table td {
+  overflow-wrap: anywhere;
+  line-height: 1.7;
+}
+.attendance-table td small {
+  display: block;
+  font-size: 10px;
+  color: #89947e;
+}
+.report-badge {
+  display: inline-block;
+  border-radius: 15px;
+  padding: 5px 9px;
+  background: #f5f1e8;
+  color: #8d7959;
+  font-size: 11px;
+}
+.report-badge.connected {
+  background: #eaf3e5;
+  color: #3c7048;
+}
+.report-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 22px;
+  font-size: 12px;
+}
+.report-pagination button {
+  min-height: 44px;
+  font-size: 12px;
+}
+.report-note {
+  font-size: 11px;
+  margin: 24px 0 0;
+}
+.report-empty {
+  padding: 30px 16px;
+  text-align: center;
+  color: #7c8c70;
+  background: #f6f8f1;
+  border-radius: 9px;
+  line-height: 1.8;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+select:focus-visible,
+button:focus-visible,
+a:focus-visible,
+input:focus-visible {
+  outline: 3px solid #88a969;
+  outline-offset: 3px;
+}
+@media (max-width: 900px) {
+  .attendance-filters {
+    grid-template-columns: 1fr 1fr;
+  }
+  .attendance-filters label:last-child {
+    grid-column: 1/-1;
+  }
+  .attendance-summary {
+    gap: 9px;
+  }
+}
+@media (max-width: 700px) {
+  .shell aside {
+    position: relative;
+  }
+  .mobile-menu-control {
+    display: block;
+    position: absolute;
+    right: 18px;
+    top: 18px;
+    min-height: 44px;
+    padding: 10px 15px;
+  }
+  .shell aside > .brand {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    width: max-content;
+  }
+  .shell nav {
+    display: none;
+    overflow: visible;
+  }
+  .shell nav.mobile-open {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin: 15px 0 0;
+  }
+  .shell nav button {
+    min-height: 48px;
+    font-size: 11px;
+    white-space: normal;
+    line-height: 1.5;
+  }
+  .shell nav button span {
+    font-size: 15px;
+  }
+  .preview-switch {
+    padding: 15px;
+  }
+  .preview-switch > div:last-child {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .preview-switch a {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 6px;
+  }
+  .attendance-report .section-title {
+    align-items: flex-start;
+    gap: 12px;
+    flex-direction: column;
+  }
+  .attendance-report .section-title p {
+    line-height: 1.8;
+  }
+  .attendance-report .section-title h2 {
+    font-size: 19px;
+  }
+  .attendance-filters {
+    padding: 14px;
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  .attendance-filters label:last-child {
+    grid-column: auto;
+  }
+  .attendance-summary article {
+    padding: 12px 8px;
+  }
+  .attendance-summary strong {
+    font-size: 23px;
+  }
+  .attendance-summary small {
+    font-size: 10px;
+  }
+  .attendance-table {
+    display: block;
+    table-layout: auto;
+    border: 0;
+  }
+  .attendance-table caption {
+    display: none;
+  }
+  .attendance-table thead {
+    display: none;
+  }
+  .attendance-table tbody {
+    display: grid;
+    gap: 15px;
+  }
+  .attendance-table tr {
+    display: block;
+    border: 1px solid #e1e9da;
+    border-radius: 10px;
+    padding: 7px 14px;
+    background: #fff;
+  }
+  .attendance-table td {
+    display: grid;
+    grid-template-columns: minmax(95px, 40%) minmax(0, 1fr);
+    gap: 8px;
+    text-align: right;
+    padding: 11px 0;
+    align-items: start;
+    font-size: 12px;
+    min-width: 0;
+  }
+  .attendance-table td::before {
+    content: attr(data-label);
+    font-size: 11px;
+    color: #819274;
+    text-align: left;
+    font-weight: 400;
+  }
+  .attendance-table td:first-child {
+    display: block;
+    text-align: left;
+    font-size: 14px;
+    padding: 14px 0;
+  }
+  .attendance-table td:first-child::before {
+    display: none;
+  }
+  .attendance-table td:last-child {
+    border-bottom: 0;
+  }
+  .attendance-table td small {
+    font-size: 11px;
+    text-align: left;
+  }
+  .attendance-table .report-badge {
+    justify-self: end;
+  }
+  .report-pagination {
+    font-size: 11px;
+    gap: 6px;
+  }
+  .report-pagination button {
+    padding: 10px;
+    font-size: 11px;
+  }
+  .report-context {
+    line-height: 1.6;
+  }
+  .section input:not([type="checkbox"]),
+  .section select {
+    min-height: 44px;
+    font-size: 16px;
+  }
+  .room-toolbar button {
+    min-height: 44px;
+  }
+  .content {
+    min-width: 0;
+  }
+  .shell > main {
+    min-width: 0;
+  }
+  .section {
+    min-width: 0;
+  }
+  header > span:first-child {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+}

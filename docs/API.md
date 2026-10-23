@@ -22,6 +22,7 @@ Base path `/api`. JSON requests/responses, except multipart XLSX. Cookie `meet_s
 | POST | /meetings/:id/state | Admin/assigned teacher `{status:"live"}` or `{status:"ended"}` |
 | POST | /meetings/:id/presence | Live meeting member `{kind:"join" or "heartbeat" or "leave"}` → `{seconds}` |
 | GET | /meetings/:id/attendance | Teacher/admin roster, student own record only |
+| GET | /attendance/report | Required `course_id`; optional `class_id`, `meeting_id`, zero-based `page`. Authorized class/subject report; student own row only. |
 | POST | /meetings/:id/ice | Live meeting member, short-lived `iceServers` |
 | POST | /meetings/:id/sfu | Live meeting member, operations below |
 | GET | /meetings/:id/tracks | Active authorized publications |
@@ -31,6 +32,8 @@ Base path `/api`. JSON requests/responses, except multipart XLSX. Cookie `meet_s
 | GET | /meetings/:id/recordings/:recording/download | Members → `{url}` expiring in five minutes |
 
 Time is RFC3339 on input, UTC in MySQL. Use DSN `parseTime=true&loc=UTC`. IDs are opaque; don't infer tenant or permission from them.
+
+Attendance report authorizes the course before reading data: admin within the school, teacher assigned to that course, or student enrolled in that course's class. A mismatched class or meeting returns 404. Results aggregate only live/ended meetings; `session_count` is the number of those meetings, `participated_sessions` counts a server-observed join, and `seconds` sums confirmed connection time. There is no automatic present/absent threshold. Current enrollment determines the roster; historical enrollment snapshots are not implemented. Up to 51 rows are returned per page: render the first 50 and use the look-ahead row to enable next-page navigation. Counts in the UI are labeled for the visible page. Student summary shows own session and minute totals. `/meetings?course_id=...` returns up to 200 authorized meetings in that course for the session selector; the report's all-sessions option aggregates the full course, beyond this selector limit.
 
 SFU operations:
 
