@@ -22,6 +22,8 @@ jobs:
         working-directory: apps/api
     steps:
       - uses: actions/checkout@v4
+      - run: bash -n deploy/install.sh deploy/init-secrets.sh
+        working-directory: .
       - uses: actions/setup-go@v6
         with:
           go-version-file: apps/api/go.mod

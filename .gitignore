@@ -7,4 +7,5 @@ coverage.out
 *.log
 *.tsbuildinfo
 backups/
+runtime-config/
 *.sql.gz

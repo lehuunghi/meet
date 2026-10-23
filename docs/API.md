@@ -5,6 +5,12 @@ Base path `/api`. JSON requests/responses, except multipart XLSX. Cookie `meet_s
 | Method | Path | Access / body |
 |---|---|---|
 | GET | /health | Public readiness, MySQL + Redis |
+| GET | /setup/status | Public initialized/available flags only |
+| POST | /setup/unlock | `{token}` from installer; separate 15-minute HttpOnly operator cookie |
+| GET | /setup/settings | Operator only; all saved secrets redacted, assignment counts included |
+| POST | /setup/settings | Operator `{settings,school}`; validates/persists provider pool, initial school/admin and R2 lifecycle/CORS |
+| POST | /setup/check-sfu | Operator; creates diagnostic upstream session for submitted App ID/Secret |
+| POST | /setup/lock | Revokes operator session |
 | POST | /login | `{school,email,password}` |
 | POST | /logout | Authenticated, revokes current session |
 | GET | /me | Current identity |
@@ -32,6 +38,10 @@ Base path `/api`. JSON requests/responses, except multipart XLSX. Cookie `meet_s
 | GET | /meetings/:id/recordings/:recording/download | Members → `{url}` expiring in five minutes |
 
 Time is RFC3339 on input, UTC in MySQL. Use DSN `parseTime=true&loc=UTC`. IDs are opaque; don't infer tenant or permission from them.
+
+System setup uses the root-owned installer token, not a school-admin session. Runtime settings in CONFIG_DIR override legacy Cloudflare secret files. SFU class assignments use least assigned classes divided by weight, persisted under a MySQL advisory lock; meeting bindings pin an App ID. Disabled providers continue serving pinned classes but do not receive unassigned classes. Pool edits cannot delete or change pinned App IDs.
+
+Recordings now include `expires_at`; expired/deleted rows are hidden and cannot be signed for download. Signed URLs last at most five minutes or remaining lifetime, whichever is shorter. R2 lifecycle scopes new objects under `recordings/` to 30 days, configured and re-read during setup. The startup/hourly janitor also deletes expired metadata-backed objects, including legacy prefixes, and retains deletion metadata. Physical removal is asynchronous and provider failures are retried.
 
 Attendance report authorizes the course before reading data: admin within the school, teacher assigned to that course, or student enrolled in that course's class. A mismatched class or meeting returns 404. Results aggregate only live/ended meetings; `session_count` is the number of those meetings, `participated_sessions` counts a server-observed join, and `seconds` sums confirmed connection time. There is no automatic present/absent threshold. Current enrollment determines the roster; historical enrollment snapshots are not implemented. Up to 51 rows are returned per page: render the first 50 and use the look-ahead row to enable next-page navigation. Counts in the UI are labeled for the visible page. Student summary shows own session and minute totals. `/meetings?course_id=...` returns up to 200 authorized meetings in that course for the session selector; the report's all-sessions option aggregates the full course, beyond this selector limit.
 

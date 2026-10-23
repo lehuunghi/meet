@@ -1,5 +1,6 @@
 .git
 secrets
+runtime-config
 **/node_modules
 **/dist
 **/*.exe

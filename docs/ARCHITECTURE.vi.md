@@ -13,6 +13,8 @@ Browser ───────────── signed PUT/GET ─────�
 
 Một control plane đơn giản trên VPS; media tách khỏi backend. React/Vite xuất static assets; Go phục vụ API bằng net/http. Không cần Next.js/SSR cho dashboard nội bộ này. Khi nhiều trường tăng, có thể tách MySQL/Redis ra dịch vụ riêng. Chưa benchmark quy mô 50 lớp hay 1.500 người đồng thời.
 
+Bộ cài `deploy/install.sh` hỏi domain, chuẩn bị Docker/Caddy/Compose và mở `/setup` với token vận hành riêng. UI setup dùng cookie operator 15 phút, Origin guard và rate limit; school-admin không có quyền sửa provider toàn hệ thống. Runtime secret ở volume `runtime-config`, atomic file write 0600, GET redacts values. Chưa có mã hóa tự động ổ đĩa hoặc secret manager.
+
 ## Mô hình dữ liệu
 
 `schools → users/classes → enrollments/courses → meetings → presence/attendance_events/media_sessions/publications/recordings`.
@@ -31,6 +33,8 @@ Meeting chỉ đi scheduled → live → ended. API kiểm tra quyền quản l�
 
 Backend chỉ cung cấp các thao tác new/tracks/renegotiate; kiểm tra SFU session thuộc user + meeting + school. Remote tracks phải tồn tại trong publication registry của cùng phòng, publisher có heartbeat còn hạn. Redis khóa thao tác theo user/phòng trong 30 giây để tránh mutation chồng nhau. Cloudflare request timeout 20 giây. SFU session ID không được coi là quyền truy cập.
 
+Nhiều SFU App được cân bằng theo số lớp đã gán / trọng số. Binding lớp và buổi lưu MySQL, cấp phát dưới advisory lock; các session cùng buổi dùng đúng một app. App đã gán không được xóa/đổi ID; disabled chỉ ngừng nhận lớp mới. Không cân bằng theo bitrate thực và không failover app giữa buổi. Xem `allocation.go` và tài liệu cài một lệnh.
+
 Hiện giới hạn 8 SFU session từng user/buổi để tránh cấp vô hạn; publish + receive thường dùng 2. Sau nhiều lần reload có thể đạt giới hạn; chưa có API cleanup/reconnect tự động. TURN key lựa chọn ổn định theo user, failover key tiếp theo; chưa có weighted quota/circuit breaker/refresh ICE tự động. Credential TURN hết hạn sau một giờ; cần thử và xây ICE refresh/restart cho lớp kéo dài trước khi dùng rộng.
 
 Track cũ bị ẩn khi hết lease hoặc rời lớp, nhưng chưa chủ động gọi SFU tracks/close, chưa loại receiving tracks khỏi peer/UI, chưa có SFU server-side revocation tức thời. Kết thúc buổi chặn API mới và xóa registry; **kết nối WebRTC đang tồn tại có thể tiếp tục**. Không dùng bản này cho yêu cầu cưỡng chế ngắt media tức thì. Cần quản lý session lifecycle/close và reconnection trước production lớn.
@@ -43,7 +47,7 @@ Endpoint báo cáo LEFT JOIN enrollment nên cả học sinh chưa vào vẫn c�
 
 ## Recording
 
-Screen capture do giáo viên chọn, sau đó single PUT vào R2; không phải tự động ghi mọi SFU track. Object key do backend tạo theo school/meeting/random id. Metadata pending → ready sau HEAD; download chỉ sau authorization lại và URL 5 phút. Trường phải ban hành chính sách đồng ý ghi hình và retention. Không có worker thu server-side, upload resumable, chống malware, dọn orphan, hạn mức tenant hoặc kiểm chứng nội dung WebM ngoài MIME và size. Không triển khai ghi hình dài trước khi bổ sung các phần này.
+Screen capture do giáo viên chọn, sau đó single PUT vào R2; không phải tự động ghi mọi SFU track. Object key mới có prefix recordings/school/meeting/random id. Metadata pending → ready sau HEAD. Hạn lưu 30 ngày: migration v2 backfill expiry, API ẩn/chặn file hết hạn và ký URL tối đa phần thời gian còn lại (không quá 5 phút); janitor startup/hourly xóa object đã hết hạn và giữ dấu deleted_at. Setup merge lifecycle 30 ngày vào R2 cùng CORS và đọc lại xác nhận; rule khác được giữ. Physical delete có thể trễ, API chặn quyền đúng expiry. Metadata cũ ngoài prefix được janitor dọn; orphan không có metadata chưa được janitor bao phủ. Trường phải ban hành chính sách đồng ý ghi hình. Không có worker thu server-side, upload resumable, chống malware, hạn mức tenant hoặc kiểm chứng nội dung WebM ngoài MIME và size. Không triển khai ghi hình dài trước khi bổ sung các phần này.
 
 ## Lộ trình trước rollout lớn
 

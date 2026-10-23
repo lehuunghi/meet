@@ -79,3 +79,15 @@ CREATE TABLE IF NOT EXISTS audit_log (
  action VARCHAR(100) NOT NULL, target VARCHAR(200) NOT NULL,
  at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6), KEY tenant_audit(school_id,at)
 );
+CREATE TABLE IF NOT EXISTS class_sfu_bindings (
+ school_id CHAR(36) NOT NULL, class_id CHAR(36) NOT NULL,
+ provider_id VARCHAR(80) NOT NULL, app_id VARCHAR(100) NOT NULL,
+ PRIMARY KEY(school_id,class_id), KEY provider_classes(provider_id),
+ FOREIGN KEY(school_id,class_id) REFERENCES classes(school_id,id)
+);
+CREATE TABLE IF NOT EXISTS meeting_sfu_bindings (
+ school_id CHAR(36) NOT NULL, meeting_id CHAR(36) NOT NULL,
+ provider_id VARCHAR(80) NOT NULL, app_id VARCHAR(100) NOT NULL,
+ PRIMARY KEY(school_id,meeting_id),
+ FOREIGN KEY(school_id,meeting_id) REFERENCES meetings(school_id,id)
+);

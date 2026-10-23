@@ -3,6 +3,11 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 umask 077
 mkdir -p secrets
+mkdir -p runtime-config
+if [ ! -e runtime-config/setup-token ]; then openssl rand -hex 32 > runtime-config/setup-token; fi
+if [ "$(id -u)" = 0 ]; then chown -R 10001:10001 runtime-config; fi
+chmod 700 runtime-config
+chmod 600 runtime-config/*
 for name in mysql_password mysql_root_password redis_password demo_password; do
   if [ ! -e "secrets/$name" ]; then openssl rand -hex 24 > "secrets/$name"; fi
 done

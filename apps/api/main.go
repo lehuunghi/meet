@@ -122,6 +122,12 @@ func (a *app) routes() http.Handler {
 		send(w, 200, map[string]string{"status": "ok"})
 	})
 	m.HandleFunc("POST /api/login", a.login)
+	m.HandleFunc("GET /api/setup/status", a.setupStatus)
+	m.HandleFunc("POST /api/setup/unlock", a.setupUnlock)
+	m.HandleFunc("POST /api/setup/lock", a.operator(a.setupLock))
+	m.HandleFunc("GET /api/setup/settings", a.operator(a.setupGet))
+	m.HandleFunc("POST /api/setup/settings", a.operator(a.setupSave))
+	m.HandleFunc("POST /api/setup/check-sfu", a.operator(a.setupCheckSFU))
 	m.HandleFunc("POST /api/logout", a.auth(a.logout))
 	m.HandleFunc("GET /api/me", a.auth(func(w http.ResponseWriter, r *http.Request) { send(w, 200, who(r)) }))
 	m.HandleFunc("POST /api/password", a.auth(a.password))
@@ -194,7 +200,10 @@ func migrate(db *sql.DB) error {
 		}
 	}
 	_, e = c.ExecContext(context.Background(), "INSERT IGNORE INTO schema_migrations VALUES(1)")
-	return e
+	if e != nil {
+		return e
+	}
+	return migrateV2(c)
 }
 func main() {
 	db, e := sql.Open("mysql", secret("MYSQL_DSN"))
@@ -235,6 +244,7 @@ func main() {
 	srv := &http.Server{Addr: ":8080", Handler: a.routes(), ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 30 * time.Second, WriteTimeout: 120 * time.Second, IdleTimeout: 60 * time.Second, MaxHeaderBytes: 16384}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
+	go a.retentionLoop(ctx)
 	go func() {
 		<-ctx.Done()
 		c, cancel := context.WithTimeout(context.Background(), 10*time.Second)

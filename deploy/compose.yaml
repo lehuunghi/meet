@@ -2,6 +2,7 @@ name: meet
 x-api: &api
   build: ../apps/api
   environment:
+    CONFIG_DIR: /var/lib/meet-config
     MYSQL_DSN_FILE: /run/secrets/mysql_dsn
     REDIS_URL_FILE: /run/secrets/redis_url
     APP_ORIGIN: ${APP_ORIGIN:?Set APP_ORIGIN}
@@ -14,6 +15,7 @@ x-api: &api
     R2_BUCKET_FILE: /run/secrets/r2_bucket
   secrets: [mysql_dsn, redis_url, cf_sfu_app_id, cf_sfu_secret, cf_turn_keys, r2_account_id, r2_access_key_id, r2_secret_access_key, r2_bucket]
   networks: [internal]
+  volumes: [../runtime-config:/var/lib/meet-config]
 services:
   mysql:
     image: mysql:8.4

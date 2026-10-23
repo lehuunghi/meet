@@ -8,6 +8,8 @@
 
 Tài liệu này mô tả đúng những chức năng đang có trong mã nguồn, từ một VPS mới đến buổi học đầu tiên. Các tên miền, email và tên trường bên dưới là ví dụ; hãy thay bằng thông tin của bạn. Không điền khóa thật vào tài liệu hoặc Git.
 
+**Cách cài mới được khuyến nghị:** dùng [bộ cài một lệnh và trang cấu hình](CAI-DAT-MOT-LENH.vi.md). Phần bên dưới là quy trình thủ công/CLI thay thế, không cần làm lại nếu bộ cài đã hoàn tất. Cấu hình nhập trên web ở `runtime-config/settings.json` ưu tiên hơn secret file legacy; khi đã dùng wizard, quản lý SFU/TURN/R2 tại `/setup`. Bản ghi hiện tự hết hạn sau 30 ngày, có lifecycle và tác vụ dọn; xem tài liệu cài một lệnh để hiểu giới hạn và thời điểm xóa.
+
 ## Mục lục
 
 1. [Hiểu hệ thống và thứ tự triển khai](#1-hiểu-hệ-thống-và-thứ-tự-triển-khai)

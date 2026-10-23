@@ -10,13 +10,15 @@ import (
 )
 
 // Explicit CLI provisioning: no public self-registration or shared global tenant bypass.
+var schoolSlug = regexp.MustCompile(`^[a-z0-9][a-z0-9-]{1,79}$`)
+
 func bootstrap(db *sql.DB) error {
 	slug := os.Getenv("SCHOOL_SLUG")
 	name := os.Getenv("SCHOOL_NAME")
 	email := os.Getenv("ADMIN_EMAIL")
 	pass := secret("ADMIN_PASSWORD")
 	addr, e := mail.ParseAddress(email)
-	if !regexp.MustCompile(`^[a-z0-9][a-z0-9-]{1,79}$`).MatchString(slug) || name == "" || len(name) > 200 || e != nil || addr.Address != email || len(email) > 190 || len(pass) < 12 || len(pass) > 72 {
+	if !schoolSlug.MatchString(slug) || name == "" || len(name) > 200 || e != nil || addr.Address != email || len(email) > 190 || len(pass) < 12 || len(pass) > 72 {
 		return fmt.Errorf("set SCHOOL_SLUG, SCHOOL_NAME, ADMIN_EMAIL and ADMIN_PASSWORD_FILE (12–72 bytes)")
 	}
 	hash, e := bcrypt.GenerateFromPassword([]byte(pass), 12)

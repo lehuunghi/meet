@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -55,10 +56,6 @@ func (a *app) sfu(w http.ResponseWriter, r *http.Request) {
 		problem(w, 409, "Meeting is not live")
 		return
 	}
-	if secret("CF_SFU_SECRET") == "" || secret("CF_SFU_APP_ID") == "" {
-		problem(w, 503, "SFU is not configured")
-		return
-	}
 	var in struct {
 		Op          string          `json:"op"`
 		Session     string          `json:"session_id"`
@@ -70,6 +67,11 @@ func (a *app) sfu(w http.ResponseWriter, r *http.Request) {
 	}
 	u := who(r)
 	id := r.PathValue("id")
+	provider, err := a.meetingProvider(r.Context(), u.School, id)
+	if err != nil {
+		problem(w, 503, "SFU chưa sẵn sàng hoặc credential đã gán không còn hợp lệ; kiểm tra cấu hình hệ thống")
+		return
+	}
 	// Redis lease serializes upstream session mutations across API replicas.
 	lock := "sfu-lock:" + u.School + ":" + u.ID + ":" + id
 	nonce := uid()
@@ -79,7 +81,7 @@ func (a *app) sfu(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer a.cache.Eval(r.Context(), `if redis.call('GET',KEYS[1])==ARGV[1] then return redis.call('DEL',KEYS[1]) end return 0`, []string{lock}, nonce)
-	path := "apps/" + url.PathEscape(secret("CF_SFU_APP_ID")) + "/sessions/"
+	path := "apps/" + url.PathEscape(provider.AppID) + "/sessions/"
 	method := "POST"
 	body := map[string]any{}
 	if in.Op == "new" {
@@ -132,7 +134,7 @@ func (a *app) sfu(w http.ResponseWriter, r *http.Request) {
 			body["sessionDescription"] = in.Description
 		}
 	}
-	out, e := a.cloud(r, method, path, secret("CF_SFU_SECRET"), body)
+	out, e := a.cloud(r, method, path, provider.Secret, body)
 	if e != nil {
 		problem(w, 502, "SFU negotiation failed")
 		return
@@ -155,7 +157,7 @@ func (a *app) sfu(w http.ResponseWriter, r *http.Request) {
 				continue
 			}
 			result, _ := results[i].(map[string]any)
-			if result == nil || result["errorCode"] != nil {
+			if result == nil || (result["errorCode"] != nil && result["errorCode"] != "") {
 				continue
 			}
 			if _, e = a.db.ExecContext(r.Context(), "INSERT IGNORE INTO publications(school_id,meeting_id,session_id,track_name,user_id) VALUES(?,?,?,?,?)", u.School, id, in.Session, t.Name, u.ID); e != nil {
@@ -175,8 +177,9 @@ func (a *app) tracks(w http.ResponseWriter, r *http.Request) {
 }
 
 type turnKey struct {
-	ID    string `json:"id"`
-	Token string `json:"token"`
+	ID       string `json:"id"`
+	Token    string `json:"token"`
+	TokenSet bool   `json:"token_set,omitempty"`
 }
 
 func (a *app) ice(w http.ResponseWriter, r *http.Request) {
@@ -188,19 +191,20 @@ func (a *app) ice(w http.ResponseWriter, r *http.Request) {
 		problem(w, 409, "Meeting is not live")
 		return
 	}
-	keys := []turnKey{}
-	raw := secret("CF_TURN_KEYS")
-	if raw == "" {
-		send(w, 200, map[string]any{"iceServers": []any{map[string]string{"urls": "stun:stun.cloudflare.com:3478"}}})
+	cfg, err := loadSettings()
+	if err != nil {
+		problem(w, 503, "TURN configuration invalid")
 		return
 	}
-	if json.Unmarshal([]byte(raw), &keys) != nil || len(keys) == 0 {
-		problem(w, 503, "TURN configuration invalid")
+	keys := cfg.TURN
+	if len(keys) == 0 {
+		send(w, 200, map[string]any{"iceServers": []any{map[string]string{"urls": "stun:stun.cloudflare.com:3478"}}})
 		return
 	}
 	// Stable per-user distribution, with failover. Keys are owned and billed by the operator.
 	h := digest(who(r).School + who(r).ID)
-	start := int(h[0]) % len(keys)
+	value, _ := strconv.ParseUint(h[:8], 16, 32)
+	start := int(value % uint64(len(keys)))
 	for i := range keys {
 		k := keys[(start+i)%len(keys)]
 		if strings.TrimSpace(k.ID) == "" || k.Token == "" {

@@ -5,6 +5,7 @@ import { ClassroomMedia } from "./media";
 import "./style.css";
 import "./attendance.css";
 import { AttendanceReport } from "./attendance";
+import { Setup } from "./setup";
 import {
   RoleSwitcher,
   PreviewRecordings,
@@ -129,6 +130,11 @@ function App() {
   }
   useEffect(() => {
     if (demo) return;
+    api("/setup/status")
+      .then((s) => {
+        if (s.available && !s.initialized) location.replace("/setup");
+      })
+      .catch(() => {});
     api<User>("/me")
       .then(setUser)
       .catch(() => {})
@@ -1082,4 +1088,6 @@ function Room({
     </main>
   );
 }
-createRoot(document.getElementById("root")!).render(<App />);
+createRoot(document.getElementById("root")!).render(
+  location.pathname === "/setup" ? <Setup /> : <App />,
+);
