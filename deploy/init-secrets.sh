@@ -21,7 +21,7 @@ for name in cf_sfu_app_id cf_sfu_secret cf_turn_keys r2_account_id r2_access_key
   if [ ! -e "secrets/$name" ]; then : > "secrets/$name"; fi
 done
 # API runs as uid 10001. Use a dedicated group rather than world-readable secrets.
-if [ "$(id -u)" = 0 ]; then chown -R 10001:10001 secrets; else echo 'Before Compose: sudo chown -R 10001:10001 secrets'; fi
+if [ "$(id -u)" = 0 ]; then chown -R 10001:10001 secrets; else echo 'Before Compose: sudo chown -R 10001:10001 secrets runtime-config'; fi
 chmod 700 secrets
 chmod 600 secrets/*
 echo 'Secret files prepared. Configure Cloudflare files before enabling media.'

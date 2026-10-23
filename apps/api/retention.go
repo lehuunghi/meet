@@ -34,6 +34,23 @@ func retentionRules(existing []types.LifecycleRule) []types.LifecycleRule {
 	}
 	return append(out, types.LifecycleRule{ID: aws.String("meet-recordings-30d"), Status: types.ExpirationStatusEnabled, Filter: &types.LifecycleRuleFilter{Prefix: aws.String(recordingPrefix)}, Expiration: &types.LifecycleExpiration{Days: aws.Int32(recordingDays)}})
 }
+func conflictingExpiry(rules []types.LifecycleRule) bool {
+	for _, r := range rules {
+		if aws.ToString(r.ID) == "meet-recordings-30d" || r.Status != types.ExpirationStatusEnabled || r.Expiration == nil {
+			continue
+		}
+		prefix := ""
+		if r.Filter != nil {
+			prefix = aws.ToString(r.Filter.Prefix)
+		}
+		overlap := strings.HasPrefix(recordingPrefix, prefix) || strings.HasPrefix(prefix, recordingPrefix)
+		days := aws.ToInt32(r.Expiration.Days)
+		if overlap && ((days > 0 && days < recordingDays) || r.Expiration.Date != nil) {
+			return true
+		}
+	}
+	return false
+}
 func (a *app) configureBucket(ctx context.Context, c r2Settings) error {
 	client := a.s3Client(c)
 	old, e := client.GetBucketLifecycleConfiguration(ctx, &s3.GetBucketLifecycleConfigurationInput{Bucket: &c.Bucket})
@@ -43,6 +60,9 @@ func (a *app) configureBucket(ctx context.Context, c r2Settings) error {
 	rules := []types.LifecycleRule{}
 	if old != nil {
 		rules = old.Rules
+	}
+	if conflictingExpiry(rules) {
+		return errors.New("existing lifecycle may delete recordings before 30 days")
 	}
 	if _, e = client.PutBucketLifecycleConfiguration(ctx, &s3.PutBucketLifecycleConfigurationInput{Bucket: &c.Bucket, LifecycleConfiguration: &types.BucketLifecycleConfiguration{Rules: retentionRules(rules)}}); e != nil {
 		return e

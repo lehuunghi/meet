@@ -214,7 +214,7 @@ func (a *app) setupSave(w http.ResponseWriter, r *http.Request) {
 		e = a.configureBucket(ctx, in.Settings.R2)
 		cancel()
 		if e != nil {
-			problem(w, 502, "Không cấu hình được R2: kiểm tra bucket có sẵn, credential có quyền bucket CORS/lifecycle và đọc/ghi/xóa object. Cấu hình cục bộ chưa lưu; kiểm tra lại bucket nếu thao tác từ xa chỉ hoàn tất một phần.")
+			problem(w, 502, "Không cấu hình được R2: kiểm tra bucket có sẵn, quyền CORS/lifecycle/đọc/ghi/xóa object và rule cũ có thể xóa bản ghi trước 30 ngày. Cấu hình cục bộ chưa lưu; kiểm tra lại bucket nếu thao tác từ xa chỉ hoàn tất một phần.")
 			return
 		}
 		in.Settings.R2.Lifecycle = true

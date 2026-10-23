@@ -62,6 +62,9 @@ func TestConfigSecretsAndValidation(t *testing.T) {
 	}
 }
 func TestRetentionRuleAndURLExpiry(t *testing.T) {
+	if !conflictingExpiry([]types.LifecycleRule{{ID: aws.String("global-7d"), Status: types.ExpirationStatusEnabled, Expiration: &types.LifecycleExpiration{Days: aws.Int32(7)}}}) || conflictingExpiry([]types.LifecycleRule{{ID: aws.String("other-7d"), Status: types.ExpirationStatusEnabled, Filter: &types.LifecycleRuleFilter{Prefix: aws.String("unrelated/")}, Expiration: &types.LifecycleExpiration{Days: aws.Int32(7)}}}) {
+		t.Fatal("conflicting expiration rule not detected")
+	}
 	rules := retentionRules([]types.LifecycleRule{{ID: aws.String("other-app"), Status: types.ExpirationStatusEnabled}, {ID: aws.String("meet-recordings-30d")}})
 	if len(rules) != 2 || aws.ToString(rules[0].ID) != "other-app" || aws.ToInt32(rules[1].Expiration.Days) != 30 || aws.ToString(rules[1].Filter.Prefix) != "recordings/" {
 		t.Fatal("retention must preserve unrelated rules and scope to recordings")

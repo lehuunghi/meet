@@ -11,10 +11,10 @@ Ví dụ domain: `meet.truong.edu.vn`. Chỉ nhập hostname, không có `https:
 SSH vào VPS Ubuntu, chạy nguyên dòng sau:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/lehuunghi/meet/codex/multi-school-platform/deploy/install.sh -o /tmp/meet-install.sh && sudo bash /tmp/meet-install.sh
+sudo bash -c 'set -e; apt-get update; apt-get install -y curl; MEET_INSTALL_FILE=$(mktemp); curl -fsSL https://raw.githubusercontent.com/lehuunghi/meet/codex/multi-school-platform/deploy/install.sh -o "$MEET_INSTALL_FILE"; bash "$MEET_INSTALL_FILE"; rm -f "$MEET_INSTALL_FILE"'
 ```
 
-Bạn có thể đọc script tải về trước khi chạy sudo. Bộ cài hỏi domain rồi tự cài Docker/Compose và Caddy nếu thiếu, clone đúng nhánh vào `/opt/meet`, sinh secret riêng, tạo database và migration, build/chạy stack, thêm site Caddy và kiểm tra HTTPS.
+Lệnh bootstrap cài curl nếu thiếu, tải script vào file tạm riêng rồi chạy. Bạn cũng có thể đọc `deploy/install.sh` trên GitHub trước. Bộ cài hỏi domain rồi tự cài Docker/Compose và Caddy nếu thiếu, clone đúng nhánh vào `/opt/meet`, sinh secret riêng, tạo database và migration, build/chạy stack, thêm site Caddy và kiểm tra HTTPS.
 
 Kết thúc thành công sẽ hiện liên kết riêng dạng:
 
@@ -66,7 +66,7 @@ Khi lưu, server:
 3. Giữ các CORS rule khác và thêm/cập nhật rule `meet-origin` cho domain ứng dụng.
 4. Đọc lại lifecycle để xác nhận rồi mới báo cấu hình đã áp dụng.
 
-Credential phải có quyền cấu hình bucket lifecycle/CORS, ngoài quyền đọc/ghi/xóa object. Nếu quyền không đủ, UI báo lỗi và cấu hình cục bộ chưa lưu; một phần thay đổi từ xa có thể đã hoàn tất nên cần kiểm tra bucket. Không khắc phục bằng public bucket. Có thể lưu phần quản lý/SFU trước với R2 tắt, rồi bổ sung sau khi chuẩn bị quyền.
+Credential phải có quyền cấu hình bucket lifecycle/CORS, ngoài quyền đọc/ghi/xóa object. Nếu quyền không đủ hoặc rule cũ có thể xóa prefix bản ghi sớm hơn 30 ngày, UI báo lỗi và cấu hình cục bộ chưa lưu; một phần thay đổi từ xa có thể đã hoàn tất nên cần kiểm tra bucket. Không khắc phục bằng public bucket. Có thể lưu phần quản lý/SFU trước với R2 tắt, rồi bổ sung sau khi chuẩn bị quyền.
 
 “Một tháng” ở đây là **30 ngày**, không phải đến cùng ngày của tháng sau. Bản ghi mới có key `recordings/SCHOOL/MEETING/ID.webm` và `expires_at` ở MySQL. Khi hết hạn, API ngừng hiển thị/tải và URL tải không có thời hạn vượt mốc hết hạn. Tác vụ chạy lúc API khởi động rồi mỗi giờ, xóa tối đa 100 object hết hạn/lượt và đánh dấu `deleted_at` sau khi R2 chấp nhận; lỗi được thử ở chu kỳ sau.
 

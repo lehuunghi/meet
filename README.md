@@ -19,7 +19,7 @@ Monorepo **Go + React/Vite + MySQL + Redis**, tích hợp **Cloudflare Realtime 
 **Cài một lệnh, hỏi domain và cấu hình qua web:**
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/lehuunghi/meet/codex/multi-school-platform/deploy/install.sh -o /tmp/meet-install.sh && sudo bash /tmp/meet-install.sh
+sudo bash -c 'set -e; apt-get update; apt-get install -y curl; MEET_INSTALL_FILE=$(mktemp); curl -fsSL https://raw.githubusercontent.com/lehuunghi/meet/codex/multi-school-platform/deploy/install.sh -o "$MEET_INSTALL_FILE"; bash "$MEET_INSTALL_FILE"; rm -f "$MEET_INSTALL_FILE"'
 ```
 
 Chạy trên VPS Ubuntu 24.04/26.04 có DNS và 80/443 sẵn sàng. Bộ cài in link `/setup#token=...` riêng sau khi kiểm tra HTTPS. Trang setup tạo trường/admin, nhập nhiều SFU App với trọng số cân bằng theo lớp, TURN, R2 với lifecycle 30 ngày. Xem **[hướng dẫn cài một lệnh](docs/CAI-DAT-MOT-LENH.vi.md)**. Bảo vệ link/token vận hành này.
