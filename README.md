@@ -16,6 +16,8 @@ Monorepo **Go + React/Vite + MySQL + Redis**, tích hợp **Cloudflare Realtime 
 
 ## Chạy trên Ubuntu
 
+**Bắt đầu từ đây: [Hướng dẫn đầy đủ cài đặt, khởi tạo và sử dụng](docs/HUONG-DAN-DAY-DU.vi.md)** — từ VPS mới, Docker/HTTPS, tạo trường/admin, import tài khoản, phân lớp/môn đến buổi học và báo cáo điểm danh.
+
 Đọc **[hướng dẫn triển khai từng bước](docs/DEPLOYMENT.vi.md)** trước khi dùng dữ liệu thật.
 
 ```bash
