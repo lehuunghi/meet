@@ -121,6 +121,15 @@ func (a *app) cleanupMedia(ctx context.Context) error {
 	if _, e := os.Stat(configPath("maintenance")); e == nil {
 		return nil
 	}
+	nonce := uid()
+	got, err := a.cache.SetNX(ctx, "media-sweep-lock", nonce, 150*time.Second).Result()
+	if err != nil {
+		return err
+	}
+	if !got {
+		return nil
+	}
+	defer a.cache.Eval(context.WithoutCancel(ctx), `if redis.call('GET',KEYS[1])==ARGV[1] then return redis.call('DEL',KEYS[1]) end return 0`, []string{"media-sweep-lock"}, nonce)
 	cursor, e := a.cache.Get(ctx, "media-sweep-cursor").Result()
 	if e != nil && e != redis.Nil {
 		return e
@@ -154,6 +163,11 @@ func (a *app) cleanupMedia(ctx context.Context) error {
 		if ctx.Err() != nil {
 			return ctx.Err()
 		}
+		// Advance before an upstream call. One failing provider must not pin the
+		// next cycle to the same first few sessions until its deadline expires.
+		if e = a.cache.Set(ctx, "media-sweep-cursor", v.id, 0).Err(); e != nil {
+			return e
+		}
 		owner, e := a.cache.Get(ctx, "media-owner:"+v.id).Result()
 		if e != nil && e != redis.Nil {
 			return e
@@ -184,6 +198,9 @@ func (a *app) cleanupMedia(ctx context.Context) error {
 		}
 		retired, e := a.cache.Get(ctx, "media-retired:"+v.id).Int64()
 		if e != nil {
+			if e != redis.Nil {
+				return e
+			}
 			continue
 		}
 		if _, e = a.db.ExecContext(ctx, "DELETE FROM publications WHERE session_id=?", v.id); e != nil {
@@ -201,7 +218,7 @@ func (a *app) cleanupMedia(ctx context.Context) error {
 			continue
 		}
 		func() {
-			defer a.cache.Eval(ctx, `if redis.call('GET',KEYS[1])==ARGV[1] then return redis.call('DEL',KEYS[1]) end return 0`, []string{lock}, nonce)
+			defer a.cache.Eval(context.WithoutCancel(ctx), `if redis.call('GET',KEYS[1])==ARGV[1] then return redis.call('DEL',KEYS[1]) end return 0`, []string{lock}, nonce)
 			if e := a.closeSFUSession(ctx, v.school, v.meeting, v.id); e != nil {
 				slog.Warn("media cleanup pending", "session", v.id)
 				return
