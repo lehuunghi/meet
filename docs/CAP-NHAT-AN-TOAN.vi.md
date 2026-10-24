@@ -21,7 +21,7 @@ Một bản chỉ được nâng cấp khi:
 - Có deploy/release.json hợp lệ, version dạng x.y.z tăng so với bản đang cài; SHA từ GitHub khớp SHA đã fetch.
 - Lần chạy CI push mới nhất cho chính commit đó thành công, có đủ api/web/containers thành công; không chấp nhận skipped hoặc chỉ có workflow PR thành công.
 - Origin Git đúng repository, checkout đúng branch, không sửa file hoặc có file chưa theo dõi, và chỉ tiến lên bằng fast-forward.
-- Không có buổi học live; database hiện tại khớp schema_version của bản đang cài; không hạ schema.
+- Không có buổi học live; database hiện tại khớp schema_version của bản đang cài; không hạ schema. Charset/collation database được lưu lại để khôi phục đúng; database có stored routine/event/trigger tùy biến cần review thủ công.
 - Còn ít nhất 3 GiB dung lượng trống và đủ RAM để dựng Docker image/snapshot.
 - Giao thức updater và infrastructure_version tương thích. Thay đổi compose sau bản cài có updater yêu cầu nâng cấp hạ tầng thủ công có review, không tự đổi MySQL/Redis/volumes/network.
 
@@ -31,7 +31,7 @@ Không tăng version trong release.json thì commit mới không được xem l�
 
 Dịch vụ root riêng **meet-update.timer / meet-update.service** kiểm tra hàng đợi mỗi khoảng 30 giây, dùng cùng khóa với sao lưu để không chạy đồng thời. Image mới được dựng ở Git worktree riêng trước khi dừng ứng dụng.
 
-Trước migration, hệ thống khóa truy cập ứng dụng, dừng API/web để kết thúc yêu cầu đang xử lý và kiểm tra lại không có buổi live. Snapshot gồm MySQL nhất quán, .env, secrets và runtime-config; được mã hóa AES-GCM bằng khóa riêng /etc/meet/recovery.key, lưu tại /var/lib/meet-updates/snapshots/ và giải mã kiểm tra lại. Nếu R2 đã bật, bắt buộc upload và tải lại so khớp trước khi tiếp tục. Nếu R2 lỗi thì không bỏ qua để nâng cấp. Giữ khóa phục hồi ngoài VPS, không đưa lên cùng bucket.
+Trước migration, hệ thống khóa truy cập ứng dụng, dừng API/web để kết thúc yêu cầu đang xử lý và kiểm tra lại không có buổi live. Snapshot gồm MySQL nhất quán, mã nguồn trước nâng cấp, .env, secrets và runtime-config; được mã hóa AES-GCM bằng khóa riêng /etc/meet/recovery.key, lưu tại /var/lib/meet-updates/snapshots/ và giải mã kiểm tra lại. Nếu R2 đã bật, bắt buộc upload và tải lại so khớp trước khi tiếp tục. Nếu R2 lỗi thì không bỏ qua để nâng cấp. Giữ khóa phục hồi ngoài VPS, không đưa lên cùng bucket. Snapshot cập nhật dùng định dạng tương thích công cụ backup.py restore để phục hồi thảm họa trên máy mới chưa có trường; không dùng restore để ghi đè database đang hoạt động.
 
 Snapshot cập nhật có thể chứa mật khẩu hạ tầng nhưng chỉ nằm trong bản mã hóa. Không commit secrets, .env, runtime-config hoặc bản sao. Giới hạn snapshot và nội dung giải nén khoảng 512 MiB; hệ thống lớn cần quy trình backup/restore phù hợp riêng. Không tự xóa snapshot hoặc image cũ trong đợt cập nhật này; người vận hành quản lý dung lượng sau nghiệm thu.
 

@@ -85,3 +85,7 @@ SFU operations:
 ```
 
 Provider error payloads/secrets are not forwarded on failed HTTP responses. Successful SFU responses retain the provider negotiation shape, including track-level errors; clients must check those before applying SDP. Do not log SDP, cookies, signed URLs, workbook passwords or TURN credentials.
+
+## Operator updates
+
+GET /api/setup/updates reads host-agent progress/version (operator cookie required). POST /api/setup/updates accepts {action:"check"} or {action:"apply",target:"<40-hex-SHA>"}; the latter must match a checked eligible revision. Both mutations require the exact Origin. Requests are queued atomically; API never executes Docker, shell commands or Git. The root agent independently checks CI, repository, version, active lessons and backup before applying. See CAP-NHAT-AN-TOAN.vi.md.

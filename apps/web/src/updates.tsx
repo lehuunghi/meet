@@ -29,7 +29,7 @@ export function SystemUpdates() {
       } catch {
         if (alive)
           setError(
-            "Chưa kết nối được. Nếu đang nâng cấp, đợi dịch vụ khởi động lại; không cài lại hoặc gửi thêm yêu cầu.",
+            "Chưa kết nối được. Nếu đang nâng cấp, đợi dịch vụ khởi động lại; không cài lại hoặc gửi thêm yêu cầu. Nếu phiên cấu hình hết hạn, tải lại trang và mở khóa lại; tác vụ vẫn chạy trên VPS.",
           );
       }
     }

@@ -4,6 +4,7 @@ import argparse
 import datetime as dt
 import importlib.util
 import io
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -160,7 +161,10 @@ def snapshot(b, job):
     dump = compose('exec', '-T', 'mysql', 'sh', '-c', 'MYSQL_PWD="$(cat /run/secrets/mysql_password)" exec mysqldump -h 127.0.0.1 -u meet --single-transaction --no-tablespaces --set-gtid-purged=OFF meet')
     if len(dump) > b.MAX_BYTES - 1024 * 1024:
         raise ValueError('Update snapshot exceeds size limit')
-    contents = {'database.sql': dump}
+    source=run('git','-C',str(ROOT),'archive','--format=tar',job['old_sha'])
+    if len(dump)+len(source)>b.MAX_BYTES-1024*1024:raise ValueError('Update snapshot exceeds size limit')
+    release_manifest={'version':1,'kind':'upgrade','commit':job['old_sha'],'database_sha256':hashlib.sha256(dump).hexdigest(),'source_sha256':hashlib.sha256(source).hexdigest()}
+    contents = {'database.sql': dump,'source.tar':source,'manifest.json':json.dumps(release_manifest).encode()}
     for name in ['.env', 'secrets', 'runtime-config']:
         base = ROOT / name
         paths = [base] if base.is_file() else list(base.iterdir())
@@ -223,10 +227,12 @@ def recover(job, b):
     if job.get('snapshot'):
         files = b.read_archive(b.unseal(Path(job['snapshot']).read_bytes(), b.crypt_key(b.KEY)))
         if job.get('db_dirty'):
-            sql('DROP DATABASE meet; CREATE DATABASE meet CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci')
+            defaults=job.get('database_defaults',['utf8mb4','utf8mb4_0900_ai_ci'])
+            if len(defaults)!=2 or not all(re.fullmatch(r'[a-zA-Z0-9_]+',value) for value in defaults):raise ValueError('Unsafe database defaults in recovery journal')
+            sql('DROP DATABASE meet; CREATE DATABASE meet CHARACTER SET '+defaults[0]+' COLLATE '+defaults[1])
             sql(data=files['database.sql'])
         for name, raw in files.items():
-            if name == 'database.sql':
+            if name in ['database.sql','source.tar','manifest.json']:
                 continue
             if name != '.env' and not name.startswith(('secrets/', 'runtime-config/')):
                 raise ValueError('Unexpected recovery file')
@@ -262,8 +268,12 @@ def apply(target, request_id):
         raise ValueError('Infrastructure configuration changed; this release needs a reviewed manual upgrade')
     if shutil.disk_usage(ROOT).free < 3*1024**3:
         raise ValueError('At least 3 GiB free disk is required before updating')
+    defaults=sql("SELECT CONCAT(DEFAULT_CHARACTER_SET_NAME,',',DEFAULT_COLLATION_NAME) FROM information_schema.schemata WHERE schema_name='meet'").split(',')
+    if len(defaults)!=2 or not all(re.fullmatch(r'[a-zA-Z0-9_]+',value) for value in defaults):raise ValueError('Unknown database defaults')
+    custom=int(sql("SELECT (SELECT COUNT(*) FROM information_schema.routines WHERE routine_schema='meet')+(SELECT COUNT(*) FROM information_schema.events WHERE event_schema='meet')+(SELECT COUNT(*) FROM information_schema.triggers WHERE trigger_schema='meet')"))
+    if custom:raise ValueError('Custom database routines/events/triggers need a reviewed manual upgrade')
     old_images = images()
-    job = {'id': request_id, 'active': True, 'old_sha': checked['current_sha'], 'target': target, 'old_images': old_images, 'db_dirty': False, 'frozen': False}
+    job = {'id': request_id, 'active': True, 'old_sha': checked['current_sha'], 'target': target, 'old_images': old_images, 'db_dirty': False, 'frozen': False, 'database_defaults':defaults}
     checkpoint(job)
     stage = STATE / ('stage-' + target)
     b = backup_module()
