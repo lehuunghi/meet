@@ -37,7 +37,7 @@ func retentionRules(existing []types.LifecycleRule, retention ...int) []types.Li
 			out = append(out, r)
 		}
 	}
-	return append(out, types.LifecycleRule{ID: aws.String("meet-recordings-30d"), Status: types.ExpirationStatusEnabled, Filter: &types.LifecycleRuleFilter{Prefix: aws.String(recordingPrefix)}, Expiration: &types.LifecycleExpiration{Days: aws.Int32(int32(days))}})
+	return append(out, types.LifecycleRule{ID: aws.String("meet-recordings-30d"), Status: types.ExpirationStatusEnabled, Filter: &types.LifecycleRuleFilter{Prefix: aws.String(recordingPrefix)}, Expiration: &types.LifecycleExpiration{Days: aws.Int32(int32(days))}, AbortIncompleteMultipartUpload: &types.AbortIncompleteMultipartUpload{DaysAfterInitiation: aws.Int32(7)}})
 }
 func conflictingExpiry(rules []types.LifecycleRule, retention ...int) bool {
 	target := recordingDays
@@ -102,7 +102,7 @@ func (a *app) configureBucket(ctx context.Context, c r2Settings, retention ...in
 		return e
 	}
 	for _, r := range verify.Rules {
-		if aws.ToString(r.ID) == "meet-recordings-30d" && r.Expiration != nil && aws.ToInt32(r.Expiration.Days) == int32(days) && r.Status == types.ExpirationStatusEnabled && r.Filter != nil && aws.ToString(r.Filter.Prefix) == recordingPrefix {
+		if aws.ToString(r.ID) == "meet-recordings-30d" && r.Expiration != nil && aws.ToInt32(r.Expiration.Days) == int32(days) && r.Status == types.ExpirationStatusEnabled && r.Filter != nil && aws.ToString(r.Filter.Prefix) == recordingPrefix && r.AbortIncompleteMultipartUpload != nil && aws.ToInt32(r.AbortIncompleteMultipartUpload.DaysAfterInitiation) == 7 {
 			return nil
 		}
 	}

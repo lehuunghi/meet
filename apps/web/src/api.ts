@@ -1,3 +1,11 @@
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    public status: number,
+  ) {
+    super(message);
+  }
+}
 export async function api<T = any>(
   path: string,
   body?: unknown,
@@ -19,7 +27,7 @@ export async function api<T = any>(
   if (!res.ok) {
     if (res.status === 401 && path !== "/login" && !path.startsWith("/setup"))
       window.dispatchEvent(new Event("meet-session-ended"));
-    throw new Error(data.error || "Yêu cầu thất bại");
+    throw new ApiError(data.error || "Yêu cầu thất bại", res.status);
   }
   return data;
 }

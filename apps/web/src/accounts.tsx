@@ -12,6 +12,10 @@ export function Accounts({ demo }: { demo: boolean }) {
   const [rows, setRows] = useState<any[]>([]),
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false);
+  const [recovery, setRecovery] = useState<{
+    url: string;
+    expires_at: string;
+  } | null>(null);
   async function load() {
     if (demo) {
       setRows([
@@ -73,6 +77,25 @@ export function Accounts({ demo }: { demo: boolean }) {
         <p className="error" role="alert">
           {error}
         </p>
+      )}
+      {recovery && (
+        <div className="banner">
+          <strong>Liên kết khôi phục dùng một lần</strong>
+          <p>
+            Chỉ giao trực tiếp cho đúng chủ tài khoản. Hết hạn lúc{" "}
+            {new Date(recovery.expires_at).toLocaleString("vi-VN")}. Không gửi
+            vào nhóm chung.
+          </p>
+          <input
+            aria-label="Liên kết khôi phục"
+            readOnly
+            value={recovery.url}
+            onFocus={(e) => e.currentTarget.select()}
+          />
+          <button className="secondary" onClick={() => setRecovery(null)}>
+            Ẩn liên kết
+          </button>
+        </div>
       )}
       <button
         className="secondary"
@@ -211,6 +234,27 @@ export function Accounts({ demo }: { demo: boolean }) {
                     : "Theo vai trò"}
                 </td>
                 <td data-label="Thao tác">
+                  {!demo &&
+                    r.id &&
+                    !(r.role === "admin" && r.permissions === null) && (
+                      <button
+                        className="secondary"
+                        disabled={busy}
+                        onClick={() => {
+                          setBusy(true);
+                          setRecovery(null);
+                          void api<{ url: string; expires_at: string }>(
+                            `/accounts/${r.id}/recovery`,
+                            {},
+                          )
+                            .then(setRecovery)
+                            .catch((e) => setError(e.message))
+                            .finally(() => setBusy(false));
+                        }}
+                      >
+                        Cấp lại mật khẩu
+                      </button>
+                    )}
                   <button
                     disabled={
                       busy || (r.role === "admin" && r.permissions === null)

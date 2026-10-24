@@ -14,3 +14,5 @@ __pycache__/
 *.pyc
 *.meet
 outputs/
+test-results/
+playwright-report/

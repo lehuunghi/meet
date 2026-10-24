@@ -1,3 +1,5 @@
+> Cập nhật v0.4.0: xem [ổn định và nghiệm thu](ON-DINH-VA-NGHIEM-THU.vi.md) cho lifecycle media, multipart và khôi phục mật khẩu.
+
 # Kiến trúc và quyết định thiết kế
 
 ## Luồng hệ thống
@@ -27,7 +29,7 @@ Mọi query nghiệp vụ có school_id lấy từ session server, không nhận
 
 Migration v3 giữ khóa cũ và thêm ID ngắn bất biến, mã SV duy nhất theo trường và revision cho các bảng chỉnh sửa. Đăng nhập nhận email hoặc mã SV; giới hạn thử theo IP kết nối + mã trường + identifier để nhiều học sinh sau proxy không dùng chung một bucket 30 lần. Cần WAF/giới hạn ở edge cho tấn công nhiều identifier. Môn có thể chưa phân công; LEFT JOIN giữ môn trong catalog admin/student. Các batch và assignment kiểm tra tenant, revision và lưu nguyên tử; assignment bị chặn khi có buổi live. [Quy trình mới](HOC-VU-VA-MEET.vi.md).
 
-Cookie opaque ngẫu nhiên 256 bit, lưu digest SHA-256 trong Redis; TTL 12 giờ cố định, không sliding refresh. SameSite Strict, HttpOnly, Secure theo HTTPS. POST kiểm tra Origin chính xác. Password bcrypt cost 12, tối đa 72 byte, tối thiểu 12 byte. Database active/role/session_version được kiểm tra mỗi request; thay mật khẩu tăng version và vô hiệu hóa tất cả session. Hiện chưa có MFA, reset password tự phục vụ, email invite hoặc bắt buộc đổi mật khẩu lần đầu. Admin import phải phân phối mật khẩu riêng và yêu cầu đổi khi bàn giao.
+Cookie opaque ngẫu nhiên 256 bit, lưu digest SHA-256 trong Redis; TTL 12 giờ cố định, không sliding refresh. SameSite Strict, HttpOnly, Secure theo HTTPS. POST kiểm tra Origin chính xác. Password bcrypt cost 12, tối đa 72 byte, tối thiểu 12 byte. Database active/role/session_version được kiểm tra mỗi request; thay mật khẩu tăng version và vô hiệu hóa tất cả session. Đã có TOTP tùy chọn và link khôi phục mật khẩu do admin cấp, không bỏ qua TOTP. Chưa có email invite hoặc bắt buộc đổi mật khẩu lần đầu. Admin import phải phân phối mật khẩu riêng và yêu cầu đổi khi bàn giao.
 
 ## Meeting và media
 
@@ -37,19 +39,19 @@ Backend chỉ cung cấp các thao tác new/tracks/renegotiate; kiểm tra SFU s
 
 Nhiều SFU App được cân bằng theo số lớp đã gán / trọng số. Binding lớp và buổi lưu MySQL, cấp phát dưới advisory lock; các session cùng buổi dùng đúng một app. App đã gán không được xóa/đổi ID; disabled chỉ ngừng nhận lớp mới. Không cân bằng theo bitrate thực và không failover app giữa buổi. Xem `allocation.go` và tài liệu cài một lệnh.
 
-Hiện giới hạn 8 SFU session từng user/buổi để tránh cấp vô hạn; publish + receive thường dùng 2. Sau nhiều lần reload có thể đạt giới hạn; chưa có API cleanup/reconnect tự động. TURN key lựa chọn ổn định theo user, failover key tiếp theo; chưa có weighted quota/circuit breaker/refresh ICE tự động. Credential TURN hết hạn sau một giờ; cần thử và xây ICE refresh/restart cho lớp kéo dài trước khi dùng rộng.
+Giới hạn 8 phiên chưa nghỉ và 32 phiên tổng mỗi user/buổi. Kết nối lỗi được tạo lại, lấy TURN mới sau 45 phút; hàng đợi client tuần tự hóa thương lượng và backoff tối đa 60 giây. Các phiên cũ được worker đóng và kiểm tra lại sau khoảng yên trước khi xóa. Chưa có weighted quota/circuit breaker TURN.
 
-Track cũ bị ẩn khi hết lease hoặc rời lớp, nhưng chưa chủ động gọi SFU tracks/close, chưa loại receiving tracks khỏi peer/UI, chưa có SFU server-side revocation tức thời. Kết thúc buổi chặn API mới và xóa registry; **kết nối WebRTC đang tồn tại có thể tiếp tục**. Không dùng bản này cho yêu cầu cưỡng chế ngắt media tức thì. Cần quản lý session lifecycle/close và reconnection trước production lớn.
+Track hết lease bị rút khỏi discovery. Worker v0.4.0 thu hồi cả publisher/subscriber khi buổi kết thúc, tài khoản/phiên bị thu hồi hoặc presence hết hạn. Mỗi lượt quét 100 phiên, chu kỳ 15 giây; provider lỗi thì giữ SQL để thử lại. Không bảo đảm ngắt tức thì hay thời gian cố định khi hàng đợi/provider chậm.
 
 ## Điểm danh
 
 Presence key `(school,meeting,user)`; lock meeting rồi presence trong transaction. Event append có loại join/heartbeat/leave và thời gian DB. Chỉ cộng delta giữa hai quan sát nếu user đang online và delta ≤45 giây. Tab trùng không cộng trùng, vì dùng một row với lock. Không ước lượng thêm 45 giây sau lần thấy cuối nên thời gian mang tính bảo thủ. Cộng theo giây nguyên có thể thiếu phần lẻ khi gửi liên tục. Đóng lớp không cộng tail chưa xác minh.
 
-Endpoint báo cáo LEFT JOIN enrollment nên cả học sinh chưa vào vẫn có mặt trong danh sách với 0 giây. Student chỉ thấy chính mình. Chưa có ngưỡng present/late/absent theo chính sách, xuất XLSX, sửa công có lý do, hoặc thống kê học kỳ. Heartbeat là chứng cứ kết nối ứng dụng, không chứng minh người dùng xem video hoặc chú ý; browser tab nền có thể bị hạn chế timer.
+Báo cáo có học sinh chưa vào với 0 giây và giới hạn học sinh xem chính mình. Đã có ngưỡng muộn/sớm/tỷ lệ thời gian, XLSX và khung giờ chung theo buổi. Danh sách hiện vẫn dựa trên enrollment hiện tại; lịch sử enrollment và thống kê học kỳ còn trong lộ trình. Heartbeat là chứng cứ kết nối, không chứng minh người dùng chú ý học.
 
 ## Recording
 
-Screen capture do giáo viên chọn, sau đó single PUT vào R2; không phải tự động ghi mọi SFU track. Object key mới có prefix recordings/school/meeting/random id. Metadata pending → ready sau HEAD. Hạn lưu 30 ngày: migration v2 backfill expiry, API ẩn/chặn file hết hạn và ký URL tối đa phần thời gian còn lại (không quá 5 phút); janitor startup/hourly xóa object đã hết hạn và giữ dấu deleted_at. Setup merge lifecycle 30 ngày vào R2 cùng CORS và đọc lại xác nhận; rule khác được giữ. Physical delete có thể trễ, API chặn quyền đúng expiry. Metadata cũ ngoài prefix được janitor dọn; orphan không có metadata chưa được janitor bao phủ. Trường phải ban hành chính sách đồng ý ghi hình. Không có worker thu server-side, upload resumable, chống malware, hạn mức tenant hoặc kiểm chứng nội dung WebM ngoài MIME và size. Không triển khai ghi hình dài trước khi bổ sung các phần này.
+Giáo viên chọn screen/audio capture; v0.4.0 lưu từng đoạn trong IndexedDB, tải multipart 16 MiB, tối đa 8 GiB, có tiếp tục tải sau reload. Metadata pending → ready sau xác minh part và HEAD. Hạn lưu cấu hình mặc định 30 ngày, URL có hạn tối đa 5 phút; worker dọn hết hạn. Multipart dang dở có hạn 7 ngày. Chưa có recorder phía máy chủ, mixing tự động, quota tenant hoặc chống malware. Xem giới hạn thiết bị và nghiệm thu trong tài liệu v0.4.0.
 
 ## Lộ trình trước rollout lớn
 

@@ -1,3 +1,5 @@
+> Các phần nâng cấp mới nhất: [v0.4.0 — ổn định và nghiệm thu](ON-DINH-VA-NGHIEM-THU.vi.md), [quản trị nâng cao](QUAN-TRI-NANG-CAO.vi.md), [điểm danh/bản ghi](DIEM-DANH-VA-BAN-GHI.vi.md). Các hướng dẫn ban đầu bên dưới cần đối chiếu phần nâng cấp.
+
 # Meet — Hướng dẫn cài đặt, khởi tạo và sử dụng
 
 **Dành cho:** người cài VPS, quản trị trường, giáo viên và học sinh.
@@ -572,7 +574,7 @@ Heartbeat khoảng 15 giây, thời gian do máy chủ xác định. Khoảng gi
 
 Admin/teacher xem 50 người mỗi trang; các thẻ thống kê ghi rõ cho trang đang xem. Student thấy tổng số buổi, số buổi có kết nối và tổng phút cá nhân. Học sinh đang enroll nhưng chưa tham gia vẫn có thể có dòng 0; báo cáo dùng enrollment hiện tại, chưa chụp danh sách lớp tại từng thời điểm lịch sử.
 
-Ứng dụng chưa tự kết luận “đủ chuyên cần”, “đi muộn” hoặc “vắng có phép”. Trường cần xác định ngưỡng và bổ sung chính sách trước khi dùng số liệu để chấm chuyên cần chính thức.
+Admin đã có cấu hình ngưỡng muộn/sớm/tỷ lệ thời gian và khung giờ chung theo buổi. Trường cần nghiệm thu chính sách trước khi dùng làm điểm chuyên cần chính thức.
 
 ## 13. Sử dụng trên điện thoại
 
@@ -692,7 +694,7 @@ Lệnh migrate cần thành công trước khi dùng bản mới. Schema hiện 
 - Chỉnh file MySQL password sau lần khởi tạo đầu **không tự đổi** password bên trong MySQL. Phải thực hiện quy trình xoay password quản trị rồi cập nhật DSN tương ứng.
 - Không xóa volume hoặc chạy `down -v` trên hệ thống có dữ liệu để xử lý lỗi đăng nhập/credential; tùy chọn đó xóa dữ liệu volume.
 - Secret Cloudflare thay đổi nên chuẩn hóa quyền rồi recreate API.
-- Nếu cần vô hiệu hóa tài khoản, chưa có nút admin UI; người vận hành phải có quy trình quản trị được review. Đổi password sẽ làm phiên cũ hết hiệu lực nhưng chưa bảo đảm ngắt ngay media SFU đã kết nối.
+- Admin có nút tạm ngưng/vô hiệu hóa/kích hoạt trong bảng tài khoản. Worker v0.4.0 thu hồi media của tài khoản/phiên cũ, thử lại khi provider lỗi; không cam kết ngắt tức thì.
 
 ## 16. Xử lý lỗi thường gặp
 
@@ -715,7 +717,7 @@ Lệnh migrate cần thành công trước khi dùng bản mới. Schema hiện 
 | SFU báo chưa cấu hình/502 | App ID, App Secret, kết nối ra Cloudflare | Điền đúng secret, kiểm tra quyền và nghiệm thu hai phía |
 | TURN configuration invalid | File không phải JSON hoặc `[]` | Dùng mảng có key hợp lệ, hoặc file trống để chỉ STUN |
 | Media negotiation busy | Có nhiều thao tác/tab đồng thời | Đợi thao tác trước xong; tránh gửi negotiation chồng |
-| Session limit reached | Nhiều lần reload/tham gia cùng buổi | Hiện giới hạn 8 session/user/buổi; tạo buổi thử mới, chưa có cleanup tự động |
+| Session limit reached | Nhiều lần reload/tham gia cùng buổi | v0.4.0 có 8 phiên chưa nghỉ, tối đa 32 phiên gồm chờ dọn; đợi worker cleanup và thử lại |
 | Báo cáo trống | Đúng lớp/môn? Có buổi live/ended? | Buổi scheduled chưa tính; student cần enrollment |
 | Thời gian thiếu khi khóa màn hình | Browser throttle, mạng gián đoạn | Giữ tab hoạt động; khoảng ngoài lease 45 giây không được cộng |
 | Upload R2 lỗi | Bốn file R2, quyền bucket, CORS đúng origin | Sửa cấu hình, thử đoạn ngắn; không bật public để né lỗi |
@@ -751,7 +753,7 @@ Cloudflare thật chưa được xác minh trong môi trường phát triển v�
 
 ### 17.3. Phạm vi chưa hoàn chỉnh
 
-Chưa có chứng nhận production-ready hoặc benchmark nhiều trường lớn. Các phần cần hoàn thiện theo nhu cầu triển khai gồm: server-side media close/revoke, reconnect và refresh TURN cho cuộc gọi dài, worker ghi hình dài có resume, quota/cleanup bản ghi, MFA/reset password/invite, chỉnh sửa/xóa dữ liệu qua UI, lịch sử enrollment và chính sách chuyên cần. Xem [kiến trúc](ARCHITECTURE.vi.md) và [nghiệm thu](ACCEPTANCE.vi.md) trước khi vận hành trường thật.
+Chưa có chứng nhận production-ready hoặc benchmark nhiều trường lớn. Các phần cần hoàn thiện theo nhu cầu triển khai gồm: recorder phía máy chủ, quota theo trường, mời tài khoản/mã phục hồi 2FA, lịch sử enrollment, báo cáo học kỳ và benchmark tải. Media close/reconnect/TURN renewal, multipart resume, TOTP, link reset mật khẩu và chính sách điểm danh đã được bổ sung; xem hướng dẫn v0.4.0. Xem [kiến trúc](ARCHITECTURE.vi.md) và [nghiệm thu](ACCEPTANCE.vi.md) trước khi vận hành trường thật.
 
 ### Nguồn đối chiếu
 

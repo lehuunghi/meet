@@ -612,3 +612,18 @@ footer {
     padding: 20px 12px;
   }
 }
+
+.recording-recovery article {
+  padding: 12px 0;
+  border-top: 1px solid #e3e7ed;
+}
+.recovery-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.room .recording-recovery {
+  background: #303134;
+  color: #f1f3f4;
+  border-color: #5f6368;
+}

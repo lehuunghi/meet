@@ -4,7 +4,7 @@ import { AcademicAdmin } from "./academic";
 import { RoomTools } from "./room-tools";
 import React, { useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { api } from "./api";
+import { api, ApiError } from "./api";
 import { ClassroomMedia } from "./media";
 import "./style.css";
 import "./meet-room.css";
@@ -13,6 +13,19 @@ import "./comparison-tables.css";
 import { RecordingLibrary } from "./recordings";
 import { AttendanceReport } from "./attendance";
 import { Setup } from "./setup";
+import { AuditLog } from "./audit";
+import { PasswordRecovery } from "./password-recovery";
+import { RecordingRecovery } from "./recording-recovery";
+import {
+  appendChunk,
+  saveJob,
+  getJob,
+  stopJob,
+  uploadRecording,
+  acquireCapture,
+  MAX_RECORDING_SIZE,
+  PART_SIZE,
+} from "./recording-store";
 import "./workspace.css";
 import {
   RoleSwitcher,
@@ -119,6 +132,7 @@ function App() {
         "admin",
         "recordings",
         "attendance",
+        "audit",
       ].includes(new URLSearchParams(location.search).get("page") || "")
         ? new URLSearchParams(location.search).get("page")!
         : demo && previewRole.id === "admin"
@@ -319,6 +333,9 @@ function App() {
             ["meetings", "◉", "Buổi học"],
             ["settings", "⚙", "Tài khoản"],
             ...(user.role === "admin" ? [["admin", "⇧", "Quản trị"]] : []),
+            ...(user.role === "admin" && allowed("audit")
+              ? [["audit", "≡", "Nhật ký"]]
+              : []),
             [
               "attendance",
               "◷",
@@ -396,7 +413,9 @@ function App() {
                       ? "Điểm danh"
                       : page === "recordings"
                         ? "Bản ghi bài học"
-                        : "Tài khoản"}
+                        : page === "audit"
+                          ? "Nhật ký hoạt động"
+                          : "Tài khoản"}
           </span>
           <span className="today">
             {new Intl.DateTimeFormat("vi-VN", { dateStyle: "full" }).format(
@@ -429,6 +448,9 @@ function App() {
             </div>
           )}
           {notice && <div className="banner">{notice}</div>}
+          {!demo && user.role !== "student" && (
+            <RecordingRecovery owner={user.id} school={user.school_id} />
+          )}
           <div className="heading">
             <div>
               <span className="eyebrow">HỌC TẬP CÙNG NHAU</span>
@@ -445,7 +467,9 @@ function App() {
                           ? "Điểm danh & thời gian học"
                           : page === "recordings"
                             ? "Bản ghi bài học"
-                            : "Tài khoản của bạn"}
+                            : page === "audit"
+                              ? "Nhật ký hoạt động"
+                              : "Tài khoản của bạn"}
               </h1>
               <p>
                 {page === "overview"
@@ -679,6 +703,9 @@ function App() {
               </section>
             </>
           )}
+          {page === "audit" && user.role === "admin" && allowed("audit") && (
+            <AuditLog demo={demo} />
+          )}
           <footer>
             Meet <span>·</span> Kết nối tri thức, cùng nhau tiến bộ.
           </footer>
@@ -710,6 +737,9 @@ function Room({
     [recordings, setRecordings] = useState<any[]>([]),
     [recording, setRecording] = useState(false),
     [busy, setBusy] = useState(false);
+  const [connection, setConnection] = useState("");
+  const [recordingStatus, setRecordingStatus] = useState("");
+  const [recordingJob, setRecordingJob] = useState("");
   const [preMic, setPreMic] = useState(true),
     [preCamera, setPreCamera] = useState(true),
     [preview, setPreview] = useState<MediaStream | null>(null);
@@ -734,15 +764,24 @@ function Room({
     let active = true;
     const poll = async () => {
       try {
-        const list = await api<Meeting[]>("/meetings");
-        const current = list.find((v) => v.id === meeting.id);
+        const current = await api<{ status: string }>(
+          `/meetings/${meeting.id}`,
+        );
         if (active && current) {
           setState(current.status);
           if (current.status === "ended") {
             media.current?.close();
+            joinedRef.current = false;
             setJoined(false);
             setLocal(null);
+            setRemote({});
           }
+        } else if (active && !current) {
+          media.current?.close();
+          joinedRef.current = false;
+          setJoined(false);
+          setLocal(null);
+          setRemote({});
         }
       } catch (e) {
         if (active) onError((e as Error).message);
@@ -762,8 +801,10 @@ function Room({
     const tick = async () => {
       if (ticking || stopped) return;
       ticking = true;
+      let heartbeatPassed = false;
       try {
         await api(`/meetings/${meeting.id}/presence`, { kind: "heartbeat" });
+        heartbeatPassed = true;
         if (stopped) return;
         setAttendance(await api(`/meetings/${meeting.id}/attendance`));
         await media.current?.subscribe(
@@ -771,6 +812,17 @@ function Room({
           user.id,
         );
       } catch (e) {
+        if (
+          e instanceof ApiError &&
+          ([401, 403, 404].includes(e.status) ||
+            (e.status === 409 && !heartbeatPassed))
+        ) {
+          media.current?.close();
+          joinedRef.current = false;
+          setJoined(false);
+          setLocal(null);
+          setRemote({});
+        }
         onError((e as Error).message);
       } finally {
         ticking = false;
@@ -781,6 +833,38 @@ function Room({
     return () => {
       stopped = true;
       clearInterval(timer);
+    };
+  }, [joined]);
+  useEffect(() => {
+    if (!joined) return;
+    let pending = false;
+    const recover = async (force = false) => {
+      if (pending || !navigator.onLine || !joinedRef.current) return;
+      pending = true;
+      try {
+        await media.current?.recover(force);
+      } catch (e) {
+        if (e instanceof ApiError && [401, 403, 404].includes(e.status)) {
+          media.current?.close();
+          joinedRef.current = false;
+          setJoined(false);
+          setLocal(null);
+          setRemote({});
+        }
+        onError((e as Error).message);
+      } finally {
+        pending = false;
+      }
+    };
+    const online = () => void recover(true);
+    const offline = () => setConnection("Mất mạng · đang chờ kết nối");
+    window.addEventListener("online", online);
+    window.addEventListener("offline", offline);
+    const timer = setInterval(() => void recover(), 5000);
+    return () => {
+      clearInterval(timer);
+      window.removeEventListener("online", online);
+      window.removeEventListener("offline", offline);
     };
   }, [joined]);
   useEffect(
@@ -797,6 +881,7 @@ function Room({
     [],
   );
   async function join() {
+    await api(`/meetings/${meeting.id}/media/reset`, {});
     await api(`/meetings/${meeting.id}/presence`, { kind: "join" });
     try {
       const stream =
@@ -810,8 +895,17 @@ function Room({
       stream.getAudioTracks().forEach((t) => (t.enabled = preMic));
       stream.getVideoTracks().forEach((t) => (t.enabled = preCamera));
       setLocal(stream);
-      media.current = new ClassroomMedia(meeting.id, (key, stream, name) =>
-        setRemote((v) => ({ ...v, [key]: { stream, name } })),
+      media.current = new ClassroomMedia(
+        meeting.id,
+        (key, stream, name) =>
+          setRemote((v) => ({ ...v, [key]: { stream, name } })),
+        (key) =>
+          setRemote((v) => {
+            const next = { ...v };
+            delete next[key];
+            return next;
+          }),
+        setConnection,
       );
       if (stream.getTracks().length) await media.current.publish(stream);
       setPreview(null);
@@ -833,28 +927,109 @@ function Room({
       audio: true,
     });
     display.current = capture;
-    const chunks: Blob[] = [];
-    const recorder = new MediaRecorder(capture, { mimeType: "video/webm" });
+    if (!MediaRecorder.isTypeSupported("video/webm")) {
+      capture.getTracks().forEach((t) => t.stop());
+      throw new Error(
+        "Trình duyệt này chưa hỗ trợ ghi WebM. Dùng trình duyệt đã nghiệm thu.",
+      );
+    }
+    let item: { id: string };
+    let releaseCapture: () => void = () => {};
+    try {
+      const storage = await navigator.storage?.estimate();
+      if (
+        storage?.quota &&
+        storage.quota - (storage.usage || 0) < 2 * PART_SIZE
+      )
+        throw new Error("Thiết bị không đủ dung lượng lưu tạm bản ghi");
+      item = await api(`/meetings/${meeting.id}/recordings/multipart`, {});
+      await saveJob({
+        id: item.id,
+        owner: user.id,
+        school: user.school_id,
+        meeting: meeting.id,
+        title: meeting.title,
+        bytes: 0,
+        chunks: 0,
+        uploaded: 0,
+        stopped: false,
+        created: Date.now(),
+      });
+      releaseCapture = await acquireCapture(item.id);
+      void navigator.storage?.persist?.();
+    } catch (e) {
+      capture.getTracks().forEach((t) => t.stop());
+      throw e;
+    }
+    setRecordingJob(item.id);
+    let writes: Promise<void> = Promise.resolve();
+    let recorder: MediaRecorder;
+    try {
+      recorder = new MediaRecorder(capture, {
+        mimeType: "video/webm",
+        videoBitsPerSecond: 1500000,
+        audioBitsPerSecond: 96000,
+      });
+    } catch (e) {
+      releaseCapture();
+      capture.getTracks().forEach((t) => t.stop());
+      setRecordingJob("");
+      throw e;
+    }
+    let writeFailed = false;
     rec.current = recorder;
     recorder.ondataavailable = (e) => {
-      if (e.data.size) chunks.push(e.data);
+      if (!e.data.size) return;
+      writes = writes
+        .then(async () => {
+          await appendChunk(item.id, e.data);
+          const job = await getJob(item.id);
+          setRecordingStatus(
+            `Đã lưu tạm ${Math.round(job.bytes / 1048576)} MB trên thiết bị`,
+          );
+          if (
+            job.bytes >= MAX_RECORDING_SIZE - PART_SIZE &&
+            recorder.state === "recording"
+          )
+            recorder.stop();
+          void uploadRecording(item.id, setRecordingStatus).catch((e) =>
+            setRecordingStatus((e as Error).message),
+          );
+        })
+        .catch((e) => {
+          writeFailed = true;
+          onError((e as Error).message);
+          if (recorder.state === "recording") recorder.stop();
+        });
     };
     recorder.onstop = () => {
       setRecording(false);
       capture.getTracks().forEach((t) => t.stop());
       void run(async () => {
-        const blob = new Blob(chunks, { type: "video/webm" });
-        if (blob.size > 1 << 30) throw new Error("Bản ghi vượt quá 1 GiB");
-        const item = await api(`/meetings/${meeting.id}/recordings`, {});
-        const res = await fetch(item.upload_url, {
-          method: "PUT",
-          headers: { "Content-Type": "video/webm" },
-          body: blob,
-        });
-        if (!res.ok) throw new Error("Tải bản ghi thất bại");
-        await api(`/meetings/${meeting.id}/recordings/${item.id}/complete`, {});
+        await writes;
+        releaseCapture();
+        if (writeFailed) {
+          setRecordingJob("");
+          throw new Error(
+            "Ghi hình đã dừng vì lỗi lưu trên thiết bị. Kiểm tra phần đã lưu trong mục phục hồi bản ghi.",
+          );
+        }
+        await stopJob(item.id);
+        try {
+          await uploadRecording(item.id, setRecordingStatus);
+          await uploadRecording(item.id, setRecordingStatus);
+        } finally {
+          setRecordingJob("");
+        }
         setRecordings(await api(`/meetings/${meeting.id}/recordings`));
       });
+    };
+    recorder.onerror = () => {
+      writeFailed = true;
+      onError(
+        "Trình duyệt gặp lỗi ghi hình; các đoạn đã lưu được giữ để phục hồi.",
+      );
+      if (recorder.state === "recording") recorder.stop();
     };
     capture.getVideoTracks()[0].onended = () => {
       if (recorder.state === "recording") recorder.stop();
@@ -891,7 +1066,24 @@ function Room({
           {error}
         </p>
       )}
+      {recordingStatus && (
+        <p className="banner" role="status">
+          {recordingStatus}
+        </p>
+      )}
+      {canManage && (
+        <RecordingRecovery
+          owner={user.id}
+          school={user.school_id}
+          active={recordingJob}
+        />
+      )}
       <div className="room-toolbar">
+        {connection && (
+          <span role="status" aria-live="polite">
+            {connection}
+          </span>
+        )}
         <span className="pill">
           {meeting.class_name} · {meeting.course}
         </span>
@@ -1131,5 +1323,11 @@ function Room({
   );
 }
 createRoot(document.getElementById("root")!).render(
-  location.pathname === "/setup" ? <Setup /> : <App />,
+  location.pathname === "/setup" ? (
+    <Setup />
+  ) : location.pathname === "/reset-password" ? (
+    <PasswordRecovery />
+  ) : (
+    <App />
+  ),
 );

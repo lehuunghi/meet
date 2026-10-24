@@ -146,6 +146,8 @@ func (a *app) routes() http.Handler {
 		send(w, 200, map[string]string{"status": "ok", "commit": buildCommit, "version": buildVersion})
 	})
 	m.HandleFunc("POST /api/login", a.login)
+	m.HandleFunc("POST /api/reset-password", a.resetPassword)
+	m.HandleFunc("POST /api/accounts/{user}/recovery", a.auth(a.issuePasswordRecovery))
 	m.HandleFunc("GET /api/setup/status", a.setupStatus)
 	m.HandleFunc("POST /api/setup/unlock", a.setupUnlock)
 	m.HandleFunc("POST /api/setup/lock", a.operator(a.setupLock))
@@ -180,13 +182,14 @@ func (a *app) routes() http.Handler {
 		}
 		a.query(w, r, "SELECT id,short_id,name FROM classes WHERE school_id=? ORDER BY name LIMIT 1000", who(r).School)
 	}))
-	m.HandleFunc("GET /api/audit", a.auth(func(w http.ResponseWriter, r *http.Request) {
-		if !admin(w, r) {
-			return
-		}
-		a.query(w, r, "SELECT actor_id,action,target,at FROM audit_log WHERE school_id=? ORDER BY id DESC LIMIT 200", who(r).School)
-	}))
+	m.HandleFunc("GET /api/audit", a.auth(a.auditReport))
 	m.HandleFunc("GET /api/meetings", a.auth(a.meetings))
+	m.HandleFunc("GET /api/meetings/{id}", a.auth(func(w http.ResponseWriter, r *http.Request) {
+		m, ok := a.access(w, r, false)
+		if ok {
+			send(w, 200, map[string]string{"status": m.Status})
+		}
+	}))
 	m.HandleFunc("GET /api/attendance/report", a.auth(a.attendanceReport))
 	m.HandleFunc("GET /api/recordings", a.auth(a.recordingLibrary))
 	m.HandleFunc("GET /api/attendance/policy", a.auth(a.attendancePolicy))
@@ -199,6 +202,7 @@ func (a *app) routes() http.Handler {
 	m.HandleFunc("POST /api/meetings/{id}/presence", a.auth(a.presence))
 	m.HandleFunc("GET /api/meetings/{id}/attendance", a.auth(a.attendance))
 	m.HandleFunc("POST /api/meetings/{id}/sfu", a.auth(a.sfu))
+	m.HandleFunc("POST /api/meetings/{id}/media/reset", a.auth(a.mediaReset))
 	m.HandleFunc("GET /api/meetings/{id}/tracks", a.auth(a.tracks))
 	m.HandleFunc("GET /api/meetings/{id}/participants", a.auth(a.roomParticipants))
 	m.HandleFunc("GET /api/meetings/{id}/messages", a.auth(a.roomMessages))
@@ -206,6 +210,10 @@ func (a *app) routes() http.Handler {
 	m.HandleFunc("POST /api/meetings/{id}/hand", a.auth(a.raiseHand))
 	m.HandleFunc("POST /api/meetings/{id}/ice", a.auth(a.ice))
 	m.HandleFunc("POST /api/meetings/{id}/recordings", a.auth(a.recordingCreate))
+	m.HandleFunc("POST /api/meetings/{id}/recordings/multipart", a.auth(a.recordingMultipartStart))
+	m.HandleFunc("POST /api/meetings/{id}/recordings/{recording}/parts/{part}", a.auth(a.recordingMultipartPart))
+	m.HandleFunc("POST /api/meetings/{id}/recordings/{recording}/finish", a.auth(a.recordingMutation(a.recordingMultipartFinish)))
+	m.HandleFunc("POST /api/meetings/{id}/recordings/{recording}/abort", a.auth(a.recordingMutation(a.recordingMultipartAbort)))
 	m.HandleFunc("GET /api/meetings/{id}/recordings", a.auth(a.recordingList))
 	m.HandleFunc("POST /api/meetings/{id}/recordings/{recording}/complete", a.auth(a.recordingComplete))
 	m.HandleFunc("GET /api/meetings/{id}/recordings/{recording}/download", a.auth(a.recordingDownload))
@@ -310,6 +318,7 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 	go a.retentionLoop(ctx)
+	go a.mediaCleanupLoop(ctx)
 	go func() {
 		<-ctx.Done()
 		c, cancel := context.WithTimeout(context.Background(), 10*time.Second)

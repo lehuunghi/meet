@@ -1,6 +1,64 @@
 import { afterEach, expect, it, vi } from "vitest";
 import { ClassroomMedia } from "./media";
 afterEach(() => vi.unstubAllGlobals());
+it("rebuilds failed connections without stopping local devices or enabling muted tracks", async () => {
+  const camera = { kind: "video", enabled: false, stop: vi.fn() },
+    stream = { getTracks: () => [camera] };
+  const removed = vi.fn(),
+    status = vi.fn(),
+    closed = vi.fn();
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async () => ({ ok: true, json: async () => ({ ok: true }) })),
+  );
+  const media = new ClassroomMedia("lesson", () => {}, removed, status);
+  Object.assign(media, {
+    local: stream,
+    peers: [{ connectionState: "failed", close: closed }],
+    remoteStreams: new Map([["other", { getTracks: () => [] }]]),
+  });
+  const publish = vi
+    .spyOn(media as any, "publishInternal")
+    .mockResolvedValue(undefined);
+  await media.recover();
+  expect(closed).toHaveBeenCalledOnce();
+  expect(camera.stop).not.toHaveBeenCalled();
+  expect(camera.enabled).toBe(false);
+  expect(publish).toHaveBeenCalledWith(stream);
+  expect(removed).toHaveBeenCalledWith("other");
+  expect(status).toHaveBeenLastCalledWith("Đã kết nối lại");
+});
+it("serializes media mutations across the offer and answer exchange", async () => {
+  const media = new ClassroomMedia("lesson", () => {});
+  let release!: () => void;
+  vi.spyOn(media as any, "publishInternal").mockImplementation(
+    () =>
+      new Promise<void>((resolve) => {
+        release = resolve;
+      }),
+  );
+  const subscribe = vi
+    .spyOn(media as any, "subscribeInternal")
+    .mockResolvedValue(undefined);
+  const publishing = media.publish({} as MediaStream),
+    subscribing = media.subscribe([], "self");
+  await Promise.resolve();
+  expect(subscribe).not.toHaveBeenCalled();
+  release();
+  await publishing;
+  await subscribing;
+  expect(subscribe).toHaveBeenCalledOnce();
+});
+it("backs off failed recovery attempts instead of allocating sessions in a tight loop", async () => {
+  const fetcher = vi.fn(async () => {
+    throw new Error("offline");
+  });
+  vi.stubGlobal("fetch", fetcher);
+  const media = new ClassroomMedia("lesson", () => {});
+  await expect(media.recover(true)).rejects.toThrow("offline");
+  await media.recover(true);
+  expect(fetcher).toHaveBeenCalledOnce();
+});
 it("stops replaced screen captures and releases devices when leaving", async () => {
   const camera = { kind: "video", stop: vi.fn() },
     first = { kind: "video", stop: vi.fn(), onended: null },

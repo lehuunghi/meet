@@ -1,3 +1,5 @@
+> v0.4.0: [Kết nối lại, thu hồi media, ghi hình multipart và nghiệm thu](docs/ON-DINH-VA-NGHIEM-THU.vi.md). [Giao diện chung](docs/GIAO-DIEN.vi.md).
+
 > v0.3.3: [Điểm danh và bản ghi theo lớp → môn → buổi](docs/DIEM-DANH-VA-BAN-GHI.vi.md).
 
 > Mới: [Cập nhật an toàn trực tiếp từ GitHub](docs/CAP-NHAT-AN-TOAN.vi.md), không cài lại dữ liệu; có kiểm tra CI, snapshot và phục hồi khi lỗi.
@@ -18,7 +20,7 @@ Monorepo **Go + React/Vite + MySQL + Redis**, tích hợp **Cloudflare Realtime 
 - Buổi học scheduled → live → ended; chỉ giáo viên phụ trách hoặc admin điều khiển.
 - Camera/mic, thay camera bằng chia sẻ màn hình; SFU publish/subscribe và khám phá track có kiểm tra quyền phòng.
 - Điểm danh theo heartbeat 15 giây, thời gian từ máy chủ, lease 45 giây, không cộng trùng nhiều tab; học sinh chỉ xem báo cáo của mình.
-- Báo cáo theo lớp → môn → buổi học, tổng số buổi có kết nối và thời gian tham gia; admin trong trường, giáo viên theo phân công, học sinh xem cá nhân. Mobile dùng thẻ thông tin và menu thu gọn.
+- Báo cáo theo lớp → môn → buổi học, tổng số buổi có kết nối và thời gian tham gia; admin trong trường, giáo viên theo phân công, học sinh xem cá nhân. Mobile dùng bảng cuộn ngang, cột đầu cố định và menu thu gọn.
 - Ghi màn hình từ trình duyệt giáo viên, upload WebM vào R2 private, xác nhận bằng HEAD và tải qua URL có hạn.
 - Hai trường demo độc lập, test unit + integration, CI kiểm tra Go/Web/Compose.
 
@@ -68,7 +70,7 @@ docs/           triển khai, kiến trúc, API, nghiệm thu
 
 Đây là bản triển khai đầu tiên để review và nghiệm thu, **chưa phải chứng nhận production-ready**. Cần chạy nghiệm thu SFU/TURN/R2 bằng credential của bạn, test nhiều trình duyệt và tải thực tế trước khi dùng cho trường thật. Không có credential nào được commit. Máy xây dựng không có Docker, vì vậy CI là nơi kiểm chứng Compose và tích hợp MySQL/Redis.
 
-Ghi hình hiện là capture có chủ động của giáo viên, phụ thuộc tab và lựa chọn âm thanh của trình duyệt; chưa có worker ghi hình phía máy chủ, multipart/resume hoặc mixing âm thanh tự động. Xem [kiến trúc và giới hạn](docs/ARCHITECTURE.vi.md), [API](docs/API.md), [kịch bản nghiệm thu](docs/ACCEPTANCE.vi.md).
+Ghi hình vẫn do giáo viên chủ động chọn nguồn capture. Đã có IndexedDB và multipart 16 MiB để tải tiếp phần đã ghi; chưa có recorder phía máy chủ hoặc mixing âm thanh tự động. Xem [kiến trúc và giới hạn](docs/ARCHITECTURE.vi.md), [API](docs/API.md), [kịch bản nghiệm thu](docs/ACCEPTANCE.vi.md).
 
 ## Phát triển
 

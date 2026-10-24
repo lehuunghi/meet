@@ -12,8 +12,12 @@ import (
 )
 
 func (a *app) cloud(r *http.Request, method, path, token string, body any) (map[string]any, error) {
-	b, _ := json.Marshal(body)
-	req, e := http.NewRequestWithContext(r.Context(), method, "https://rtc.live.cloudflare.com/v1/"+path, bytes.NewReader(b))
+	var payload io.Reader
+	if body != nil {
+		b, _ := json.Marshal(body)
+		payload = bytes.NewReader(b)
+	}
+	req, e := http.NewRequestWithContext(r.Context(), method, "https://rtc.live.cloudflare.com/v1/"+path, payload)
 	if e != nil {
 		return nil, e
 	}
@@ -29,14 +33,14 @@ func (a *app) cloud(r *http.Request, method, path, token string, body any) (map[
 		return nil, e
 	}
 	if res.StatusCode < 200 || res.StatusCode >= 300 {
-		return nil, &providerError{}
+		return nil, &providerError{Status: res.StatusCode}
 	}
 	var out map[string]any
 	e = json.Unmarshal(raw, &out)
 	return out, e
 }
 
-type providerError struct{}
+type providerError struct{ Status int }
 
 func (*providerError) Error() string { return "Cloudflare request rejected" }
 
@@ -81,17 +85,57 @@ func (a *app) sfu(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer a.cache.Eval(r.Context(), `if redis.call('GET',KEYS[1])==ARGV[1] then return redis.call('DEL',KEYS[1]) end return 0`, []string{lock}, nonce)
+	// Recheck after taking the negotiation lease: room closure may have raced access().
+	var live string
+	if a.db.QueryRowContext(r.Context(), "SELECT status FROM meetings WHERE school_id=? AND id=?", u.School, id).Scan(&live) != nil || live != "live" {
+		problem(w, 409, "Meeting is not live")
+		return
+	}
 	path := "apps/" + url.PathEscape(provider.AppID) + "/sessions/"
 	method := "POST"
 	body := map[string]any{}
 	if in.Op == "new" {
-		var count int
-		if a.db.QueryRowContext(r.Context(), "SELECT COUNT(*) FROM media_sessions WHERE school_id=? AND user_id=? AND meeting_id=?", u.School, u.ID, id).Scan(&count) != nil || count >= 8 {
+		rows, e := a.db.QueryContext(r.Context(), "SELECT id FROM media_sessions WHERE school_id=? AND user_id=? AND meeting_id=?", u.School, u.ID, id)
+		if e != nil {
+			problem(w, 503, "Media sessions unavailable")
+			return
+		}
+		active, total := 0, 0
+		for rows.Next() {
+			var sid string
+			if rows.Scan(&sid) != nil {
+				rows.Close()
+				problem(w, 503, "Media sessions unavailable")
+				return
+			}
+			retired, e := a.cache.Exists(r.Context(), "media-retired:"+sid).Result()
+			if e != nil {
+				rows.Close()
+				problem(w, 503, "Media sessions unavailable")
+				return
+			}
+			total++
+			if retired == 0 {
+				active++
+			}
+		}
+		err = rows.Err()
+		rows.Close()
+		if err != nil || active >= 8 || total >= 32 {
 			problem(w, 429, "Session limit reached for this meeting")
 			return
 		}
 		path += "new"
 	} else {
+		retired, e := a.cache.Exists(r.Context(), "media-retired:"+in.Session).Result()
+		if e != nil {
+			problem(w, 503, "Media sessions unavailable")
+			return
+		}
+		if retired > 0 {
+			problem(w, 409, "Phiên media đã thu hồi; hãy kết nối lại")
+			return
+		}
 		var count int
 		if a.db.QueryRowContext(r.Context(), "SELECT COUNT(*) FROM media_sessions WHERE id=? AND school_id=? AND meeting_id=? AND user_id=?", in.Session, u.School, id, u.ID).Scan(&count) != nil || count != 1 {
 			problem(w, 404, "Session not found")
@@ -149,8 +193,22 @@ func (a *app) sfu(w http.ResponseWriter, r *http.Request) {
 			problem(w, 500, "Session persistence failed")
 			return
 		}
+		if cookie, e := r.Cookie("meet_session"); e == nil {
+			if a.cache.MSet(r.Context(), "media-owner:"+sid, digest(cookie.Value), "media-version:"+sid, u.Version).Err() != nil {
+				a.cache.SetNX(r.Context(), "media-retired:"+sid, time.Now().Unix(), 0)
+				problem(w, 503, "Media ownership unavailable")
+				return
+			}
+		}
 	}
 	if in.Op == "tracks" {
+		var state string
+		retired, err := a.cache.Exists(r.Context(), "media-retired:"+in.Session).Result()
+		if err != nil || retired > 0 || a.db.QueryRowContext(r.Context(), "SELECT status FROM meetings WHERE school_id=? AND id=?", u.School, id).Scan(&state) != nil || state != "live" {
+			a.cache.SetNX(r.Context(), "media-retired:"+in.Session, time.Now().Unix(), 0)
+			problem(w, 409, "Media session retired during negotiation")
+			return
+		}
 		results, _ := out["tracks"].([]any)
 		for i, t := range in.Tracks {
 			if t.Location != "local" || i >= len(results) {

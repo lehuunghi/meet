@@ -34,19 +34,44 @@ export class ClassroomMedia {
   private screenSender?: RTCRtpSender;
   private remoteStreams = new Map<string, MediaStream>();
   private labels = new Map<string, { key: string; name: string }>();
+  private queue: Promise<unknown> = Promise.resolve();
+  private created = Date.now();
+  private disconnectedAt = 0;
+  private retryAt = 0;
+  private failures = 0;
+  private serial<T>(work: () => Promise<T>): Promise<T> {
+    const next = this.queue.then(() => {
+      if (this.closed) throw new Error("Đã rời lớp");
+      return work();
+    });
+    this.queue = next.catch(() => {
+      this.created = 0;
+    });
+    return next;
+  }
   constructor(
     private meeting: string,
     private onTrack: (key: string, stream: MediaStream, name: string) => void,
+    private onRemove: (key: string) => void = () => {},
+    private onState: (state: string) => void = () => {},
   ) {}
   private async session(pc: RTCPeerConnection) {
-    const s = await api(`/meetings/${this.meeting}/sfu`, { op: "new" });
     this.peers.push(pc);
+    const s = await api(`/meetings/${this.meeting}/sfu`, { op: "new" });
+    if (this.closed) {
+      pc.close();
+      throw new Error("Đã rời lớp");
+    }
     return s.sessionId as string;
   }
   private async call(body: unknown) {
+    if (this.closed) throw new Error("Đã rời lớp");
     return api(`/meetings/${this.meeting}/sfu`, body);
   }
-  async publish(stream: MediaStream) {
+  publish(stream: MediaStream) {
+    return this.serial(() => this.publishInternal(stream));
+  }
+  private async publishInternal(stream: MediaStream) {
     if (this.local && this.local !== stream) {
       stream.getTracks().forEach((t) => this.local!.addTrack(t));
     } else this.local = stream;
@@ -74,7 +99,20 @@ export class ClassroomMedia {
       throw new Error("SFU từ chối phát media");
     await pc.setRemoteDescription(result.sessionDescription);
   }
-  async subscribe(list: Publication[], self: string) {
+  subscribe(list: Publication[], self: string) {
+    return this.serial(() => this.subscribeInternal(list, self));
+  }
+  private async subscribeInternal(list: Publication[], self: string) {
+    const present = new Set(
+      list.filter((p) => p.user_id !== self).map((p) => p.user_id),
+    );
+    this.remoteStreams.forEach((stream, key) => {
+      if (!present.has(key)) {
+        stream.getTracks().forEach((t) => t.stop());
+        this.remoteStreams.delete(key);
+        this.onRemove(key);
+      }
+    });
     const fresh = list.filter(
       (p) =>
         p.user_id !== self &&
@@ -85,6 +123,10 @@ export class ClassroomMedia {
       const ice = await api(`/meetings/${this.meeting}/ice`, {});
       this.receiver = new RTCPeerConnection({ iceServers: ice.iceServers });
       this.receiver.ontrack = (e) => {
+        if (this.closed) {
+          e.track.stop();
+          return;
+        }
         const label = this.labels.get(e.transceiver.mid || "");
         if (label) {
           const merged = this.remoteStreams.get(label.key) || new MediaStream();
@@ -144,7 +186,10 @@ export class ClassroomMedia {
       .filter((t) => t.kind === kind)
       .forEach((t) => (t.enabled = !t.enabled));
   }
-  async share() {
+  share() {
+    return this.serial(() => this.shareInternal());
+  }
+  private async shareInternal() {
     const video = this.local?.getVideoTracks()[0];
     let sender =
       this.screenSender ||
@@ -160,7 +205,7 @@ export class ClassroomMedia {
     const track = display.getVideoTracks()[0];
     if (!sender) {
       try {
-        await this.publish(display);
+        await this.publishInternal(display);
         sender = this.peers
           .flatMap((p) => p.getSenders())
           .find((s) => s.track === track);
@@ -186,7 +231,10 @@ export class ClassroomMedia {
     };
     return display;
   }
-  async setEnabled(kind: "audio" | "video", enabled: boolean) {
+  setEnabled(kind: "audio" | "video", enabled: boolean) {
+    return this.serial(() => this.setEnabledInternal(kind, enabled));
+  }
+  private async setEnabledInternal(kind: "audio" | "video", enabled: boolean) {
     if (
       !this.local
         ?.getTracks()
@@ -201,13 +249,71 @@ export class ClassroomMedia {
         audio: kind === "audio",
         video: kind === "video",
       });
-      await this.publish(stream);
+      await this.publishInternal(stream);
     }
     this.local
       ?.getTracks()
       .filter((t) => t.kind === kind)
       .forEach((t) => (t.enabled = enabled));
     return this.local;
+  }
+  recover(force = false) {
+    return this.serial(async () => {
+      const now = Date.now();
+      const failed = this.peers.some(
+        (p) =>
+          p.connectionState === "failed" || p.iceConnectionState === "failed",
+      );
+      const disconnected = this.peers.some(
+        (p) =>
+          p.connectionState === "disconnected" ||
+          p.iceConnectionState === "disconnected",
+      );
+      if (disconnected && !this.disconnectedAt) this.disconnectedAt = now;
+      if (!disconnected) this.disconnectedAt = 0;
+      if (
+        !force &&
+        !failed &&
+        !(this.disconnectedAt && now - this.disconnectedAt > 10000) &&
+        now - this.created < 45 * 60000
+      )
+        return;
+      if (now < this.retryAt) return;
+      this.onState("Đang kết nối lại…");
+      try {
+        await api(`/meetings/${this.meeting}/media/reset`, {});
+        this.peers.forEach((p) => p.close());
+        this.peers = [];
+        this.screen?.getTracks().forEach((t) => {
+          t.stop();
+          this.local?.removeTrack(t);
+        });
+        this.screen = undefined;
+        this.screenSender = undefined;
+        this.receiver = undefined;
+        this.receiverID = undefined;
+        this.known.clear();
+        this.labels.clear();
+        this.remoteStreams.forEach((stream, key) => {
+          stream.getTracks().forEach((t) => t.stop());
+          this.onRemove(key);
+        });
+        this.remoteStreams.clear();
+        if (this.local) await this.publishInternal(this.local);
+        this.created = Date.now();
+        this.disconnectedAt = 0;
+        this.failures = 0;
+        this.retryAt = 0;
+        this.onState("Đã kết nối lại");
+      } catch (e) {
+        this.failures++;
+        this.retryAt =
+          Date.now() + Math.min(60000, 2000 * 2 ** Math.min(this.failures, 5));
+        this.created = 0; // Keep retrying even if a failed attempt allocated no peer.
+        this.onState("Kết nối gián đoạn · sẽ tự thử lại");
+        throw e;
+      }
+    });
   }
   close() {
     this.closed = true;
@@ -218,5 +324,8 @@ export class ClassroomMedia {
       p.close();
     });
     this.local?.getTracks().forEach((t) => t.stop());
+    this.remoteStreams.forEach((stream) =>
+      stream.getTracks().forEach((t) => t.stop()),
+    );
   }
 }
