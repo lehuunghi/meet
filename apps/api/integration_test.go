@@ -1,9 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
 	"encoding/json"
+	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -12,6 +14,7 @@ import (
 	"time"
 
 	"github.com/redis/go-redis/v9"
+	"github.com/xuri/excelize/v2"
 )
 
 // Dedicated disposable database only: this test migrates and seeds it.
@@ -135,6 +138,38 @@ func TestIntegration(t *testing.T) {
 		t.Fatalf("teacher meeting report: %s", w.Body)
 	}
 	administrator := login("demo", "admin")
+	// Teacher-only XLSX never accepts a role column and returns no passwords.
+	book := excelize.NewFile()
+	teacherEmail := "xlsx-" + uid()[:8] + "@example.test"
+	for i, row := range [][]any{{"email", "name", "password"}, {teacherEmail, "XLSX Teacher", "teacher-password-123"}} {
+		cell, _ := excelize.CoordinatesToCellName(1, i+1)
+		if err := book.SetSheetRow("Sheet1", cell, &row); err != nil {
+			t.Fatal(err)
+		}
+	}
+	xlsx, err := book.WriteToBuffer()
+	book.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
+	var upload bytes.Buffer
+	form := multipart.NewWriter(&upload)
+	part, _ := form.CreateFormFile("file", "teachers.xlsx")
+	part.Write(xlsx.Bytes())
+	form.Close()
+	req := httptest.NewRequest("POST", "/api/teachers/import", &upload)
+	req.Header.Set("Origin", a.origin)
+	req.Header.Set("Content-Type", form.FormDataContentType())
+	req.AddCookie(administrator)
+	response := httptest.NewRecorder()
+	h.ServeHTTP(response, req)
+	if response.Code != 200 || strings.Contains(response.Body.String(), "teacher-password-123") {
+		t.Fatalf("teacher XLSX: %s", response.Body)
+	}
+	var importedRole, importedShort string
+	if db.QueryRow("SELECT role,short_id FROM users WHERE school_id='school-demo' AND email=?", teacherEmail).Scan(&importedRole, &importedShort) != nil || importedRole != "teacher" || !strings.HasPrefix(importedShort, "GV") {
+		t.Fatal("teacher import did not force role/short ID")
+	}
 	// Editable academic tables: unassigned courses, short IDs, student-code login and separate assignment.
 	classResult := request("POST", "/api/classes", `{"name":"Academic-`+uid()[:8]+`"}`, administrator)
 	var created map[string]string

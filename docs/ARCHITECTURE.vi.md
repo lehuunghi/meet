@@ -25,6 +25,8 @@ Mọi query nghiệp vụ có school_id lấy từ session server, không nhận
 
 ## Authentication
 
+Migration v3 giữ khóa cũ và thêm ID ngắn bất biến, mã SV duy nhất theo trường và revision cho các bảng chỉnh sửa. Đăng nhập nhận email hoặc mã SV; giới hạn thử theo IP kết nối + mã trường + identifier để nhiều học sinh sau proxy không dùng chung một bucket 30 lần. Cần WAF/giới hạn ở edge cho tấn công nhiều identifier. Môn có thể chưa phân công; LEFT JOIN giữ môn trong catalog admin/student. Các batch và assignment kiểm tra tenant, revision và lưu nguyên tử; assignment bị chặn khi có buổi live. [Quy trình mới](HOC-VU-VA-MEET.vi.md).
+
 Cookie opaque ngẫu nhiên 256 bit, lưu digest SHA-256 trong Redis; TTL 12 giờ cố định, không sliding refresh. SameSite Strict, HttpOnly, Secure theo HTTPS. POST kiểm tra Origin chính xác. Password bcrypt cost 12, tối đa 72 byte, tối thiểu 12 byte. Database active/role/session_version được kiểm tra mỗi request; thay mật khẩu tăng version và vô hiệu hóa tất cả session. Hiện chưa có MFA, reset password tự phục vụ, email invite hoặc bắt buộc đổi mật khẩu lần đầu. Admin import phải phân phối mật khẩu riêng và yêu cầu đổi khi bàn giao.
 
 ## Meeting và media
