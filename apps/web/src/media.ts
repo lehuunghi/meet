@@ -32,6 +32,7 @@ export class ClassroomMedia {
   private receiverID?: string;
   private screen?: MediaStream;
   private screenSender?: RTCRtpSender;
+  private remoteStreams = new Map<string, MediaStream>();
   private labels = new Map<string, { key: string; name: string }>();
   constructor(
     private meeting: string,
@@ -49,6 +50,7 @@ export class ClassroomMedia {
     if (this.local && this.local !== stream) {
       stream.getTracks().forEach((t) => this.local!.addTrack(t));
     } else this.local = stream;
+    if (!stream.getTracks().length) return;
     const ice = await api(`/meetings/${this.meeting}/ice`, {});
     const pc = new RTCPeerConnection({ iceServers: ice.iceServers });
     const sid = await this.session(pc);
@@ -84,8 +86,24 @@ export class ClassroomMedia {
       this.receiver = new RTCPeerConnection({ iceServers: ice.iceServers });
       this.receiver.ontrack = (e) => {
         const label = this.labels.get(e.transceiver.mid || "");
-        if (label)
-          this.onTrack(label.key, new MediaStream([e.track]), label.name);
+        if (label) {
+          const merged = this.remoteStreams.get(label.key) || new MediaStream();
+          merged
+            .getTracks()
+            .filter((t) => t.kind === e.track.kind && t.id !== e.track.id)
+            .forEach((t) => {
+              merged.removeTrack(t);
+              t.stop();
+            });
+          if (!merged.getTracks().some((t) => t.id === e.track.id))
+            merged.addTrack(e.track);
+          this.remoteStreams.set(label.key, merged);
+          this.onTrack(
+            label.key,
+            new MediaStream(merged.getTracks()),
+            label.name,
+          );
+        }
       };
       this.receiverID = await this.session(this.receiver);
     }
@@ -105,7 +123,7 @@ export class ClassroomMedia {
       if (!t.errorCode && batch[i]) {
         const p = batch[i],
           key = p.session_id + ":" + p.track_name;
-        this.labels.set(t.mid, { key, name: p.name });
+        this.labels.set(t.mid, { key: p.user_id, name: p.name });
         this.known.add(key);
       }
     });
@@ -128,11 +146,10 @@ export class ClassroomMedia {
   }
   async share() {
     const video = this.local?.getVideoTracks()[0];
-    const sender =
+    let sender =
       this.screenSender ||
       this.peers.flatMap((p) => p.getSenders()).find((s) => s.track === video);
-    if (!sender) throw new Error("Bật camera trước khi chia sẻ");
-    if (this.screen) {
+    if (this.screen && sender) {
       await sender.replaceTrack(video || null);
       this.screen.getTracks().forEach((t) => t.stop());
       this.screen = undefined;
@@ -141,19 +158,45 @@ export class ClassroomMedia {
       video: true,
     });
     const track = display.getVideoTracks()[0];
+    if (!sender) {
+      try {
+        await this.publish(display);
+        sender = this.peers
+          .flatMap((p) => p.getSenders())
+          .find((s) => s.track === track);
+      } catch (e) {
+        display.getTracks().forEach((t) => t.stop());
+        throw e;
+      }
+      if (!sender) {
+        display.getTracks().forEach((t) => t.stop());
+        throw new Error("Không phát được màn hình");
+      }
+    }
+    const activeSender = sender;
     this.screen = display;
     this.screenSender = sender;
     await sender.replaceTrack(track);
     track.onended = () => {
       if (this.screen === display) {
         this.screen = undefined;
-        void sender.replaceTrack(video || null).catch(() => {});
+        void activeSender.replaceTrack(video || null).catch(() => {});
+        if (!video) this.local?.removeTrack(track);
       }
     };
     return display;
   }
   async setEnabled(kind: "audio" | "video", enabled: boolean) {
-    if (!this.local?.getTracks().some((t) => t.kind === kind) && enabled) {
+    if (
+      !this.local
+        ?.getTracks()
+        .some((t) => t.kind === kind && t.readyState !== "ended") &&
+      enabled
+    ) {
+      this.local
+        ?.getTracks()
+        .filter((t) => t.kind === kind && t.readyState === "ended")
+        .forEach((t) => this.local!.removeTrack(t));
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: kind === "audio",
         video: kind === "video",

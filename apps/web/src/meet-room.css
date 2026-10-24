@@ -275,3 +275,16 @@
     grid-template-columns: 1fr;
   }
 }
+
+.video-avatar {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  font-size: 58px;
+  color: #e8eaed;
+  pointer-events: none;
+}
+.room .video-grid article:has(.video-avatar) {
+  background: #39434a;
+}

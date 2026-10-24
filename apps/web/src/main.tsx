@@ -1016,12 +1016,18 @@ function Room({
         {local && (
           <article>
             <Video stream={local} muted />
+            {!preCamera && <span className="video-avatar">{user.name[0]}</span>}
             <strong>Bạn</strong>
           </article>
         )}
         {Object.entries(remote).map(([k, v]) => (
           <article key={k}>
             <Video stream={v.stream} />
+            {!v.stream
+              .getVideoTracks()
+              .some((t) => t.enabled && t.readyState !== "ended") && (
+              <span className="video-avatar">{v.name[0]}</span>
+            )}
             <strong>{v.name}</strong>
           </article>
         ))}

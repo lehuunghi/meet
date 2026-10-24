@@ -13,6 +13,7 @@ spec = importlib.util.spec_from_file_location('backup', Path(__file__).with_name
 b = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(b)
 b.ROOT = Path(__file__).resolve().parent.parent
+(b.ROOT / '.env').write_text('APP_ORIGIN=' + os.environ['APP_ORIGIN'] + '\n')
 subprocess.run(['git', 'config', '--global', '--add', 'safe.directory', str(b.ROOT)], check=True)
 objects = {}
 original_compose = b.compose
