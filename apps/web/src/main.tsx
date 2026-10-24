@@ -594,7 +594,7 @@ function App() {
             <AttendanceReport role={user.role} courses={courses} demo={demo} />
           )}
           {demo && page === "recordings" && <PreviewRecordings />}
-          {page === "settings" && <AccountSecurity demo={demo} />}
+          {page === "settings" && <AccountSecurity demo={demo} user={user} />}
           {page === "settings" && (
             <section className="section">
               <h2>Đổi mật khẩu</h2>

@@ -1,6 +1,12 @@
 import { useEffect, useState } from "react";
 import { api } from "./api";
-export function AccountSecurity({ demo }: { demo: boolean }) {
+export function AccountSecurity({
+  demo,
+  user,
+}: {
+  demo: boolean;
+  user: { name: string; role: string };
+}) {
   const [profile, setProfile] = useState<any>({}),
     [pending, setPending] = useState(""),
     [error, setError] = useState(""),
@@ -8,11 +14,17 @@ export function AccountSecurity({ demo }: { demo: boolean }) {
   useEffect(() => {
     if (demo) {
       setProfile({
-        short_id: "QT0001",
-        name: "Quản trị trường",
-        email: "admin@example.test",
+        short_id:
+          (user.role === "admin"
+            ? "QT"
+            : user.role === "teacher"
+              ? "GV"
+              : "SV") + "0001",
+        name: user.name,
+        email: user.role + "@example.test",
+        student_code: user.role === "student" ? "SV2026001" : "",
         school_name: "Trường Nguyễn Trãi",
-        role: "admin",
+        role: user.role,
         active: 1,
         two_factor: 0,
       });
@@ -21,7 +33,7 @@ export function AccountSecurity({ demo }: { demo: boolean }) {
     api<any[]>("/profile")
       .then((v) => setProfile(v[0]))
       .catch((e) => setError(e.message));
-  }, [demo]);
+  }, [demo, user.name, user.role]);
   return (
     <section className="section">
       <h2>Thông tin tài khoản</h2>
