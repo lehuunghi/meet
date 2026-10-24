@@ -1,3 +1,11 @@
+## Bảng đối chiếu gọn — v0.3.4
+
+Điểm danh và bản ghi dùng bảng cho cả máy tính và điện thoại. Tiêu đề cột và cột đầu được giữ cố định khi cuộn; điện thoại vuốt ngang để xem đủ thông tin. Các dòng có nền xen kẽ, ngày giờ và số liệu thẳng cột để đối chiếu nhanh.
+
+- Điểm danh tách riêng buổi học, ngày học, lớp, môn, giờ vào, giờ ra, thời gian và kết quả. Khi đã lọc một môn hoặc buổi, các cột ngữ cảnh lặp lại được bỏ gọn. Giáo viên/admin có thêm cột học sinh; bảng cá nhân không lặp tên học sinh.
+- Bản ghi tách buổi học, ngày học, lớp, môn, dung lượng, hạn lưu và nút xem. Lớp/môn chỉ hiển thị khi xem nhiều môn.
+- Giữ cách mở trang theo vai trò của v0.3.3: học sinh thấy ngay dữ liệu bản thân, giáo viên có phạm vi được phân công, admin chọn lớp/môn. Khung giờ chung theo buổi và xuất Excel không thay đổi.
+
 ## Góc nhìn theo vai trò — v0.3.3
 
 - Học sinh: mở trang là thấy toàn bộ lịch sử điểm danh của chính mình và bản ghi còn hạn của các lớp/môn được ghi danh, mới nhất trước, phân trang 50 dòng. Không phải chọn lớp/môn; bộ lọc thu gọn và chỉ mở khi cần. Bảng cá nhân bỏ tên/email lặp lại, mỗi buổi có nhãn môn/lớp. Xuất Excel cá nhân hỗ trợ toàn bộ môn hoặc bộ lọc.
@@ -10,7 +18,7 @@ Bộ lọc không thay đổi phạm vi tài khoản. API lấy học sinh từ 
 
 v0.3.2 dùng thanh chọn gọn có tìm kiếm, sắp xếp tên và chỉ dựng tối đa 20 kết quả mỗi lần mở; không hiển thị toàn bộ lớp thành các ô lớn. Bảng được thu gọn, không còn cột chỉnh từng người và các thẻ tổng hợp lớn.
 
-Hai trang **Báo cáo điểm danh** và **Bản ghi bài học** dùng cùng bố cục phân cấp:
+Với admin, hai trang **Báo cáo điểm danh** và **Bản ghi bài học** dùng cùng bố cục phân cấp:
 
 1. Nhập tìm kiếm và chọn Lớp học.
 2. Tìm và chọn Môn học thuộc lớp đó.
@@ -24,4 +32,4 @@ Chưa chọn lớp/môn thì không tải và không hiển thị bảng chi ti�
 
 Phạm vi: admin có quyền tương ứng xem trong trường; giáo viên chính/trợ giảng chỉ môn được phân công; học sinh chỉ môn của lớp được ghi danh. Học sinh chỉ xem điểm danh của bản thân. Quyền admin Ghi hình không cho phép tạo/điều khiển buổi hoặc xem báo cáo điểm danh nếu chưa được cấp riêng.
 
-API thư viện: GET /api/recordings?class_id=...&course_id=...&meeting_id=...&page=0. Bắt buộc lớp và môn hợp lệ, tùy chọn buổi, tối đa 50 dòng mỗi trang (51 dòng để phát hiện trang tiếp). Không trả object_key, bucket hoặc URL ký trong danh sách. Endpoint tải/xem vẫn kiểm tra quyền từng bản ghi và thời hạn trước khi ký URL.
+API thư viện: GET /api/recordings?class_id=...&course_id=...&meeting_id=...&page=0. Admin bắt buộc lớp và môn hợp lệ; học sinh/giáo viên có thể bỏ bộ lọc để xem toàn bộ phạm vi được cấp. Tùy chọn buổi, tối đa 50 dòng mỗi trang (51 dòng để phát hiện trang tiếp). Không trả object_key, bucket hoặc URL ký trong danh sách. Endpoint tải/xem vẫn kiểm tra quyền từng bản ghi và thời hạn trước khi ký URL.

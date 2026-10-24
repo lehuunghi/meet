@@ -237,64 +237,6 @@ input:focus-visible {
   .attendance-summary small {
     font-size: 10px;
   }
-  .attendance-table {
-    display: block;
-    table-layout: auto;
-    border: 0;
-  }
-  .attendance-table caption {
-    display: none;
-  }
-  .attendance-table thead {
-    display: none;
-  }
-  .attendance-table tbody {
-    display: grid;
-    gap: 15px;
-  }
-  .attendance-table tr {
-    display: block;
-    border: 1px solid #e1e9da;
-    border-radius: 10px;
-    padding: 7px 14px;
-    background: #fff;
-  }
-  .attendance-table td {
-    display: grid;
-    grid-template-columns: minmax(95px, 40%) minmax(0, 1fr);
-    gap: 8px;
-    text-align: right;
-    padding: 11px 0;
-    align-items: start;
-    font-size: 12px;
-    min-width: 0;
-  }
-  .attendance-table td::before {
-    content: attr(data-label);
-    font-size: 11px;
-    color: #819274;
-    text-align: left;
-    font-weight: 400;
-  }
-  .attendance-table td:first-child {
-    display: block;
-    text-align: left;
-    font-size: 14px;
-    padding: 14px 0;
-  }
-  .attendance-table td:first-child::before {
-    display: none;
-  }
-  .attendance-table td:last-child {
-    border-bottom: 0;
-  }
-  .attendance-table td small {
-    font-size: 11px;
-    text-align: left;
-  }
-  .attendance-table .report-badge {
-    justify-self: end;
-  }
   .report-pagination {
     font-size: 11px;
     gap: 6px;

@@ -272,49 +272,85 @@ export function RecordingLibrary({
                   Chưa có bản ghi còn hạn cho môn/buổi đã chọn.
                 </div>
               ) : (
-                <table className="recordings-table">
-                  <caption className="sr-only">
-                    {course
-                      ? `Bản ghi lớp ${course.class_name}, môn ${course.name}`
-                      : "Bản ghi trong các lớp/môn của bạn"}
-                  </caption>
-                  <thead>
-                    <tr>
-                      <th>Buổi học</th>
-                      <th>Dung lượng</th>
-                      <th>Hạn lưu</th>
-                      <th>Xem bản ghi</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {rows.slice(0, 50).map((r) => (
-                      <tr key={r.id}>
-                        <td data-label="Buổi học">
-                          <strong>{r.meeting_title}</strong>
+                <>
+                  <div
+                    className="comparison-scroll"
+                    role="region"
+                    aria-label="Bảng đối chiếu bản ghi"
+                    tabIndex={0}
+                  >
+                    <table className="recordings-table comparison-table">
+                      <caption className="sr-only">
+                        {course
+                          ? `Bản ghi lớp ${course.class_name}, môn ${course.name}`
+                          : "Bản ghi trong các lớp/môn của bạn"}
+                      </caption>
+                      <thead>
+                        <tr>
+                          <th scope="col" className="identity-col">
+                            Buổi học
+                          </th>
+                          <th scope="col">Ngày học</th>
                           {!course && (
-                            <small>
-                              {r.course} · Lớp {r.class_name}
-                            </small>
+                            <>
+                              <th scope="col">Lớp</th>
+                              <th scope="col">Môn học</th>
+                            </>
                           )}
-                          <small>{time(r.starts_at)}</small>
-                        </td>
-                        <td data-label="Dung lượng">
-                          {Math.round(Number(r.size_bytes) / 1024 / 1024)} MB
-                        </td>
-                        <td data-label="Hạn lưu">{time(r.expires_at)}</td>
-                        <td data-label="Xem bản ghi">
-                          <button
-                            className="secondary"
-                            disabled={opening}
-                            onClick={() => void watch(r)}
-                          >
-                            Xem bản ghi
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                          <th scope="col" className="numeric-col">
+                            Dung lượng
+                          </th>
+                          <th scope="col">Hạn lưu</th>
+                          <th scope="col">Video</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {rows.slice(0, 50).map((r) => (
+                          <tr key={r.id}>
+                            <td className="identity-col">
+                              <strong title={r.meeting_title}>
+                                {r.meeting_title}
+                              </strong>
+                            </td>
+                            <td className="date-col">
+                              {new Date(r.starts_at).toLocaleDateString(
+                                "vi-VN",
+                              )}
+                            </td>
+                            {!course && (
+                              <>
+                                <td>{r.class_name || "—"}</td>
+                                <td>{r.course || "—"}</td>
+                              </>
+                            )}
+                            <td className="numeric-col">
+                              {Math.round(Number(r.size_bytes) / 1024 / 1024)}{" "}
+                              MB
+                            </td>
+                            <td className="date-col" title={time(r.expires_at)}>
+                              {new Date(r.expires_at).toLocaleDateString(
+                                "vi-VN",
+                              )}
+                            </td>
+                            <td>
+                              <button
+                                className="secondary"
+                                disabled={opening}
+                                onClick={() => void watch(r)}
+                              >
+                                Xem bản ghi
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <p className="table-scroll-hint">
+                    Vuốt ngang để đối chiếu các cột · Cột buổi học luôn được giữ
+                    lại.
+                  </p>
+                </>
               )}
               <div className="report-pagination">
                 <button

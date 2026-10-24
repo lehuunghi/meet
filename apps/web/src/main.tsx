@@ -9,6 +9,7 @@ import { ClassroomMedia } from "./media";
 import "./style.css";
 import "./meet-room.css";
 import "./attendance.css";
+import "./comparison-tables.css";
 import { RecordingLibrary } from "./recordings";
 import { AttendanceReport } from "./attendance";
 import { Setup } from "./setup";

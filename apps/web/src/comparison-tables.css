@@ -1,0 +1,187 @@
+.comparison-scroll {
+  width: 100%;
+  max-width: 100%;
+  max-height: 65vh;
+  overflow: auto;
+  border: 1px solid #dfe6e1;
+  border-radius: 9px;
+  background: #fff;
+  overscroll-behavior-inline: contain;
+  -webkit-overflow-scrolling: touch;
+}
+.comparison-scroll:focus-visible {
+  outline: 2px solid #34775d;
+  outline-offset: 3px;
+}
+.comparison-scroll table.comparison-table {
+  display: table;
+  width: 100%;
+  min-width: 780px;
+  table-layout: auto;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #344c40;
+  overflow: visible;
+}
+.comparison-scroll .comparison-table thead {
+  display: table-header-group;
+}
+.comparison-scroll .comparison-table tbody {
+  display: table-row-group;
+}
+.comparison-scroll .comparison-table tr {
+  display: table-row;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+}
+.comparison-scroll .comparison-table th,
+.comparison-scroll .comparison-table td {
+  display: table-cell;
+  vertical-align: middle;
+  text-align: left;
+  padding: 10px 12px;
+  border: 0;
+  border-bottom: 1px solid #e9eeea;
+  border-radius: 0;
+  white-space: nowrap;
+  background: #fff;
+  font-size: 12px;
+  font-weight: 400;
+}
+.comparison-scroll .comparison-table th {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: #f3f6f4;
+  color: #6b7e72;
+  font-size: 11px;
+  font-weight: 600;
+  height: 40px;
+}
+.comparison-scroll .comparison-table td:before {
+  content: none;
+  display: none;
+}
+.comparison-scroll .comparison-table tbody tr:nth-child(even) td {
+  background: #fafcfb;
+}
+.comparison-scroll .comparison-table tbody tr:hover td {
+  background: #eef5f0;
+}
+.comparison-scroll .comparison-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+.comparison-scroll .comparison-table th:first-child,
+.comparison-scroll .comparison-table td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  min-width: 185px;
+  width: 210px;
+  max-width: 250px;
+  box-shadow: 2px 0 0 #e3eae5;
+  white-space: normal;
+}
+.comparison-scroll .comparison-table th:first-child {
+  z-index: 4;
+  background: #f3f6f4;
+}
+.comparison-scroll .comparison-table strong {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.45;
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.comparison-scroll .comparison-table small {
+  display: block;
+  color: #8a978e;
+  font-size: 10px;
+  margin: 3px 0 0;
+  line-height: 1.4;
+  text-align: left;
+}
+.comparison-scroll .comparison-table .clock-col {
+  text-align: center;
+  min-width: 75px;
+  font-variant-numeric: tabular-nums;
+}
+.comparison-scroll .comparison-table .numeric-col {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  min-width: 110px;
+}
+.comparison-scroll .comparison-table .date-col {
+  min-width: 100px;
+  font-variant-numeric: tabular-nums;
+}
+.comparison-scroll .comparison-table .lesson-col {
+  min-width: 170px;
+  max-width: 240px;
+  white-space: normal;
+}
+.comparison-scroll .comparison-table .report-badge {
+  white-space: nowrap;
+  padding: 4px 8px;
+  font-size: 10px;
+  border-radius: 5px;
+}
+.comparison-scroll .comparison-table button {
+  font-size: 11px;
+  padding: 7px 10px;
+  min-height: 34px;
+  white-space: nowrap;
+  border-radius: 6px;
+}
+.table-scroll-hint {
+  display: none;
+}
+.attendance-report .report-counts {
+  padding-bottom: 10px;
+}
+.attendance-report .report-pagination,
+.recording-library .report-pagination {
+  margin-top: 12px;
+}
+@media (max-width: 700px) {
+  .comparison-scroll {
+    max-height: 62vh;
+    border-radius: 7px;
+  }
+  .comparison-scroll table.comparison-table {
+    min-width: 760px;
+  }
+  .comparison-scroll .comparison-table th,
+  .comparison-scroll .comparison-table td {
+    padding: 9px 10px;
+    font-size: 12px;
+  }
+  .comparison-scroll .comparison-table th:first-child,
+  .comparison-scroll .comparison-table td:first-child {
+    min-width: 150px;
+    width: 160px;
+    max-width: 180px;
+  }
+  .comparison-scroll .comparison-table strong {
+    max-width: 165px;
+    font-size: 12px;
+  }
+  .comparison-scroll .comparison-table button {
+    min-height: 42px;
+  }
+  .table-scroll-hint {
+    display: block;
+    font-size: 10px;
+    line-height: 1.5;
+    color: #88988c;
+    margin: 8px 0 0;
+  }
+}

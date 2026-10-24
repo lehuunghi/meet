@@ -347,42 +347,6 @@
   .report-toolbar > a {
     font-size: 12px;
   }
-  .recordings-table,
-  .recordings-table tbody,
-  .recordings-table tr,
-  .recordings-table td {
-    display: block;
-  }
-  .recordings-table thead {
-    display: none;
-  }
-  .recordings-table tr {
-    border: 1px solid #dfe7d7;
-    padding: 12px;
-    border-radius: 9px;
-    margin: 12px 0;
-  }
-  .recordings-table td {
-    border: 0;
-    padding: 6px 0;
-  }
-  .recordings-table td:before {
-    content: attr(data-label);
-    display: block;
-    font-size: 11px;
-    color: #71816b;
-    margin-bottom: 4px;
-  }
-  .compact-attendance-table td {
-    padding: 7px 0;
-  }
-  .compact-attendance-table td:first-child {
-    padding-top: 0;
-  }
-  .compact-attendance-table tr {
-    padding: 12px;
-    margin-bottom: 12px;
-  }
   .report-counts {
     gap: 10px;
     font-size: 10px;

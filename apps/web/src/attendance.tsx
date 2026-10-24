@@ -390,52 +390,100 @@ export function AttendanceReport({
                     </div>
                   ) : (
                     shown.length > 0 && (
-                      <table className="attendance-table compact-attendance-table">
-                        <caption className="sr-only">
-                          {course
-                            ? `Điểm danh lớp ${course.class_name}, môn ${course.name}`
-                            : "Lịch sử điểm danh của bạn"}
-                        </caption>
-                        <thead>
-                          <tr>
-                            {role !== "student" && <th>Học sinh</th>}
-                            {!meeting && <th>Buổi học</th>}
-                            <th>Thời gian</th>
-                            <th>Vào / ra ghi nhận</th>
-                            <th>Kết quả</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {shown.map((r) => (
-                            <tr key={(r.meeting_id || meeting) + r.id}>
-                              {role !== "student" && (
-                                <td data-label="Học sinh">
-                                  <strong>{r.name}</strong>
-                                  <small>{r.email}</small>
-                                </td>
-                              )}
-                              {!meeting && (
-                                <td data-label="Buổi học">
-                                  <strong>
-                                    {r.meeting_title || "Buổi học"}
-                                  </strong>
-                                  {!course && (
-                                    <small>
-                                      {r.course} · Lớp {r.class_name}
-                                    </small>
+                      <>
+                        <div
+                          className="comparison-scroll"
+                          role="region"
+                          aria-label="Bảng đối chiếu điểm danh"
+                          tabIndex={0}
+                        >
+                          <table className="attendance-table comparison-table">
+                            <caption className="sr-only">
+                              {course
+                                ? `Điểm danh lớp ${course.class_name}, môn ${course.name}`
+                                : "Lịch sử điểm danh của bạn"}
+                            </caption>
+                            <thead>
+                              <tr>
+                                {role !== "student" && (
+                                  <th scope="col" className="identity-col">
+                                    Học sinh
+                                  </th>
+                                )}
+                                {(role === "student" || !meeting) && (
+                                  <th
+                                    scope="col"
+                                    className={
+                                      role === "student"
+                                        ? "identity-col"
+                                        : "lesson-col"
+                                    }
+                                  >
+                                    Buổi học
+                                  </th>
+                                )}
+                                {!meeting && <th scope="col">Ngày học</th>}
+                                {!course && (
+                                  <>
+                                    <th scope="col">Lớp</th>
+                                    <th scope="col">Môn học</th>
+                                  </>
+                                )}
+                                <th scope="col" className="clock-col">
+                                  Giờ vào
+                                </th>
+                                <th scope="col" className="clock-col">
+                                  Giờ ra
+                                </th>
+                                <th scope="col" className="numeric-col">
+                                  Thời gian
+                                </th>
+                                <th scope="col">Kết quả</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {shown.map((r) => (
+                                <tr key={(r.meeting_id || meeting) + r.id}>
+                                  {role !== "student" && (
+                                    <td className="identity-col">
+                                      <strong title={r.name}>{r.name}</strong>
+                                      <small>{r.email}</small>
+                                    </td>
                                   )}
-                                  <small>
-                                    {r.starts_at ? time(r.starts_at) : ""}
-                                  </small>
-                                </td>
-                              )}
-                              <td data-label="Thời gian">
-                                {duration(r.seconds)}
-                              </td>
-                              <td data-label="Vào / ra ghi nhận">
-                                <div className="presence-clock">
-                                  <span title={time(r.joined_at)}>
-                                    Vào{" "}
+                                  {(role === "student" || !meeting) && (
+                                    <td
+                                      className={
+                                        role === "student"
+                                          ? "identity-col"
+                                          : "lesson-col"
+                                      }
+                                    >
+                                      <strong
+                                        title={r.meeting_title || "Buổi học"}
+                                      >
+                                        {r.meeting_title || "Buổi học"}
+                                      </strong>
+                                    </td>
+                                  )}
+                                  {!meeting && (
+                                    <td className="date-col">
+                                      {r.starts_at
+                                        ? new Date(
+                                            r.starts_at,
+                                          ).toLocaleDateString("vi-VN")
+                                        : "—"}
+                                    </td>
+                                  )}
+                                  {!course && (
+                                    <>
+                                      <td>{r.class_name || "—"}</td>
+                                      <td>{r.course || "—"}</td>
+                                    </>
+                                  )}
+                                  <td
+                                    className="clock-col"
+                                    title={time(r.joined_at)}
+                                  >
                                     {r.joined_at
                                       ? new Date(
                                           r.joined_at,
@@ -444,9 +492,11 @@ export function AttendanceReport({
                                           minute: "2-digit",
                                         })
                                       : "—"}
-                                  </span>
-                                  <small title={time(r.last_seen)}>
-                                    Ra{" "}
+                                  </td>
+                                  <td
+                                    className="clock-col"
+                                    title={time(r.last_seen)}
+                                  >
                                     {r.last_seen
                                       ? new Date(
                                           r.last_seen,
@@ -455,28 +505,35 @@ export function AttendanceReport({
                                           minute: "2-digit",
                                         })
                                       : "—"}
-                                  </small>
-                                </div>
-                              </td>
-                              <td data-label="Kết quả">
-                                <span
-                                  className={
-                                    "report-badge " +
-                                    (r.attendance_result === "Đạt"
-                                      ? "connected"
-                                      : "")
-                                  }
-                                >
-                                  {r.attendance_result ||
-                                    (Number(r.participated_sessions) > 0
-                                      ? "Có kết nối"
-                                      : "Chưa vào")}
-                                </span>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                                  </td>
+                                  <td className="numeric-col">
+                                    {duration(r.seconds)}
+                                  </td>
+                                  <td>
+                                    <span
+                                      className={
+                                        "report-badge " +
+                                        (r.attendance_result === "Đạt"
+                                          ? "connected"
+                                          : "")
+                                      }
+                                    >
+                                      {r.attendance_result ||
+                                        (Number(r.participated_sessions) > 0
+                                          ? "Có kết nối"
+                                          : "Chưa vào")}
+                                    </span>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                        <p className="table-scroll-hint">
+                          Vuốt ngang để đối chiếu các cột · Cột đầu luôn được
+                          giữ lại.
+                        </p>
+                      </>
                     )
                   )}
                   <div className="report-pagination">
