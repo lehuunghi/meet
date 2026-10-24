@@ -164,8 +164,8 @@ export function RecordingLibrary({
         <div>
           <h2>Bản ghi bài học</h2>
           <p>
-            Chọn lớp → chọn môn → xem bản ghi của từng buổi. Chỉ hiển thị bản
-            ghi trong phạm vi tài khoản, đã lưu và còn hạn.
+            Các bản ghi được phép xem, đã lưu và còn hạn. Buổi mới nhất hiển thị
+            trước.
           </p>
         </div>
         <span className="pill">
