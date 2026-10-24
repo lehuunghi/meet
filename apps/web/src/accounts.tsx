@@ -1,0 +1,230 @@
+import { useEffect, useState } from "react";
+import { api } from "./api";
+const permissions = [
+  ["academic", "Học vụ"],
+  ["accounts", "Quản lý tài khoản"],
+  ["attendance", "Điểm danh"],
+  ["meetings", "Buổi học"],
+  ["recordings", "Ghi hình"],
+  ["audit", "Nhật ký"],
+];
+export function Accounts({ demo }: { demo: boolean }) {
+  const [rows, setRows] = useState<any[]>([]),
+    [error, setError] = useState(""),
+    [busy, setBusy] = useState(false);
+  async function load() {
+    if (demo) {
+      setRows([
+        {
+          id: "root",
+          short_id: "QT0001",
+          name: "Quản trị gốc",
+          email: "admin@example.test",
+          role: "admin",
+          state: "active",
+          permissions: null,
+        },
+      ]);
+      return;
+    }
+    setRows(
+      (await api<any[]>("/accounts")).map((r) => ({
+        ...r,
+        permissions:
+          typeof r.permissions === "string"
+            ? JSON.parse(r.permissions)
+            : r.permissions,
+      })),
+    );
+  }
+  useEffect(() => {
+    void load().catch((e) => setError(e.message));
+  }, [demo]);
+  async function save(row: any) {
+    setBusy(true);
+    setError("");
+    try {
+      if (demo) throw Error("Bản mẫu không lưu máy chủ");
+      await api("/accounts", {
+        id: row.id || "",
+        email: row.email || "",
+        name: row.name || "",
+        password: row.password || "",
+        state: row.state,
+        permissions: row.permissions || [],
+        revision: row.revision || 0,
+      });
+      await load();
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <section className="section">
+      <h2>Tài khoản và phân quyền</h2>
+      <p>
+        Quản trị gốc được bảo vệ. Vô hiệu hóa hoặc tạm ngưng sẽ chấm dứt quyền
+        truy cập của tài khoản. Mỗi lần đăng nhập mới sẽ thoát phiên đăng nhập
+        cũ.
+      </p>
+      {error && (
+        <p className="error" role="alert">
+          {error}
+        </p>
+      )}
+      <button
+        className="secondary"
+        disabled={busy}
+        onClick={() =>
+          setRows((r) => [
+            ...r,
+            {
+              id: "",
+              key: crypto.randomUUID(),
+              role: "admin",
+              name: "",
+              email: "",
+              password: "",
+              state: "active",
+              permissions: [],
+            },
+          ])
+        }
+      >
+        + Thêm quản trị viên
+      </button>
+      <div className="academic-admin">
+        <table className="academic-table">
+          <thead>
+            <tr>
+              <th>Tài khoản</th>
+              <th>Trạng thái</th>
+              <th>Quyền quản trị</th>
+              <th>Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r, i) => (
+              <tr key={r.id || r.key}>
+                <td data-label="Tài khoản">
+                  {r.id ? (
+                    <>
+                      <strong>
+                        {r.short_id} · {r.name}
+                      </strong>
+                      <small>
+                        {r.email} · {r.role}
+                      </small>
+                    </>
+                  ) : (
+                    <>
+                      <input
+                        aria-label="Tên quản trị mới"
+                        placeholder="Họ tên"
+                        value={r.name}
+                        onChange={(e) =>
+                          setRows(
+                            rows.map((v, n) =>
+                              n === i ? { ...v, name: e.target.value } : v,
+                            ),
+                          )
+                        }
+                      />
+                      <input
+                        aria-label="Email quản trị mới"
+                        type="email"
+                        placeholder="Email"
+                        value={r.email}
+                        onChange={(e) =>
+                          setRows(
+                            rows.map((v, n) =>
+                              n === i ? { ...v, email: e.target.value } : v,
+                            ),
+                          )
+                        }
+                      />
+                      <input
+                        aria-label="Mật khẩu quản trị mới"
+                        type="password"
+                        autoComplete="new-password"
+                        placeholder="Mật khẩu 12–72 byte"
+                        value={r.password}
+                        onChange={(e) =>
+                          setRows(
+                            rows.map((v, n) =>
+                              n === i ? { ...v, password: e.target.value } : v,
+                            ),
+                          )
+                        }
+                      />
+                    </>
+                  )}
+                </td>
+                <td data-label="Trạng thái">
+                  <select
+                    disabled={r.role === "admin" && r.permissions === null}
+                    value={r.state}
+                    onChange={(e) =>
+                      setRows(
+                        rows.map((v, n) =>
+                          n === i ? { ...v, state: e.target.value } : v,
+                        ),
+                      )
+                    }
+                  >
+                    <option value="active">Kích hoạt</option>
+                    <option value="suspended">Tạm ngưng</option>
+                    <option value="disabled">Vô hiệu hóa</option>
+                  </select>
+                </td>
+                <td data-label="Quyền">
+                  {r.role === "admin"
+                    ? r.permissions === null
+                      ? "Quản trị gốc"
+                      : permissions.map(([id, label]) => (
+                          <label key={id}>
+                            <input
+                              type="checkbox"
+                              checked={r.permissions.includes(id)}
+                              onChange={(e) =>
+                                setRows(
+                                  rows.map((v, n) =>
+                                    n === i
+                                      ? {
+                                          ...v,
+                                          permissions: e.target.checked
+                                            ? [...v.permissions, id]
+                                            : v.permissions.filter(
+                                                (p: string) => p !== id,
+                                              ),
+                                        }
+                                      : v,
+                                  ),
+                                )
+                              }
+                            />
+                            {label}
+                          </label>
+                        ))
+                    : "Theo vai trò"}
+                </td>
+                <td data-label="Thao tác">
+                  <button
+                    disabled={
+                      busy || (r.role === "admin" && r.permissions === null)
+                    }
+                    onClick={() => void save(r)}
+                  >
+                    Lưu tài khoản
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+}

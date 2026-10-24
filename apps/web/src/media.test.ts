@@ -1,0 +1,122 @@
+import { afterEach, expect, it, vi } from "vitest";
+import { ClassroomMedia } from "./media";
+afterEach(() => vi.unstubAllGlobals());
+it("stops replaced screen captures and releases devices when leaving", async () => {
+  const camera = { kind: "video", stop: vi.fn() },
+    first = { kind: "video", stop: vi.fn(), onended: null },
+    second = { kind: "video", stop: vi.fn(), onended: null };
+  const stream = (track: any) => ({
+    getTracks: () => [track],
+    getVideoTracks: () => [track],
+  });
+  const sender = {
+    track: camera as any,
+    replaceTrack: vi.fn(async (track: any) => {
+      sender.track = track;
+    }),
+  };
+  vi.stubGlobal("navigator", {
+    mediaDevices: {
+      getDisplayMedia: vi
+        .fn()
+        .mockResolvedValueOnce(stream(first))
+        .mockResolvedValueOnce(stream(second)),
+    },
+  });
+  const media = new ClassroomMedia("meeting", () => {});
+  (media as any).local = stream(camera);
+  (media as any).peers = [{ getSenders: () => [sender], close: vi.fn() }];
+  await media.share();
+  expect(first.stop).not.toHaveBeenCalled();
+  await media.share();
+  expect(first.stop).toHaveBeenCalledOnce();
+  expect(sender.track).toBe(second);
+  media.close();
+  expect(second.stop).toHaveBeenCalled();
+  expect(camera.stop).toHaveBeenCalled();
+});
+
+it("does not negotiate an empty publisher when joining listen-only", async () => {
+  const fetcher = vi.fn();
+  vi.stubGlobal("fetch", fetcher);
+  const media = new ClassroomMedia("lesson", () => {});
+  await media.publish({ getTracks: () => [] } as unknown as MediaStream);
+  expect(fetcher).not.toHaveBeenCalled();
+  vi.unstubAllGlobals();
+});
+
+it("merges remote microphone and camera into one participant stream", async () => {
+  class Stream {
+    tracks: any[] = [];
+    constructor(tracks: any[] = []) {
+      this.tracks = [...tracks];
+    }
+    getTracks() {
+      return [...this.tracks];
+    }
+    addTrack(t: any) {
+      this.tracks.push(t);
+    }
+    removeTrack(t: any) {
+      this.tracks = this.tracks.filter((x) => x !== t);
+    }
+  }
+  let pc: any;
+  class Peer {
+    ontrack: any;
+    constructor() {
+      pc = this;
+    }
+    getSenders() {
+      return [];
+    }
+    close() {}
+  }
+  vi.stubGlobal("MediaStream", Stream);
+  vi.stubGlobal("RTCPeerConnection", Peer);
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async (_url, options) => {
+      const body = options?.body ? JSON.parse(options.body) : {};
+      return {
+        ok: true,
+        json: async () =>
+          body.op === "new"
+            ? { sessionId: "receiver" }
+            : body.op === "tracks"
+              ? { tracks: [{ mid: "0" }, { mid: "1" }] }
+              : { iceServers: [] },
+      };
+    }),
+  );
+  const received = vi.fn(),
+    media = new ClassroomMedia("lesson", received);
+  await media.subscribe(
+    [
+      {
+        session_id: "sender",
+        track_name: "audio",
+        user_id: "teacher",
+        name: "Thầy A",
+      },
+      {
+        session_id: "sender",
+        track_name: "video",
+        user_id: "teacher",
+        name: "Thầy A",
+      },
+    ],
+    "student",
+  );
+  pc.ontrack({
+    transceiver: { mid: "0" },
+    track: { id: "a", kind: "audio", stop: vi.fn() },
+  });
+  pc.ontrack({
+    transceiver: { mid: "1" },
+    track: { id: "v", kind: "video", stop: vi.fn() },
+  });
+  expect(received.mock.lastCall?.[0]).toBe("teacher");
+  expect(received.mock.lastCall?.[1].getTracks()).toHaveLength(2);
+  media.close();
+});

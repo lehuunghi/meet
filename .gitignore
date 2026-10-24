@@ -1,0 +1,16 @@
+.env
+secrets/
+node_modules/
+dist/
+*.exe
+coverage.out
+*.log
+*.tsbuildinfo
+backups/
+runtime-config/
+*.sql.gz
+
+__pycache__/
+*.pyc
+*.meet
+outputs/
