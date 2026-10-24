@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"net/http"
 	"time"
 )
@@ -16,7 +17,7 @@ type meetingInfo struct {
 func (a *app) access(w http.ResponseWriter, r *http.Request, manage bool) (meetingInfo, bool) {
 	u := who(r)
 	var m meetingInfo
-	e := a.db.QueryRowContext(r.Context(), `SELECT m.status,m.recording_allowed,c.teacher_id FROM meetings m JOIN courses c ON c.id=m.course_id AND c.school_id=m.school_id WHERE m.id=? AND `+courseAccess, r.PathValue("id"), u.School, u.Role, u.Role, u.ID, u.Role, u.ID).Scan(&m.Status, &m.Recording, &m.Teacher)
+	e := a.db.QueryRowContext(r.Context(), `SELECT m.status,m.recording_allowed,COALESCE(c.teacher_id,'') FROM meetings m JOIN courses c ON c.id=m.course_id AND c.school_id=m.school_id WHERE m.id=? AND `+courseAccess, r.PathValue("id"), u.School, u.Role, u.Role, u.ID, u.Role, u.ID).Scan(&m.Status, &m.Recording, &m.Teacher)
 	if e != nil {
 		problem(w, 404, "Meeting not found")
 		return m, false
@@ -88,6 +89,19 @@ func (a *app) meetingState(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer tx.Rollback()
+	var assigned sql.NullString
+	if e = tx.QueryRowContext(r.Context(), "SELECT c.teacher_id FROM courses c JOIN meetings m ON m.course_id=c.id AND m.school_id=c.school_id WHERE m.school_id=? AND m.id=? FOR UPDATE", u.School, r.PathValue("id")).Scan(&assigned); e != nil {
+		problem(w, 404, "Meeting not found")
+		return
+	}
+	if u.Role != "admin" && (!assigned.Valid || assigned.String != u.ID) {
+		problem(w, 403, "Phân công giáo viên đã thay đổi")
+		return
+	}
+	if in.Status == "live" && !assigned.Valid {
+		problem(w, 409, "Phân công giáo viên trước khi bắt đầu buổi học")
+		return
+	}
 	res, e := tx.ExecContext(r.Context(), "UPDATE meetings SET status=? WHERE school_id=? AND id=? AND status=?", in.Status, u.School, r.PathValue("id"), from)
 	if e != nil {
 		problem(w, 500, "Update failed")

@@ -37,5 +37,8 @@ func bootstrap(db *sql.DB) error {
 	if _, e = tx.Exec("INSERT INTO users(id,school_id,email,name,password_hash,role) VALUES(?,?,?,?,?,'admin')", uid(), school, email, "Administrator", hash); e != nil {
 		return e
 	}
-	return tx.Commit()
+	if e = tx.Commit(); e != nil {
+		return e
+	}
+	return migrate(db)
 }

@@ -251,6 +251,12 @@ func (a *app) setupSave(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+	if schools == 0 {
+		if err := migrate(a.db); err != nil {
+			problem(w, 500, "Đã khởi tạo; cần chạy lại migrate để cấp ID ngắn")
+			return
+		}
+	}
 	send(w, 200, map[string]any{"ok": true, "retention_days": 30, "lifecycle_applied": in.Settings.R2.Lifecycle, "initialized": true})
 }
 func (a *app) setupCheckSFU(w http.ResponseWriter, r *http.Request) {

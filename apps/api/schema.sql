@@ -1,4 +1,5 @@
 CREATE TABLE IF NOT EXISTS schema_migrations (version INT PRIMARY KEY);
+CREATE TABLE IF NOT EXISTS entity_codes(id BIGINT AUTO_INCREMENT PRIMARY KEY,kind VARCHAR(2) NOT NULL,entity_id CHAR(36) NOT NULL UNIQUE);
 CREATE TABLE IF NOT EXISTS schools (
  id CHAR(36) PRIMARY KEY, slug VARCHAR(80) NOT NULL UNIQUE, name VARCHAR(200) NOT NULL,
  created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6)
@@ -90,4 +91,13 @@ CREATE TABLE IF NOT EXISTS meeting_sfu_bindings (
  provider_id VARCHAR(80) NOT NULL, app_id VARCHAR(100) NOT NULL,
  PRIMARY KEY(school_id,meeting_id),
  FOREIGN KEY(school_id,meeting_id) REFERENCES meetings(school_id,id)
+);
+CREATE TABLE IF NOT EXISTS meeting_messages (
+ id BIGINT AUTO_INCREMENT PRIMARY KEY,school_id CHAR(36) NOT NULL,meeting_id CHAR(36) NOT NULL,user_id CHAR(36) NOT NULL,
+ content VARCHAR(2000) NOT NULL,created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+ KEY room_messages(school_id,meeting_id,id),FOREIGN KEY(school_id,meeting_id) REFERENCES meetings(school_id,id),FOREIGN KEY(school_id,user_id) REFERENCES users(school_id,id)
+);
+CREATE TABLE IF NOT EXISTS meeting_hands (
+ school_id CHAR(36) NOT NULL,meeting_id CHAR(36) NOT NULL,user_id CHAR(36) NOT NULL,raised BOOLEAN NOT NULL DEFAULT FALSE,
+ PRIMARY KEY(school_id,meeting_id,user_id),FOREIGN KEY(school_id,meeting_id) REFERENCES meetings(school_id,id),FOREIGN KEY(school_id,user_id) REFERENCES users(school_id,id)
 );

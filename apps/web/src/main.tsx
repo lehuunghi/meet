@@ -1,3 +1,5 @@
+import { AcademicAdmin } from "./academic";
+import { RoomTools } from "./room-tools";
 import React, { useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { api } from "./api";
@@ -186,8 +188,14 @@ function App() {
             />
           </label>
           <label>
-            Email
-            <input name="email" type="email" required autoComplete="username" />
+            Email hoặc mã SV
+            <input
+              name="email"
+              type="text"
+              required
+              autoComplete="username"
+              placeholder="Email hoặc mã SV"
+            />
           </label>
           <label>
             Mật khẩu
@@ -344,7 +352,7 @@ function App() {
         <div
           className="content"
           onSubmitCapture={(e) => {
-            if (demo) {
+            if (demo && page !== "admin") {
               e.preventDefault();
               e.stopPropagation();
               setNotice(
@@ -581,160 +589,8 @@ function App() {
               </form>
             </section>
           )}
-          {page === "admin" && (
-            <>
-              <section className="section">
-                <h2>Import tài khoản từ Excel</h2>
-                <p>
-                  Một sheet, tối đa 100 dòng. Cột: email, name, role, password,
-                  class. Role: teacher hoặc student. Mật khẩu ít nhất 12 ký tự.
-                </p>
-                <input
-                  type="file"
-                  accept=".xlsx"
-                  disabled={demo}
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file)
-                      void safe(async () => {
-                        const f = new FormData();
-                        f.set("file", file);
-                        const res = await api("/import", f);
-                        setNotice(`Đã import ${res.imported} tài khoản`);
-                        setUsers(await api("/users"));
-                        setClasses(await api("/classes"));
-                      });
-                  }}
-                />
-              </section>
-              <section className="section">
-                <h2>Tạo lớp</h2>
-                <form
-                  className="inline-form"
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    const f = new FormData(e.currentTarget);
-                    void safe(async () => {
-                      await api("/classes", Object.fromEntries(f));
-                      setClasses(await api("/classes"));
-                      setNotice("Đã tạo lớp");
-                    });
-                  }}
-                >
-                  <label>
-                    Tên lớp
-                    <input name="name" required />
-                  </label>
-                  <button>Tạo lớp</button>
-                </form>
-                <h2>Tạo môn học</h2>
-                <form
-                  className="inline-form"
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    const f = new FormData(e.currentTarget);
-                    void safe(async () => {
-                      await api("/courses", Object.fromEntries(f));
-                      await refresh();
-                      setNotice("Đã tạo môn học");
-                    });
-                  }}
-                >
-                  <label>
-                    Tên môn
-                    <input name="name" required />
-                  </label>
-                  <label>
-                    Lớp
-                    <select name="class_id" required>
-                      {classes.map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.name}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <label>
-                    Giáo viên
-                    <select name="teacher_id">
-                      {users
-                        .filter((u) => u.role === "teacher")
-                        .map((u) => (
-                          <option key={u.id} value={u.id}>
-                            {u.name}
-                          </option>
-                        ))}
-                    </select>
-                  </label>
-                  <button>Tạo môn</button>
-                </form>
-                <h2>Thêm học sinh vào lớp</h2>
-                <form
-                  className="inline-form"
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    const f = new FormData(e.currentTarget);
-                    void safe(async () => {
-                      await api("/enrollments", Object.fromEntries(f));
-                      setNotice("Đã thêm học sinh vào lớp");
-                    });
-                  }}
-                >
-                  <label>
-                    Lớp
-                    <select name="class_id" required>
-                      {classes.map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.name}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <label>
-                    Học sinh
-                    <select name="user_id" required>
-                      {users
-                        .filter((u) => u.role === "student")
-                        .map((u) => (
-                          <option key={u.id} value={u.id}>
-                            {u.name} · {u.email}
-                          </option>
-                        ))}
-                    </select>
-                  </label>
-                  <button>Thêm vào lớp</button>
-                </form>
-              </section>
-              <section className="section">
-                <h2>Tài khoản ({users.length})</h2>
-                <table className="attendance-table">
-                  <thead>
-                    <tr>
-                      <th>Họ tên</th>
-                      <th>Email</th>
-                      <th>Vai trò</th>
-                      <th>ID</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {users.map((u) => (
-                      <tr key={u.id}>
-                        <td data-label="Họ tên">{u.name}</td>
-                        <td data-label="Email">{u.email}</td>
-                        <td data-label="Vai trò">
-                          {u.role === "teacher"
-                            ? "Giáo viên"
-                            : u.role === "student"
-                              ? "Học sinh"
-                              : "Admin"}
-                        </td>
-                        <td data-label="ID">{u.id}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </section>
-            </>
+          {page === "admin" && user.role === "admin" && (
+            <AcademicAdmin demo={demo} onChange={refresh} />
           )}
           <footer>
             Meet <span>·</span> Kết nối tri thức, cùng nhau tiến bộ.
@@ -767,6 +623,10 @@ function Room({
     [recordings, setRecordings] = useState<any[]>([]),
     [recording, setRecording] = useState(false),
     [busy, setBusy] = useState(false);
+  const [preMic, setPreMic] = useState(true),
+    [preCamera, setPreCamera] = useState(true),
+    [preview, setPreview] = useState<MediaStream | null>(null);
+  const previewRef = useRef<MediaStream | null>(null);
   const media = useRef<ClassroomMedia | null>(null),
     rec = useRef<MediaRecorder | null>(null),
     display = useRef<MediaStream | null>(null),
@@ -839,6 +699,7 @@ function Room({
   useEffect(
     () => () => {
       media.current?.close();
+      previewRef.current?.getTracks().forEach((t) => t.stop());
       display.current?.getTracks().forEach((t) => t.stop());
       if (rec.current?.state === "recording") rec.current.stop();
       if (joinedRef.current)
@@ -851,15 +712,22 @@ function Room({
   async function join() {
     await api(`/meetings/${meeting.id}/presence`, { kind: "join" });
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: 640, height: 360 },
-        audio: true,
-      });
+      const stream =
+        previewRef.current ||
+        (preMic || preCamera
+          ? await navigator.mediaDevices.getUserMedia({
+              video: preCamera ? { width: 640, height: 360 } : false,
+              audio: preMic,
+            })
+          : new MediaStream());
+      stream.getAudioTracks().forEach((t) => (t.enabled = preMic));
+      stream.getVideoTracks().forEach((t) => (t.enabled = preCamera));
       setLocal(stream);
       media.current = new ClassroomMedia(meeting.id, (key, stream, name) =>
         setRemote((v) => ({ ...v, [key]: { stream, name } })),
       );
-      await media.current.publish(stream);
+      if (stream.getTracks().length) await media.current.publish(stream);
+      setPreview(null);
       setJoined(true);
     } catch (e) {
       media.current?.close();
@@ -959,16 +827,28 @@ function Room({
         )}
         {state === "live" && !joined && (
           <button disabled={busy} onClick={() => void run(join)}>
-            Bật camera & tham gia
+            Tham gia buổi học
           </button>
         )}
         {joined && (
           <>
-            <button onClick={() => media.current?.toggle("audio")}>
-              Bật/tắt mic
+            <button
+              aria-pressed={preMic}
+              onClick={() => {
+                media.current?.toggle("audio");
+                setPreMic(!preMic);
+              }}
+            >
+              {preMic ? "Tắt mic" : "Bật mic"}
             </button>
-            <button onClick={() => media.current?.toggle("video")}>
-              Bật/tắt camera
+            <button
+              aria-pressed={preCamera}
+              onClick={() => {
+                media.current?.toggle("video");
+                setPreCamera(!preCamera);
+              }}
+            >
+              {preCamera ? "Tắt camera" : "Bật camera"}
             </button>
             <button
               disabled={busy}
@@ -1005,6 +885,63 @@ function Room({
         )}
       </div>
       <div className="video-grid">
+        {!joined && state !== "ended" && (
+          <section className="section prejoin">
+            <div>
+              <h2>Chuẩn bị trước khi vào lớp</h2>
+              <p>
+                Chọn mic/camera hoặc tắt cả hai để vào chỉ nghe. Camera chỉ chia
+                sẻ khi tham gia.
+              </p>
+              <label className="checkbox">
+                <input
+                  type="checkbox"
+                  checked={preMic}
+                  onChange={(e) => {
+                    setPreMic(e.target.checked);
+                    previewRef.current
+                      ?.getAudioTracks()
+                      .forEach((t) => (t.enabled = e.target.checked));
+                  }}
+                />{" "}
+                Bật mic khi vào lớp
+              </label>
+              <label className="checkbox">
+                <input
+                  type="checkbox"
+                  checked={preCamera}
+                  onChange={(e) => {
+                    setPreCamera(e.target.checked);
+                    previewRef.current
+                      ?.getVideoTracks()
+                      .forEach((t) => (t.enabled = e.target.checked));
+                  }}
+                />{" "}
+                Bật camera khi vào lớp
+              </label>
+              <button
+                className="secondary"
+                disabled={busy}
+                onClick={() =>
+                  void run(async () => {
+                    previewRef.current?.getTracks().forEach((t) => t.stop());
+                    const s = await navigator.mediaDevices.getUserMedia({
+                      video: { width: 640, height: 360 },
+                      audio: true,
+                    });
+                    s.getAudioTracks().forEach((t) => (t.enabled = preMic));
+                    s.getVideoTracks().forEach((t) => (t.enabled = preCamera));
+                    previewRef.current = s;
+                    setPreview(s);
+                  })
+                }
+              >
+                Kiểm tra camera / mic
+              </button>
+            </div>
+            {preview && <Video stream={preview} muted />}
+          </section>
+        )}
         {local && (
           <article>
             <Video stream={local} muted />
@@ -1019,6 +956,7 @@ function Room({
         ))}
       </div>
       <section className="section">
+        <RoomTools meeting={meeting.id} user={user} joined={joined} />
         <h2>Điểm danh theo thời gian tham gia</h2>
         <button
           className="secondary"

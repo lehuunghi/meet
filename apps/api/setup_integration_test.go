@@ -149,7 +149,7 @@ func TestSetupAndRetentionIntegration(t *testing.T) {
 		for _, stmt := range []struct {
 			q    string
 			args []any
-		}{{"INSERT INTO classes VALUES(?,?,?)", []any{cl, school, fmt.Sprint("Class ", i)}}, {"INSERT INTO courses VALUES(?,?,?,?,?)", []any{course, school, cl, teacher, "Math"}}, {"INSERT INTO meetings(id,school_id,course_id,title,starts_at,status) VALUES(?,?,?,?,UTC_TIMESTAMP(),'live')", []any{meeting, school, course, "Lesson"}}} {
+		}{{"INSERT INTO classes(id,school_id,name) VALUES(?,?,?)", []any{cl, school, fmt.Sprint("Class ", i)}}, {"INSERT INTO courses(id,school_id,class_id,teacher_id,name) VALUES(?,?,?,?,?)", []any{course, school, cl, teacher, "Math"}}, {"INSERT INTO meetings(id,school_id,course_id,title,starts_at,status) VALUES(?,?,?,?,UTC_TIMESTAMP(),'live')", []any{meeting, school, course, "Lesson"}}} {
 			if _, e = db.Exec(stmt.q, stmt.args...); e != nil {
 				t.Fatal(e)
 			}

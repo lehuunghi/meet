@@ -135,6 +135,123 @@ func TestIntegration(t *testing.T) {
 		t.Fatalf("teacher meeting report: %s", w.Body)
 	}
 	administrator := login("demo", "admin")
+	// Editable academic tables: unassigned courses, short IDs, student-code login and separate assignment.
+	classResult := request("POST", "/api/classes", `{"name":"Academic-`+uid()[:8]+`"}`, administrator)
+	var created map[string]string
+	if classResult.Code != 201 || json.Unmarshal(classResult.Body.Bytes(), &created) != nil || !strings.HasPrefix(created["short_id"], "LH") {
+		t.Fatalf("short class: %s", classResult.Body)
+	}
+	classID := created["id"]
+	classCode := created["short_id"]
+	w = request("POST", "/api/classes/"+classCode+"/courses/batch", `{"rows":[{"name":"Toán mới"},{"name":"Lý mới"}]}`, administrator)
+	if w.Code != 200 {
+		t.Fatalf("unassigned subjects: %s", w.Body)
+	}
+	w = request("GET", "/api/catalog", "", administrator)
+	var catalog []map[string]any
+	if json.Unmarshal(w.Body.Bytes(), &catalog) != nil {
+		t.Fatal("catalog")
+	}
+	var courseID, courseCode string
+	for _, v := range catalog {
+		if v["class_id"] == classID && v["name"] == "Toán mới" {
+			courseID = v["id"].(string)
+			courseCode = v["short_id"].(string)
+			if v["teacher_id"] != nil {
+				t.Fatal("new subject unexpectedly assigned")
+			}
+		}
+	}
+	if courseCode == "" {
+		t.Fatal("unassigned course absent from catalog")
+	}
+	studentEmail := "academic-" + uid()[:8] + "@example.test"
+	studentCode := "TESTSV" + strings.ToUpper(uid()[:8])
+	body := `{"rows":[{"email":"` + studentEmail + `","student_code":"` + studentCode + `","name":"Academic Student","password":"academic-password-123"}]}`
+	if w = request("POST", "/api/classes/"+classCode+"/students/batch", body, administrator); w.Code != 200 {
+		t.Fatalf("student batch: %s", w.Body)
+	}
+	w = request("GET", "/api/classes/"+classCode+"/students", "", administrator)
+	var enrolled []map[string]any
+	if json.Unmarshal(w.Body.Bytes(), &enrolled) != nil || len(enrolled) != 1 || !strings.HasPrefix(enrolled[0]["short_id"].(string), "SV") {
+		t.Fatalf("short student ID: %s", w.Body)
+	}
+	studentShort := enrolled[0]["short_id"].(string)
+	studentID := enrolled[0]["id"].(string)
+	if w = request("POST", "/api/classes/"+classCode+"/students/batch", `{"rows":[{"id":"`+studentShort+`","revision":1,"email":"`+studentEmail+`","student_code":"`+studentCode+`","name":"Academic Student Edited","password":""}]}`, administrator); w.Code != 200 {
+		t.Fatalf("inline student edit: %s", w.Body)
+	}
+	w = request("POST", "/api/login", `{"school":"demo","email":"`+strings.ToLower(studentCode)+`","password":"academic-password-123"}`, nil)
+	if w.Code != 200 {
+		t.Fatalf("student code login: %s", w.Body)
+	}
+	academicStudent := w.Result().Cookies()[0]
+	if w = request("GET", "/api/classes/"+classCode+"/students", "", student); w.Code != 403 {
+		t.Fatal("student accessed admin table")
+	}
+	var teacherShort string
+	if e = db.QueryRow("SELECT short_id FROM users WHERE id='demo-teacher'").Scan(&teacherShort); e != nil {
+		t.Fatal(e)
+	}
+	if w = request("POST", "/api/assignments", `{"rows":[{"course_id":"`+courseCode+`","teacher_id":"`+teacherShort+`","revision":1}]}`, administrator); w.Code != 200 {
+		t.Fatalf("short-ID assignment: %s", w.Body)
+	}
+	if w = request("POST", "/api/classes/"+classCode+"/courses/batch", `{"rows":[{"id":"`+courseCode+`","name":"Stale","revision":1}]}`, administrator); w.Code != 409 {
+		t.Fatal("stale edit accepted")
+	}
+	if w = request("POST", "/api/assignments", `{"rows":[{"course_id":"`+courseCode+`","teacher_id":"other-teacher","revision":2}]}`, administrator); w.Code != 404 {
+		t.Fatal("cross-school teacher assigned")
+	}
+	if w = request("POST", "/api/classes/other-class/students/batch", body, administrator); w.Code != 404 {
+		t.Fatal("cross-school class write")
+	}
+	newEmail := "rollback-" + uid()[:8] + "@example.test"
+	if w = request("POST", "/api/classes/"+classCode+"/students/batch", `{"rows":[{"email":"`+newEmail+`","student_code":"ROLLBACK1","name":"New","password":"academic-password-123"},{"email":"`+studentEmail+`","student_code":"ROLLBACK2","name":"Duplicate","password":"academic-password-123"}]}`, administrator); w.Code != 409 {
+		t.Fatal("duplicate not rejected")
+	}
+	var rollbackCount int
+	db.QueryRow("SELECT COUNT(*) FROM users WHERE school_id='school-demo' AND email=?", newEmail).Scan(&rollbackCount)
+	if rollbackCount != 0 {
+		t.Fatal("partial bulk insert committed")
+	}
+	w = request("POST", "/api/meetings", `{"course_id":"`+courseID+`","title":"Interactive lesson","starts_at":"2026-10-24T01:00:00Z","recording_allowed":false}`, teacher)
+	var lesson map[string]string
+	if w.Code != 201 || json.Unmarshal(w.Body.Bytes(), &lesson) != nil {
+		t.Fatalf("create interactive lesson: %s", w.Body)
+	}
+	room := "/api/meetings/" + lesson["id"]
+	if w = request("POST", room+"/state", `{"status":"live"}`, teacher); w.Code != 200 {
+		t.Fatalf("start interactive: %s", w.Body)
+	}
+	if w = request("POST", "/api/assignments", `{"rows":[{"course_id":"`+courseCode+`","teacher_id":"","revision":2}]}`, administrator); w.Code != 409 {
+		t.Fatal("live assignment changed")
+	}
+	if w = request("POST", room+"/messages", `{"content":"before join"}`, academicStudent); w.Code != 409 {
+		t.Fatal("nonparticipant chat")
+	}
+	if w = request("POST", room+"/presence", `{"kind":"join"}`, academicStudent); w.Code != 200 {
+		t.Fatal("academic student join")
+	}
+	if w = request("POST", room+"/messages", `{"content":"Xin chào lớp"}`, academicStudent); w.Code != 201 {
+		t.Fatalf("chat: %s", w.Body)
+	}
+	if w = request("POST", room+"/hand", `{"raised":true}`, academicStudent); w.Code != 200 {
+		t.Fatal("raise hand")
+	}
+	w = request("GET", room+"/participants", "", teacher)
+	var participants []map[string]any
+	if json.Unmarshal(w.Body.Bytes(), &participants) != nil || len(participants) != 1 || participants[0]["id"] != studentID || participants[0]["hand_raised"] != float64(1) {
+		t.Fatalf("participants: %s", w.Body)
+	}
+	if w = request("GET", room+"/messages", "", other); w.Code != 404 {
+		t.Fatal("cross-school chat read")
+	}
+	if w = request("POST", room+"/state", `{"status":"ended"}`, teacher); w.Code != 200 {
+		t.Fatal("end interactive")
+	}
+	if w = request("POST", room+"/messages", `{"content":"after end"}`, academicStudent); w.Code != 409 {
+		t.Fatal("ended chat accepted")
+	}
 	if w = request("GET", "/api/attendance/report?course_id=demo-alt-course", "", administrator); w.Code != 200 {
 		t.Fatalf("admin report scope: %s", w.Body)
 	}

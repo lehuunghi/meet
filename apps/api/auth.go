@@ -25,7 +25,7 @@ func (a *app) login(w http.ResponseWriter, r *http.Request) {
 	ip, _, _ := net.SplitHostPort(r.RemoteAddr)
 	// Atomic fixed window; never trust forwarded headers from the client.
 	const limit = `local n=redis.call('INCR',KEYS[1]);if n==1 then redis.call('EXPIRE',KEYS[1],300) end;return n`
-	n, e := a.cache.Eval(r.Context(), limit, []string{"login:" + digest(ip)}).Int()
+	n, e := a.cache.Eval(r.Context(), limit, []string{"login:" + digest(ip+":"+in.School+":"+strings.ToLower(strings.TrimSpace(in.Email)))}).Int()
 	if e != nil {
 		problem(w, 503, "Authentication unavailable")
 		return
@@ -36,7 +36,7 @@ func (a *app) login(w http.ResponseWriter, r *http.Request) {
 	}
 	var u identity
 	var hash string
-	e = a.db.QueryRowContext(r.Context(), `SELECT u.id,u.school_id,u.role,u.name,u.password_hash,u.session_version FROM users u JOIN schools s ON s.id=u.school_id WHERE s.slug=? AND u.email=? AND u.active=TRUE`, in.School, strings.ToLower(strings.TrimSpace(in.Email))).Scan(&u.ID, &u.School, &u.Role, &u.Name, &hash, &u.Version)
+	e = a.db.QueryRowContext(r.Context(), `SELECT u.id,u.school_id,u.role,u.name,u.password_hash,u.session_version FROM users u JOIN schools s ON s.id=u.school_id WHERE s.slug=? AND (u.email=? OR u.student_code=?) AND u.active=TRUE`, in.School, strings.ToLower(strings.TrimSpace(in.Email)), strings.ToUpper(strings.TrimSpace(in.Email))).Scan(&u.ID, &u.School, &u.Role, &u.Name, &hash, &u.Version)
 	if e != nil {
 		hash = "$2a$12$w1qX8hnTqNx9IXiB6P1szepjXpJsa42Qe.PQ0.rgjGkFrP7sXkPqK"
 	}
@@ -139,5 +139,8 @@ func seed(db *sql.DB) error {
 			return e
 		}
 	}
-	return tx.Commit()
+	if e = tx.Commit(); e != nil {
+		return e
+	}
+	return migrate(db)
 }

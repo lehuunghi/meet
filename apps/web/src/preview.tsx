@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { RoomTools } from "./room-tools";
 export const previewRoles = [
   { id: "admin", name: "Lê Thu Hà", label: "Admin" },
   { id: "teacher", name: "Nguyễn Minh Anh", label: "Giáo viên" },
@@ -295,6 +296,15 @@ export function PreviewRoom({
           )}
         </section>
       </div>
+      <RoomTools
+        demo
+        meeting="preview"
+        user={{
+          id: role,
+          name: previewRoles.find((v) => v.id === role)?.name || "Bạn",
+        }}
+        joined
+      />
     </main>
   );
 }

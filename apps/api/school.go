@@ -48,13 +48,13 @@ func (a *app) query(w http.ResponseWriter, r *http.Request, q string, args ...an
 }
 func (a *app) catalog(w http.ResponseWriter, r *http.Request) {
 	u := who(r)
-	a.query(w, r, `SELECT c.id,c.name,c.class_id,cl.name AS class_name,c.teacher_id,u.name AS teacher FROM courses c JOIN classes cl ON cl.id=c.class_id AND cl.school_id=c.school_id JOIN users u ON u.id=c.teacher_id AND u.school_id=c.school_id WHERE c.school_id=? AND (?='admin' OR (?='teacher' AND c.teacher_id=?) OR (?='student' AND EXISTS(SELECT 1 FROM enrollments e WHERE e.school_id=c.school_id AND e.class_id=c.class_id AND e.user_id=?))) ORDER BY c.name LIMIT 1000`, u.School, u.Role, u.Role, u.ID, u.Role, u.ID)
+	a.query(w, r, `SELECT c.id,c.short_id,c.revision,c.name,c.class_id,cl.name AS class_name,c.teacher_id,COALESCE(u.name,'Chưa phân công') AS teacher FROM courses c JOIN classes cl ON cl.id=c.class_id AND cl.school_id=c.school_id LEFT JOIN users u ON u.id=c.teacher_id AND u.school_id=c.school_id WHERE c.school_id=? AND (?='admin' OR (?='teacher' AND c.teacher_id=?) OR (?='student' AND EXISTS(SELECT 1 FROM enrollments e WHERE e.school_id=c.school_id AND e.class_id=c.class_id AND e.user_id=?))) ORDER BY c.name LIMIT 1000`, u.School, u.Role, u.Role, u.ID, u.Role, u.ID)
 }
 func (a *app) users(w http.ResponseWriter, r *http.Request) {
 	if !admin(w, r) {
 		return
 	}
-	a.query(w, r, "SELECT id,email,name,role,active FROM users WHERE school_id=? ORDER BY name LIMIT 1000", who(r).School)
+	a.query(w, r, "SELECT id,short_id,student_code,revision,email,name,role,active FROM users WHERE school_id=? ORDER BY name LIMIT 1000", who(r).School)
 }
 func (a *app) createClass(w http.ResponseWriter, r *http.Request) {
 	if !admin(w, r) {
@@ -70,13 +70,28 @@ func (a *app) createClass(w http.ResponseWriter, r *http.Request) {
 		problem(w, 400, "Invalid class name")
 		return
 	}
+	tx, e := a.db.BeginTx(r.Context(), nil)
+	if e != nil {
+		problem(w, 503, "Database unavailable")
+		return
+	}
+	defer tx.Rollback()
 	id := uid()
-	if _, e := a.db.ExecContext(r.Context(), "INSERT INTO classes(id,school_id,name) VALUES(?,?,?)", id, who(r).School, in.Name); e != nil {
+	code, e := shortCode(tx, "LH", id)
+	if e != nil {
+		problem(w, 500, "Không cấp được ID")
+		return
+	}
+	if _, e := tx.ExecContext(r.Context(), "INSERT INTO classes(id,school_id,name,short_id) VALUES(?,?,?,?)", id, who(r).School, in.Name, code); e != nil {
 		problem(w, 409, "Class already exists or cannot be created")
 		return
 	}
-	a.audit(r, "class.create", id)
-	send(w, 201, map[string]string{"id": id})
+	if tx.Commit() != nil {
+		problem(w, 500, "Không lưu được lớp")
+		return
+	}
+	a.audit(r, "class.create", code)
+	send(w, 201, map[string]string{"id": id, "short_id": code})
 }
 func (a *app) createCourse(w http.ResponseWriter, r *http.Request) {
 	if !admin(w, r) {
@@ -94,20 +109,33 @@ func (a *app) createCourse(w http.ResponseWriter, r *http.Request) {
 		problem(w, 400, "Invalid name")
 		return
 	}
-	id := uid()
-	u := who(r)
-	res, e := a.db.ExecContext(r.Context(), `INSERT INTO courses(id,school_id,name,class_id,teacher_id) SELECT ?,?,?,c.id,t.id FROM classes c JOIN users t ON t.school_id=c.school_id AND t.id=? AND t.role='teacher' AND t.active=TRUE WHERE c.id=? AND c.school_id=?`, id, u.School, in.Name, in.Teacher, in.Class, u.School)
+	school := who(r).School
+	var class, teacher string
+	if a.db.QueryRowContext(r.Context(), "SELECT id FROM classes WHERE school_id=? AND (id=? OR short_id=?)", school, in.Class, in.Class).Scan(&class) != nil {
+		problem(w, 404, "Không tìm thấy lớp")
+		return
+	}
+	if in.Teacher != "" && a.db.QueryRowContext(r.Context(), "SELECT id FROM users WHERE school_id=? AND role='teacher' AND active=TRUE AND (id=? OR short_id=?)", school, in.Teacher, in.Teacher).Scan(&teacher) != nil {
+		problem(w, 404, "Không tìm thấy giáo viên")
+		return
+	}
+	tx, e := a.db.BeginTx(r.Context(), nil)
 	if e != nil {
-		problem(w, 400, "Invalid class or teacher")
+		problem(w, 503, "Database unavailable")
 		return
 	}
-	n, _ := res.RowsAffected()
-	if n != 1 {
-		problem(w, 400, "Invalid class or teacher")
+	defer tx.Rollback()
+	id := uid()
+	code, e := shortCode(tx, "MH", id)
+	if e == nil {
+		_, e = tx.ExecContext(r.Context(), "INSERT INTO courses(id,school_id,class_id,teacher_id,name,short_id) VALUES(?,?,?,NULLIF(?,''),?,?)", id, school, class, teacher, strings.TrimSpace(in.Name), code)
+	}
+	if e != nil || tx.Commit() != nil {
+		problem(w, 409, "Không tạo được môn")
 		return
 	}
-	a.audit(r, "course.create", id)
-	send(w, 201, map[string]string{"id": id})
+	a.audit(r, "course.create", code)
+	send(w, 201, map[string]string{"id": id, "short_id": code})
 }
 func (a *app) enroll(w http.ResponseWriter, r *http.Request) {
 	if !admin(w, r) {
@@ -121,6 +149,13 @@ func (a *app) enroll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	u := who(r)
+	var resolvedClass, resolvedUser string
+	if a.db.QueryRowContext(r.Context(), "SELECT id FROM classes WHERE school_id=? AND (id=? OR short_id=?)", u.School, in.Class, in.Class).Scan(&resolvedClass) != nil || a.db.QueryRowContext(r.Context(), "SELECT id FROM users WHERE school_id=? AND role='student' AND (id=? OR short_id=?)", u.School, in.User, in.User).Scan(&resolvedUser) != nil {
+		problem(w, 404, "Không tìm thấy lớp/học sinh")
+		return
+	}
+	in.Class = resolvedClass
+	in.User = resolvedUser
 	res, e := a.db.ExecContext(r.Context(), `INSERT IGNORE INTO enrollments(school_id,class_id,user_id) SELECT ?,c.id,u.id FROM classes c JOIN users u ON u.school_id=c.school_id AND u.id=? AND u.role='student' WHERE c.school_id=? AND c.id=?`, u.School, in.User, u.School, in.Class)
 	if e != nil {
 		problem(w, 400, "Enrollment failed")
@@ -227,7 +262,16 @@ func (a *app) importUsers(w http.ResponseWriter, r *http.Request) {
 	u := who(r)
 	for i, v := range rows {
 		id := uid()
-		if _, e = tx.ExecContext(r.Context(), "INSERT INTO users(id,school_id,email,name,password_hash,role) VALUES(?,?,?,?,?,?)", id, u.School, v.Email, v.Name, hashes[i], v.Role); e != nil {
+		kind := "GV"
+		if v.Role == "student" {
+			kind = "SV"
+		}
+		code, err := shortCode(tx, kind, id)
+		if err != nil {
+			problem(w, 500, "Không cấp ID")
+			return
+		}
+		if _, e = tx.ExecContext(r.Context(), "INSERT INTO users(id,school_id,email,name,password_hash,role,short_id) VALUES(?,?,?,?,?,?,?)", id, u.School, v.Email, v.Name, hashes[i], v.Role, code); e != nil {
 			problem(w, 409, fmt.Sprintf("Row %d conflicts; no users imported", i+2))
 			return
 		}
@@ -236,7 +280,12 @@ func (a *app) importUsers(w http.ResponseWriter, r *http.Request) {
 			e = tx.QueryRowContext(r.Context(), "SELECT id FROM classes WHERE school_id=? AND name=?", u.School, v.Class).Scan(&class)
 			if e == sql.ErrNoRows {
 				class = uid()
-				_, e = tx.ExecContext(r.Context(), "INSERT INTO classes(id,school_id,name) VALUES(?,?,?)", class, u.School, v.Class)
+				classCode, err := shortCode(tx, "LH", class)
+				if err != nil {
+					problem(w, 500, "Không cấp ID lớp")
+					return
+				}
+				_, e = tx.ExecContext(r.Context(), "INSERT INTO classes(id,school_id,name,short_id) VALUES(?,?,?,?)", class, u.School, v.Class, classCode)
 			}
 			if e != nil {
 				problem(w, 409, "Class conflict; no users imported")

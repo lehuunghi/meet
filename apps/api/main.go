@@ -134,6 +134,12 @@ func (a *app) routes() http.Handler {
 	m.HandleFunc("GET /api/catalog", a.auth(a.catalog))
 	m.HandleFunc("POST /api/classes", a.auth(a.createClass))
 	m.HandleFunc("POST /api/courses", a.auth(a.createCourse))
+	m.HandleFunc("POST /api/classes/{id}/courses/batch", a.auth(a.courseBatch))
+	m.HandleFunc("GET /api/classes/{id}/students", a.auth(a.classStudents))
+	m.HandleFunc("POST /api/classes/{id}/students/batch", a.auth(a.studentBatch))
+	m.HandleFunc("POST /api/teachers/batch", a.auth(a.teacherBatch))
+	m.HandleFunc("POST /api/teachers/import", a.auth(a.teacherImport))
+	m.HandleFunc("POST /api/assignments", a.auth(a.assignTeachers))
 	m.HandleFunc("POST /api/enrollments", a.auth(a.enroll))
 	m.HandleFunc("POST /api/import", a.auth(a.importUsers))
 	m.HandleFunc("GET /api/users", a.auth(a.users))
@@ -141,7 +147,7 @@ func (a *app) routes() http.Handler {
 		if !admin(w, r) {
 			return
 		}
-		a.query(w, r, "SELECT id,name FROM classes WHERE school_id=? ORDER BY name LIMIT 1000", who(r).School)
+		a.query(w, r, "SELECT id,short_id,name FROM classes WHERE school_id=? ORDER BY name LIMIT 1000", who(r).School)
 	}))
 	m.HandleFunc("GET /api/audit", a.auth(func(w http.ResponseWriter, r *http.Request) {
 		if !admin(w, r) {
@@ -157,6 +163,10 @@ func (a *app) routes() http.Handler {
 	m.HandleFunc("GET /api/meetings/{id}/attendance", a.auth(a.attendance))
 	m.HandleFunc("POST /api/meetings/{id}/sfu", a.auth(a.sfu))
 	m.HandleFunc("GET /api/meetings/{id}/tracks", a.auth(a.tracks))
+	m.HandleFunc("GET /api/meetings/{id}/participants", a.auth(a.roomParticipants))
+	m.HandleFunc("GET /api/meetings/{id}/messages", a.auth(a.roomMessages))
+	m.HandleFunc("POST /api/meetings/{id}/messages", a.auth(a.sendMessage))
+	m.HandleFunc("POST /api/meetings/{id}/hand", a.auth(a.raiseHand))
 	m.HandleFunc("POST /api/meetings/{id}/ice", a.auth(a.ice))
 	m.HandleFunc("POST /api/meetings/{id}/recordings", a.auth(a.recordingCreate))
 	m.HandleFunc("GET /api/meetings/{id}/recordings", a.auth(a.recordingList))
@@ -203,7 +213,10 @@ func migrate(db *sql.DB) error {
 	if e != nil {
 		return e
 	}
-	return migrateV2(c)
+	if e = migrateV2(c); e != nil {
+		return e
+	}
+	return migrateV3(c)
 }
 func main() {
 	db, e := sql.Open("mysql", secret("MYSQL_DSN"))
