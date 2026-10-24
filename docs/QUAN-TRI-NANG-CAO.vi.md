@@ -30,7 +30,7 @@ Thời hạn ghi hình mặc định 30 ngày, có thể đặt 1–3650 ngày. 
 
 ## Sao lưu tự động và khôi phục cài mới
 
-Bộ cài Ubuntu mới cài python3-cryptography và **meet-backup.timer**. Timer kiểm tra mỗi giờ; bật **Sao lưu tự động**, đặt chu kỳ 1–720 giờ trên trang cấu hình. Chu kỳ tính từ lần upload và xác minh thành công gần nhất. Bản sao gồm database MySQL nhất quán, mã nguồn đã commit, cấu hình Cloudflare và khóa 2FA; không chứa video hoặc mật khẩu MySQL/Redis của máy mới. Bản sao nằm trong **backups/**, tách khỏi lifecycle **recordings/**.
+Bộ cài Ubuntu mới cài python3-cryptography và **meet-backup.timer**. Timer kiểm tra mỗi giờ; bật **Sao lưu tự động**, đặt chu kỳ 1–720 giờ trên trang cấu hình. Chu kỳ tính từ lần upload và xác minh thành công gần nhất. Bản sao gồm database MySQL nhất quán, mã nguồn các file được Git theo dõi (và các file mã nguồn đã phục hồi), cấu hình Cloudflare và khóa 2FA; không chứa video hoặc mật khẩu MySQL/Redis của máy mới. Bản sao nằm trong **backups/**, tách khỏi lifecycle **recordings/**.
 
 Bản sao mã hóa AES-256-GCM trước khi upload rồi tải lại so khớp. Khóa phục hồi tại **/etc/meet/recovery.key**, quyền 0600. Sao chép khóa và credential R2 ra nơi an toàn riêng. Có thể giữ settings.json riêng làm credential phục hồi; file chứa bí mật, không commit/chia sẻ. Mất khóa không giải mã được bản sao. Backups chưa tự xóa theo thời hạn video; người vận hành đặt lifecycle riêng cho backups/ nếu muốn. Giới hạn bản sao nén 512 MiB, cần đủ RAM để mã hóa/xác minh; trường lớn cần giải pháp streaming riêng.
 

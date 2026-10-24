@@ -77,7 +77,10 @@ def add_bytes(archive, name, raw):
     archive.addfile(info, io.BytesIO(raw))
 
 def backup(force=False):
-    cfg = json.loads((ROOT / 'runtime-config/settings.json').read_text())
+    settings_path = ROOT / 'runtime-config/settings.json'
+    if not settings_path.exists() and not force:
+        return
+    cfg = json.loads(settings_path.read_text())
     policy = cfg.get('backup', {})
     if not force and not policy.get('enabled'):
         return
@@ -100,7 +103,20 @@ def backup(force=False):
             if p.is_file():
                 add_bytes(archive, relative, p.read_bytes())
         # Source is a complete Git snapshot, including committed docs, Docker and installer files.
-        source = subprocess.run(['git', '-C', str(ROOT), 'archive', '--format=tar', 'HEAD'], check=True, stdout=subprocess.PIPE).stdout
+        tracked = subprocess.run(['git', '-C', str(ROOT), 'ls-files', '-z'], check=True, stdout=subprocess.PIPE).stdout.decode().split('\0')
+        restored = ROOT / 'runtime-config/restored-source.json'
+        extra = json.loads(restored.read_text()).get('files', []) if restored.exists() else []
+        packed = io.BytesIO()
+        with tarfile.open(fileobj=packed, mode='w') as code:
+            for relative in sorted(set(tracked + extra)):
+                if not relative or relative == '.env' or relative.startswith(('.git/', 'secrets/', 'runtime-config/')):
+                    continue
+                path = ROOT / relative
+                if PurePosixPath(relative).is_absolute() or '..' in PurePosixPath(relative).parts or path.is_symlink():
+                    raise ValueError('Unsafe source path')
+                if path.is_file():
+                    add_bytes(code, relative, path.read_bytes())
+        source = packed.getvalue()
         add_bytes(archive, 'source.tar', source)
         commit = subprocess.run(['git', '-C', str(ROOT), 'rev-parse', 'HEAD'], check=True, stdout=subprocess.PIPE).stdout.decode().strip()
         add_bytes(archive, 'manifest.json', json.dumps({'version': 1, 'commit': commit, 'database_sha256': hashlib.sha256(dump).hexdigest(), 'source_sha256': hashlib.sha256(source).hexdigest()}, ensure_ascii=False).encode())
@@ -117,6 +133,8 @@ def backup(force=False):
     temporary = state.with_suffix('.tmp')
     temporary.write_text(json.dumps(status))
     os.chmod(temporary, 0o600)
+    if hasattr(os, "chown"):
+        os.chown(temporary, 10001, 10001)
     os.replace(temporary, state)
     print('Verified encrypted snapshot: ' + object_key)
 
@@ -155,10 +173,11 @@ def restore(args):
             raise ValueError('Restore target contains a symlink')
     # Restore is only for a fresh empty installation. Never replace an existing school.
     compose('up', '-d', 'mysql', 'redis')
+    compose('stop', 'api', 'web')
     count = compose('exec', '-T', 'mysql', 'sh', '-c', 'MYSQL_PWD="$(cat /run/secrets/mysql_password)" mysql -h 127.0.0.1 -u meet -N -D meet -e "SELECT COUNT(*) FROM schools"').decode().strip()
     if count != '0':
+        compose('up', '-d', 'api', 'web')
         raise ValueError('Restore requires an initialized schema with zero schools')
-    compose('stop', 'api', 'web')
     compose('exec', '-T', 'mysql', 'sh', '-c', 'MYSQL_PWD="$(cat /run/secrets/mysql_password)" exec mysql -h 127.0.0.1 -u meet -D meet', data=files['database.sql'])
     # Preserve current domain and fresh database/Redis passwords; restore application configuration and TOTP key.
     for name in ['runtime-config/settings.json', 'runtime-config/account-key']:
@@ -173,6 +192,7 @@ def restore(args):
         p = ROOT / name
         p.parent.mkdir(parents=True, exist_ok=True)
         p.write_bytes(content)
+    (ROOT / 'runtime-config/restored-source.json').write_text(json.dumps({'commit': manifest['commit'], 'files': list(source)}))
     compose('build')
     compose('run', '--rm', 'migrate')
     compose('run', '--rm', 'api', 'configure-storage')

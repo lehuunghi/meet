@@ -184,3 +184,94 @@
     font-size: 25px;
   }
 }
+
+.room {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 18px;
+  align-content: start;
+}
+.room > header {
+  grid-column: 1/-1;
+  grid-row: 1;
+  margin: 0;
+}
+.room > header h2,
+.room > header .brand {
+  color: #e8eaed;
+}
+.room > .banner,
+.room > .error {
+  grid-column: 1/-1;
+  grid-row: 2;
+  margin: 0;
+}
+.room > .video-grid,
+.room > .preview-classroom {
+  grid-column: 1;
+  grid-row: 3;
+  margin: 0;
+}
+.room > .room-tools {
+  grid-column: 2;
+  grid-row: 3;
+  max-width: none;
+  min-width: 0;
+  margin: 0;
+  padding: 20px;
+  align-self: start;
+}
+.room > .section:not(.room-tools) {
+  grid-column: 1/-1;
+}
+.room .preview-classroom {
+  display: block;
+}
+.room .preview-room-side {
+  display: none;
+}
+.room .preview-stage p {
+  color: #b6d4a4;
+}
+.room .room-people {
+  grid-template-columns: 1fr;
+}
+.room .room-people > div {
+  border-color: #5f6368;
+}
+.room .room-chat-form {
+  flex-wrap: wrap;
+}
+.room .room-messages p {
+  color: #e8eaed;
+}
+.room .room-tool-tabs {
+  gap: 8px;
+}
+.room .room-tool-tabs button {
+  padding: 10px;
+  font-size: 12px;
+}
+.room .room-history {
+  margin-top: 18px;
+}
+@media (max-width: 900px) {
+  .room {
+    display: block;
+  }
+  .room > .room-tools {
+    margin: 20px 0;
+  }
+  .room .video-grid {
+    margin-top: 18px;
+  }
+  .room header {
+    margin-bottom: 18px;
+  }
+  .room .preview-stage {
+    margin-top: 16px;
+  }
+  .room .room-people {
+    grid-template-columns: 1fr;
+  }
+}

@@ -345,6 +345,29 @@ func TestIntegration(t *testing.T) {
 	if request("GET", "/api/accounts", "", limited).Code != 403 || request("GET", "/api/attendance/report?course_id=demo-math", "", limited).Code != 200 {
 		t.Fatal("delegated permissions not enforced")
 	}
+	// TOTP setup needs password and successful confirmation; enabled accounts never bypass the second factor.
+	t.Setenv("CONFIG_DIR", t.TempDir())
+	w = request("POST", "/api/2fa", `{"action":"setup","password":"limited-password-123","code":""}`, limited)
+	var setup map[string]string
+	if w.Code != 200 || json.Unmarshal(w.Body.Bytes(), &setup) != nil || setup["secret"] == "" {
+		t.Fatalf("TOTP setup: %s", w.Body)
+	}
+	step := time.Now().Unix() / 30
+	otp := otpForTest(setup["secret"], step)
+	w = request("POST", "/api/2fa", `{"action":"enable","password":"limited-password-123","code":"`+otp+`"}`, limited)
+	if w.Code != 200 {
+		t.Fatalf("TOTP enable: %s", w.Body)
+	}
+	if request("GET", "/api/me", "", limited).Code != 401 {
+		t.Fatal("2FA change kept previous session")
+	}
+	loginBody := `{"school":"demo","email":"` + adminEmail + `","password":"limited-password-123","code":"`
+	if request("POST", "/api/login", loginBody+`"}`, nil).Code != 401 || request("POST", "/api/login", loginBody+otp+`"}`, nil).Code != 401 {
+		t.Fatal("2FA missing/replayed code accepted")
+	}
+	if request("POST", "/api/login", loginBody+otpForTest(setup["secret"], step+1)+`"}`, nil).Code != 200 {
+		t.Fatal("valid second factor rejected")
+	}
 	// Database constraint must reject a cross-tenant enrollment even outside the API.
 	if _, e = db.ExecContext(context.Background(), "INSERT INTO enrollments VALUES('school-demo','demo-class','other-student')"); e == nil {
 		t.Fatal("cross-school FK accepted")

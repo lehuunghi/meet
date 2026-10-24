@@ -1026,8 +1026,8 @@ function Room({
           </article>
         ))}
       </div>
-      <section className="section">
-        <RoomTools meeting={meeting.id} user={user} joined={joined} />
+      <RoomTools meeting={meeting.id} user={user} joined={joined} />
+      <section className="section room-history">
         <h2>Điểm danh theo thời gian tham gia</h2>
         <button
           className="secondary"

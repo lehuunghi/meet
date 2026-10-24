@@ -13,3 +13,4 @@ runtime-config/
 __pycache__/
 *.pyc
 *.meet
+outputs/
