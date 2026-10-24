@@ -1,0 +1,186 @@
+.room {
+  background: #202124;
+  color: #f1f3f4;
+  min-height: 100dvh;
+  padding: 18px 24px 120px;
+  max-width: none;
+}
+.room header {
+  border: 0;
+  padding: 0 0 18px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.room header h2 {
+  flex: 1;
+  font-size: 18px;
+}
+.room header button {
+  background: #c5221f;
+  color: white;
+  border: 0;
+  border-radius: 24px;
+}
+.room .room-toolbar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 16px;
+  background: #202124;
+  border-top: 1px solid #3c4043;
+  margin: 0;
+}
+.room .room-toolbar button {
+  background: #3c4043;
+  color: #fff;
+  border: 0;
+  border-radius: 28px;
+  min-height: 48px;
+  padding: 12px 20px;
+}
+.room .room-toolbar button[aria-pressed="false"] {
+  background: #f28b82;
+  color: #202124;
+}
+.room .room-toolbar > span {
+  font-size: 12px;
+  color: #bdc1c6;
+}
+.room .video-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+  gap: 12px;
+  min-height: 50vh;
+  align-content: center;
+}
+.room .video-grid article {
+  position: relative;
+  background: #3c4043;
+  min-height: 210px;
+  border-radius: 14px;
+  overflow: hidden;
+}
+.room video {
+  width: 100%;
+  height: 100%;
+  max-height: 60vh;
+  object-fit: contain;
+  background: #292a2d;
+  border-radius: 14px;
+}
+.room .video-grid article > strong {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  background: #202124cc;
+  padding: 5px 10px;
+  border-radius: 6px;
+}
+.room .section {
+  background: #292a2d;
+  color: #f1f3f4;
+  border-color: #5f6368;
+  border-radius: 14px;
+}
+.room .section p,
+.room small {
+  color: #bdc1c6;
+}
+.room input {
+  background: #202124;
+  color: #fff;
+  border-color: #5f6368;
+}
+.room .room-tools {
+  max-width: 620px;
+  margin: 24px auto 0;
+}
+.room .room-tool-tabs button,
+.room .preview-tabs button {
+  background: #3c4043;
+  color: #e8eaed;
+}
+.room .room-messages article {
+  background: #3c4043;
+}
+.room .preview-classroom {
+  gap: 16px;
+}
+.room .preview-stage {
+  background: linear-gradient(140deg, #293243, #263b35);
+  border-radius: 16px;
+  border: 1px solid #5f6368;
+}
+.room .preview-tiles article {
+  background: #3c4043;
+  color: #e8eaed;
+  border: 0;
+  border-radius: 14px;
+}
+.room .banner {
+  background: #30343b;
+  color: #e8eaed;
+}
+.room .pill {
+  background: #3c4043;
+  color: #e8eaed;
+}
+.room .prejoin {
+  grid-column: 1/-1;
+}
+.assistant-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+.assistant-row select {
+  flex: 1;
+  min-width: 180px;
+}
+@media (max-width: 700px) {
+  .room {
+    padding: 14px 12px 210px;
+  }
+  .room header {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .room header h2 {
+    font-size: 15px;
+  }
+  .room .room-toolbar {
+    gap: 7px;
+    padding: 10px;
+  }
+  .room .room-toolbar button {
+    padding: 10px 14px;
+    font-size: 13px;
+    min-height: 44px;
+  }
+  .room .room-toolbar > span {
+    flex-basis: 100%;
+    text-align: center;
+  }
+  .room .video-grid {
+    min-height: 35vh;
+    grid-template-columns: 1fr;
+  }
+  .room .preview-room-side {
+    display: none;
+  }
+  .room .room-tools {
+    padding: 14px;
+  }
+  .room .preview-stage h1 {
+    font-size: 25px;
+  }
+}

@@ -17,7 +17,7 @@ read -r -p 'Domain quản lý (ví dụ meet.truong.edu.vn): ' MEET_DOMAIN </dev
 MEET_DOMAIN=${MEET_DOMAIN,,}
 [[ ${#MEET_DOMAIN} -le 253 && "$MEET_DOMAIN" =~ ^([a-z0-9]([a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,63}$ ]] || fail 'Chỉ nhập hostname hợp lệ, không có https:// hoặc đường dẫn.'
 apt-get update
-apt-get install -y ca-certificates curl gnupg git openssl
+apt-get install -y ca-certificates curl gnupg git openssl python3 python3-cryptography
 if ! command -v docker >/dev/null || ! docker compose version >/dev/null 2>&1; then
   install -d -m 0755 /etc/apt/keyrings
   curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/meet-docker.asc
@@ -66,6 +66,30 @@ meet build
 meet up -d mysql redis
 meet run --rm migrate
 meet up -d api web
+install -d -m 0700 /etc/meet
+if [[ ! -f /etc/meet/recovery.key ]]; then openssl rand -hex 32 > /etc/meet/recovery.key; fi
+chmod 0600 /etc/meet/recovery.key
+cat > /etc/systemd/system/meet-backup.service <<'BACKUP_SERVICE'
+[Unit]
+Description=Meet encrypted R2 backup
+After=docker.service
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /opt/meet/deploy/backup.py backup
+UMask=0077
+BACKUP_SERVICE
+cat > /etc/systemd/system/meet-backup.timer <<'BACKUP_TIMER'
+[Unit]
+Description=Check Meet configured backup interval
+[Timer]
+OnBootSec=10min
+OnUnitActiveSec=1h
+Persistent=true
+[Install]
+WantedBy=timers.target
+BACKUP_TIMER
+systemctl daemon-reload
+systemctl enable --now meet-backup.timer
 MEET_READY=false
 for _ in $(seq 1 90); do
   if curl -fsS http://127.0.0.1:8080/api/health >/dev/null; then MEET_READY=true; break; fi
@@ -93,6 +117,11 @@ for _ in $(seq 1 30); do
   sleep 2
 done
 [[ "$MEET_HTTPS" == true ]] || fail "HTTPS chưa xác minh được. Kiểm tra DNS, 80/443 và journalctl -u caddy. Sau khi sửa, mở https://$MEET_DOMAIN/setup và đọc mã tại $MEET_DIR/runtime-config/setup-token"
+if [[ -n "${MEET_RESTORE_OBJECT:-}" ]]; then
+  [[ -n "${MEET_RESTORE_CREDENTIALS:-}" && -n "${MEET_RESTORE_KEY:-}" ]] || fail 'Restore cần đường dẫn credential và khóa phục hồi.'
+  python3 deploy/backup.py restore --object "$MEET_RESTORE_OBJECT" --credentials "$MEET_RESTORE_CREDENTIALS" --key "$MEET_RESTORE_KEY"
+  curl -fsS --retry 30 --retry-connrefused --retry-delay 2 "https://$MEET_DOMAIN/api/health" >/dev/null
+fi
 printf '\nCÀI ĐẶT THÀNH CÔNG · HTTPS VÀ DATABASE ĐÃ PHẢN HỒI\n'
 printf 'Mở trang cấu hình riêng tư dưới đây (không gửi link cho người khác):\nhttps://%s/setup#token=%s\n' "$MEET_DOMAIN" "$(cat runtime-config/setup-token)"
 printf '\nTại trang này: tạo trường/admin → nhập SFU Apps/TURN → cấu hình R2 lưu 30 ngày.\n'

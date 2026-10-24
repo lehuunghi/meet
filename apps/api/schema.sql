@@ -101,3 +101,16 @@ CREATE TABLE IF NOT EXISTS meeting_hands (
  school_id CHAR(36) NOT NULL,meeting_id CHAR(36) NOT NULL,user_id CHAR(36) NOT NULL,raised BOOLEAN NOT NULL DEFAULT FALSE,
  PRIMARY KEY(school_id,meeting_id,user_id),FOREIGN KEY(school_id,meeting_id) REFERENCES meetings(school_id,id),FOREIGN KEY(school_id,user_id) REFERENCES users(school_id,id)
 );
+
+CREATE TABLE IF NOT EXISTS course_assistants(school_id CHAR(36) NOT NULL,course_id CHAR(36) NOT NULL,user_id CHAR(36) NOT NULL,PRIMARY KEY(school_id,course_id,user_id),FOREIGN KEY(school_id,course_id) REFERENCES courses(school_id,id) ON DELETE CASCADE,FOREIGN KEY(school_id,user_id) REFERENCES users(school_id,id));
+
+CREATE TABLE IF NOT EXISTS account_security(user_id CHAR(36) PRIMARY KEY,secret TEXT NOT NULL,last_step BIGINT NOT NULL DEFAULT 0,FOREIGN KEY(user_id) REFERENCES users(id));
+
+CREATE TABLE IF NOT EXISTS user_controls(user_id CHAR(36) PRIMARY KEY,state ENUM('active','suspended','disabled') NOT NULL DEFAULT 'active',permissions JSON NOT NULL,FOREIGN KEY(user_id) REFERENCES users(id));
+
+CREATE TABLE IF NOT EXISTS attendance_policies(school_id CHAR(36) PRIMARY KEY,late_minutes INT NOT NULL DEFAULT 10,early_minutes INT NOT NULL DEFAULT 10,min_percent INT NOT NULL DEFAULT 75,FOREIGN KEY(school_id) REFERENCES schools(id));
+CREATE TABLE IF NOT EXISTS meeting_timings(school_id CHAR(36) NOT NULL,meeting_id CHAR(36) NOT NULL,starts_at DATETIME(6) NOT NULL,ends_at DATETIME(6) NOT NULL,PRIMARY KEY(school_id,meeting_id),FOREIGN KEY(school_id,meeting_id) REFERENCES meetings(school_id,id));
+CREATE TABLE IF NOT EXISTS attendance_adjustments(id BIGINT AUTO_INCREMENT PRIMARY KEY,school_id CHAR(36) NOT NULL,meeting_id CHAR(36) NOT NULL,user_id CHAR(36) NOT NULL,joined_at DATETIME(6) NOT NULL,left_at DATETIME(6) NOT NULL,reason VARCHAR(500) NOT NULL,actor_id CHAR(36) NOT NULL,created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),KEY latest(school_id,meeting_id,user_id,id),FOREIGN KEY(school_id,meeting_id) REFERENCES meetings(school_id,id),FOREIGN KEY(school_id,user_id) REFERENCES users(school_id,id));
+
+CREATE TABLE IF NOT EXISTS code_counters(kind VARCHAR(2) PRIMARY KEY,value INT NOT NULL DEFAULT 0);
+CREATE TABLE IF NOT EXISTS entity_short_codes(kind VARCHAR(2) NOT NULL,number INT NOT NULL,entity_id CHAR(36) NOT NULL UNIQUE,PRIMARY KEY(kind,number));

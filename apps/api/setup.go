@@ -19,7 +19,7 @@ func (a *app) setupStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	_, tokenErr := os.Stat(configPath("setup-token"))
-	send(w, 200, map[string]any{"initialized": n > 0, "available": tokenErr == nil, "retention_days": 30})
+	send(w, 200, map[string]any{"initialized": n > 0, "available": tokenErr == nil, "retention_days": configuredRetention()})
 }
 func (a *app) setupUnlock(w http.ResponseWriter, r *http.Request) {
 	var in struct {
@@ -99,7 +99,7 @@ func (a *app) setupGet(w http.ResponseWriter, r *http.Request) {
 		problem(w, 500, "Allocation read failed")
 		return
 	}
-	send(w, 200, map[string]any{"settings": redactSettings(c), "initialized": n > 0, "allocations": counts, "origin": a.origin})
+	send(w, 200, map[string]any{"settings": redactSettings(c), "initialized": n > 0, "allocations": counts, "origin": a.origin, "backup_status": backupStatus()})
 }
 
 type firstSchool struct {
@@ -211,10 +211,10 @@ func (a *app) setupSave(w http.ResponseWriter, r *http.Request) {
 	}
 	if in.Settings.R2.Enabled {
 		ctx, cancel := context.WithTimeout(r.Context(), 40*time.Second)
-		e = a.configureBucket(ctx, in.Settings.R2)
+		e = a.configureBucket(ctx, in.Settings.R2, in.Settings.Retention)
 		cancel()
 		if e != nil {
-			problem(w, 502, "Không cấu hình được R2: kiểm tra bucket có sẵn, quyền CORS/lifecycle/đọc/ghi/xóa object và rule cũ có thể xóa bản ghi trước 30 ngày. Cấu hình cục bộ chưa lưu; kiểm tra lại bucket nếu thao tác từ xa chỉ hoàn tất một phần.")
+			problem(w, 502, "Không cấu hình được R2: kiểm tra bucket có sẵn, quyền CORS/lifecycle/đọc/ghi/xóa object và rule cũ có thể xóa bản ghi trước thời hạn đã chọn. Cấu hình cục bộ chưa lưu; kiểm tra lại bucket nếu thao tác từ xa chỉ hoàn tất một phần.")
 			return
 		}
 		in.Settings.R2.Lifecycle = true
@@ -245,6 +245,10 @@ func (a *app) setupSave(w http.ResponseWriter, r *http.Request) {
 		problem(w, 500, "Không lưu được file cấu hình; kiểm tra quyền CONFIG_DIR")
 		return
 	}
+	if _, e = a.db.ExecContext(r.Context(), "UPDATE recordings SET expires_at=DATE_ADD(created_at,INTERVAL ? DAY) WHERE deleted_at IS NULL", in.Settings.Retention); e != nil {
+		problem(w, 500, "Cấu hình đã lưu; chưa cập nhật hạn bản ghi, lưu lại để thử lại")
+		return
+	}
 	if tx != nil {
 		if tx.Commit() != nil {
 			problem(w, 500, "Chưa tạo được trường; cấu hình đã lưu, hãy thử lại bước khởi tạo")
@@ -257,7 +261,7 @@ func (a *app) setupSave(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	send(w, 200, map[string]any{"ok": true, "retention_days": 30, "lifecycle_applied": in.Settings.R2.Lifecycle, "initialized": true})
+	send(w, 200, map[string]any{"ok": true, "retention_days": in.Settings.Retention, "lifecycle_applied": in.Settings.R2.Lifecycle, "initialized": true})
 }
 func (a *app) setupCheckSFU(w http.ResponseWriter, r *http.Request) {
 	var p sfuProvider

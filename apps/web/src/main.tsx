@@ -1,3 +1,5 @@
+import { Accounts } from "./accounts";
+import { AccountSecurity } from "./account";
 import { AcademicAdmin } from "./academic";
 import { RoomTools } from "./room-tools";
 import React, { useEffect, useRef, useState } from "react";
@@ -5,6 +7,7 @@ import { createRoot } from "react-dom/client";
 import { api } from "./api";
 import { ClassroomMedia } from "./media";
 import "./style.css";
+import "./meet-room.css";
 import "./attendance.css";
 import { AttendanceReport } from "./attendance";
 import { Setup } from "./setup";
@@ -17,7 +20,13 @@ import {
   previewCourses,
   previewClasses,
 } from "./preview";
-type User = { id: string; name: string; role: string; school_id: string };
+type User = {
+  id: string;
+  name: string;
+  role: string;
+  school_id: string;
+  permissions?: string[] | null;
+};
 type Meeting = {
   id: string;
   title: string;
@@ -77,6 +86,15 @@ function Video({
   );
 }
 function App() {
+  useEffect(() => {
+    const ended = () => {
+      setUser(null);
+      setRoom(null);
+      setError("Phiên đã kết thúc. Vui lòng đăng nhập lại.");
+    };
+    window.addEventListener("meet-session-ended", ended);
+    return () => window.removeEventListener("meet-session-ended", ended);
+  }, []);
   const [user, setUser] = useState<User | null>(
       demo
         ? {
@@ -121,10 +139,16 @@ function App() {
       setError((e as Error).message);
     }
   };
+  const allowed = (p: string) =>
+    user?.role !== "admin" ||
+    user.permissions == null ||
+    user.permissions.includes(p);
   async function refresh() {
     if (demo) return;
     const [m, c] = await Promise.all([
-      api<Meeting[]>("/meetings"),
+      allowed("meetings") || allowed("attendance")
+        ? api<Meeting[]>("/meetings")
+        : Promise.resolve([]),
       api<any[]>("/catalog"),
     ]);
     setMeetings(m);
@@ -211,6 +235,16 @@ function App() {
               {error}
             </p>
           )}
+          <label>
+            Mã 2FA (nếu đã bật)
+            <input
+              name="code"
+              inputMode="numeric"
+              pattern="[0-9]{6}"
+              autoComplete="one-time-code"
+              placeholder="6 chữ số"
+            />
+          </label>
           <button>Đăng nhập →</button>
           <a href="?demo=1">Xem trước giao diện</a>
         </form>
@@ -278,27 +312,30 @@ function App() {
                 : "Báo cáo điểm danh",
             ],
             ...(demo ? [["recordings", "▷", "Bản ghi bài học"]] : []),
-          ].map(([key, icon, label]) => (
-            <button
-              key={key}
-              className={page === key ? "active" : ""}
-              onClick={() => {
-                setPage(key);
-                setMenuOpen(false);
-                const params = new URLSearchParams(location.search);
-                params.set("page", key);
-                history.replaceState(null, "", "?" + params.toString());
-                if (key === "admin" && !demo)
-                  void safe(async () => {
-                    setUsers(await api("/users"));
-                    setClasses(await api("/classes"));
-                  });
-              }}
-            >
-              <span>{icon}</span>
-              {label}
-            </button>
-          ))}
+          ]
+            .filter(([key]) => key !== "attendance" || allowed("attendance"))
+            .filter(([key]) => key !== "meetings" || allowed("meetings"))
+            .map(([key, icon, label]) => (
+              <button
+                key={key}
+                className={page === key ? "active" : ""}
+                onClick={() => {
+                  setPage(key);
+                  setMenuOpen(false);
+                  const params = new URLSearchParams(location.search);
+                  params.set("page", key);
+                  history.replaceState(null, "", "?" + params.toString());
+                  if (key === "admin" && !demo && allowed("academic"))
+                    void safe(async () => {
+                      setUsers(await api("/users"));
+                      setClasses(await api("/classes"));
+                    });
+                }}
+              >
+                <span>{icon}</span>
+                {label}
+              </button>
+            ))}
         </nav>
         <div className="aside-bottom">
           <span className="avatar">{user.name[0]}</span>
@@ -468,10 +505,17 @@ function App() {
                       </div>
                       <button
                         className="secondary"
-                        disabled={m.status === "ended"}
+                        disabled={
+                          m.status === "ended" ||
+                          (user.role === "student" && m.status !== "live")
+                        }
                         onClick={() => setRoom(m)}
                       >
-                        Vào lớp ↗
+                        {m.status === "ended"
+                          ? "Đã kết thúc"
+                          : user.role === "student" && m.status !== "live"
+                            ? "Đang chờ giáo viên"
+                            : "Vào lớp học ↗"}
                       </button>
                     </article>
                   ))}
@@ -550,6 +594,7 @@ function App() {
             <AttendanceReport role={user.role} courses={courses} demo={demo} />
           )}
           {demo && page === "recordings" && <PreviewRecordings />}
+          {page === "settings" && <AccountSecurity demo={demo} />}
           {page === "settings" && (
             <section className="section">
               <h2>Đổi mật khẩu</h2>
@@ -590,7 +635,22 @@ function App() {
             </section>
           )}
           {page === "admin" && user.role === "admin" && (
-            <AcademicAdmin demo={demo} onChange={refresh} />
+            <>
+              {allowed("academic") && (
+                <AcademicAdmin demo={demo} onChange={refresh} />
+              )}
+              {allowed("accounts") && <Accounts demo={demo} />}
+              <section className="section">
+                <h2>Cấu hình hệ thống dùng chung</h2>
+                <p>
+                  SFU theo lớp, TURN, R2, thời hạn ghi hình và lịch sao lưu. Cần
+                  mã cài đặt riêng của người vận hành VPS.
+                </p>
+                <a href="/setup" target="_blank" rel="noreferrer">
+                  Mở cấu hình SFU / R2 / sao lưu ↗
+                </a>
+              </section>
+            </>
           )}
           <footer>
             Meet <span>·</span> Kết nối tri thức, cùng nhau tiến bộ.

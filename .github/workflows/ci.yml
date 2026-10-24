@@ -24,6 +24,10 @@ jobs:
       - uses: actions/checkout@v4
       - run: bash -n deploy/install.sh deploy/init-secrets.sh
         working-directory: .
+      - run: sudo apt-get update && sudo apt-get install -y python3-cryptography
+        working-directory: .
+      - run: /usr/bin/python3 deploy/backup_test.py
+        working-directory: .
       - uses: actions/setup-go@v6
         with:
           go-version-file: apps/api/go.mod

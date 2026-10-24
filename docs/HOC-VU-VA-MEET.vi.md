@@ -1,3 +1,5 @@
+> Cập nhật quản trị, 2FA, điểm danh từng buổi, R2 và sao lưu: [Hướng dẫn quản trị nâng cao](QUAN-TRI-NANG-CAO.vi.md). Hướng dẫn mới thay thế thời hạn R2 cố định 30 ngày trước đây.
+
 # Bảng học vụ và phòng họp
 
 Admin mở **Quản trị**, chọn **Môn học**, **Học sinh theo lớp**, **Giáo viên** hoặc **Phân công giảng dạy**. Có tìm theo ID ngắn/mã SV/tên/email. Mobile hiển thị từng dòng thành thẻ nhập liệu.

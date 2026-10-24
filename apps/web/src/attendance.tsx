@@ -1,4 +1,9 @@
 import { useEffect, useState } from "react";
+import {
+  AttendancePolicy,
+  AttendanceEdit,
+  LessonTiming,
+} from "./attendance-admin";
 import { api } from "./api";
 export type ReportCourse = {
   id: string;
@@ -8,6 +13,11 @@ export type ReportCourse = {
   teacher: string;
 };
 type ReportRow = {
+  meeting_id?: string;
+  meeting_title?: string;
+  starts_at?: string;
+  attendance_result?: string;
+  adjustment_reason?: string;
   id: string;
   name: string;
   email: string;
@@ -51,6 +61,15 @@ function mockRows(
   course: ReportCourse,
   lesson: string,
 ): ReportRow[] {
+  if (!lesson)
+    return mockLessons(course.id).flatMap((l) =>
+      mockRows(role, course, l.id).map((r) => ({
+        ...r,
+        meeting_id: l.id,
+        meeting_title: l.title,
+        starts_at: l.starts_at,
+      })),
+    );
   const names =
     course.class_name === "10A1"
       ? ["Nguyễn Hoàng An", "Lê Thanh Bình", "Phạm Mai Chi"]
@@ -70,7 +89,10 @@ function mockRows(
         : (lesson ? 2500 : 5100) -
           i * 230 -
           (course.id === "physics" ? 370 : 0),
-    session_count: lesson ? 1 : 2,
+    meeting_id: lesson,
+    meeting_title: mockLessons(course.id).find((l) => l.id === lesson)?.title,
+    starts_at: mockLessons(course.id).find((l) => l.id === lesson)?.starts_at,
+    session_count: 1,
     participated_sessions: i === 2 ? 0 : lesson ? 1 : 2,
     joined_at: i === 2 ? null : `2026-10-${firstDay}T01:00:00Z`,
     last_seen: i === 2 ? null : `2026-10-${lesson ? firstDay : "24"}T01:45:00Z`,
@@ -86,6 +108,7 @@ export function AttendanceReport({
   courses: ReportCourse[];
   demo?: boolean;
 }) {
+  const [revision, setRevision] = useState(0);
   const [classChoice, setClass] = useState(""),
     [courseChoice, setCourse] = useState(""),
     [meeting, setMeeting] = useState(""),
@@ -147,7 +170,7 @@ export function AttendanceReport({
     return () => {
       active = false;
     };
-  }, [courseId, classId, meeting, page, role, demo]);
+  }, [courseId, classId, meeting, page, role, demo, revision]);
   const shown = rows.slice(0, 50),
     scope =
       role === "admin"
@@ -240,6 +263,34 @@ export function AttendanceReport({
               </select>
             </label>
           </div>
+          {!demo && courseId && (
+            <a
+              className="button secondary"
+              href={
+                "/api/attendance/report?" +
+                new URLSearchParams({
+                  class_id: classId,
+                  course_id: courseId,
+                  meeting_id: meeting,
+                  format: "xlsx",
+                })
+              }
+            >
+              Xuất Excel (.xlsx, tiếng Việt)
+            </a>
+          )}
+          {role === "admin" && (
+            <>
+              <AttendancePolicy demo={demo} />
+              {meeting && (
+                <LessonTiming
+                  meeting={meeting}
+                  demo={demo}
+                  onSaved={() => setRevision((v) => v + 1)}
+                />
+              )}
+            </>
+          )}
           <div className="report-context">
             <strong>
               Lớp {course?.class_name} <span>·</span> {course?.name}
@@ -258,20 +309,19 @@ export function AttendanceReport({
               <div className="attendance-summary">
                 <article>
                   <strong>
-                    {role === "student"
-                      ? shown[0]?.session_count || 0
-                      : shown.length}
+                    {role === "student" ? shown.length : shown.length}
                   </strong>
                   <small>
                     {role === "student"
-                      ? "Buổi đã bắt đầu"
-                      : "Học sinh trên trang này"}
+                      ? "Dòng điểm danh trên trang"
+                      : "Dòng điểm danh trên trang"}
                   </small>
                 </article>
                 <article>
                   <strong>
                     {role === "student"
-                      ? shown[0]?.participated_sessions || 0
+                      ? shown.filter((r) => Number(r.participated_sessions) > 0)
+                          .length
                       : shown.filter((r) => Number(r.participated_sessions) > 0)
                           .length}
                   </strong>
@@ -287,7 +337,7 @@ export function AttendanceReport({
                   </strong>
                   <small>
                     {role === "student"
-                      ? "Tổng phút kết nối"
+                      ? "Phút kết nối dòng đầu"
                       : "Chưa ghi nhận tham gia"}
                   </small>
                 </article>
@@ -305,16 +355,29 @@ export function AttendanceReport({
                     </caption>
                     <thead>
                       <tr>
+                        <th>Buổi học</th>
                         <th>Học sinh</th>
                         <th>Buổi có kết nối</th>
                         <th>Tổng thời gian</th>
                         <th>Vào lớp lần đầu</th>
                         <th>Ghi nhận gần nhất</th>
+                        <th>Kết quả</th>
+                        {role === "admin" && <th>Điều chỉnh</th>}
                       </tr>
                     </thead>
                     <tbody>
                       {shown.map((r) => (
-                        <tr key={r.id}>
+                        <tr key={(r.meeting_id || meeting) + r.id}>
+                          <td data-label="Buổi học">
+                            <strong>
+                              {r.meeting_title ||
+                                lessons.find((l) => l.id === meeting)?.title ||
+                                "Buổi học"}
+                            </strong>
+                            <small>
+                              {r.starts_at ? time(r.starts_at) : ""}
+                            </small>
+                          </td>
                           <td data-label="Học sinh">
                             <strong>{r.name}</strong>
                             <small>{r.email}</small>
@@ -339,6 +402,23 @@ export function AttendanceReport({
                           <td data-label="Ghi nhận gần nhất">
                             {time(r.last_seen)}
                           </td>
+                          <td data-label="Kết quả">
+                            {r.attendance_result || "Chưa đánh giá"}
+                            {r.adjustment_reason && (
+                              <small>
+                                Đã điều chỉnh: {r.adjustment_reason}
+                              </small>
+                            )}
+                          </td>
+                          {role === "admin" && (
+                            <td data-label="Điều chỉnh">
+                              <AttendanceEdit
+                                row={r}
+                                demo={demo}
+                                onSaved={() => setRevision((v) => v + 1)}
+                              />
+                            </td>
+                          )}
                         </tr>
                       ))}
                     </tbody>

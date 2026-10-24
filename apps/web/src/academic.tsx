@@ -1,7 +1,11 @@
 import { useEffect, useState, useRef } from "react";
 import { api } from "./api";
 import { previewClasses, previewCourses, previewUsers } from "./preview";
-import { parseAccountText, type AccountDraft } from "./academic-data";
+import {
+  parseAccountText,
+  parseSubjectText,
+  type AccountDraft,
+} from "./academic-data";
 import "./academic.css";
 type Row = Record<string, any>;
 const newAccount = (): AccountDraft => ({
@@ -48,7 +52,7 @@ export function AcademicAdmin({
           ? prev
           : previewClasses.map((v, i) => ({
               ...v,
-              short_id: `LH00000${i + 1}`,
+              short_id: `LH000${i + 1}`,
             })),
       );
       setCourses((prev) =>
@@ -56,7 +60,7 @@ export function AcademicAdmin({
           ? prev
           : previewCourses.map((v, i) => ({
               ...v,
-              short_id: `MH00000${i + 1}`,
+              short_id: `MH000${i + 1}`,
               revision: 1,
               teacher_id: i < 2 ? "teacher-minh" : i === 2 ? "teacher-lan" : "",
               dirty: false,
@@ -69,7 +73,7 @@ export function AcademicAdmin({
               .filter((v) => v.role === "teacher")
               .map((v, i) => ({
                 ...v,
-                short_id: `GV00000${i + 1}`,
+                short_id: `GV000${i + 1}`,
                 student_code: "",
                 password: "",
                 revision: 1,
@@ -83,7 +87,16 @@ export function AcademicAdmin({
       api<Row[]>("/catalog"),
     ]);
     setClasses(c);
-    setCourses(k.map((v) => ({ ...v, dirty: false })));
+    setCourses(
+      k.map((v) => ({
+        ...v,
+        assistant_ids:
+          typeof v.assistant_ids === "string"
+            ? JSON.parse(v.assistant_ids)
+            : v.assistant_ids || [],
+        dirty: false,
+      })),
+    );
     setTeachers(
       u
         .filter((v) => v.role === "teacher")
@@ -111,7 +124,7 @@ export function AcademicAdmin({
           .slice(0, id === "class-10a1" ? 3 : 1)
           .map((v, i) => ({
             ...v,
-            short_id: `SV00000${i + 1}`,
+            short_id: `SV000${i + 1}`,
             student_code: `SV20260${i + 1}`,
             password: "",
             revision: 1,
@@ -173,7 +186,7 @@ export function AcademicAdmin({
           id: r.id || `demo-${i}`,
           short_id:
             r.short_id ||
-            `${role === "student" ? "SV" : "GV"}${String(i + 1).padStart(6, "0")}`,
+            `${role === "student" ? "SV" : "GV"}${String(i + 1).padStart(4, "0")}`,
           password: "",
           dirty: false,
           revision: Math.max(1, r.revision + 1),
@@ -296,7 +309,7 @@ export function AcademicAdmin({
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="SV000123 / MH000045 / tên…"
+              placeholder="SV0123 / MH0045 / tên…"
             />
           </label>
           {tab === "courses" && (
@@ -312,7 +325,7 @@ export function AcademicAdmin({
                       {
                         id: crypto.randomUUID(),
                         name,
-                        short_id: `LH${String(v.length + 1).padStart(6, "0")}`,
+                        short_id: `LH${String(v.length + 1).padStart(4, "0")}`,
                       },
                     ]);
                     setNotice("Đã thêm lớp trong bản mẫu");
@@ -363,12 +376,51 @@ export function AcademicAdmin({
               + Thêm dòng môn
             </button>
           </div>
+          <details className="academic-paste">
+            <summary>Dán nhiều dòng từ Excel hoặc CSV</summary>
+            <p>
+              Một cột tên môn, tối đa 100 dòng. Tiêu đề tùy chọn: name hoặc Tên
+              môn.
+            </p>
+            <textarea
+              aria-label="Danh sách môn nhập trực tiếp"
+              rows={5}
+              value={paste}
+              onChange={(e) => setPaste(e.target.value)}
+            />
+            <button
+              className="secondary"
+              disabled={busy || !classId}
+              onClick={() =>
+                void run(async () => {
+                  const names = parseSubjectText(paste);
+                  setCourses((v) => [
+                    ...v,
+                    ...names.map((name) => ({
+                      id: "",
+                      key: crypto.randomUUID(),
+                      class_id: classId,
+                      name,
+                      revision: 0,
+                      teacher_id: "",
+                      dirty: true,
+                    })),
+                  ]);
+                  setPaste("");
+                  setNotice("Đã thêm môn vào bảng để kiểm tra trước khi lưu");
+                })
+              }
+            >
+              Đưa môn vào bảng
+            </button>
+          </details>
           <table className="academic-table">
             <thead>
               <tr>
                 <th>ID môn</th>
                 <th>Tên môn</th>
                 <th>Giáo viên hiện tại</th>
+                <th>Thao tác</th>
               </tr>
             </thead>
             <tbody>
@@ -400,6 +452,33 @@ export function AcademicAdmin({
                             t.short_id === v.teacher_id,
                         )?.name || "Chưa phân công"}
                       </td>
+                      <td data-label="Thao tác">
+                        <button
+                          className="secondary"
+                          disabled={busy}
+                          onClick={() =>
+                            void run(async () => {
+                              if (v.id && !demo) {
+                                await api(
+                                  "/classes/" +
+                                    classId +
+                                    "/courses/" +
+                                    v.id +
+                                    "/delete",
+                                  { revision: v.revision },
+                                );
+                                await onChange();
+                              }
+                              setCourses((rows) =>
+                                rows.filter((_, n) => n !== i),
+                              );
+                              setNotice("Đã xóa dòng môn");
+                            })
+                          }
+                        >
+                          Xóa dòng môn
+                        </button>
+                      </td>
                     </tr>
                   ),
               )}
@@ -420,7 +499,7 @@ export function AcademicAdmin({
                       ...c,
                       id: c.id || `demo-course-${i}`,
                       short_id:
-                        c.short_id || `MH${String(i + 1).padStart(6, "0")}`,
+                        c.short_id || `MH${String(i + 1).padStart(4, "0")}`,
                       revision: Math.max(1, c.revision + 1),
                       dirty: false,
                     })),
@@ -626,7 +705,7 @@ export function AcademicAdmin({
               >
                 <label>
                   ID học sinh
-                  <input name="student" required placeholder="SV000123" />
+                  <input name="student" required placeholder="SV0123" />
                 </label>
                 <button disabled={busy}>Gán vào lớp</button>
               </form>
@@ -638,8 +717,9 @@ export function AcademicAdmin({
         <section className="section">
           <h2>Bảng phân công lớp – môn – giáo viên</h2>
           <p>
-            Mỗi môn một giáo viên hoặc để chưa phân công. Không đổi khi môn có
-            buổi live.
+            Mỗi môn một giáo viên chính và tối đa 10 trợ giảng. Trợ giảng được
+            vào lớp và xem điểm danh; giáo viên chính bắt đầu/kết thúc buổi.
+            Không đổi khi môn có buổi live.
           </p>
           <table className="academic-table">
             <thead>
@@ -689,6 +769,87 @@ export function AcademicAdmin({
                               </option>
                             ))}
                         </select>
+                        {(v.assistant_ids || []).map(
+                          (id: string, j: number) => (
+                            <div key={j} className="assistant-row">
+                              <select
+                                aria-label={
+                                  "Trợ giảng " + (j + 1) + " môn " + v.short_id
+                                }
+                                value={id}
+                                onChange={(e) =>
+                                  setCourses((rows) =>
+                                    rows.map((c, n) =>
+                                      n === i
+                                        ? {
+                                            ...c,
+                                            assistant_ids: c.assistant_ids.map(
+                                              (a: string, k: number) =>
+                                                k === j ? e.target.value : a,
+                                            ),
+                                            assignmentDirty: true,
+                                          }
+                                        : c,
+                                    ),
+                                  )
+                                }
+                              >
+                                <option value="">Chọn trợ giảng</option>
+                                {teachers
+                                  .filter((t) => t.id && t.id !== v.teacher_id)
+                                  .map((t) => (
+                                    <option key={t.id} value={t.id}>
+                                      {t.short_id} · {t.name}
+                                    </option>
+                                  ))}
+                              </select>
+                              <button
+                                className="secondary"
+                                onClick={() =>
+                                  setCourses((rows) =>
+                                    rows.map((c, n) =>
+                                      n === i
+                                        ? {
+                                            ...c,
+                                            assistant_ids:
+                                              c.assistant_ids.filter(
+                                                (_: string, k: number) =>
+                                                  k !== j,
+                                              ),
+                                            assignmentDirty: true,
+                                          }
+                                        : c,
+                                    ),
+                                  )
+                                }
+                              >
+                                Xóa trợ giảng
+                              </button>
+                            </div>
+                          ),
+                        )}
+                        <button
+                          className="secondary"
+                          disabled={(v.assistant_ids || []).length >= 10}
+                          onClick={() =>
+                            setCourses((rows) =>
+                              rows.map((c, n) =>
+                                n === i
+                                  ? {
+                                      ...c,
+                                      assistant_ids: [
+                                        ...(c.assistant_ids || []),
+                                        "",
+                                      ],
+                                      assignmentDirty: true,
+                                    }
+                                  : c,
+                              ),
+                            )
+                          }
+                        >
+                          + Thêm trợ giảng
+                        </button>
                       </td>
                     </tr>
                   ),
@@ -715,6 +876,7 @@ export function AcademicAdmin({
                   rows: rows.map((v) => ({
                     course_id: v.short_id || v.id,
                     teacher_id: v.teacher_id,
+                    assistant_ids: (v.assistant_ids || []).filter(Boolean),
                     revision: v.revision,
                   })),
                 });

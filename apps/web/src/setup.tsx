@@ -12,6 +12,7 @@ type Provider = {
 };
 type Turn = { id: string; token: string; token_set?: boolean };
 type Settings = {
+  backup?: { enabled: boolean; interval_hours: number };
   sfu: Provider[];
   turn: Turn[];
   r2: {
@@ -38,6 +39,7 @@ const blank: Settings = {
     lifecycle_applied: false,
   },
   retention_days: 30,
+  backup: { enabled: false, interval_hours: 24 },
 };
 export function Setup() {
   const [token, setToken] = useState(
@@ -52,6 +54,7 @@ export function Setup() {
     [origin, setOrigin] = useState(location.origin),
     [settings, setSettings] = useState<Settings>(blank),
     [counts, setCounts] = useState<Record<string, number>>({}),
+    [backupStatus, setBackupStatus] = useState<any>(null),
     [school, setSchool] = useState({
       slug: "",
       name: "",
@@ -64,6 +67,7 @@ export function Setup() {
     setCounts(data.allocations);
     setOrigin(data.origin);
     setInitialized(data.initialized);
+    setBackupStatus(data.backup_status);
     setUnlocked(true);
   }
   useEffect(() => {
@@ -490,11 +494,87 @@ export function Setup() {
                   <div>
                     <h2>3. Ghi hình R2 và thời hạn lưu</h2>
                     <p>
-                      Thời hạn cố định: một tháng được quy ước là 30 ngày, không
-                      phải theo tháng lịch.
+                      Thời hạn mặc định là 30 ngày. Thay đổi sẽ tác động
+                      lifecycle của các object ghi hình hiện có; không phải theo
+                      tháng lịch.
                     </p>
                   </div>
-                  <span className="pill">30 ngày</span>
+                  <fieldset>
+                    <legend>
+                      Sao lưu dữ liệu, mã nguồn và cấu hình lên R2
+                    </legend>
+                    <p>
+                      Đã cài dịch vụ trên VPS bằng bộ cài mới. Bản sao được mã
+                      hóa, kiểm tra tải về; khóa phục hồi nằm tại
+                      /etc/meet/recovery.key. Tải và giữ khóa ở nơi riêng, không
+                      đưa khóa lên cùng bucket. Bản sao không chứa video; video
+                      giữ theo thời hạn riêng.
+                    </p>
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={settings.backup?.enabled || false}
+                        onChange={(e) =>
+                          setSettings({
+                            ...settings,
+                            backup: {
+                              enabled: e.target.checked,
+                              interval_hours:
+                                settings.backup?.interval_hours || 24,
+                            },
+                          })
+                        }
+                      />
+                      Bật sao lưu tự động
+                    </label>
+                    <label>
+                      Chu kỳ sao lưu (giờ)
+                      <input
+                        type="number"
+                        min={1}
+                        max={720}
+                        value={settings.backup?.interval_hours || 24}
+                        onChange={(e) =>
+                          setSettings({
+                            ...settings,
+                            backup: {
+                              enabled: settings.backup?.enabled || false,
+                              interval_hours: Number(e.target.value),
+                            },
+                          })
+                        }
+                      />
+                    </label>
+                    {backupStatus ? (
+                      <p>
+                        Đã kiểm tra bản sao gần nhất:{" "}
+                        <code>{backupStatus.object_key}</code> ·{" "}
+                        {new Date(backupStatus.timestamp * 1000).toLocaleString(
+                          "vi-VN",
+                        )}
+                      </p>
+                    ) : (
+                      <p>
+                        Chưa có bản sao đã xác minh. Theo dõi dịch vụ
+                        meet-backup trên VPS sau lần chạy đầu.
+                      </p>
+                    )}
+                  </fieldset>
+                  <label>
+                    Thời hạn lưu ghi hình (ngày)
+                    <input
+                      type="number"
+                      min={1}
+                      max={3650}
+                      value={settings.retention_days}
+                      onChange={(e) =>
+                        setSettings({
+                          ...settings,
+                          retention_days: Number(e.target.value),
+                        })
+                      }
+                    />
+                  </label>
                 </div>
                 <label className="checkbox">
                   <input
@@ -590,10 +670,10 @@ export function Setup() {
                     </div>
                     <div className="banner">
                       Khi lưu, hệ thống thiết lập và đọc lại lifecycle xóa sau
-                      30 ngày cho prefix <code>recordings/</code>, đồng thời
-                      thêm CORS đúng domain. Credential phải có quyền cấu hình
-                      bucket và đọc/ghi/xóa object. Các rule khác được giữ lại.
-                      Không bật public bucket.
+                      theo số ngày đã chọn cho prefix <code>recordings/</code>,
+                      đồng thời thêm CORS đúng domain. Credential phải có quyền
+                      cấu hình bucket và đọc/ghi/xóa object. Các rule khác được
+                      giữ lại. Không bật public bucket.
                     </div>
                     <p>
                       {settings.r2.lifecycle_applied

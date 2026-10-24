@@ -1,3 +1,5 @@
+> Cập nhật quản trị, 2FA, điểm danh từng buổi, R2 và sao lưu: [Hướng dẫn quản trị nâng cao](QUAN-TRI-NANG-CAO.vi.md). Hướng dẫn mới thay thế thời hạn R2 cố định 30 ngày trước đây.
+
 # Cài Meet bằng một lệnh và cấu hình qua trình duyệt
 
 ## 1. Chuẩn bị trước

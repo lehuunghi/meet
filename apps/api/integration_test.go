@@ -130,8 +130,8 @@ func TestIntegration(t *testing.T) {
 		}
 	}
 	w = request("GET", "/api/attendance/report?course_id=demo-math", "", student)
-	if w.Code != 200 || json.Unmarshal(w.Body.Bytes(), &records) != nil || len(records) != 1 || records[0]["id"] != "demo-student" || records[0]["seconds"] != "125" || records[0]["session_count"] != float64(2) {
-		t.Fatalf("student aggregate report: %s", w.Body)
+	if w.Code != 200 || json.Unmarshal(w.Body.Bytes(), &records) != nil || len(records) != 2 || records[0]["id"] != "demo-student" || records[0]["session_count"] != float64(1) || records[0]["meeting_id"] == records[1]["meeting_id"] {
+		t.Fatalf("student per-session report: %s", w.Body)
 	}
 	w = request("GET", "/api/attendance/report?course_id=demo-math&meeting_id=demo-meeting", "", teacher)
 	if w.Code != 200 || json.Unmarshal(w.Body.Bytes(), &records) != nil || len(records) != 2 || records[0]["session_count"] != float64(1) {
@@ -298,6 +298,52 @@ func TestIntegration(t *testing.T) {
 	}
 	if w = request("GET", "/api/me", "", student); w.Code != 401 {
 		t.Fatal("revoked session accepted")
+	}
+	// A new login atomically replaces the prior session.
+	newer := login("demo", "teacher")
+	if request("GET", "/api/me", "", teacher).Code != 401 || request("GET", "/api/me", "", newer).Code != 200 {
+		t.Fatal("single session not enforced")
+	}
+	// Assistants can read assigned classes but cannot start/end as the lead teacher.
+	w = request("POST", "/api/assignments", `{"rows":[{"course_id":"`+courseCode+`","teacher_id":"`+teacherShort+`","assistant_ids":["demo-alt-teacher"],"revision":2}]}`, administrator)
+	if w.Code != 200 {
+		t.Fatalf("assistant assignment: %s", w.Body)
+	}
+	assistant := login("demo", "alt")
+	if request("GET", "/api/attendance/report?course_id="+courseID, "", assistant).Code != 200 {
+		t.Fatal("assistant report denied")
+	}
+	// Manual correction, policy and Unicode XLSX preserve tenant authorization.
+	w = request("POST", "/api/attendance/adjust", `{"meeting_id":"demo-meeting","user_id":"demo-student","joined_at":"2026-10-24T01:00:00Z","left_at":"2026-10-24T02:00:00Z","reason":"Bổ sung khi mất kết nối"}`, administrator)
+	if w.Code != 200 {
+		t.Fatalf("adjustment: %s", w.Body)
+	}
+	if request("POST", "/api/attendance/adjust", `{"meeting_id":"demo-meeting","user_id":"other-student","joined_at":"2026-10-24T01:00:00Z","left_at":"2026-10-24T02:00:00Z","reason":"Không thuộc trường"}`, administrator).Code != 404 {
+		t.Fatal("foreign student adjusted")
+	}
+	w = request("GET", "/api/attendance/report?course_id=demo-math&format=xlsx", "", administrator)
+	workbook, err := excelize.OpenReader(bytes.NewReader(w.Body.Bytes()))
+	if err != nil || w.Code != 200 {
+		t.Fatalf("XLSX export: %d %s", w.Code, w.Body)
+	}
+	value, err := workbook.GetCellValue("Điểm danh", "A1")
+	workbook.Close()
+	if err != nil || value != "Lớp" {
+		t.Fatal("Vietnamese XLSX header corrupted")
+	}
+	// Delegated administrators cannot call ungranted APIs or grant themselves more rights.
+	adminEmail := "limited-" + uid()[:8] + "@example.test"
+	w = request("POST", "/api/accounts", `{"email":"`+adminEmail+`","name":"Quản trị điểm danh","password":"limited-password-123","state":"active","permissions":["attendance"]}`, administrator)
+	if w.Code != 200 {
+		t.Fatalf("create delegated admin: %s", w.Body)
+	}
+	w = request("POST", "/api/login", `{"school":"demo","email":"`+adminEmail+`","password":"limited-password-123"}`, nil)
+	if w.Code != 200 {
+		t.Fatal("limited admin login")
+	}
+	limited := w.Result().Cookies()[0]
+	if request("GET", "/api/accounts", "", limited).Code != 403 || request("GET", "/api/attendance/report?course_id=demo-math", "", limited).Code != 200 {
+		t.Fatal("delegated permissions not enforced")
 	}
 	// Database constraint must reject a cross-tenant enrollment even outside the API.
 	if _, e = db.ExecContext(context.Background(), "INSERT INTO enrollments VALUES('school-demo','demo-class','other-student')"); e == nil {

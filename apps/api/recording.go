@@ -37,7 +37,7 @@ func (a *app) recordingCreate(w http.ResponseWriter, r *http.Request) {
 		problem(w, 502, "Upload signing failed")
 		return
 	}
-	if _, e = a.db.ExecContext(r.Context(), "INSERT INTO recordings(id,school_id,meeting_id,owner_id,object_key,bucket,expires_at) VALUES(?,?,?,?,?,?,DATE_ADD(UTC_TIMESTAMP(6),INTERVAL 30 DAY))", id, u.School, r.PathValue("id"), u.ID, key, store.Bucket); e != nil {
+	if _, e = a.db.ExecContext(r.Context(), "INSERT INTO recordings(id,school_id,meeting_id,owner_id,object_key,bucket,expires_at) VALUES(?,?,?,?,?,?,DATE_ADD(UTC_TIMESTAMP(6),INTERVAL ? DAY))", id, u.School, r.PathValue("id"), u.ID, key, store.Bucket, configuredRetention()); e != nil {
 		problem(w, 500, "Recording persistence failed")
 		return
 	}

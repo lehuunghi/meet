@@ -9,3 +9,7 @@ coverage.out
 backups/
 runtime-config/
 *.sql.gz
+
+__pycache__/
+*.pyc
+*.meet

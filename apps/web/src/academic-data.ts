@@ -56,3 +56,20 @@ export function parseAccountText(
     };
   });
 }
+
+export function parseSubjectText(text: string): string[] {
+  const fake = text.split(/\r?\n/).filter((v) => v.trim());
+  if (["name", "tên môn"].includes(fake[0]?.trim().toLocaleLowerCase("vi")))
+    fake.shift();
+  if (!fake.length || fake.length > 100)
+    throw Error("Nhập từ 1 đến 100 dòng môn");
+  return fake.map((v, i) => {
+    let name = v.trim();
+    if (name.startsWith('"') && name.endsWith('"'))
+      name = name.slice(1, -1).replaceAll('""', '"');
+    else if (/[\t,]/.test(name))
+      throw Error("Dòng " + (i + 1) + ": chỉ nhập một cột tên môn");
+    if (!name || name.length > 200) throw Error("Tên môn không hợp lệ");
+    return name;
+  });
+}

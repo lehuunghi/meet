@@ -29,11 +29,16 @@ type r2Settings struct {
 	AccessSet bool   `json:"access_key_set,omitempty"`
 	SecretSet bool   `json:"secret_set,omitempty"`
 }
+type backupSettings struct {
+	Enabled  bool `json:"enabled"`
+	Interval int  `json:"interval_hours"`
+}
 type systemSettings struct {
-	SFU       []sfuProvider `json:"sfu"`
-	TURN      []turnKey     `json:"turn"`
-	R2        r2Settings    `json:"r2"`
-	Retention int           `json:"retention_days"`
+	Backup    backupSettings `json:"backup"`
+	SFU       []sfuProvider  `json:"sfu"`
+	TURN      []turnKey      `json:"turn"`
+	R2        r2Settings     `json:"r2"`
+	Retention int            `json:"retention_days"`
 }
 
 func configPath(name string) string {
@@ -49,7 +54,9 @@ func loadSettings() (systemSettings, error) {
 		b, e := os.ReadFile(p)
 		if e == nil {
 			e = json.Unmarshal(b, &c)
-			c.Retention = 30
+			if c.Retention == 0 {
+				c.Retention = 30
+			}
 			return c, e
 		}
 		if !errors.Is(e, os.ErrNotExist) {
@@ -120,7 +127,21 @@ var configID = regexp.MustCompile(`^[a-zA-Z0-9_-]{1,80}$`)
 var cfID = regexp.MustCompile(`^[a-zA-Z0-9_-]{1,100}$`)
 
 func validateSettings(next *systemSettings, old systemSettings) error {
-	next.Retention = 30
+	if next.Retention == 0 {
+		next.Retention = 30
+	}
+	if next.Retention < 1 || next.Retention > 3650 {
+		return errors.New("Thời hạn ghi hình từ 1 đến 3650 ngày")
+	}
+	if next.Backup.Interval == 0 {
+		next.Backup.Interval = 24
+	}
+	if next.Backup.Interval < 1 || next.Backup.Interval > 720 {
+		return errors.New("Lịch sao lưu từ 1 đến 720 giờ")
+	}
+	if next.Backup.Enabled && !next.R2.Enabled {
+		return errors.New("Bật R2 trước khi bật sao lưu")
+	}
 	next.R2.Lifecycle = false
 	if len(next.SFU) > 32 || len(next.TURN) > 32 {
 		return errors.New("Tối đa 32 SFU app và 32 TURN key")

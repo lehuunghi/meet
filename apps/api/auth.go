@@ -8,13 +8,13 @@ import (
 	"net/http"
 	"os"
 	"strings"
-	"time"
 
 	"golang.org/x/crypto/bcrypt"
 )
 
 func (a *app) login(w http.ResponseWriter, r *http.Request) {
 	var in struct {
+		Code     string `json:"code"`
 		School   string `json:"school"`
 		Email    string `json:"email"`
 		Password string `json:"password"`
@@ -45,9 +45,31 @@ func (a *app) login(w http.ResponseWriter, r *http.Request) {
 		problem(w, 401, "Invalid school, email or password")
 		return
 	}
+	var enabled int
+	if a.db.QueryRowContext(r.Context(), "SELECT COUNT(*) FROM account_security WHERE user_id=?", u.ID).Scan(&enabled) != nil {
+		problem(w, 503, "Authentication unavailable")
+		return
+	}
+	if enabled > 0 && !a.verifyOTP(r, u.ID, in.Code) {
+		problem(w, 401, "Cần mã xác thực 2FA hợp lệ, chưa sử dụng")
+		return
+	}
+	if u.Role == "admin" {
+		var grants []byte
+		err := a.db.QueryRowContext(r.Context(), "SELECT permissions FROM user_controls WHERE user_id=?", u.ID).Scan(&grants)
+		if err != nil && err != sql.ErrNoRows {
+			problem(w, 503, "Permissions unavailable")
+			return
+		}
+		if grants != nil && json.Unmarshal(grants, &u.Permissions) != nil {
+			problem(w, 503, "Invalid permissions")
+			return
+		}
+	}
 	token := uid() + uid()
 	raw, _ := json.Marshal(u)
-	if a.cache.Set(r.Context(), "session:"+digest(token), raw, 12*time.Hour).Err() != nil {
+	const replaceSession = `local old=redis.call('GET',KEYS[1]);if old then redis.call('DEL','session:'..old) end;redis.call('SET',KEYS[1],ARGV[1],'EX',43200);redis.call('SET',KEYS[2],ARGV[2],'EX',43200);return 1`
+	if a.cache.Eval(r.Context(), replaceSession, []string{"current-session:" + u.ID, "session:" + digest(token)}, digest(token), string(raw)).Err() != nil {
 		problem(w, 503, "Authentication unavailable")
 		return
 	}

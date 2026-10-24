@@ -33,11 +33,12 @@ type app struct {
 	secure bool
 }
 type identity struct {
-	ID      string `json:"id"`
-	School  string `json:"school_id"`
-	Role    string `json:"role"`
-	Name    string `json:"name"`
-	Version int    `json:"session_version"`
+	Permissions []string `json:"permissions"`
+	ID          string   `json:"id"`
+	School      string   `json:"school_id"`
+	Role        string   `json:"role"`
+	Name        string   `json:"name"`
+	Version     int      `json:"session_version"`
 }
 type authKey struct{}
 
@@ -101,11 +102,34 @@ func (a *app) auth(next http.HandlerFunc) http.HandlerFunc {
 			problem(w, 401, "Invalid session")
 			return
 		}
+		current, err := a.cache.Get(r.Context(), "current-session:"+u.ID).Result()
+		if err != nil || current != digest(c.Value) {
+			problem(w, 401, "Bạn đã đăng nhập trên thiết bị khác")
+			return
+		}
 		var active bool
 		var version int
 		if a.db.QueryRowContext(r.Context(), "SELECT active,session_version FROM users WHERE id=? AND school_id=? AND role=?", u.ID, u.School, u.Role).Scan(&active, &version) != nil || !active || version != u.Version {
 			problem(w, 401, "Account unavailable")
 			return
+		}
+		if u.Role == "admin" {
+			var raw []byte
+			e := a.db.QueryRowContext(r.Context(), "SELECT permissions FROM user_controls WHERE user_id=?", u.ID).Scan(&raw)
+			if e != nil && e != sql.ErrNoRows {
+				problem(w, 503, "Permissions unavailable")
+				return
+			}
+			if raw != nil {
+				if json.Unmarshal(raw, &u.Permissions) != nil {
+					problem(w, 503, "Invalid permissions")
+					return
+				}
+			}
+			if p := permissionFor(r.URL.Path); p != "" && !permitted(u, p) && !(p == "meetings" && r.Method == "GET" && r.URL.Path == "/api/meetings" && permitted(u, "attendance")) {
+				problem(w, 403, "Tài khoản chưa được cấp quyền cho chức năng này")
+				return
+			}
 		}
 		next(w, r.WithContext(context.WithValue(r.Context(), authKey{}, u)))
 	}
@@ -131,10 +155,15 @@ func (a *app) routes() http.Handler {
 	m.HandleFunc("POST /api/logout", a.auth(a.logout))
 	m.HandleFunc("GET /api/me", a.auth(func(w http.ResponseWriter, r *http.Request) { send(w, 200, who(r)) }))
 	m.HandleFunc("POST /api/password", a.auth(a.password))
+	m.HandleFunc("GET /api/profile", a.auth(a.profile))
+	m.HandleFunc("GET /api/accounts", a.auth(a.accounts))
+	m.HandleFunc("POST /api/accounts", a.auth(a.accountSave))
+	m.HandleFunc("POST /api/2fa", a.auth(a.twoFactor))
 	m.HandleFunc("GET /api/catalog", a.auth(a.catalog))
 	m.HandleFunc("POST /api/classes", a.auth(a.createClass))
 	m.HandleFunc("POST /api/courses", a.auth(a.createCourse))
 	m.HandleFunc("POST /api/classes/{id}/courses/batch", a.auth(a.courseBatch))
+	m.HandleFunc("POST /api/classes/{id}/courses/{course}/delete", a.auth(a.deleteCourse))
 	m.HandleFunc("GET /api/classes/{id}/students", a.auth(a.classStudents))
 	m.HandleFunc("POST /api/classes/{id}/students/batch", a.auth(a.studentBatch))
 	m.HandleFunc("POST /api/teachers/batch", a.auth(a.teacherBatch))
@@ -157,6 +186,10 @@ func (a *app) routes() http.Handler {
 	}))
 	m.HandleFunc("GET /api/meetings", a.auth(a.meetings))
 	m.HandleFunc("GET /api/attendance/report", a.auth(a.attendanceReport))
+	m.HandleFunc("GET /api/attendance/policy", a.auth(a.attendancePolicy))
+	m.HandleFunc("POST /api/attendance/policy", a.auth(a.attendancePolicy))
+	m.HandleFunc("POST /api/attendance/adjust", a.auth(a.attendanceAdjust))
+	m.HandleFunc("POST /api/attendance/timing", a.auth(a.attendanceTiming))
 	m.HandleFunc("POST /api/meetings", a.auth(a.createMeeting))
 	m.HandleFunc("POST /api/meetings/{id}/state", a.auth(a.meetingState))
 	m.HandleFunc("POST /api/meetings/{id}/presence", a.auth(a.presence))
@@ -216,7 +249,10 @@ func migrate(db *sql.DB) error {
 	if e = migrateV2(c); e != nil {
 		return e
 	}
-	return migrateV3(c)
+	if e = migrateV3(c); e != nil {
+		return e
+	}
+	return migrateV4(c)
 }
 func main() {
 	db, e := sql.Open("mysql", secret("MYSQL_DSN"))
@@ -233,6 +269,13 @@ func main() {
 			e = migrate(db)
 		case "seed":
 			e = seed(db)
+		case "configure-storage":
+			cfg, err := loadSettings()
+			e = err
+			if e == nil && cfg.R2.Enabled {
+				a := &app{client: &http.Client{Timeout: 40 * time.Second}, origin: os.Getenv("APP_ORIGIN")}
+				e = a.configureBucket(context.Background(), cfg.R2, cfg.Retention)
+			}
 		case "bootstrap":
 			e = bootstrap(db)
 		default:

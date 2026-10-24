@@ -1,3 +1,5 @@
+> Cập nhật quản trị, 2FA, điểm danh từng buổi, R2 và sao lưu: [Hướng dẫn quản trị nâng cao](docs/QUAN-TRI-NANG-CAO.vi.md). Hướng dẫn mới thay thế thời hạn R2 cố định 30 ngày trước đây.
+
 # Meet — trường học trực tuyến đa trường
 
 Monorepo **Go + React/Vite + MySQL + Redis**, tích hợp **Cloudflare Realtime SFU/TURN và R2**. Triển khai một VPS Ubuntu bằng Docker Compose, HTTPS qua Caddy.

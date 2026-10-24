@@ -13,12 +13,33 @@ import (
 )
 
 func shortCode(tx *sql.Tx, kind, id string) (string, error) {
-	res, e := tx.Exec("INSERT INTO entity_codes(kind,entity_id) VALUES(?,?)", kind, id)
-	if e != nil {
+	if _, e := tx.Exec("INSERT IGNORE INTO entity_codes(kind,entity_id) VALUES(?,?)", kind, id); e != nil {
 		return "", e
 	}
-	n, e := res.LastInsertId()
-	return fmt.Sprintf("%s%06d", kind, n), e
+	var n int
+	err := tx.QueryRow("SELECT number FROM entity_short_codes WHERE entity_id=?", id).Scan(&n)
+	if err == nil {
+		return fmt.Sprintf("%s%04d", kind, n), nil
+	}
+	if err != sql.ErrNoRows {
+		return "", err
+	}
+	if _, err = tx.Exec("INSERT IGNORE INTO code_counters(kind,value) VALUES(?,0)", kind); err != nil {
+		return "", err
+	}
+	if _, err = tx.Exec("UPDATE code_counters SET value=value+1 WHERE kind=?", kind); err != nil {
+		return "", err
+	}
+	if err = tx.QueryRow("SELECT value FROM code_counters WHERE kind=?", kind).Scan(&n); err != nil {
+		return "", err
+	}
+	if n > 9999 {
+		return "", fmt.Errorf("four-digit %s identifier capacity exhausted", kind)
+	}
+	if _, err = tx.Exec("INSERT INTO entity_short_codes(kind,number,entity_id) VALUES(?,?,?)", kind, n, id); err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("%s%04d", kind, n), nil
 }
 func (a *app) teacherImport(w http.ResponseWriter, r *http.Request) {
 	if !admin(w, r) {
@@ -299,9 +320,10 @@ func (a *app) assignTeachers(w http.ResponseWriter, r *http.Request) {
 	}
 	var in struct {
 		Rows []struct {
-			Course   string `json:"course_id"`
-			Teacher  string `json:"teacher_id"`
-			Revision int    `json:"revision"`
+			Assistants []string `json:"assistant_ids"`
+			Course     string   `json:"course_id"`
+			Teacher    string   `json:"teacher_id"`
+			Revision   int      `json:"revision"`
 		} `json:"rows"`
 	}
 	if !decode(w, r, &in) {
@@ -342,6 +364,29 @@ func (a *app) assignTeachers(w http.ResponseWriter, r *http.Request) {
 			e = tx.QueryRowContext(r.Context(), "SELECT id FROM users WHERE school_id=? AND role='teacher' AND active=TRUE AND (id=? OR short_id=?)", school, v.Teacher, v.Teacher).Scan(&teacher)
 			if e != nil {
 				problem(w, 404, "Không tìm thấy giáo viên trong trường")
+				return
+			}
+		}
+		if len(v.Assistants) > 10 {
+			problem(w, 400, "Tối đa 10 trợ giảng mỗi môn")
+			return
+		}
+		assistantIDs := map[string]bool{}
+		for _, candidate := range v.Assistants {
+			var id string
+			if tx.QueryRowContext(r.Context(), "SELECT id FROM users WHERE school_id=? AND role='teacher' AND active=TRUE AND (id=? OR short_id=?)", school, candidate, candidate).Scan(&id) != nil || id == teacher || assistantIDs[id] {
+				problem(w, 400, "Trợ giảng không hợp lệ, trùng hoặc trùng giáo viên chính")
+				return
+			}
+			assistantIDs[id] = true
+		}
+		if _, e = tx.ExecContext(r.Context(), "DELETE FROM course_assistants WHERE school_id=? AND course_id=?", school, course); e != nil {
+			problem(w, 500, "Lưu trợ giảng thất bại")
+			return
+		}
+		for id := range assistantIDs {
+			if _, e = tx.ExecContext(r.Context(), "INSERT INTO course_assistants(school_id,course_id,user_id) VALUES(?,?,?)", school, course, id); e != nil {
+				problem(w, 500, "Lưu trợ giảng thất bại")
 				return
 			}
 		}

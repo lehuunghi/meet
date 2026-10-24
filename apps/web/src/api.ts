@@ -16,6 +16,10 @@ export async function api<T = any>(
           : JSON.stringify(body),
   });
   const data = await res.json();
-  if (!res.ok) throw new Error(data.error || "Yêu cầu thất bại");
+  if (!res.ok) {
+    if (res.status === 401 && path !== "/login" && !path.startsWith("/setup"))
+      window.dispatchEvent(new Event("meet-session-ended"));
+    throw new Error(data.error || "Yêu cầu thất bại");
+  }
   return data;
 }
