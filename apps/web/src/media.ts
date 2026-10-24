@@ -30,6 +30,8 @@ export class ClassroomMedia {
   private closed = false;
   private receiver?: RTCPeerConnection;
   private receiverID?: string;
+  private screen?: MediaStream;
+  private screenSender?: RTCRtpSender;
   private labels = new Map<string, { key: string; name: string }>();
   constructor(
     private meeting: string,
@@ -126,17 +128,27 @@ export class ClassroomMedia {
   }
   async share() {
     const video = this.local?.getVideoTracks()[0];
-    const sender = this.peers
-      .flatMap((p) => p.getSenders())
-      .find((s) => s.track === video);
+    const sender =
+      this.screenSender ||
+      this.peers.flatMap((p) => p.getSenders()).find((s) => s.track === video);
     if (!sender) throw new Error("Bật camera trước khi chia sẻ");
+    if (this.screen) {
+      await sender.replaceTrack(video || null);
+      this.screen.getTracks().forEach((t) => t.stop());
+      this.screen = undefined;
+    }
     const display = await navigator.mediaDevices.getDisplayMedia({
       video: true,
     });
     const track = display.getVideoTracks()[0];
+    this.screen = display;
+    this.screenSender = sender;
     await sender.replaceTrack(track);
     track.onended = () => {
-      void sender.replaceTrack(video || null);
+      if (this.screen === display) {
+        this.screen = undefined;
+        void sender.replaceTrack(video || null).catch(() => {});
+      }
     };
     return display;
   }
@@ -156,6 +168,8 @@ export class ClassroomMedia {
   }
   close() {
     this.closed = true;
+    this.screen?.getTracks().forEach((t) => t.stop());
+    this.screen = undefined;
     this.peers.forEach((p) => {
       p.getSenders().forEach((s) => s.track?.stop());
       p.close();
