@@ -359,13 +359,38 @@ func TestIntegration(t *testing.T) {
 	if request("GET", "/api/attendance/report?course_id="+courseID, "", assistant).Code != 200 {
 		t.Fatal("assistant report denied")
 	}
-	// Manual correction, policy and Unicode XLSX preserve tenant authorization.
-	w = request("POST", "/api/attendance/adjust", `{"meeting_id":"demo-meeting","user_id":"demo-student","joined_at":"2026-10-24T01:00:00Z","left_at":"2026-10-24T02:00:00Z","reason":"Bổ sung khi mất kết nối"}`, administrator)
-	if w.Code != 200 {
-		t.Fatalf("adjustment: %s", w.Body)
+	// Lesson-wide timing changes apply to every student without editing their recorded presence.
+	timingPath := "/api/attendance/timing?meeting_id=demo-meeting&class_id=demo-class&course_id=demo-math"
+	w = request("GET", timingPath, "", administrator)
+	var currentTiming struct {
+		Start time.Time `json:"starts_at"`
+		End   time.Time `json:"ends_at"`
 	}
-	if request("POST", "/api/attendance/adjust", `{"meeting_id":"demo-meeting","user_id":"other-student","joined_at":"2026-10-24T01:00:00Z","left_at":"2026-10-24T02:00:00Z","reason":"Không thuộc trường"}`, administrator).Code != 404 {
-		t.Fatal("foreign student adjusted")
+	if w.Code != 200 || json.Unmarshal(w.Body.Bytes(), &currentTiming) != nil {
+		t.Fatalf("read lesson window: %s", w.Body)
+	}
+	common := map[string]any{"meeting_id": "demo-meeting", "class_id": "demo-class", "course_id": "demo-math", "starts_at": currentTiming.Start.Add(-5 * time.Minute), "ends_at": currentTiming.End.Add(5 * time.Minute), "expected_starts_at": currentTiming.Start, "expected_ends_at": currentTiming.End}
+	commonJSON, _ := json.Marshal(common)
+	if w = request("POST", "/api/attendance/timing", string(commonJSON), administrator); w.Code != 200 {
+		t.Fatalf("common timing: %s", w.Body)
+	}
+	if request("POST", "/api/attendance/timing", string(commonJSON), administrator).Code != 409 {
+		t.Fatal("stale common timing overwrote newer values")
+	}
+	if request("GET", timingPath, "", other).Code != 403 || request("GET", "/api/attendance/timing?meeting_id=other-meeting&class_id=demo-class&course_id=demo-math", "", administrator).Code != 404 {
+		t.Fatal("lesson timing scope escaped")
+	}
+	w = request("GET", "/api/attendance/report?course_id=demo-math&meeting_id=demo-meeting", "", administrator)
+	var commonRows []map[string]any
+	if w.Code != 200 || json.Unmarshal(w.Body.Bytes(), &commonRows) != nil || len(commonRows) != 2 || commonRows[0]["lesson_start"] != commonRows[1]["lesson_start"] || commonRows[0]["lesson_end"] != commonRows[1]["lesson_end"] {
+		t.Fatalf("lesson window differs by student: %s", w.Body)
+	}
+	var originalSeconds int64
+	if db.QueryRow("SELECT seconds FROM presence WHERE school_id='school-demo' AND meeting_id='demo-meeting' AND user_id='demo-student'").Scan(&originalSeconds) != nil || originalSeconds != 125 {
+		t.Fatal("common window altered individual connection history")
+	}
+	if request("POST", "/api/attendance/adjust", `{"meeting_id":"demo-meeting","user_id":"demo-student"}`, administrator).Code != 410 {
+		t.Fatal("individual timing edit still enabled")
 	}
 	w = request("GET", "/api/attendance/report?course_id=demo-math&format=xlsx", "", administrator)
 	workbook, err := excelize.OpenReader(bytes.NewReader(w.Body.Bytes()))

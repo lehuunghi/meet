@@ -1,3 +1,4 @@
+import { useEffect, useId, useState } from "react";
 import "./class-subject-picker.css";
 export type ScopedCourse = {
   id: string;
@@ -6,7 +7,159 @@ export type ScopedCourse = {
   class_name: string;
   teacher: string;
 };
-
+type Option = { id: string; label: string; detail: string };
+const normalize = (value: string) =>
+  value
+    .toLocaleLowerCase("vi")
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .replace(/đ/g, "d");
+function SearchSelect({
+  label,
+  placeholder,
+  options,
+  value,
+  onChange,
+  disabled = false,
+}: {
+  label: string;
+  placeholder: string;
+  options: Option[];
+  value: string;
+  onChange: (id: string) => void;
+  disabled?: boolean;
+}) {
+  const id = useId(),
+    selected = options.find((o) => o.id === value),
+    selectedLabel = selected?.label || "",
+    [query, setQuery] = useState(selectedLabel),
+    [open, setOpen] = useState(false),
+    [active, setActive] = useState(0),
+    [edited, setEdited] = useState(false),
+    [moved, setMoved] = useState(false);
+  useEffect(() => {
+    setQuery(selectedLabel);
+    setEdited(false);
+    setMoved(false);
+    setOpen(false);
+  }, [value, selectedLabel]);
+  const needle = normalize(edited ? query : "").trim(),
+    matches = options.filter((o) =>
+      normalize(o.label + " " + o.detail).includes(needle),
+    ),
+    shown = matches.slice(0, 20);
+  function choose(option: Option) {
+    onChange(option.id);
+    setQuery(option.label);
+    setEdited(false);
+    setMoved(false);
+    setOpen(false);
+  }
+  return (
+    <div
+      className="scope-combo"
+      onBlur={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+          setOpen(false);
+          setQuery(selectedLabel);
+        }
+      }}
+    >
+      <label htmlFor={id}>{label}</label>
+      <div className="scope-input">
+        <input
+          id={id}
+          role="combobox"
+          aria-autocomplete="list"
+          aria-expanded={open}
+          aria-controls={id + "-list"}
+          aria-activedescendant={
+            open && shown[active] ? id + "-" + active : undefined
+          }
+          disabled={disabled}
+          placeholder={placeholder}
+          value={query}
+          autoComplete="off"
+          onFocus={() => {
+            setOpen(true);
+            setActive(0);
+          }}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setEdited(true);
+            setMoved(false);
+            setOpen(true);
+            setActive(0);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "ArrowDown") {
+              setMoved(true);
+              e.preventDefault();
+              setOpen(true);
+              setActive((n) => Math.min(n + 1, shown.length - 1));
+            } else if (e.key === "ArrowUp") {
+              setMoved(true);
+              e.preventDefault();
+              setActive((n) => Math.max(0, n - 1));
+            } else if (e.key === "Enter" && open) {
+              e.preventDefault();
+              if (!edited && !moved && selected) {
+                setOpen(false);
+                setQuery(selectedLabel);
+              } else if (shown[active]) choose(shown[active]);
+            } else if (e.key === "Escape") {
+              setOpen(false);
+              setQuery(selectedLabel);
+            }
+          }}
+        />
+        {value && (
+          <button
+            type="button"
+            className="scope-clear"
+            aria-label={"Bỏ chọn " + label.toLowerCase()}
+            disabled={disabled}
+            onClick={() => {
+              onChange("");
+              setQuery("");
+              setOpen(false);
+            }}
+          >
+            ×
+          </button>
+        )}
+      </div>
+      {open && !disabled && (
+        <div
+          id={id + "-list"}
+          role="listbox"
+          aria-label={label}
+          className="scope-options"
+        >
+          {shown.map((o, i) => (
+            <button
+              type="button"
+              role="option"
+              id={id + "-" + i}
+              key={o.id}
+              aria-selected={o.id === value}
+              className={i === active ? "keyboard-active" : ""}
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => choose(o)}
+            >
+              <strong>{o.label}</strong>
+              <small>{o.detail}</small>
+            </button>
+          ))}
+          {!shown.length && <p>Không tìm thấy kết quả.</p>}
+          {matches.length > 20 && (
+            <p>Có {matches.length} kết quả. Nhập thêm để thu hẹp danh sách.</p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 export function ClassSubjectPicker({
   courses,
   classId,
@@ -20,93 +173,48 @@ export function ClassSubjectPicker({
   onClass: (id: string) => void;
   onCourse: (id: string) => void;
 }) {
+  const counts = new Map<string, number>();
+  for (const c of courses)
+    counts.set(c.class_id, (counts.get(c.class_id) || 0) + 1);
   const classes = [
     ...new Map(
-      courses.map((c) => [c.class_id, { id: c.class_id, name: c.class_name }]),
+      courses.map((c) => [
+        c.class_id,
+        {
+          id: c.class_id,
+          label: c.class_name,
+          detail: (counts.get(c.class_id) || 0) + " môn học",
+        },
+      ]),
     ).values(),
-  ];
-  const subjects = courses.filter((c) => c.class_id === classId),
-    selected = subjects.find((c) => c.id === courseId);
+  ].sort((a, b) => a.label.localeCompare(b.label, "vi", { numeric: true }));
+  const subjects = courses
+    .filter((c) => c.class_id === classId)
+    .map((c) => ({ id: c.id, label: c.name, detail: c.teacher }))
+    .sort((a, b) => a.label.localeCompare(b.label, "vi", { numeric: true }));
   return (
-    <div className="class-subject-picker">
+    <div className="class-subject-picker compact-scope">
       <div className="scope-selects">
-        <label>
-          Lớp học
-          <select
-            aria-label="Lớp học"
-            value={classId}
-            onChange={(e) => onClass(e.target.value)}
-          >
-            <option value="">Chọn lớp học</option>
-            {classes.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          Môn học
-          <select
-            aria-label="Môn học"
-            value={courseId}
-            disabled={!classId}
-            onChange={(e) => onCourse(e.target.value)}
-          >
-            <option value="">Chọn môn học</option>
-            {subjects.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-        </label>
+        <SearchSelect
+          label="Lớp học"
+          placeholder="Tìm và chọn lớp…"
+          options={classes}
+          value={classId}
+          onChange={onClass}
+        />
+        <SearchSelect
+          label="Môn học"
+          placeholder={classId ? "Tìm và chọn môn…" : "Chọn lớp trước"}
+          options={subjects}
+          value={courseId}
+          onChange={onCourse}
+          disabled={!classId}
+        />
       </div>
-      <h3>1. Chọn lớp học</h3>
-      <div className="scope-folders" aria-label="Danh sách lớp">
-        {classes.map((c) => (
-          <button
-            type="button"
-            key={c.id}
-            aria-pressed={classId === c.id}
-            onClick={() => onClass(c.id)}
-          >
-            <span aria-hidden="true">▤</span>
-            <strong>Lớp {c.name}</strong>
-            <small>
-              {courses.filter((s) => s.class_id === c.id).length} môn học
-            </small>
-          </button>
-        ))}
-      </div>
-      {classId && (
-        <>
-          <h3>
-            2. Chọn môn · Lớp {classes.find((c) => c.id === classId)?.name}
-          </h3>
-          <div className="scope-folders subjects" aria-label="Danh sách môn">
-            {subjects.map((c) => (
-              <button
-                type="button"
-                key={c.id}
-                aria-label={`Môn ${c.name}`}
-                aria-pressed={courseId === c.id}
-                onClick={() => onCourse(c.id)}
-              >
-                <strong>{c.name}</strong>
-                <small>Giáo viên: {c.teacher}</small>
-              </button>
-            ))}
-          </div>
-        </>
-      )}
-      {selected && (
-        <nav className="scope-breadcrumb" aria-label="Phạm vi đang xem">
-          <span>Lớp {selected.class_name}</span>
-          <span aria-hidden="true">›</span>
-          <strong>{selected.name}</strong>
-        </nav>
-      )}
+      <small className="scope-hint">
+        {classes.length} lớp trong phạm vi
+        {classId ? " · " + subjects.length + " môn trong lớp đã chọn" : ""}
+      </small>
     </div>
   );
 }

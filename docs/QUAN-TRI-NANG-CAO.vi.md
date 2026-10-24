@@ -1,3 +1,5 @@
+> v0.3.2: phần giờ vào/ra chuyển sang khung giờ chung theo buổi; không còn chỉnh cá nhân. Thanh lớp/môn có tìm kiếm và bố cục gọn: [hướng dẫn mới](DIEM-DANH-VA-BAN-GHI.vi.md).
+
 > v0.3.1: [Điểm danh và bản ghi theo lớp → môn → buổi](DIEM-DANH-VA-BAN-GHI.vi.md).
 
 > Mới: [Cập nhật an toàn trực tiếp từ GitHub](CAP-NHAT-AN-TOAN.vi.md), không cài lại dữ liệu; có kiểm tra CI, snapshot và phục hồi khi lỗi.
@@ -24,7 +26,7 @@ Chọn lớp → môn → một buổi hoặc **Tất cả buổi đã bắt đ�
 
 Admin mở **Quy tắc điểm danh của trường**: cho phép vào muộn/ra sớm 0–240 phút và tỷ lệ kết nối tối thiểu 1–100%. Mặc định 10 phút, 10 phút, 75%. Chỉ kết luận sau khi buổi kết thúc. Khoảng buổi mặc định 60 phút từ lịch bắt đầu; chọn một buổi để chỉnh giờ đầu/cuối chính xác. Thay đổi quy tắc áp dụng cả báo cáo lịch sử khi xem lại.
 
-Bấm **Chỉnh giờ vào / ra**, nhập thời gian theo múi giờ trình duyệt và lý do ít nhất ba ký tự. Mỗi điều chỉnh lưu thành lịch sử với người thực hiện; dữ liệu kết nối gốc không bị ghi đè. Khi chỉnh tay, thời lượng bằng khoảng giờ vào đến ra do admin xác nhận. **Xuất Excel** tải .xlsx đầy đủ tiếng Việt, Arial; dữ liệu ghi dạng chuỗi để không thực thi công thức. Thời gian Excel ghi rõ UTC. Tối đa 10.000 dòng/lần; chọn từng buổi nếu vượt giới hạn.
+Chọn một buổi rồi mở **Khung giờ điểm danh chung**. Đặt giờ vào/ra cho toàn bộ học sinh trong buổi; không chỉnh giờ riêng từng cá nhân. Dữ liệu kết nối gốc được giữ nguyên để tính kết quả theo khung giờ chung. Các điều chỉnh cá nhân trước đây vẫn lưu trong lịch sử, nhưng không áp dụng vào báo cáo chung mới. Xuất Excel .xlsx có tiếng Việt, giờ chung và giờ kết nối ghi rõ UTC, tối đa 10.000 dòng/lần; chọn từng buổi nếu vượt giới hạn.
 
 ## Cấu hình SFU, TURN và R2
 

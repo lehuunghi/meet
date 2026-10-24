@@ -89,3 +89,7 @@ Provider error payloads/secrets are not forwarded on failed HTTP responses. Succ
 ## Operator updates
 
 GET /api/setup/updates reads host-agent progress/version (operator cookie required). POST /api/setup/updates accepts {action:"check"} or {action:"apply",target:"<40-hex-SHA>"}; the latter must match a checked eligible revision. Both mutations require the exact Origin. Requests are queued atomically; API never executes Docker, shell commands or Git. The root agent independently checks CI, repository, version, active lessons and backup before applying. See CAP-NHAT-AN-TOAN.vi.md.
+
+## Lesson-wide attendance window (v0.3.2)
+
+GET /api/attendance/timing requires meeting_id, class_id and course_id. POST accepts the same scope plus starts_at, ends_at, expected_starts_at and expected_ends_at (RFC3339); stale values return 409. Applies to the whole lesson, never overwrites presence. POST /api/attendance/adjust is retired (410). Legacy adjustment history is retained but reports use observed presence and the shared lesson window.

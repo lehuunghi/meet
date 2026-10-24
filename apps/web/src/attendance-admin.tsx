@@ -14,12 +14,12 @@ export function AttendancePolicy({ demo }: { demo: boolean }) {
         .catch((e) => setMessage(e.message));
   }, [demo]);
   return (
-    <details className="academic-paste">
+    <details className="compact-details school-attendance-policy">
       <summary>Quy tắc điểm danh của trường</summary>
       <p>
         Đạt khi đủ tỷ lệ thời gian, vào không trễ quá ngưỡng và ra không sớm quá
         ngưỡng. Buổi đang học chưa kết luận. Mặc định buổi dài 60 phút; chọn một
-        buổi bên dưới để chỉnh giờ riêng.
+        buổi để chỉnh khung giờ chung.
       </p>
       <form
         className="inline-form"
@@ -56,122 +56,159 @@ export function AttendancePolicy({ demo }: { demo: boolean }) {
     </details>
   );
 }
-export function AttendanceEdit({
-  row,
+export function LessonTiming({
+  meeting,
+  classId,
+  courseId,
   demo,
+  start,
+  title,
   onSaved,
 }: {
-  row: any;
+  meeting: string;
+  classId: string;
+  courseId: string;
   demo: boolean;
+  start?: string;
+  title?: string;
   onSaved: () => void;
 }) {
-  const [open, setOpen] = useState(false),
-    [message, setMessage] = useState("");
+  const [window, setWindow] = useState<any>(null),
+    [message, setMessage] = useState(""),
+    [busy, setBusy] = useState(false),
+    [loading, setLoading] = useState(false);
   const local = (s: string) => {
-    if (!s) return "";
     const d = new Date(s);
     return new Date(d.getTime() - d.getTimezoneOffset() * 60000)
       .toISOString()
       .slice(0, 16);
   };
+  useEffect(() => {
+    let active = true;
+    setMessage("");
+    setWindow(null);
+    if (!meeting) return;
+    setLoading(true);
+    const begin = start || "2026-10-24T01:00:00Z";
+    const request = demo
+      ? Promise.resolve({
+          starts_at: begin,
+          ends_at: new Date(new Date(begin).getTime() + 3600000).toISOString(),
+          title: title || "Buổi học đã chọn",
+        })
+      : api(
+          "/attendance/timing?" +
+            new URLSearchParams({
+              meeting_id: meeting,
+              class_id: classId,
+              course_id: courseId,
+            }),
+        );
+    request
+      .then((v) => {
+        if (active) setWindow(v);
+      })
+      .catch((e) => {
+        if (active) setMessage(e.message);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [meeting, classId, courseId, demo, start, title]);
+  if (!meeting)
+    return (
+      <p className="lesson-timing-hint">
+        Chọn một buổi học để thiết lập giờ vào/ra chung cho toàn bộ lớp.
+      </p>
+    );
   return (
-    <div>
-      <button className="secondary" onClick={() => setOpen(!open)}>
-        Chỉnh giờ vào / ra
-      </button>
-      {open && (
-        <form
-          onSubmit={async (e) => {
-            e.preventDefault();
-            const f = new FormData(e.currentTarget);
-            try {
-              if (!demo)
-                await api("/attendance/adjust", {
-                  meeting_id: row.meeting_id,
-                  user_id: row.id,
-                  joined_at: new Date(String(f.get("joined"))).toISOString(),
-                  left_at: new Date(String(f.get("left"))).toISOString(),
-                  reason: f.get("reason"),
-                });
-              setOpen(false);
-              onSaved();
-            } catch (e) {
-              setMessage((e as Error).message);
-            }
-          }}
-        >
-          <label>
-            Giờ vào
-            <input
-              name="joined"
-              type="datetime-local"
-              defaultValue={local(row.joined_at)}
-              required
-            />
-          </label>
-          <label>
-            Giờ ra
-            <input
-              name="left"
-              type="datetime-local"
-              defaultValue={local(row.last_seen)}
-              required
-            />
-          </label>
-          <label>
-            Lý do
-            <input name="reason" required minLength={3} maxLength={500} />
-          </label>
-          <button>Lưu điều chỉnh</button>
-          <p role="alert">{message}</p>
-        </form>
+    <details key={meeting} className="lesson-timing compact-details">
+      <summary>
+        Khung giờ điểm danh chung
+        {window
+          ? " · " +
+            new Date(window.starts_at).toLocaleTimeString("vi-VN", {
+              hour: "2-digit",
+              minute: "2-digit",
+            }) +
+            " – " +
+            new Date(window.ends_at).toLocaleTimeString("vi-VN", {
+              hour: "2-digit",
+              minute: "2-digit",
+            })
+          : ""}
+      </summary>
+      <p>
+        Áp dụng cho tất cả học sinh của buổi này. Giờ kết nối thực tế của từng
+        người được giữ nguyên.
+      </p>
+      {loading ? (
+        <p>Đang tải khung giờ…</p>
+      ) : (
+        window && (
+          <form
+            key={meeting + window.starts_at + window.ends_at}
+            className="lesson-timing-form"
+            onSubmit={async (e) => {
+              e.preventDefault();
+              const f = new FormData(e.currentTarget),
+                starts = new Date(String(f.get("start"))).toISOString(),
+                ends = new Date(String(f.get("end"))).toISOString();
+              setBusy(true);
+              setMessage("");
+              try {
+                if (!demo)
+                  await api("/attendance/timing", {
+                    meeting_id: meeting,
+                    class_id: classId,
+                    course_id: courseId,
+                    starts_at: starts,
+                    ends_at: ends,
+                    expected_starts_at: window.starts_at,
+                    expected_ends_at: window.ends_at,
+                  });
+                setWindow({ ...window, starts_at: starts, ends_at: ends });
+                setMessage(
+                  demo
+                    ? "Đã cập nhật khung giờ mẫu cho cả buổi."
+                    : "Đã áp dụng khung giờ cho toàn bộ buổi học.",
+                );
+                onSaved();
+              } catch (e) {
+                setMessage((e as Error).message);
+              } finally {
+                setBusy(false);
+              }
+            }}
+          >
+            <label>
+              Giờ vào chung
+              <input
+                name="start"
+                type="datetime-local"
+                defaultValue={local(window.starts_at)}
+                required
+                disabled={busy}
+              />
+            </label>
+            <label>
+              Giờ ra chung
+              <input
+                name="end"
+                type="datetime-local"
+                defaultValue={local(window.ends_at)}
+                required
+                disabled={busy}
+              />
+            </label>
+            <button disabled={busy}>Áp dụng cho cả buổi</button>
+          </form>
+        )
       )}
-    </div>
-  );
-}
-export function LessonTiming({
-  meeting,
-  demo,
-  onSaved,
-}: {
-  meeting: string;
-  demo: boolean;
-  onSaved: () => void;
-}) {
-  const [message, setMessage] = useState("");
-  return (
-    <details className="academic-paste">
-      <summary>Chỉnh khoảng thời gian tính điểm danh cho buổi đã chọn</summary>
-      <form
-        className="inline-form"
-        onSubmit={async (e) => {
-          e.preventDefault();
-          const f = new FormData(e.currentTarget);
-          try {
-            if (!demo)
-              await api("/attendance/timing", {
-                meeting_id: meeting,
-                starts_at: new Date(String(f.get("start"))).toISOString(),
-                ends_at: new Date(String(f.get("end"))).toISOString(),
-              });
-            setMessage("Đã lưu khoảng buổi học");
-            onSaved();
-          } catch (e) {
-            setMessage((e as Error).message);
-          }
-        }}
-      >
-        <label>
-          Bắt đầu
-          <input name="start" type="datetime-local" required />
-        </label>
-        <label>
-          Kết thúc
-          <input name="end" type="datetime-local" required />
-        </label>
-        <button>Lưu giờ buổi học</button>
-      </form>
-      <p role="status">{message}</p>
+      {message && <p role="status">{message}</p>}
     </details>
   );
 }

@@ -1,10 +1,6 @@
 import { ClassSubjectPicker } from "./class-subject-picker";
 import { useEffect, useState } from "react";
-import {
-  AttendancePolicy,
-  AttendanceEdit,
-  LessonTiming,
-} from "./attendance-admin";
+import { AttendancePolicy, LessonTiming } from "./attendance-admin";
 import { api } from "./api";
 export type ReportCourse = {
   id: string;
@@ -235,53 +231,59 @@ export function AttendanceReport({
             </div>
           ) : (
             <>
-              <div className="attendance-filters">
-                <label>
-                  Buổi học
-                  <select
-                    aria-label="Buổi học"
-                    value={meeting}
-                    onChange={(e) => {
-                      setMeeting(e.target.value);
-                      setPage(0);
-                    }}
+              <div className="report-toolbar">
+                <div className="attendance-filters">
+                  <label>
+                    Buổi học
+                    <select
+                      aria-label="Buổi học"
+                      value={meeting}
+                      onChange={(e) => {
+                        setMeeting(e.target.value);
+                        setPage(0);
+                      }}
+                    >
+                      <option value="">Tất cả buổi đã bắt đầu</option>
+                      {lessons.map((l) => (
+                        <option key={l.id} value={l.id}>
+                          {new Date(l.starts_at).toLocaleDateString("vi-VN")} ·{" "}
+                          {l.title}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+                {!demo && courseId && (
+                  <a
+                    className="button secondary"
+                    href={
+                      "/api/attendance/report?" +
+                      new URLSearchParams({
+                        class_id: classId,
+                        course_id: courseId,
+                        meeting_id: meeting,
+                        format: "xlsx",
+                      })
+                    }
                   >
-                    <option value="">Tất cả buổi đã bắt đầu</option>
-                    {lessons.map((l) => (
-                      <option key={l.id} value={l.id}>
-                        {new Date(l.starts_at).toLocaleDateString("vi-VN")} ·{" "}
-                        {l.title}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+                    Xuất Excel (.xlsx, tiếng Việt)
+                  </a>
+                )}
               </div>
-              {!demo && courseId && (
-                <a
-                  className="button secondary"
-                  href={
-                    "/api/attendance/report?" +
-                    new URLSearchParams({
-                      class_id: classId,
-                      course_id: courseId,
-                      meeting_id: meeting,
-                      format: "xlsx",
-                    })
-                  }
-                >
-                  Xuất Excel (.xlsx, tiếng Việt)
-                </a>
-              )}
               {role === "admin" && (
                 <>
                   <AttendancePolicy demo={demo} />
-                  {meeting && (
+                  {
                     <LessonTiming
                       meeting={meeting}
+                      classId={classId}
+                      courseId={courseId}
+                      start={lessons.find((l) => l.id === meeting)?.starts_at}
+                      title={lessons.find((l) => l.id === meeting)?.title}
                       demo={demo}
                       onSaved={() => setRevision((v) => v + 1)}
                     />
-                  )}
+                  }
                 </>
               )}
               <div className="report-context">
@@ -299,33 +301,30 @@ export function AttendanceReport({
                 <p role="status">Đang tải báo cáo…</p>
               ) : (
                 <>
-                  <div className="attendance-summary">
-                    <article>
-                      <strong>{shown.length}</strong>
-                      <small>Dòng điểm danh trên trang</small>
-                    </article>
-                    <article>
+                  <div className="report-counts">
+                    <span>
+                      <strong>{shown.length}</strong> dòng trên trang
+                    </span>
+                    <span>
                       <strong>
-                        {role === "student"
-                          ? shown.filter(
-                              (r) => Number(r.participated_sessions) > 0,
-                            ).length
-                          : shown.filter(
-                              (r) => Number(r.participated_sessions) > 0,
-                            ).length}
-                      </strong>
-                      <small>Có ghi nhận tham gia</small>
-                    </article>
-                    <article>
+                        {
+                          shown.filter(
+                            (r) => Number(r.participated_sessions) > 0,
+                          ).length
+                        }
+                      </strong>{" "}
+                      có kết nối
+                    </span>
+                    <span>
                       <strong>
                         {
                           shown.filter(
                             (r) => Number(r.participated_sessions) === 0,
                           ).length
                         }
-                      </strong>
-                      <small>Chưa ghi nhận tham gia</small>
-                    </article>
+                      </strong>{" "}
+                      chưa ghi nhận
+                    </span>
                   </div>
                   {!error && shown.length === 0 ? (
                     <div className="report-empty">
@@ -334,78 +333,74 @@ export function AttendanceReport({
                     </div>
                   ) : (
                     shown.length > 0 && (
-                      <table className="attendance-table">
+                      <table className="attendance-table compact-attendance-table">
                         <caption className="sr-only">
-                          Điểm danh lớp {course?.class_name}, môn {course?.name}
+                          Điểm danh lớp {course.class_name}, môn {course.name}
                         </caption>
                         <thead>
                           <tr>
-                            <th>Buổi học</th>
                             <th>Học sinh</th>
-                            <th>Buổi có kết nối</th>
-                            <th>Tổng thời gian</th>
-                            <th>Vào lớp lần đầu</th>
-                            <th>Ghi nhận gần nhất</th>
+                            {!meeting && <th>Buổi học</th>}
+                            <th>Thời gian</th>
+                            <th>Vào / ra ghi nhận</th>
                             <th>Kết quả</th>
-                            {role === "admin" && <th>Điều chỉnh</th>}
                           </tr>
                         </thead>
                         <tbody>
                           {shown.map((r) => (
                             <tr key={(r.meeting_id || meeting) + r.id}>
-                              <td data-label="Buổi học">
-                                <strong>
-                                  {r.meeting_title ||
-                                    lessons.find((l) => l.id === meeting)
-                                      ?.title ||
-                                    "Buổi học"}
-                                </strong>
-                                <small>
-                                  {r.starts_at ? time(r.starts_at) : ""}
-                                </small>
-                              </td>
                               <td data-label="Học sinh">
                                 <strong>{r.name}</strong>
                                 <small>{r.email}</small>
                               </td>
-                              <td data-label="Buổi có kết nối">
-                                <span
-                                  className={
-                                    Number(r.participated_sessions) > 0
-                                      ? "report-badge connected"
-                                      : "report-badge"
-                                  }
-                                >
-                                  {r.participated_sessions}/{r.session_count}{" "}
-                                  buổi
-                                </span>
-                              </td>
-                              <td data-label="Tổng thời gian">
-                                <strong>{duration(r.seconds)}</strong>
-                              </td>
-                              <td data-label="Vào lớp lần đầu">
-                                {time(r.joined_at)}
-                              </td>
-                              <td data-label="Ghi nhận gần nhất">
-                                {time(r.last_seen)}
-                              </td>
-                              <td data-label="Kết quả">
-                                {r.attendance_result || "Chưa đánh giá"}
-                                {r.adjustment_reason && (
+                              {!meeting && (
+                                <td data-label="Buổi học">
+                                  <strong>
+                                    {r.meeting_title || "Buổi học"}
+                                  </strong>
                                   <small>
-                                    Đã điều chỉnh: {r.adjustment_reason}
+                                    {r.starts_at ? time(r.starts_at) : ""}
                                   </small>
-                                )}
-                              </td>
-                              {role === "admin" && (
-                                <td data-label="Điều chỉnh">
-                                  <AttendanceEdit
-                                    row={r}
-                                    demo={demo}
-                                    onSaved={() => setRevision((v) => v + 1)}
-                                  />
                                 </td>
                               )}
+                              <td data-label="Thời gian">
+                                {duration(r.seconds)}
+                              </td>
+                              <td data-label="Vào / ra ghi nhận">
+                                <span title={time(r.joined_at)}>
+                                  Vào{" "}
+                                  {r.joined_at
+                                    ? new Date(r.joined_at).toLocaleTimeString(
+                                        "vi-VN",
+                                        { hour: "2-digit", minute: "2-digit" },
+                                      )
+                                    : "—"}
+                                </span>
+                                <small title={time(r.last_seen)}>
+                                  Ra{" "}
+                                  {r.last_seen
+                                    ? new Date(r.last_seen).toLocaleTimeString(
+                                        "vi-VN",
+                                        { hour: "2-digit", minute: "2-digit" },
+                                      )
+                                    : "—"}
+                                </small>
+                              </td>
+                              <td data-label="Kết quả">
+                                <span
+                                  className={
+                                    "report-badge " +
+                                    (r.attendance_result === "Đạt"
+                                      ? "connected"
+                                      : "")
+                                  }
+                                >
+                                  {r.attendance_result ||
+                                    (Number(r.participated_sessions) > 0
+                                      ? "Có kết nối"
+                                      : "Chưa vào")}
+                                </span>
+                              </td>
                             </tr>
                           ))}
                         </tbody>

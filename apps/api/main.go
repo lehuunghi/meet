@@ -192,6 +192,7 @@ func (a *app) routes() http.Handler {
 	m.HandleFunc("GET /api/attendance/policy", a.auth(a.attendancePolicy))
 	m.HandleFunc("POST /api/attendance/policy", a.auth(a.attendancePolicy))
 	m.HandleFunc("POST /api/attendance/adjust", a.auth(a.attendanceAdjust))
+	m.HandleFunc("GET /api/attendance/timing", a.auth(a.attendanceTiming))
 	m.HandleFunc("POST /api/attendance/timing", a.auth(a.attendanceTiming))
 	m.HandleFunc("POST /api/meetings", a.auth(a.createMeeting))
 	m.HandleFunc("POST /api/meetings/{id}/state", a.auth(a.meetingState))
