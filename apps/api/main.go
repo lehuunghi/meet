@@ -126,7 +126,7 @@ func (a *app) auth(next http.HandlerFunc) http.HandlerFunc {
 					return
 				}
 			}
-			if p := permissionFor(r.URL.Path); p != "" && !permitted(u, p) && !(p == "meetings" && r.Method == "GET" && r.URL.Path == "/api/meetings" && permitted(u, "attendance")) {
+			if p := permissionFor(r.URL.Path); p != "" && !permitted(u, p) && !(p == "meetings" && r.Method == "GET" && r.URL.Path == "/api/meetings" && (permitted(u, "attendance") || permitted(u, "recordings"))) {
 				problem(w, 403, "Tài khoản chưa được cấp quyền cho chức năng này")
 				return
 			}
@@ -188,6 +188,7 @@ func (a *app) routes() http.Handler {
 	}))
 	m.HandleFunc("GET /api/meetings", a.auth(a.meetings))
 	m.HandleFunc("GET /api/attendance/report", a.auth(a.attendanceReport))
+	m.HandleFunc("GET /api/recordings", a.auth(a.recordingLibrary))
 	m.HandleFunc("GET /api/attendance/policy", a.auth(a.attendancePolicy))
 	m.HandleFunc("POST /api/attendance/policy", a.auth(a.attendancePolicy))
 	m.HandleFunc("POST /api/attendance/adjust", a.auth(a.attendanceAdjust))

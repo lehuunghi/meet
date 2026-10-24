@@ -138,6 +138,52 @@ func TestIntegration(t *testing.T) {
 		t.Fatalf("teacher meeting report: %s", w.Body)
 	}
 	administrator := login("demo", "admin")
+	// The recording library is scoped by class AND subject and hides unfinished/expired files.
+	readyRecording := uid()
+	for _, entry := range []struct {
+		id, status string
+		days       int
+	}{{readyRecording, "ready", 30}, {uid(), "pending", 30}, {uid(), "ready", -1}} {
+		if _, err := db.Exec("INSERT INTO recordings(id,school_id,meeting_id,owner_id,object_key,bucket,status,size_bytes,expires_at) VALUES(?,'school-demo','demo-meeting','demo-teacher',?,'test-bucket',?,12345,DATE_ADD(UTC_TIMESTAMP(6),INTERVAL ? DAY))", entry.id, "recordings/test/"+entry.id, entry.status, entry.days); err != nil {
+			t.Fatal(err)
+		}
+	}
+	library := "/api/recordings?class_id=demo-class&course_id=demo-math"
+	for _, allowed := range []*http.Cookie{administrator, teacher, student} {
+		w = request("GET", library, "", allowed)
+		var files []map[string]any
+		if w.Code != 200 || json.Unmarshal(w.Body.Bytes(), &files) != nil || len(files) != 1 || files[0]["id"] != readyRecording {
+			t.Fatalf("recording library: %d %s", w.Code, w.Body)
+		}
+		if strings.Contains(w.Body.String(), "object_key") || strings.Contains(w.Body.String(), "bucket") {
+			t.Fatal("private object path exposed")
+		}
+	}
+	for _, test := range []struct {
+		path   string
+		cookie *http.Cookie
+		code   int
+	}{{library, other, 404}, {"/api/recordings?class_id=other-class&course_id=demo-math", administrator, 404}, {library + "&meeting_id=other-meeting", teacher, 404}, {"/api/recordings?class_id=demo-class&course_id=demo-alt-course", teacher, 404}, {"/api/recordings?course_id=demo-math", administrator, 400}, {library + "&page=-1", student, 400}} {
+		if request("GET", test.path, "", test.cookie).Code != test.code {
+			t.Fatalf("recording scope failed: %s", test.path)
+		}
+	}
+	if w = request("GET", library+"&meeting_id=demo-second-lesson", "", student); w.Code != 200 || w.Body.String() != "[]\n" {
+		t.Fatalf("lesson filter mixed recordings: %s", w.Body)
+	}
+	recordingAdminEmail := "recordings-" + uid()[:8] + "@example.test"
+	w = request("POST", "/api/accounts", `{"email":"`+recordingAdminEmail+`","name":"Quản trị bản ghi","password":"recordings-password-123","state":"active","permissions":["recordings"]}`, administrator)
+	if w.Code != 200 {
+		t.Fatalf("recordings admin: %s", w.Body)
+	}
+	w = request("POST", "/api/login", `{"school":"demo","email":"`+recordingAdminEmail+`","password":"recordings-password-123"}`, nil)
+	if w.Code != 200 {
+		t.Fatal("recording admin login")
+	}
+	recordingAdmin := w.Result().Cookies()[0]
+	if request("GET", library, "", recordingAdmin).Code != 200 || request("GET", "/api/meetings?course_id=demo-math", "", recordingAdmin).Code != 200 || request("POST", "/api/meetings", "{}", recordingAdmin).Code != 403 || request("GET", "/api/attendance/report?course_id=demo-math", "", recordingAdmin).Code != 403 {
+		t.Fatal("recordings-only permission not isolated")
+	}
 	// Teacher-only XLSX never accepts a role column and returns no passwords.
 	book := excelize.NewFile()
 	teacherEmail := "xlsx-" + uid()[:8] + "@example.test"

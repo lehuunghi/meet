@@ -60,7 +60,7 @@ set -euo pipefail
 exec docker compose --env-file /opt/meet/.env -f /opt/meet/deploy/compose.yaml "$@"
 EOF
 chmod 0755 /usr/local/bin/meet
-if ! grep -q '^MEET_COMMIT=' .env; then printf '\nMEET_COMMIT=%s\nMEET_VERSION=0.3.0\n' "$(git rev-parse HEAD)" >> .env; fi
+if ! grep -q '^MEET_COMMIT=' .env; then printf '\nMEET_COMMIT=%s\nMEET_VERSION=%s\n' "$(git rev-parse HEAD)" "$(python3 -c 'import json;print(json.load(open("deploy/release.json"))["version"])')" >> .env; fi
 meet config --quiet
 meet build
 # Run migration explicitly even when a previous migration container already exited successfully.

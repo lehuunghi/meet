@@ -9,11 +9,11 @@ import { ClassroomMedia } from "./media";
 import "./style.css";
 import "./meet-room.css";
 import "./attendance.css";
+import { RecordingLibrary } from "./recordings";
 import { AttendanceReport } from "./attendance";
 import { Setup } from "./setup";
 import {
   RoleSwitcher,
-  PreviewRecordings,
   PreviewRoom,
   previewRoles,
   previewUsers,
@@ -108,11 +108,13 @@ function App() {
     [loading, setLoading] = useState(!demo),
     [error, setError] = useState(""),
     [page, setPage] = useState(
-      new URLSearchParams(location.search).get("page") === "attendance"
-        ? "attendance"
-        : demo && previewRole.id === "admin"
-          ? "admin"
-          : "overview",
+      new URLSearchParams(location.search).get("page") === "recordings"
+        ? "recordings"
+        : new URLSearchParams(location.search).get("page") === "attendance"
+          ? "attendance"
+          : demo && previewRole.id === "admin"
+            ? "admin"
+            : "overview",
     ),
     [menuOpen, setMenuOpen] = useState(false),
     [meetings, setMeetings] = useState<Meeting[]>(demo ? sample : []),
@@ -146,7 +148,7 @@ function App() {
   async function refresh() {
     if (demo) return;
     const [m, c] = await Promise.all([
-      allowed("meetings") || allowed("attendance")
+      allowed("meetings") || allowed("attendance") || allowed("recordings")
         ? api<Meeting[]>("/meetings")
         : Promise.resolve([]),
       api<any[]>("/catalog"),
@@ -311,7 +313,9 @@ function App() {
                 ? "Điểm danh của tôi"
                 : "Báo cáo điểm danh",
             ],
-            ...(demo ? [["recordings", "▷", "Bản ghi bài học"]] : []),
+            ...(allowed("recordings")
+              ? [["recordings", "▷", "Bản ghi bài học"]]
+              : []),
           ]
             .filter(([key]) => key !== "attendance" || allowed("attendance"))
             .filter(([key]) => key !== "meetings" || allowed("meetings"))
@@ -593,7 +597,9 @@ function App() {
           {page === "attendance" && (
             <AttendanceReport role={user.role} courses={courses} demo={demo} />
           )}
-          {demo && page === "recordings" && <PreviewRecordings />}
+          {page === "recordings" && (
+            <RecordingLibrary courses={courses} demo={demo} />
+          )}
           {page === "settings" && <AccountSecurity demo={demo} user={user} />}
           {page === "settings" && (
             <section className="section">

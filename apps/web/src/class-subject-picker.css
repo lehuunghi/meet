@@ -1,0 +1,142 @@
+.scope-selects {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.scope-selects label {
+  min-width: 0;
+  font-size: 13px;
+}
+.scope-selects select {
+  width: 100%;
+  min-height: 46px;
+}
+.class-subject-picker h3 {
+  font-size: 15px;
+  margin: 22px 0 12px;
+}
+.scope-folders {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
+  gap: 12px;
+}
+.scope-folders button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  text-align: left;
+  padding: 18px;
+  background: #f7f9f3;
+  color: #234e3e;
+  border: 1px solid #dfe7d7;
+  border-radius: 12px;
+  min-width: 0;
+}
+.scope-folders button[aria-pressed="true"] {
+  border: 2px solid #1b624c;
+  background: #eaf3e9;
+  padding: 17px;
+}
+.scope-folders small {
+  font-size: 12px;
+  color: #667b68;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.scope-folders span {
+  font-size: 24px;
+}
+.scope-breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 16px 0;
+  margin-top: 12px;
+  border-bottom: 1px solid #e0e7dc;
+}
+.scope-empty {
+  padding: 24px;
+  margin-top: 20px;
+  border: 1px dashed #cbd9c5;
+  border-radius: 12px;
+  color: #627763;
+}
+.recordings-table {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+}
+.recordings-table td {
+  overflow-wrap: anywhere;
+}
+.recordings-table small {
+  display: block;
+  margin-top: 6px;
+  color: #647861;
+}
+.recording-player {
+  margin: 20px 0;
+  padding: 16px;
+  background: #202124;
+  color: white;
+  border-radius: 12px;
+}
+.recording-player video {
+  display: block;
+  width: 100%;
+  max-height: 65vh;
+  margin: 14px 0;
+}
+.recording-player h3 {
+  color: #fff;
+}
+.recording-player button {
+  min-height: 44px;
+}
+@media (max-width: 700px) {
+  .scope-selects {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .scope-folders {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .scope-folders button {
+    padding: 14px;
+    min-height: 94px;
+  }
+  .scope-folders button[aria-pressed="true"] {
+    padding: 13px;
+  }
+  .scope-folders.subjects {
+    grid-template-columns: 1fr;
+  }
+  .recordings-table,
+  .recordings-table tbody,
+  .recordings-table tr,
+  .recordings-table td {
+    display: block;
+  }
+  .recordings-table thead {
+    display: none;
+  }
+  .recordings-table tr {
+    border: 1px solid #dfe7d7;
+    padding: 14px;
+    border-radius: 12px;
+    margin: 14px 0;
+  }
+  .recordings-table td {
+    border: 0;
+    padding: 8px 0;
+  }
+  .recordings-table td:before {
+    content: attr(data-label);
+    display: block;
+    font-size: 12px;
+    color: #71816b;
+    margin-bottom: 5px;
+  }
+}

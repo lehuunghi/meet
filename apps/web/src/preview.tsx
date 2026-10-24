@@ -86,7 +86,7 @@ export function RoleSwitcher({ role }: { role: string }) {
           <a
             className={v.id === role ? "selected" : ""}
             key={v.id}
-            href={`?demo=1&role=${v.id}${new URLSearchParams(location.search).get("page") === "attendance" ? "&page=attendance" : ""}`}
+            href={`?demo=1&role=${v.id}${["attendance", "recordings"].includes(new URLSearchParams(location.search).get("page") || "") ? "&page=" + new URLSearchParams(location.search).get("page") : ""}`}
           >
             {v.label}
           </a>
@@ -118,41 +118,6 @@ const roster = [
     status: "Chưa tham gia",
   },
 ];
-export function PreviewRecordings() {
-  const [selected, setSelected] = useState(false);
-  return (
-    <section className="section">
-      <div className="section-title">
-        <div>
-          <h2>Thư viện bản ghi</h2>
-          <p>Các buổi học được giáo viên cho phép ghi hình</p>
-        </div>
-        <span className="pill">2 bản ghi mẫu</span>
-      </div>
-      {["Hàm số và đồ thị", "Ôn tập phương trình bậc hai"].map((v, i) => (
-        <article className="meeting" key={v}>
-          <div className="record-thumb">▷</div>
-          <div className="meeting-info">
-            <h3>{v}</h3>
-            <p>
-              Toán học · Lớp 10A1 · {i ? 38 : 45} phút · {i ? 168 : 214} MB
-            </p>
-            <small>Trạng thái minh họa: đã lưu · Kho riêng tư R2</small>
-          </div>
-          <button className="secondary" onClick={() => setSelected(true)}>
-            Xem bản ghi
-          </button>
-        </article>
-      ))}
-      {selected && (
-        <div className="banner" role="status">
-          Đây là bố cục xem trước. Chưa có video mẫu để phát; khi chạy thật, API
-          kiểm tra quyền và cấp liên kết R2 có hạn.
-        </div>
-      )}
-    </section>
-  );
-}
 export function PreviewRoom({
   role,
   title,
