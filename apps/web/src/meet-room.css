@@ -288,3 +288,23 @@
 .room .video-grid article:has(.video-avatar) {
   background: #39434a;
 }
+.room {
+  padding-bottom: calc(var(--toolbar-height, 180px) + 24px);
+}
+.room .room-toolbar {
+  max-height: 45dvh;
+  overflow-y: auto;
+}
+.room > .room-notices {
+  grid-column: 1/-1;
+  grid-row: 2;
+  display: grid;
+  gap: 8px;
+}
+.room .room-notices p {
+  margin: 0;
+}
+.room .room-notices .error {
+  color: #b3261e;
+  background: #fce8e6;
+}

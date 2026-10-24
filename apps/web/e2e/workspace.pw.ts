@@ -51,6 +51,67 @@ test("password recovery keeps the bearer out of the URL and requires a deliberat
     code: "123456",
   });
 });
+test("listen-only classroom keeps the mobile toolbar clear of page content", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.route("**/api/**", async (route) => {
+    const path = new URL(route.request().url()).pathname;
+    let data: unknown = [];
+    if (path === "/api/me")
+      data = {
+        id: "teacher",
+        school_id: "school-demo",
+        role: "teacher",
+        name: "Giáo viên thử",
+      };
+    else if (path === "/api/setup/status") data = { initialized: true };
+    else if (path === "/api/meetings")
+      data = [
+        {
+          id: "lesson",
+          title: "Buổi học thử",
+          class_name: "10A1",
+          course: "Toán",
+          course_id: "math",
+          starts_at: new Date().toISOString(),
+          status: "live",
+          recording_allowed: true,
+        },
+      ];
+    else if (path === "/api/meetings/lesson") data = { status: "live" };
+    else if (route.request().method === "POST") data = { ok: true };
+    await route.fulfill({ json: data });
+  });
+  await page.goto("/?page=meetings");
+  await page.getByRole("button", { name: /^Vào lớp/ }).click();
+  await page.getByRole("checkbox", { name: "Bật mic khi vào lớp" }).uncheck();
+  await page
+    .getByRole("checkbox", { name: "Bật camera khi vào lớp" })
+    .uncheck();
+  await page
+    .getByRole("button", { name: "Tham gia buổi học", exact: true })
+    .click();
+  await expect(
+    page.getByRole("button", { name: "Bật mic", exact: true }),
+  ).toBeVisible();
+  await expect
+    .poll(async () =>
+      page
+        .locator(".room")
+        .evaluate(
+          (el) =>
+            parseFloat(getComputedStyle(el).paddingBottom) -
+            el.querySelector(".room-toolbar")!.getBoundingClientRect().height,
+        ),
+    )
+    .toBeGreaterThanOrEqual(23);
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+});
 test("attendance and recordings stay comparison tables on small screens", async ({
   page,
 }) => {

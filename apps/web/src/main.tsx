@@ -744,6 +744,19 @@ function Room({
     [preCamera, setPreCamera] = useState(true),
     [preview, setPreview] = useState<MediaStream | null>(null);
   const previewRef = useRef<MediaStream | null>(null);
+  const toolbarRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const toolbar = toolbarRef.current;
+    if (!toolbar) return;
+    const resize = new ResizeObserver(() => {
+      (toolbar.closest(".room") as HTMLElement)?.style.setProperty(
+        "--toolbar-height",
+        `${toolbar.getBoundingClientRect().height}px`,
+      );
+    });
+    resize.observe(toolbar);
+    return () => resize.disconnect();
+  }, []);
   const media = useRef<ClassroomMedia | null>(null),
     rec = useRef<MediaRecorder | null>(null),
     display = useRef<MediaStream | null>(null),
@@ -1069,15 +1082,19 @@ function Room({
           Rời lớp
         </button>
       </header>
-      {error && (
-        <p className="error" role="alert">
-          {error}
-        </p>
-      )}
-      {recordingStatus && (
-        <p className="banner" role="status">
-          {recordingStatus}
-        </p>
+      {(error || recordingStatus) && (
+        <div className="room-notices">
+          {error && (
+            <p className="error" role="alert">
+              {error}
+            </p>
+          )}
+          {recordingStatus && (
+            <p className="banner" role="status">
+              {recordingStatus}
+            </p>
+          )}
+        </div>
       )}
       {canManage && (
         <RecordingRecovery
@@ -1086,7 +1103,7 @@ function Room({
           active={recordingJob}
         />
       )}
-      <div className="room-toolbar">
+      <div className="room-toolbar" ref={toolbarRef}>
         {connection && (
           <span role="status" aria-live="polite">
             {connection}
