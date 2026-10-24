@@ -143,7 +143,7 @@ func (a *app) routes() http.Handler {
 			problem(w, 503, "Dependencies unavailable")
 			return
 		}
-		send(w, 200, map[string]string{"status": "ok"})
+		send(w, 200, map[string]string{"status": "ok", "commit": buildCommit, "version": buildVersion})
 	})
 	m.HandleFunc("POST /api/login", a.login)
 	m.HandleFunc("GET /api/setup/status", a.setupStatus)
@@ -152,6 +152,8 @@ func (a *app) routes() http.Handler {
 	m.HandleFunc("GET /api/setup/settings", a.operator(a.setupGet))
 	m.HandleFunc("POST /api/setup/settings", a.operator(a.setupSave))
 	m.HandleFunc("POST /api/setup/check-sfu", a.operator(a.setupCheckSFU))
+	m.HandleFunc("GET /api/setup/updates", a.operator(a.updateStatus))
+	m.HandleFunc("POST /api/setup/updates", a.operator(a.updateRequest))
 	m.HandleFunc("POST /api/logout", a.auth(a.logout))
 	m.HandleFunc("GET /api/me", a.auth(func(w http.ResponseWriter, r *http.Request) { send(w, 200, who(r)) }))
 	m.HandleFunc("POST /api/password", a.auth(a.password))
@@ -220,6 +222,11 @@ func (a *app) routes() http.Handler {
 				problem(w, 500, "Internal error")
 			}
 		}()
+		if _, e := os.Stat(configPath("maintenance")); e == nil && r.URL.Path != "/api/health" && r.URL.Path != "/api/setup/unlock" && r.URL.Path != "/api/setup/status" && !(r.Method == "GET" && r.URL.Path == "/api/setup/updates") {
+			w.Header().Set("Retry-After", "10")
+			problem(w, 503, "Hệ thống đang cập nhật an toàn. Vui lòng chờ hoàn tất.")
+			return
+		}
 		m.ServeHTTP(w, r)
 	})
 }

@@ -40,7 +40,7 @@ if [[ -d "$MEET_DIR/.git" ]]; then
   [[ "$(git -C "$MEET_DIR" remote get-url origin)" == "$MEET_REPO" ]] || fail '/opt/meet thuộc repository khác; giữ nguyên và dừng.'
   [[ -z "$(git -C "$MEET_DIR" status --porcelain --untracked-files=normal)" ]] || fail '/opt/meet có thay đổi cục bộ; review trước khi chạy lại.'
   [[ "$(git -C "$MEET_DIR" branch --show-current)" == "$MEET_BRANCH" ]] || fail 'Checkout đang ở nhánh khác; không tự chuyển nhánh.'
-  git -C "$MEET_DIR" pull --ff-only origin "$MEET_BRANCH"
+  fail "Đã có bản cài. Không chạy lại bộ cài để nâng cấp. Dùng /setup hoặc deploy/enable-updates.sh theo hướng dẫn cập nhật an toàn."
 else
   [[ ! -e "$MEET_DIR" ]] || fail '/opt/meet đã tồn tại, không ghi đè.'
   git clone --branch "$MEET_BRANCH" "$MEET_REPO" "$MEET_DIR"
@@ -60,6 +60,7 @@ set -euo pipefail
 exec docker compose --env-file /opt/meet/.env -f /opt/meet/deploy/compose.yaml "$@"
 EOF
 chmod 0755 /usr/local/bin/meet
+if ! grep -q '^MEET_COMMIT=' .env; then printf '\nMEET_COMMIT=%s\nMEET_VERSION=0.3.0\n' "$(git rev-parse HEAD)" >> .env; fi
 meet config --quiet
 meet build
 # Run migration explicitly even when a previous migration container already exited successfully.
@@ -90,6 +91,7 @@ WantedBy=timers.target
 BACKUP_TIMER
 systemctl daemon-reload
 systemctl enable --now meet-backup.timer
+bash deploy/install-update-agent.sh
 MEET_READY=false
 for _ in $(seq 1 90); do
   if curl -fsS http://127.0.0.1:8080/api/health >/dev/null; then MEET_READY=true; break; fi

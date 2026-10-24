@@ -201,3 +201,31 @@
     font-size: 20px;
   }
 }
+
+.update-versions {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.update-versions dd {
+  margin: 6px 0;
+  overflow-wrap: anywhere;
+}
+.update-confirm {
+  margin-top: 18px;
+  display: grid;
+  gap: 14px;
+}
+.update-confirm label {
+  display: flex;
+  gap: 10px;
+  align-items: start;
+}
+.update-confirm input {
+  flex: none;
+  width: 20px;
+  min-height: 20px;
+}
+.update-confirm button {
+  justify-self: start;
+}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log/slog"
+	"os"
 	"strings"
 	"time"
 
@@ -115,6 +116,9 @@ func remainingLifetime(now, expires time.Time) time.Duration {
 	return d
 }
 func (a *app) purgeExpired(ctx context.Context) error {
+	if _, e := os.Stat(configPath("maintenance")); e == nil {
+		return nil
+	}
 	cfg, e := loadSettings()
 	if e != nil {
 		return e

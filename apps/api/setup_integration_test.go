@@ -236,6 +236,37 @@ func TestSetupAndRetentionIntegration(t *testing.T) {
 	if e = a.purgeExpired(t.Context()); e != nil || deletes != 1 {
 		t.Fatal("retention not idempotent")
 	}
+	// Only the operator may queue an exact checked revision; the API never runs host commands.
+	if request("GET", "/api/setup/updates", nil, userCookie).Code != 401 {
+		t.Fatal("school account gained updater")
+	}
+	status := map[string]any{"agent_seen": time.Now().Unix(), "state": "checked", "available_sha": strings.Repeat("c", 40), "can_update": true}
+	rawStatus, _ := json.Marshal(status)
+	os.WriteFile(configPath("update-status.json"), rawStatus, 0600)
+	if request("POST", "/api/setup/updates", map[string]string{"action": "apply", "target": "../../shell"}, cookie).Code != 400 {
+		t.Fatal("invalid update revision accepted")
+	}
+	if request("POST", "/api/setup/updates", map[string]string{"action": "apply", "target": strings.Repeat("d", 40)}, cookie).Code != 409 {
+		t.Fatal("unchecked revision queued")
+	}
+	if w = request("POST", "/api/setup/updates", map[string]string{"action": "apply", "target": strings.Repeat("c", 40)}, cookie); w.Code != 202 {
+		t.Fatalf("queue update: %s", w.Body)
+	}
+	var queued map[string]any
+	queuedBytes, _ := os.ReadFile(configPath("update-request.json"))
+	if json.Unmarshal(queuedBytes, &queued) != nil || queued["target"] != strings.Repeat("c", 40) {
+		t.Fatal("queue not published")
+	}
+	os.Remove(configPath("update-request.json"))
+	os.WriteFile(configPath("maintenance"), []byte("test"), 0600)
+	if request("POST", "/api/setup/settings", map[string]any{}, cookie).Code != 503 || request("GET", "/api/setup/updates", nil, cookie).Code != 200 {
+		t.Fatal("maintenance did not freeze writes/preserve update status")
+	}
+	before := deletes
+	if err := a.purgeExpired(t.Context()); err != nil || deletes != before {
+		t.Fatal("retention worker ran during maintenance")
+	}
+	os.Remove(configPath("maintenance"))
 	if w = request("POST", "/api/setup/lock", map[string]bool{}, cookie); w.Code != 200 {
 		t.Fatal("lock failed")
 	}

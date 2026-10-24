@@ -22,9 +22,11 @@ jobs:
         working-directory: apps/api
     steps:
       - uses: actions/checkout@v4
-      - run: bash -n deploy/install.sh deploy/init-secrets.sh
+      - run: bash -n deploy/install.sh deploy/init-secrets.sh deploy/install-update-agent.sh deploy/enable-updates.sh
         working-directory: .
       - run: sudo apt-get update && sudo apt-get install -y python3-cryptography
+        working-directory: .
+      - run: /usr/bin/python3 deploy/update_test.py
         working-directory: .
       - run: /usr/bin/python3 deploy/backup_test.py
         working-directory: .
@@ -77,6 +79,10 @@ jobs:
           APP_ORIGIN: http://localhost:8080
       - run: sudo apt-get update && sudo apt-get install -y python3-cryptography
       - run: sudo --preserve-env=APP_ORIGIN,MEET_DISPOSABLE_BACKUP_TEST python3 deploy/backup_integration.py
+        env:
+          APP_ORIGIN: http://localhost:8080
+          MEET_DISPOSABLE_BACKUP_TEST: 'true'
+      - run: sudo --preserve-env=APP_ORIGIN,MEET_DISPOSABLE_BACKUP_TEST python3 deploy/update_integration.py
         env:
           APP_ORIGIN: http://localhost:8080
           MEET_DISPOSABLE_BACKUP_TEST: 'true'

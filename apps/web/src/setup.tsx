@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { SystemUpdates } from "./updates";
 import { api } from "./api";
 import "./setup.css";
 type Provider = {
@@ -170,6 +171,7 @@ export function Setup() {
           </section>
         ) : (
           <>
+            <SystemUpdates />
             <div className="setup-steps">
               <a href="#setup-school">1. Trường & admin</a>
               <a href="#setup-sfu">2. SFU & TURN</a>

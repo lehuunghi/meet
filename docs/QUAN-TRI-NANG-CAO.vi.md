@@ -1,3 +1,5 @@
+> Mới: [Cập nhật an toàn trực tiếp từ GitHub](CAP-NHAT-AN-TOAN.vi.md), không cài lại dữ liệu; có kiểm tra CI, snapshot và phục hồi khi lỗi.
+
 # Quản trị học vụ, bảo mật, điểm danh và sao lưu
 
 ## Môn học và phân công

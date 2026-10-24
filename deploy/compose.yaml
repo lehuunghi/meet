@@ -1,6 +1,11 @@
 name: meet
 x-api: &api
-  build: ../apps/api
+  image: meet-api:${MEET_IMAGE_TAG:-local}
+  build:
+    context: ../apps/api
+    args:
+      MEET_COMMIT: ${MEET_COMMIT:-development}
+      MEET_VERSION: ${MEET_VERSION:-0.3.0}
   environment:
     CONFIG_DIR: /var/lib/meet-config
     MYSQL_DSN_FILE: /run/secrets/mysql_dsn
@@ -61,6 +66,7 @@ services:
     cap_drop: [ALL]
     security_opt: [no-new-privileges:true]
   web:
+    image: meet-web:${MEET_IMAGE_TAG:-local}
     build: ../apps/web
     restart: unless-stopped
     depends_on: [api]
