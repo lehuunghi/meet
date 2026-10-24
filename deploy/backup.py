@@ -95,6 +95,8 @@ def backup(force=False):
     if not cfg['r2']['enabled']:
         raise ValueError('Configure R2 first')
     dump = compose('exec', '-T', 'mysql', 'sh', '-c', 'MYSQL_PWD="$(cat /run/secrets/mysql_password)" exec mysqldump -h 127.0.0.1 -u meet --single-transaction --no-tablespaces --set-gtid-purged=OFF meet')
+    if len(dump) > MAX_BYTES:
+        raise ValueError('Database dump exceeds 512 MiB uncompressed')
     output = io.BytesIO()
     with tarfile.open(fileobj=output, mode='w:gz') as archive:
         add_bytes(archive, 'database.sql', dump)
@@ -117,6 +119,8 @@ def backup(force=False):
                 if path.is_file():
                     add_bytes(code, relative, path.read_bytes())
         source = packed.getvalue()
+        if len(dump) + len(source) + 1024 * 1024 > MAX_BYTES:
+            raise ValueError('Snapshot contents exceed 512 MiB uncompressed')
         add_bytes(archive, 'source.tar', source)
         commit = subprocess.run(['git', '-C', str(ROOT), 'rev-parse', 'HEAD'], check=True, stdout=subprocess.PIPE).stdout.decode().strip()
         add_bytes(archive, 'manifest.json', json.dumps({'version': 1, 'commit': commit, 'database_sha256': hashlib.sha256(dump).hexdigest(), 'source_sha256': hashlib.sha256(source).hexdigest()}, ensure_ascii=False).encode())

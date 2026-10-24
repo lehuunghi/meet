@@ -308,14 +308,8 @@ export function AttendanceReport({
             <>
               <div className="attendance-summary">
                 <article>
-                  <strong>
-                    {role === "student" ? shown.length : shown.length}
-                  </strong>
-                  <small>
-                    {role === "student"
-                      ? "Dòng điểm danh trên trang"
-                      : "Dòng điểm danh trên trang"}
-                  </small>
+                  <strong>{shown.length}</strong>
+                  <small>Dòng điểm danh trên trang</small>
                 </article>
                 <article>
                   <strong>
@@ -329,17 +323,12 @@ export function AttendanceReport({
                 </article>
                 <article>
                   <strong>
-                    {role === "student"
-                      ? Math.floor(Number(shown[0]?.seconds || 0) / 60)
-                      : shown.filter(
-                          (r) => Number(r.participated_sessions) === 0,
-                        ).length}
+                    {
+                      shown.filter((r) => Number(r.participated_sessions) === 0)
+                        .length
+                    }
                   </strong>
-                  <small>
-                    {role === "student"
-                      ? "Phút kết nối dòng đầu"
-                      : "Chưa ghi nhận tham gia"}
-                  </small>
+                  <small>Chưa ghi nhận tham gia</small>
                 </article>
               </div>
               {!error && shown.length === 0 ? (

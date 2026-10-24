@@ -173,7 +173,7 @@ export function Setup() {
             <div className="setup-steps">
               <a href="#setup-school">1. Trường & admin</a>
               <a href="#setup-sfu">2. SFU & TURN</a>
-              <a href="#setup-r2">3. R2 · 30 ngày</a>
+              <a href="#setup-r2">3. R2 · Lưu trữ</a>
             </div>
             <form
               onSubmit={(e) => {
@@ -190,7 +190,7 @@ export function Setup() {
                   setMessage(
                     "Đã lưu cấu hình. Trường/admin đã sẵn sàng. " +
                       (settings.r2.enabled
-                        ? "R2 đã xác nhận lifecycle 30 ngày và CORS."
+                        ? `R2 đã xác nhận lifecycle ${settings.retention_days} ngày và CORS.`
                         : "Ghi hình đang tắt."),
                   );
                 });
