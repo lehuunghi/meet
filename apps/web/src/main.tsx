@@ -934,6 +934,7 @@ function Room({
       );
     }
     let item: { id: string };
+    let createdID = "";
     let releaseCapture: () => void = () => {};
     try {
       const storage = await navigator.storage?.estimate();
@@ -943,6 +944,7 @@ function Room({
       )
         throw new Error("Thiết bị không đủ dung lượng lưu tạm bản ghi");
       item = await api(`/meetings/${meeting.id}/recordings/multipart`, {});
+      createdID = item.id;
       await saveJob({
         id: item.id,
         owner: user.id,
@@ -958,7 +960,13 @@ function Room({
       releaseCapture = await acquireCapture(item.id);
       void navigator.storage?.persist?.();
     } catch (e) {
+      releaseCapture();
       capture.getTracks().forEach((t) => t.stop());
+      if (createdID)
+        void api(
+          `/meetings/${meeting.id}/recordings/${createdID}/abort`,
+          {},
+        ).catch(() => {});
       throw e;
     }
     setRecordingJob(item.id);

@@ -192,7 +192,7 @@ func (a *app) recordingMultipartFinish(w http.ResponseWriter, r *http.Request) {
 		}
 		head, e = client.HeadObject(r.Context(), &s3.HeadObjectInput{Bucket: &state.Bucket, Key: &state.Key})
 	}
-	if e != nil || aws.ToInt64(head.ContentLength) <= 0 || aws.ToInt64(head.ContentLength) > recordingMaxSize || aws.ToString(head.ContentType) != "video/webm" {
+	if e != nil || aws.ToInt64(head.ContentLength) <= int64(in.Parts-1)*recordingPartSize || aws.ToInt64(head.ContentLength) > int64(in.Parts)*recordingPartSize || aws.ToInt64(head.ContentLength) > recordingMaxSize || aws.ToString(head.ContentType) != "video/webm" {
 		problem(w, 409, "Không xác minh được bản ghi trên R2")
 		return
 	}

@@ -241,7 +241,7 @@ export function uploadRecording(
       const res = await fetch(signed.url, {
         method: "PUT",
         body: blob,
-        signal: AbortSignal.timeout(90000),
+        signal: AbortSignal.timeout(300000),
       });
       if (!res.ok)
         throw new Error(

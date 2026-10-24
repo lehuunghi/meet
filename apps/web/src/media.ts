@@ -25,8 +25,10 @@ export async function gather(pc: RTCPeerConnection) {
 }
 export class ClassroomMedia {
   private peers: RTCPeerConnection[] = [];
+  private peerCreated = new Map<RTCPeerConnection, number>();
   private local: MediaStream | null = null;
   private known = new Set<string>();
+  private knownOwners = new Map<string, string>();
   private closed = false;
   private receiver?: RTCPeerConnection;
   private receiverID?: string;
@@ -57,6 +59,7 @@ export class ClassroomMedia {
   ) {}
   private async session(pc: RTCPeerConnection) {
     this.peers.push(pc);
+    this.peerCreated.set(pc, Date.now());
     const s = await api(`/meetings/${this.meeting}/sfu`, { op: "new" });
     if (this.closed) {
       pc.close();
@@ -113,6 +116,12 @@ export class ClassroomMedia {
         this.onRemove(key);
       }
     });
+    this.knownOwners.forEach((owner, key) => {
+      if (!present.has(owner)) {
+        this.known.delete(key);
+        this.knownOwners.delete(key);
+      }
+    });
     const fresh = list.filter(
       (p) =>
         p.user_id !== self &&
@@ -167,6 +176,7 @@ export class ClassroomMedia {
           key = p.session_id + ":" + p.track_name;
         this.labels.set(t.mid, { key: p.user_id, name: p.name });
         this.known.add(key);
+        this.knownOwners.set(key, p.user_id);
       }
     });
     if (result.sessionDescription) {
@@ -179,6 +189,8 @@ export class ClassroomMedia {
         sessionDescription: pc.localDescription,
       });
     }
+    if (result.tracks?.some((t: any) => t.errorCode))
+      throw new Error("Một luồng nhận bị lỗi; đang chuẩn bị kết nối lại");
   }
   toggle(kind: "audio" | "video") {
     this.local
@@ -262,7 +274,11 @@ export class ClassroomMedia {
       const now = Date.now();
       const failed = this.peers.some(
         (p) =>
-          p.connectionState === "failed" || p.iceConnectionState === "failed",
+          p.connectionState === "failed" ||
+          p.iceConnectionState === "failed" ||
+          ((p.connectionState === "connecting" ||
+            p.connectionState === "new") &&
+            now - (this.peerCreated.get(p) || now) > 30000),
       );
       const disconnected = this.peers.some(
         (p) =>
@@ -284,6 +300,7 @@ export class ClassroomMedia {
         await api(`/meetings/${this.meeting}/media/reset`, {});
         this.peers.forEach((p) => p.close());
         this.peers = [];
+        this.peerCreated.clear();
         this.screen?.getTracks().forEach((t) => {
           t.stop();
           this.local?.removeTrack(t);
@@ -293,6 +310,7 @@ export class ClassroomMedia {
         this.receiver = undefined;
         this.receiverID = undefined;
         this.known.clear();
+        this.knownOwners.clear();
         this.labels.clear();
         this.remoteStreams.forEach((stream, key) => {
           stream.getTracks().forEach((t) => t.stop());
