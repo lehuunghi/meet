@@ -439,3 +439,16 @@
 .compact-attendance-table td small {
   line-height: 1.5;
 }
+
+.presence-clock > span,
+.presence-clock > small {
+  display: block;
+}
+.compact-attendance-table td .presence-clock small {
+  text-align: inherit;
+}
+@media (max-width: 700px) {
+  .presence-clock {
+    text-align: right;
+  }
+}

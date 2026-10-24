@@ -103,7 +103,13 @@ export function RecordingLibrary({
     );
     const request = demo
       ? Promise.resolve(
-          sample.filter((r) => !meeting || r.meeting_id === meeting),
+          sample
+            .filter((r) => !meeting || r.meeting_id === meeting)
+            .sort(
+              (a, b) =>
+                new Date(b.starts_at).getTime() -
+                new Date(a.starts_at).getTime(),
+            ),
         )
       : api<Row[]>(`/recordings?${params}`);
     request

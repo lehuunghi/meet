@@ -179,13 +179,19 @@ export function AttendanceReport({
             : classId
               ? courses.filter((c) => c.class_id === classId)
               : courses
-          ).flatMap((c) =>
-            mockRows(role, c, meeting).map((r) => ({
-              ...r,
-              course: c.name,
-              class_name: c.class_name,
-            })),
-          ),
+          )
+            .flatMap((c) =>
+              mockRows(role, c, meeting).map((r) => ({
+                ...r,
+                course: c.name,
+                class_name: c.class_name,
+              })),
+            )
+            .sort(
+              (a, b) =>
+                new Date(b.starts_at || 0).getTime() -
+                new Date(a.starts_at || 0).getTime(),
+            ),
         )
       : api<ReportRow[]>(`/attendance/report?${params}`);
     request
@@ -427,24 +433,30 @@ export function AttendanceReport({
                                 {duration(r.seconds)}
                               </td>
                               <td data-label="Vào / ra ghi nhận">
-                                <span title={time(r.joined_at)}>
-                                  Vào{" "}
-                                  {r.joined_at
-                                    ? new Date(r.joined_at).toLocaleTimeString(
-                                        "vi-VN",
-                                        { hour: "2-digit", minute: "2-digit" },
-                                      )
-                                    : "—"}
-                                </span>
-                                <small title={time(r.last_seen)}>
-                                  Ra{" "}
-                                  {r.last_seen
-                                    ? new Date(r.last_seen).toLocaleTimeString(
-                                        "vi-VN",
-                                        { hour: "2-digit", minute: "2-digit" },
-                                      )
-                                    : "—"}
-                                </small>
+                                <div className="presence-clock">
+                                  <span title={time(r.joined_at)}>
+                                    Vào{" "}
+                                    {r.joined_at
+                                      ? new Date(
+                                          r.joined_at,
+                                        ).toLocaleTimeString("vi-VN", {
+                                          hour: "2-digit",
+                                          minute: "2-digit",
+                                        })
+                                      : "—"}
+                                  </span>
+                                  <small title={time(r.last_seen)}>
+                                    Ra{" "}
+                                    {r.last_seen
+                                      ? new Date(
+                                          r.last_seen,
+                                        ).toLocaleTimeString("vi-VN", {
+                                          hour: "2-digit",
+                                          minute: "2-digit",
+                                        })
+                                      : "—"}
+                                  </small>
+                                </div>
                               </td>
                               <td data-label="Kết quả">
                                 <span
