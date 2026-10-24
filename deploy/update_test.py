@@ -47,6 +47,12 @@ class UpdaterTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,'Running image'):u.apply('a'*40,'test')
             compose.assert_not_called()
 
+    def test_recovery_preserves_unrelated_checkout_changes(self):
+        job={'old_sha':'a'*40,'target':'b'*40,'db_dirty':True,'snapshot':'unused'}
+        with patch.object(u,'publish'),patch.object(u,'compose'),patch.object(u,'git',return_value='c'*40) as git,patch.object(u,'sql') as sql:
+            with self.assertRaisesRegex(ValueError,'Checkout changed'):u.recover(job,None)
+            sql.assert_not_called();self.assertEqual(git.call_count,1)
+
     def test_committed_crash_only_finishes_unlock_without_restoring_database(self):
         with tempfile.TemporaryDirectory() as tmp:
             root=Path(tmp); (root/'runtime-config').mkdir(); (root/'runtime-config/maintenance').write_text('pending')

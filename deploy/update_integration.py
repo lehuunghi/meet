@@ -7,6 +7,7 @@ import tempfile
 import uuid
 import urllib.request
 import urllib.error
+import shutil
 
 if os.environ.get('MEET_DISPOSABLE_BACKUP_TEST') != 'true':
     raise SystemExit('Explicit disposable-stack opt-in required')
@@ -89,3 +90,28 @@ with tempfile.TemporaryDirectory() as tmp:
     assert json.loads((u.STATE/'status.json').read_text())['state']=='rolled_back'
     assert not (u.ROOT/'runtime-config/maintenance').exists()
     print('Interrupted update journal automatically recovered original database and application')
+
+    # Prove the one-time bridge against the previous real schema-v4 source with no updater metadata.
+    original_root=u.ROOT
+    legacy=Path(tmp)/'legacy'
+    old_revision='52c8fab08b29a450f2de9552a4f111d43da366ac'
+    u.run('git','-C',str(original_root),'fetch','--depth=200','origin',current,timeout=120)
+    u.run('git','-C',str(original_root),'worktree','add','--detach',str(legacy),old_revision)
+    shutil.copy2(original_root/'.env',legacy/'.env')
+    for folder in ['secrets','runtime-config']:
+        shutil.copytree(original_root/folder,legacy/folder)
+        for path in [legacy/folder,*list((legacy/folder).rglob('*'))]:os.chown(path,10001,10001)
+    u.ROOT=legacy;u.BOOTSTRAP=True
+    u.candidate=lambda:{'current_sha':old_revision,'available_sha':current,'can_update':True}
+    u.run('docker','build','-t','meet-api:legacy-test',str(legacy/'apps/api'),timeout=900)
+    baseline=u.override(u.STATE/'legacy.images.json','meet-api:legacy-test',u.images()['web'])
+    u.compose('up','-d','--no-deps','--no-build','--force-recreate','api','web',override=baseline)
+    original_health()
+    assert u.manifest(old_revision)['updater_protocol']==0
+    u.apply(current,str(uuid.uuid4()))
+    original_health(current)
+    assert u.git('rev-parse','HEAD')==current
+    assert u.sql("SELECT name FROM users WHERE id='demo-admin'")==old_name
+    assert json.loads((u.STATE/'status.json').read_text())['state']=='success'
+    print('Legacy schema-v4 installation upgraded in place through the safe one-time bridge')
+    u.compose('stop','api','web')

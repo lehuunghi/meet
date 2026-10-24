@@ -224,6 +224,9 @@ def internal_health():
 def recover(job, b):
     publish(state='updating', phase='rollback', message='Đang phục hồi bản trước; dữ liệu vẫn khóa ghi.')
     compose('stop', 'api', 'web')
+    head=git('rev-parse','HEAD')
+    if head not in {job['old_sha'],job['target']} or git('status','--porcelain','--untracked-files=normal'):
+        raise ValueError('Checkout changed outside this update; preserve edits and require manual recovery')
     if job.get('snapshot'):
         files = b.read_archive(b.unseal(Path(job['snapshot']).read_bytes(), b.crypt_key(b.KEY)))
         if job.get('db_dirty'):
@@ -307,6 +310,8 @@ def apply(target, request_id):
         if int(sql("SELECT COUNT(*) FROM meetings WHERE status='live'")):
             raise ValueError('A lesson started before the maintenance freeze')
         checkpoint(job, snapshot=snapshot(b, job))
+        checkout_safe()
+        if git('rev-parse','HEAD')!=job['old_sha']:raise ValueError('Checkout changed during snapshot; do not overwrite it')
         git('merge', '--ff-only', target)
         env_path=ROOT / '.env'
         lines=[line for line in env_path.read_text().splitlines() if not line.startswith(('MEET_IMAGE_TAG=','MEET_COMMIT=','MEET_VERSION='))]
