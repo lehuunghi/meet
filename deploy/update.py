@@ -261,6 +261,10 @@ def apply(target, request_id):
         raise ValueError('Requested revision is stale or has not passed CI')
     if int(sql("SELECT COUNT(*) FROM meetings WHERE status='live'")):
         raise ValueError('Có lớp đang học; kết thúc các buổi trước khi cập nhật')
+    if not BOOTSTRAP:
+        with urllib.request.urlopen('http://127.0.0.1:8080/api/health',timeout=5) as response:running=json.load(response)
+        if running.get('status')!='ok' or running.get('commit')!=checked['current_sha']:
+            raise ValueError('Running image does not match checkout; use the one-time bridge or repair before updating')
     release = manifest(target)
     if int(sql('SELECT MAX(version) FROM schema_migrations')) != manifest(checked['current_sha'])['schema_version']:
         raise ValueError('Installed schema does not match the current release; repair it first')

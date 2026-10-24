@@ -20,7 +20,7 @@ Một bản chỉ được nâng cấp khi:
 
 - Có deploy/release.json hợp lệ, version dạng x.y.z tăng so với bản đang cài; SHA từ GitHub khớp SHA đã fetch.
 - Lần chạy CI push mới nhất cho chính commit đó thành công, có đủ api/web/containers thành công; không chấp nhận skipped hoặc chỉ có workflow PR thành công.
-- Origin Git đúng repository, checkout đúng branch, không sửa file hoặc có file chưa theo dõi, và chỉ tiến lên bằng fast-forward.
+- Origin Git đúng repository, checkout đúng branch, không sửa file hoặc có file chưa theo dõi, và chỉ tiến lên bằng fast-forward. Image đang chạy phải báo đúng commit của checkout; không nâng cấp trên một baseline lệch mã nguồn/image.
 - Không có buổi học live; database hiện tại khớp schema_version của bản đang cài; không hạ schema. Charset/collation database được lưu lại để khôi phục đúng; database có stored routine/event/trigger tùy biến cần review thủ công.
 - Còn ít nhất 3 GiB dung lượng trống và đủ RAM để dựng Docker image/snapshot.
 - Giao thức updater và infrastructure_version tương thích. Thay đổi compose sau bản cài có updater yêu cầu nâng cấp hạ tầng thủ công có review, không tự đổi MySQL/Redis/volumes/network.

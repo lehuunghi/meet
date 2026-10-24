@@ -14,6 +14,10 @@ spec=importlib.util.spec_from_file_location('update',Path(__file__).with_name('u
 u=importlib.util.module_from_spec(spec);spec.loader.exec_module(u)
 u.ROOT=Path(__file__).resolve().parent.parent
 current=u.git('rev-parse','HEAD')
+# Stamp the disposable baseline like the real installer does, so updater can verify image == checkout.
+u.run('docker','build','--build-arg','MEET_COMMIT='+current,'--build-arg','MEET_VERSION=0.3.0','-t','meet-api:local',str(u.ROOT/'apps/api'),timeout=900)
+u.compose('up','-d','--no-deps','--no-build','--force-recreate','api')
+u.health(current)
 # CI checks a detached merge revision. GitHub authorization/dirty checks have separate unit tests.
 u.candidate=lambda:{'current_sha':current,'available_sha':current,'can_update':True}
 u.checkout_safe=lambda:None

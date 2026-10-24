@@ -1,5 +1,6 @@
 import importlib.util
 import json
+import io
 from pathlib import Path
 import tempfile
 import unittest
@@ -37,6 +38,13 @@ class UpdaterTests(unittest.TestCase):
     def test_unapproved_target_never_stops_application(self):
         with patch.object(u, 'candidate', return_value={'available_sha': 'a'*40, 'can_update': False}), patch.object(u, 'compose') as compose:
             with self.assertRaises(ValueError): u.apply('a'*40, 'test')
+            compose.assert_not_called()
+
+    def test_mismatched_running_image_blocks_update_before_stop(self):
+        checked={'available_sha':'a'*40,'current_sha':'b'*40,'can_update':True}
+        response=io.BytesIO(json.dumps({'status':'ok','commit':'c'*40}).encode())
+        with patch.object(u,'candidate',return_value=checked),patch.object(u,'sql',return_value='0'),patch.object(u.urllib.request,'urlopen',return_value=response),patch.object(u,'compose') as compose:
+            with self.assertRaisesRegex(ValueError,'Running image'):u.apply('a'*40,'test')
             compose.assert_not_called()
 
     def test_committed_crash_only_finishes_unlock_without_restoring_database(self):
