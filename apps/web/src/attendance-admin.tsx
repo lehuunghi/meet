@@ -118,6 +118,39 @@ export function LessonTiming({
       active = false;
     };
   }, [meeting, classId, courseId, demo, start, title]);
+  async function save(form: HTMLFormElement) {
+    if (busy || !window || !form.reportValidity()) return;
+    setBusy(true);
+    setMessage("");
+    try {
+      const f = new FormData(form),
+        starts = new Date(String(f.get("start"))).toISOString(),
+        ends = new Date(String(f.get("end"))).toISOString();
+      if (new Date(ends) <= new Date(starts))
+        throw Error("Giờ ra phải sau giờ vào.");
+      if (!demo)
+        await api("/attendance/timing", {
+          meeting_id: meeting,
+          class_id: classId,
+          course_id: courseId,
+          starts_at: starts,
+          ends_at: ends,
+          expected_starts_at: window.starts_at,
+          expected_ends_at: window.ends_at,
+        });
+      setWindow({ ...window, starts_at: starts, ends_at: ends });
+      setMessage(
+        demo
+          ? "Đã cập nhật khung giờ mẫu cho cả buổi."
+          : "Đã áp dụng khung giờ cho toàn bộ buổi học.",
+      );
+      onSaved();
+    } catch (e) {
+      setMessage((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
   if (!meeting)
     return (
       <p className="lesson-timing-hint">
@@ -152,36 +185,9 @@ export function LessonTiming({
           <form
             key={meeting + window.starts_at + window.ends_at}
             className="lesson-timing-form"
-            onSubmit={async (e) => {
+            onSubmit={(e) => {
               e.preventDefault();
-              const f = new FormData(e.currentTarget),
-                starts = new Date(String(f.get("start"))).toISOString(),
-                ends = new Date(String(f.get("end"))).toISOString();
-              setBusy(true);
-              setMessage("");
-              try {
-                if (!demo)
-                  await api("/attendance/timing", {
-                    meeting_id: meeting,
-                    class_id: classId,
-                    course_id: courseId,
-                    starts_at: starts,
-                    ends_at: ends,
-                    expected_starts_at: window.starts_at,
-                    expected_ends_at: window.ends_at,
-                  });
-                setWindow({ ...window, starts_at: starts, ends_at: ends });
-                setMessage(
-                  demo
-                    ? "Đã cập nhật khung giờ mẫu cho cả buổi."
-                    : "Đã áp dụng khung giờ cho toàn bộ buổi học.",
-                );
-                onSaved();
-              } catch (e) {
-                setMessage((e as Error).message);
-              } finally {
-                setBusy(false);
-              }
+              void save(e.currentTarget);
             }}
           >
             <label>
@@ -204,7 +210,16 @@ export function LessonTiming({
                 disabled={busy}
               />
             </label>
-            <button disabled={busy}>Áp dụng cho cả buổi</button>
+            <button
+              type="button"
+              disabled={busy}
+              onClick={(e) => {
+                const form = e.currentTarget.form;
+                if (form) void save(form);
+              }}
+            >
+              Áp dụng cho cả buổi
+            </button>
           </form>
         )
       )}

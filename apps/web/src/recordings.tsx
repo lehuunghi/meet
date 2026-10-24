@@ -3,6 +3,8 @@ import { api } from "./api";
 import { ClassSubjectPicker, type ScopedCourse } from "./class-subject-picker";
 
 type Row = {
+  course?: string;
+  class_name?: string;
   id: string;
   meeting_id: string;
   meeting_title: string;
@@ -14,9 +16,11 @@ type Lesson = { id: string; title: string; starts_at: string };
 export function RecordingLibrary({
   courses,
   demo = false,
+  role,
 }: {
   courses: ScopedCourse[];
   demo?: boolean;
+  role: string;
 }) {
   const [classChoice, setClass] = useState(""),
     [courseChoice, setCourse] = useState(""),
@@ -69,7 +73,7 @@ export function RecordingLibrary({
     setNotice("");
     playRequest.current++;
     setOpening(false);
-    if (!courseId) {
+    if (!courseId && role === "admin") {
       setLoading(false);
       return;
     }
@@ -80,17 +84,23 @@ export function RecordingLibrary({
       meeting_id: meeting,
       page: String(page),
     });
-    const sample = [1, 2].map((i) => ({
-      id: courseId + "-recording-" + i,
-      meeting_id: courseId + "-" + i,
-      meeting_title:
-        (i === 1 ? "Bài học số 1" : "Ôn tập và thực hành") +
-        " · " +
-        course!.name,
-      starts_at: `2026-10-${22 + i}T01:00:00Z`,
-      size_bytes: (i === 1 ? 214 : 168) * 1024 * 1024,
-      expires_at: `2026-11-${22 + i}T01:00:00Z`,
-    }));
+    const scopeCourses = course
+      ? [course]
+      : classId
+        ? courses.filter((c) => c.class_id === classId)
+        : courses;
+    const sample = scopeCourses.flatMap((c) =>
+      [1, 2].map((i) => ({
+        id: c.id + "-recording-" + i,
+        meeting_id: c.id + "-" + i,
+        meeting_title: i === 1 ? "Bài học số 1" : "Ôn tập và thực hành",
+        course: c.name,
+        class_name: c.class_name,
+        starts_at: `2026-10-${22 + i}T01:00:00Z`,
+        size_bytes: (i === 1 ? 214 : 168) * 1024 * 1024,
+        expires_at: `2026-11-${22 + i}T01:00:00Z`,
+      })),
+    );
     const request = demo
       ? Promise.resolve(
           sample.filter((r) => !meeting || r.meeting_id === meeting),
@@ -110,7 +120,7 @@ export function RecordingLibrary({
       active = false;
       playRequest.current++;
     };
-  }, [classId, courseId, meeting, page, demo]);
+  }, [classId, courseId, meeting, page, demo, role, courses]);
   async function watch(row: Row) {
     const seq = ++playRequest.current;
     setError("");
@@ -160,27 +170,37 @@ export function RecordingLibrary({
         <p>Chưa có lớp hoặc môn học trong phạm vi tài khoản của bạn.</p>
       ) : (
         <>
-          <ClassSubjectPicker
-            courses={courses}
-            classId={classId}
-            courseId={courseId}
-            onClass={(id) => {
-              setRows([]);
-              setLessons([]);
-              setClass(id);
-              setCourse("");
-              setMeeting("");
-              setPage(0);
-            }}
-            onCourse={(id) => {
-              setRows([]);
-              setLessons([]);
-              setCourse(id);
-              setMeeting("");
-              setPage(0);
-            }}
-          />
-          {!course ? (
+          <details className="scope-filter-details" open={role === "admin"}>
+            <summary>
+              {classId
+                ? `Lớp ${courses.find((c) => c.class_id === classId)?.class_name} · ${course?.name || "Tất cả môn"}`
+                : role === "admin"
+                  ? "Lớp / môn"
+                  : "Tất cả bản ghi của bạn"}
+              <span>Bộ lọc</span>
+            </summary>
+            <ClassSubjectPicker
+              courses={courses}
+              classId={classId}
+              courseId={courseId}
+              onClass={(id) => {
+                setRows([]);
+                setLessons([]);
+                setClass(id);
+                setCourse("");
+                setMeeting("");
+                setPage(0);
+              }}
+              onCourse={(id) => {
+                setRows([]);
+                setLessons([]);
+                setCourse(id);
+                setMeeting("");
+                setPage(0);
+              }}
+            />
+          </details>
+          {!course && role === "admin" ? (
             <div className="scope-empty">
               {classId
                 ? "Chọn môn học để xem bản ghi riêng của môn trong lớp này."
@@ -188,24 +208,26 @@ export function RecordingLibrary({
             </div>
           ) : (
             <>
-              <label>
-                Buổi học
-                <select
-                  aria-label="Buổi học"
-                  value={meeting}
-                  onChange={(e) => {
-                    setMeeting(e.target.value);
-                    setPage(0);
-                  }}
-                >
-                  <option value="">Tất cả buổi của môn</option>
-                  {lessons.map((l) => (
-                    <option key={l.id} value={l.id}>
-                      {time(l.starts_at)} · {l.title}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              {courseId && (
+                <label>
+                  Buổi học
+                  <select
+                    aria-label="Buổi học"
+                    value={meeting}
+                    onChange={(e) => {
+                      setMeeting(e.target.value);
+                      setPage(0);
+                    }}
+                  >
+                    <option value="">Tất cả buổi của môn</option>
+                    {lessons.map((l) => (
+                      <option key={l.id} value={l.id}>
+                        {time(l.starts_at)} · {l.title}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
               {error && (
                 <p className="error" role="alert">
                   {error}
@@ -246,7 +268,9 @@ export function RecordingLibrary({
               ) : (
                 <table className="recordings-table">
                   <caption className="sr-only">
-                    Bản ghi lớp {course.class_name}, môn {course.name}
+                    {course
+                      ? `Bản ghi lớp ${course.class_name}, môn ${course.name}`
+                      : "Bản ghi trong các lớp/môn của bạn"}
                   </caption>
                   <thead>
                     <tr>
@@ -261,6 +285,11 @@ export function RecordingLibrary({
                       <tr key={r.id}>
                         <td data-label="Buổi học">
                           <strong>{r.meeting_title}</strong>
+                          {!course && (
+                            <small>
+                              {r.course} · Lớp {r.class_name}
+                            </small>
+                          )}
                           <small>{time(r.starts_at)}</small>
                         </td>
                         <td data-label="Dung lượng">

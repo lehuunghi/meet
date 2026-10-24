@@ -1,4 +1,4 @@
-> v0.3.2: [Điểm danh và bản ghi theo lớp → môn → buổi](docs/DIEM-DANH-VA-BAN-GHI.vi.md).
+> v0.3.3: [Điểm danh và bản ghi theo lớp → môn → buổi](docs/DIEM-DANH-VA-BAN-GHI.vi.md).
 
 > Mới: [Cập nhật an toàn trực tiếp từ GitHub](docs/CAP-NHAT-AN-TOAN.vi.md), không cài lại dữ liệu; có kiểm tra CI, snapshot và phục hồi khi lỗi.
 

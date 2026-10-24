@@ -16,8 +16,15 @@ func (a *app) attendanceReport(w http.ResponseWriter, r *http.Request) {
 	if raw := r.URL.Query().Get("page"); raw != "" {
 		page, err = strconv.Atoi(raw)
 	}
-	if course == "" || err != nil || page < 0 || page > 10000 {
+	if (course == "" && u.Role != "student") || err != nil || page < 0 || page > 10000 {
 		problem(w, 400, "Select a course and valid page")
+		return
+	}
+	if u.Role == "student" {
+		if !a.learningScope(w, r, course, class, meeting) {
+			return
+		}
+		a.renderAttendance(w, r, course, class, meeting, page)
 		return
 	}
 	var actualClass string
@@ -33,12 +40,15 @@ func (a *app) attendanceReport(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+	a.renderAttendance(w, r, course, actualClass, meeting, page)
+}
+func (a *app) renderAttendance(w http.ResponseWriter, r *http.Request, course, class, meeting string, page int) {
+	u := who(r)
 	limit := 51
 	if r.URL.Query().Get("format") == "xlsx" {
 		limit = 10001
 		page = 0
 	}
-	// Fetch one look-ahead row. UI shows 50 rows and uses row 51 only for next-page availability.
 	a.query(w, r, `SELECT u.id,u.name,u.email,c.id AS course_id,c.name AS course,cl.id AS class_id,cl.name AS class_name,
  m.id AS meeting_id,m.title AS meeting_title,m.starts_at,1 AS session_count,CASE WHEN p.joined_at IS NOT NULL THEN 1 ELSE 0 END AS participated_sessions,
  COALESCE(p.seconds,0) AS seconds,p.joined_at AS joined_at,p.last_seen AS last_seen,COALESCE(mt.starts_at,m.starts_at) AS lesson_start,COALESCE(mt.ends_at,DATE_ADD(m.starts_at,INTERVAL 60 MINUTE)) AS lesson_end,
@@ -51,6 +61,6 @@ func (a *app) attendanceReport(w http.ResponseWriter, r *http.Request) {
  LEFT JOIN presence p ON p.school_id=m.school_id AND p.meeting_id=m.id AND p.user_id=u.id
  LEFT JOIN meeting_timings mt ON mt.school_id=m.school_id AND mt.meeting_id=m.id
  LEFT JOIN attendance_policies policy ON policy.school_id=c.school_id
- WHERE c.school_id=? AND c.id=? AND (?='' OR m.id=?) AND (?<>'student' OR u.id=?)
- ORDER BY m.starts_at DESC,m.id,u.name,u.id LIMIT ? OFFSET ?`, u.School, course, meeting, meeting, u.Role, u.ID, limit, page*50)
+ WHERE `+courseAccess+` AND (?='' OR c.id=?) AND (?='' OR c.class_id=?) AND (?='' OR m.id=?) AND (?<>'student' OR u.id=?)
+ ORDER BY m.starts_at DESC,m.id,u.name,u.id LIMIT ? OFFSET ?`, u.School, u.Role, u.Role, u.ID, u.Role, u.ID, course, course, class, class, meeting, meeting, u.Role, u.ID, limit, page*50)
 }

@@ -1,3 +1,11 @@
+## Góc nhìn theo vai trò — v0.3.3
+
+- Học sinh: mở trang là thấy toàn bộ lịch sử điểm danh của chính mình và bản ghi còn hạn của các lớp/môn được ghi danh, mới nhất trước, phân trang 50 dòng. Không phải chọn lớp/môn; bộ lọc thu gọn và chỉ mở khi cần. Bảng cá nhân bỏ tên/email lặp lại, mỗi buổi có nhãn môn/lớp. Xuất Excel cá nhân hỗ trợ toàn bộ môn hoặc bộ lọc.
+- Giáo viên: điểm danh mở sẵn môn của buổi gần nhất (hoặc môn đầu tiên được phân công); xem danh sách học sinh, kết quả, xuất Excel và đổi lớp/môn khi cần. Thư viện bản ghi mở toàn bộ môn được phân công, mới nhất trước. Chỉ admin chỉnh khung giờ chung.
+- Admin: chọn rõ lớp/môn bằng ô tìm kiếm, xem từng buổi và chỉnh khung giờ chung theo buổi. Không còn chỉnh giờ cá nhân.
+
+Bộ lọc không thay đổi phạm vi tài khoản. API lấy học sinh từ phiên đăng nhập; tham số user_id không cho chọn học sinh khác. Giáo viên chỉ được xem môn chính/trợ giảng được phân công.
+
 # Điểm danh và bản ghi theo lớp, môn, buổi học
 
 v0.3.2 dùng thanh chọn gọn có tìm kiếm, sắp xếp tên và chỉ dựng tối đa 20 kết quả mỗi lần mở; không hiển thị toàn bộ lớp thành các ô lớn. Bảng được thu gọn, không còn cột chỉnh từng người và các thẻ tổng hợp lớn.

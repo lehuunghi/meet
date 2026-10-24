@@ -184,6 +184,28 @@ func TestIntegration(t *testing.T) {
 	if request("GET", library, "", recordingAdmin).Code != 200 || request("GET", "/api/meetings?course_id=demo-math", "", recordingAdmin).Code != 200 || request("POST", "/api/meetings", "{}", recordingAdmin).Code != 403 || request("GET", "/api/attendance/report?course_id=demo-math", "", recordingAdmin).Code != 403 {
 		t.Fatal("recordings-only permission not isolated")
 	}
+	// Student landing pages load all personal subjects without requiring a class/course selection.
+	w = request("GET", "/api/attendance/report?user_id=demo-second", "", student)
+	var personal []map[string]any
+	if w.Code != 200 || json.Unmarshal(w.Body.Bytes(), &personal) != nil || len(personal) != 2 {
+		t.Fatalf("personal attendance landing: %s", w.Body)
+	}
+	for _, row := range personal {
+		if row["id"] != "demo-student" {
+			t.Fatal("student selected another person's attendance")
+		}
+	}
+	w = request("GET", "/api/recordings?user_id=other-student", "", student)
+	var personalFiles []map[string]any
+	if w.Code != 200 || json.Unmarshal(w.Body.Bytes(), &personalFiles) != nil || len(personalFiles) != 1 || personalFiles[0]["id"] != readyRecording {
+		t.Fatalf("personal recordings landing: %s", w.Body)
+	}
+	if request("GET", "/api/recordings", "", teacher).Code != 200 || request("GET", "/api/recordings", "", administrator).Code != 400 {
+		t.Fatal("role-specific default recording scope failed")
+	}
+	if request("GET", "/api/attendance/report?class_id=other-class", "", student).Code != 404 || request("GET", "/api/recordings?course_id=other-course", "", student).Code != 404 {
+		t.Fatal("student optional filter escaped enrollment")
+	}
 	// Teacher-only XLSX never accepts a role column and returns no passwords.
 	book := excelize.NewFile()
 	teacherEmail := "xlsx-" + uid()[:8] + "@example.test"

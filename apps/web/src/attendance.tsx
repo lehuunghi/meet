@@ -10,6 +10,10 @@ export type ReportCourse = {
   teacher: string;
 };
 type ReportRow = {
+  course?: string;
+  class_name?: string;
+  lesson_start?: string;
+  lesson_end?: string;
   meeting_id?: string;
   meeting_title?: string;
   starts_at?: string;
@@ -100,10 +104,12 @@ export function AttendanceReport({
   role,
   courses,
   demo = false,
+  preferredCourseId,
 }: {
   role: string;
   courses: ReportCourse[];
   demo?: boolean;
+  preferredCourseId?: string;
 }) {
   const [revision, setRevision] = useState(0);
   const [classChoice, setClass] = useState(""),
@@ -114,11 +120,25 @@ export function AttendanceReport({
     [lessons, setLessons] = useState<Lesson[]>([]),
     [loading, setLoading] = useState(false),
     [error, setError] = useState("");
+  const teacherDefault =
+    courses.find((c) => c.id === preferredCourseId) || courses[0];
   const classes = availableClasses(courses),
-    classId = classes.some((c) => c.id === classChoice) ? classChoice : "";
+    classId = classes.some((c) => c.id === classChoice)
+      ? classChoice
+      : role === "teacher"
+        ? teacherDefault?.class_id || ""
+        : "";
   const subjects = courses.filter((c) => c.class_id === classId),
-    course = subjects.find((c) => c.id === courseChoice),
+    course =
+      subjects.find((c) => c.id === courseChoice) ||
+      (role === "teacher"
+        ? subjects.find((c) => c.id === preferredCourseId) || subjects[0]
+        : undefined),
     courseId = course?.id || "";
+  useEffect(() => {
+    setMeeting("");
+    setPage(0);
+  }, [courseId]);
   useEffect(() => {
     let active = true;
     setLessons([]);
@@ -141,7 +161,7 @@ export function AttendanceReport({
     let active = true;
     setRows([]);
     setError("");
-    if (!course) {
+    if (!course && role !== "student") {
       setLoading(false);
       return;
     }
@@ -153,7 +173,20 @@ export function AttendanceReport({
       page: String(page),
     });
     const request = demo
-      ? Promise.resolve(mockRows(role, course, meeting))
+      ? Promise.resolve(
+          (course
+            ? [course]
+            : classId
+              ? courses.filter((c) => c.class_id === classId)
+              : courses
+          ).flatMap((c) =>
+            mockRows(role, c, meeting).map((r) => ({
+              ...r,
+              course: c.name,
+              class_name: c.class_name,
+            })),
+          ),
+        )
       : api<ReportRow[]>(`/attendance/report?${params}`);
     request
       .then((v) => {
@@ -203,27 +236,39 @@ export function AttendanceReport({
         <p>Chưa có lớp hoặc môn học trong phạm vi tài khoản của bạn.</p>
       ) : (
         <>
-          <ClassSubjectPicker
-            courses={courses}
-            classId={classId}
-            courseId={courseId}
-            onClass={(id) => {
-              setRows([]);
-              setLessons([]);
-              setClass(id);
-              setCourse("");
-              setMeeting("");
-              setPage(0);
-            }}
-            onCourse={(id) => {
-              setRows([]);
-              setLessons([]);
-              setCourse(id);
-              setMeeting("");
-              setPage(0);
-            }}
-          />
-          {!course ? (
+          <details className="scope-filter-details" open={role === "admin"}>
+            <summary>
+              {role === "teacher"
+                ? `Lớp ${course?.class_name || ""} · ${course?.name || ""}`
+                : role === "student"
+                  ? classId
+                    ? `Lớp ${classes.find((c) => c.id === classId)?.name} · ${course?.name || "Tất cả môn"}`
+                    : "Tất cả môn học của bạn"
+                  : "Lớp / môn"}
+              <span>Bộ lọc</span>
+            </summary>
+            <ClassSubjectPicker
+              courses={courses}
+              classId={classId}
+              courseId={courseId}
+              onClass={(id) => {
+                setRows([]);
+                setLessons([]);
+                setClass(id);
+                setCourse("");
+                setMeeting("");
+                setPage(0);
+              }}
+              onCourse={(id) => {
+                setRows([]);
+                setLessons([]);
+                setCourse(id);
+                setMeeting("");
+                setPage(0);
+              }}
+            />
+          </details>
+          {!course && role !== "student" ? (
             <div className="scope-empty">
               {classId
                 ? "Chọn môn học để xem điểm danh riêng của môn trong lớp này."
@@ -232,28 +277,30 @@ export function AttendanceReport({
           ) : (
             <>
               <div className="report-toolbar">
-                <div className="attendance-filters">
-                  <label>
-                    Buổi học
-                    <select
-                      aria-label="Buổi học"
-                      value={meeting}
-                      onChange={(e) => {
-                        setMeeting(e.target.value);
-                        setPage(0);
-                      }}
-                    >
-                      <option value="">Tất cả buổi đã bắt đầu</option>
-                      {lessons.map((l) => (
-                        <option key={l.id} value={l.id}>
-                          {new Date(l.starts_at).toLocaleDateString("vi-VN")} ·{" "}
-                          {l.title}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                </div>
-                {!demo && courseId && (
+                {courseId && (
+                  <div className="attendance-filters">
+                    <label>
+                      Buổi học
+                      <select
+                        aria-label="Buổi học"
+                        value={meeting}
+                        onChange={(e) => {
+                          setMeeting(e.target.value);
+                          setPage(0);
+                        }}
+                      >
+                        <option value="">Tất cả buổi đã bắt đầu</option>
+                        {lessons.map((l) => (
+                          <option key={l.id} value={l.id}>
+                            {new Date(l.starts_at).toLocaleDateString("vi-VN")}{" "}
+                            · {l.title}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  </div>
+                )}
+                {!demo && (courseId || role === "student") && (
                   <a
                     className="button secondary"
                     href={
@@ -288,9 +335,13 @@ export function AttendanceReport({
               )}
               <div className="report-context">
                 <strong>
-                  Lớp {course?.class_name} <span>·</span> {course?.name}
+                  {course
+                    ? `Lớp ${course.class_name} · ${course.name}`
+                    : classId
+                      ? `Các môn lớp ${classes.find((c) => c.id === classId)?.name}`
+                      : "Toàn bộ kết quả của bạn"}
                 </strong>
-                <small>Giáo viên: {course?.teacher}</small>
+                {course && <small>Giáo viên: {course.teacher}</small>}
               </div>
               {error && (
                 <p role="alert" className="error">
@@ -335,11 +386,13 @@ export function AttendanceReport({
                     shown.length > 0 && (
                       <table className="attendance-table compact-attendance-table">
                         <caption className="sr-only">
-                          Điểm danh lớp {course.class_name}, môn {course.name}
+                          {course
+                            ? `Điểm danh lớp ${course.class_name}, môn ${course.name}`
+                            : "Lịch sử điểm danh của bạn"}
                         </caption>
                         <thead>
                           <tr>
-                            <th>Học sinh</th>
+                            {role !== "student" && <th>Học sinh</th>}
                             {!meeting && <th>Buổi học</th>}
                             <th>Thời gian</th>
                             <th>Vào / ra ghi nhận</th>
@@ -349,15 +402,22 @@ export function AttendanceReport({
                         <tbody>
                           {shown.map((r) => (
                             <tr key={(r.meeting_id || meeting) + r.id}>
-                              <td data-label="Học sinh">
-                                <strong>{r.name}</strong>
-                                <small>{r.email}</small>
-                              </td>
+                              {role !== "student" && (
+                                <td data-label="Học sinh">
+                                  <strong>{r.name}</strong>
+                                  <small>{r.email}</small>
+                                </td>
+                              )}
                               {!meeting && (
                                 <td data-label="Buổi học">
                                   <strong>
                                     {r.meeting_title || "Buổi học"}
                                   </strong>
+                                  {!course && (
+                                    <small>
+                                      {r.course} · Lớp {r.class_name}
+                                    </small>
+                                  )}
                                   <small>
                                     {r.starts_at ? time(r.starts_at) : ""}
                                   </small>

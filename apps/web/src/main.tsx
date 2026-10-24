@@ -35,6 +35,7 @@ type Meeting = {
   starts_at: string;
   status: string;
   recording_allowed: number | boolean;
+  course_id?: string;
 };
 const demo = new URLSearchParams(location.search).get("demo") === "1";
 const previewRole =
@@ -595,10 +596,17 @@ function App() {
             </section>
           )}
           {page === "attendance" && (
-            <AttendanceReport role={user.role} courses={courses} demo={demo} />
+            <AttendanceReport
+              role={user.role}
+              courses={courses}
+              demo={demo}
+              preferredCourseId={
+                meetings.find((m) => m.status !== "scheduled")?.course_id
+              }
+            />
           )}
           {page === "recordings" && (
-            <RecordingLibrary courses={courses} demo={demo} />
+            <RecordingLibrary courses={courses} demo={demo} role={user.role} />
           )}
           {page === "settings" && <AccountSecurity demo={demo} user={user} />}
           {page === "settings" && (

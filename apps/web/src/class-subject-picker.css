@@ -403,3 +403,39 @@
     font-size: 16px !important;
   }
 }
+
+.scope-filter-details {
+  margin: 12px 0;
+  border: 1px solid #e2e8e3;
+  border-radius: 8px;
+  background: #fafcf9;
+}
+.scope-filter-details > summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 12px;
+  cursor: pointer;
+  font-size: 12px;
+  color: #466354;
+  font-weight: 500;
+}
+.scope-filter-details > summary:before {
+  content: "⌄";
+  margin-right: 4px;
+}
+.scope-filter-details > summary > span {
+  font-weight: 400;
+  color: #869387;
+  margin-left: auto;
+  font-size: 11px;
+}
+.scope-filter-details .compact-scope {
+  margin: 0;
+  border: 0;
+  border-top: 1px solid #e3eae4;
+  border-radius: 0 0 8px 8px;
+}
+.compact-attendance-table td small {
+  line-height: 1.5;
+}
