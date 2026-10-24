@@ -13,6 +13,7 @@ import "./comparison-tables.css";
 import { RecordingLibrary } from "./recordings";
 import { AttendanceReport } from "./attendance";
 import { Setup } from "./setup";
+import "./workspace.css";
 import {
   RoleSwitcher,
   PreviewRoom,
@@ -110,13 +111,19 @@ function App() {
     [loading, setLoading] = useState(!demo),
     [error, setError] = useState(""),
     [page, setPage] = useState(
-      new URLSearchParams(location.search).get("page") === "recordings"
-        ? "recordings"
-        : new URLSearchParams(location.search).get("page") === "attendance"
-          ? "attendance"
-          : demo && previewRole.id === "admin"
-            ? "admin"
-            : "overview",
+      [
+        "overview",
+        "courses",
+        "meetings",
+        "settings",
+        "admin",
+        "recordings",
+        "attendance",
+      ].includes(new URLSearchParams(location.search).get("page") || "")
+        ? new URLSearchParams(location.search).get("page")!
+        : demo && previewRole.id === "admin"
+          ? "admin"
+          : "overview",
     ),
     [menuOpen, setMenuOpen] = useState(false),
     [meetings, setMeetings] = useState<Meeting[]>(demo ? sample : []),
@@ -301,7 +308,11 @@ function App() {
           </div>
         </div>
         <small className="nav-label">KHÔNG GIAN CỦA BẠN</small>
-        <nav id="main-navigation" className={menuOpen ? "mobile-open" : ""}>
+        <nav
+          aria-label="Điều hướng chính"
+          id="main-navigation"
+          className={menuOpen ? "mobile-open" : ""}
+        >
           {[
             ["overview", "▦", "Tổng quan"],
             ["courses", "▤", "Lớp & môn học"],
@@ -324,6 +335,7 @@ function App() {
             .map(([key, icon, label]) => (
               <button
                 key={key}
+                aria-current={page === key ? "page" : undefined}
                 className={page === key ? "active" : ""}
                 onClick={() => {
                   setPage(key);

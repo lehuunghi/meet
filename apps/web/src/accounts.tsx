@@ -96,7 +96,7 @@ export function Accounts({ demo }: { demo: boolean }) {
         + Thêm quản trị viên
       </button>
       <div className="academic-admin">
-        <table className="academic-table">
+        <table className="academic-table accounts-table">
           <thead>
             <tr>
               <th>Tài khoản</th>
