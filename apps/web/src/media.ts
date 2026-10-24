@@ -44,16 +44,16 @@ export class ClassroomMedia {
     return api(`/meetings/${this.meeting}/sfu`, body);
   }
   async publish(stream: MediaStream) {
-    this.local = stream;
+    if (this.local && this.local !== stream) {
+      stream.getTracks().forEach((t) => this.local!.addTrack(t));
+    } else this.local = stream;
     const ice = await api(`/meetings/${this.meeting}/ice`, {});
     const pc = new RTCPeerConnection({ iceServers: ice.iceServers });
     const sid = await this.session(pc);
-    const ts = stream
-      .getTracks()
-      .map((t) => ({
-        t,
-        tr: pc.addTransceiver(t, { direction: "sendonly", streams: [stream] }),
-      }));
+    const ts = stream.getTracks().map((t) => ({
+      t,
+      tr: pc.addTransceiver(t, { direction: "sendonly", streams: [stream] }),
+    }));
     await pc.setLocalDescription(await pc.createOffer());
     await gather(pc);
     const result = await this.call({
@@ -140,9 +140,26 @@ export class ClassroomMedia {
     };
     return display;
   }
+  async setEnabled(kind: "audio" | "video", enabled: boolean) {
+    if (!this.local?.getTracks().some((t) => t.kind === kind) && enabled) {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: kind === "audio",
+        video: kind === "video",
+      });
+      await this.publish(stream);
+    }
+    this.local
+      ?.getTracks()
+      .filter((t) => t.kind === kind)
+      .forEach((t) => (t.enabled = enabled));
+    return this.local;
+  }
   close() {
     this.closed = true;
-    this.peers.forEach((p) => p.close());
+    this.peers.forEach((p) => {
+      p.getSenders().forEach((s) => s.track?.stop());
+      p.close();
+    });
     this.local?.getTracks().forEach((t) => t.stop());
   }
 }

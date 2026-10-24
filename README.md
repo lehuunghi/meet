@@ -4,6 +4,8 @@ Monorepo **Go + React/Vite + MySQL + Redis**, tích hợp **Cloudflare Realtime 
 
 ## Có trong phiên bản này
 
+**Mới: [Bảng học vụ và phòng họp](docs/HOC-VU-VA-MEET.vi.md)** — môn chưa phân công, sửa nhiều dòng theo ID ngắn, đăng nhập mã SV, teacher import riêng và bảng phân công; prejoin, chat, giơ tay và thành viên.
+
 - Tenant theo trường, admin / giáo viên / học sinh; khóa ngoại MySQL chặn liên kết chéo trường.
 - Đăng nhập cookie HttpOnly, Redis lưu phiên 12 giờ; bcrypt; đổi mật khẩu vô hiệu hóa các phiên cũ; kiểm tra Origin; giới hạn đăng nhập.
 - CLI tạo trường và admin, quản lý lớp/môn/giáo viên, phân lớp; import Excel nguyên tử tối đa 100 tài khoản mỗi lượt.

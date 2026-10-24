@@ -12,6 +12,8 @@ Tài liệu này mô tả đúng những chức năng đang có trong mã nguồ
 
 ## Mục lục
 
+**Cập nhật học vụ:** giao diện mới cho tạo môn chưa có giáo viên, bảng sửa trực tiếp theo ID ngắn, nhập học sinh bốn cột email/mã SV/tên/password, teacher import ba cột riêng và bảng phân công. Đọc [quy trình học vụ mới](HOC-VU-VA-MEET.vi.md) thay cho các bước nhập chung/gán teacher ngay khi tạo môn ở bản hướng dẫn thủ công cũ bên dưới.
+
 1. [Hiểu hệ thống và thứ tự triển khai](#1-hiểu-hệ-thống-và-thứ-tự-triển-khai)
 2. [Chuẩn bị thông tin](#2-chuẩn-bị-thông-tin)
 3. [Cài Ubuntu, Docker và Caddy](#3-cài-ubuntu-docker-và-caddy)

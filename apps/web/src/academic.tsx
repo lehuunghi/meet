@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { api } from "./api";
 import { previewClasses, previewCourses, previewUsers } from "./preview";
 import { parseAccountText, type AccountDraft } from "./academic-data";
@@ -34,6 +34,13 @@ export function AcademicAdmin({
   const classId =
     classes.find((c) => c.id === selected)?.id || classes[0]?.id || "";
   const cl = classes.find((c) => c.id === classId);
+  const studentRequest = useRef(0);
+  const dirty =
+    [...students, ...teachers].some(
+      (v) =>
+        v.dirty ||
+        (!v.id && (v.email || v.name || v.student_code || v.password)),
+    ) || courses.some((v) => v.dirty || v.assignmentDirty);
   async function load() {
     if (demo) {
       setClasses((prev) =>
@@ -92,6 +99,7 @@ export function AcademicAdmin({
     );
   }
   async function loadStudents(id: string) {
+    const seq = ++studentRequest.current;
     if (!id) {
       setStudents([]);
       return;
@@ -112,8 +120,10 @@ export function AcademicAdmin({
       );
       return;
     }
+    const incoming = await api<AccountDraft[]>(`/classes/${id}/students`);
+    if (seq !== studentRequest.current) return;
     setStudents(
-      (await api<AccountDraft[]>(`/classes/${id}/students`)).map((v) => ({
+      incoming.map((v) => ({
         ...v,
         password: "",
         dirty: false,
@@ -214,6 +224,12 @@ export function AcademicAdmin({
             key={id}
             className={tab === id ? "active" : ""}
             onClick={() => {
+              if (dirty) {
+                setError(
+                  "Lưu hoặc bỏ các dòng đang sửa trước khi chuyển bảng.",
+                );
+                return;
+              }
               setTab(id);
               setSearch("");
               setPaste("");
@@ -235,6 +251,23 @@ export function AcademicAdmin({
       )}
       <section className="section">
         <div className="academic-filters">
+          <button
+            className="secondary"
+            disabled={busy}
+            onClick={() =>
+              void run(async () => {
+                if (demo) {
+                  setCourses([]);
+                  setTeachers([]);
+                }
+                await load();
+                await loadStudents(classId);
+                setNotice("Đã tải lại và bỏ thay đổi chưa lưu");
+              })
+            }
+          >
+            Tải lại / bỏ thay đổi
+          </button>
           {tab !== "teachers" && (
             <label>
               Lớp học
@@ -243,15 +276,10 @@ export function AcademicAdmin({
                 value={classId}
                 disabled={busy}
                 onChange={(e) => {
-                  if (
-                    [...students, ...courses, ...teachers].some(
-                      (v) => v.dirty,
-                    ) &&
-                    !confirm(
-                      "Có dòng chưa lưu. Đổi lớp sẽ tải lại danh sách học sinh. Tiếp tục?",
-                    )
-                  )
+                  if (dirty) {
+                    setError("Lưu hoặc bỏ thay đổi trước khi đổi lớp.");
                     return;
+                  }
                   setSelected(e.target.value);
                 }}
               >

@@ -834,19 +834,30 @@ function Room({
           <>
             <button
               aria-pressed={preMic}
-              onClick={() => {
-                media.current?.toggle("audio");
-                setPreMic(!preMic);
-              }}
+              disabled={busy}
+              onClick={() =>
+                void run(async () => {
+                  const s = await media.current?.setEnabled("audio", !preMic);
+                  if (s) setLocal(new MediaStream(s.getTracks()));
+                  setPreMic(!preMic);
+                })
+              }
             >
               {preMic ? "Tắt mic" : "Bật mic"}
             </button>
             <button
               aria-pressed={preCamera}
-              onClick={() => {
-                media.current?.toggle("video");
-                setPreCamera(!preCamera);
-              }}
+              disabled={busy}
+              onClick={() =>
+                void run(async () => {
+                  const s = await media.current?.setEnabled(
+                    "video",
+                    !preCamera,
+                  );
+                  if (s) setLocal(new MediaStream(s.getTracks()));
+                  setPreCamera(!preCamera);
+                })
+              }
             >
               {preCamera ? "Tắt camera" : "Bật camera"}
             </button>
