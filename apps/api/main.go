@@ -147,7 +147,14 @@ func (a *app) routes() http.Handler {
 	})
 	m.HandleFunc("GET /api/public-config", func(w http.ResponseWriter, r *http.Request) {
 		_, e := os.Stat(configPath("managed.json"))
-		send(w, 200, map[string]bool{"managed": e == nil})
+		name := ""
+		var count int
+		if a.db != nil {
+			if a.db.QueryRowContext(r.Context(), "SELECT COUNT(*),COALESCE(MIN(name),'') FROM schools").Scan(&count, &name) != nil || count != 1 {
+				name = ""
+			}
+		}
+		send(w, 200, map[string]any{"managed": e == nil, "school_name": name})
 	})
 	m.HandleFunc("POST /api/login", a.login)
 	m.HandleFunc("POST /api/login/2fa", a.loginOTP)

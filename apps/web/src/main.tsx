@@ -114,10 +114,14 @@ function Video({
 function App() {
   const [loginChallenge, setLoginChallenge] = useState("");
   const [managed, setManaged] = useState(false);
+  const [schoolName, setSchoolName] = useState("");
   useEffect(() => {
     if (!demo)
       void api<any>("/public-config")
-        .then((v) => setManaged(v.managed))
+        .then((v) => {
+          setManaged(v.managed);
+          setSchoolName(v.school_name || "");
+        })
         .catch(() => {});
   }, []);
   useEffect(() => {
@@ -362,9 +366,10 @@ function App() {
           <span className="school-icon">N</span>
           <div>
             <strong>
-              {demo || user.school_id === "school-demo"
-                ? "Trường Nguyễn Trãi"
-                : "Trường của bạn"}
+              {schoolName ||
+                (demo || user.school_id === "school-demo"
+                  ? "Trường Nguyễn Trãi"
+                  : "Trường của bạn")}
             </strong>
             <small>Không gian học tập</small>
           </div>
