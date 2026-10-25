@@ -19,6 +19,15 @@ def approved_revision():
     if not all(any(j['name']==name and j['status']=='completed' and j['conclusion']=='success' for j in jobs) for name in ('api','web','containers','control')):raise ValueError('CI_NOT_READY')
     return target
 
+def failure_code(error):
+    if isinstance(error,paramiko.AuthenticationException):return 'SSH_AUTH_FAILED'
+    if isinstance(error,TimeoutError):return 'SSH_TIMEOUT'
+    known={'SSH_HOST_KEY_MISMATCH','INVALID_SSH_KEY','CI_NOT_READY','INVALID_RELEASE','EXISTING_INSTALLATION','AGENT_INSTALL_FAILED','PROVISION_TIMEOUT','PROVISION_FAILED'}
+    if isinstance(error,ValueError) and str(error) in known:return str(error)
+    if isinstance(error,paramiko.SSHException):return 'SSH_CONNECTION_FAILED'
+    if isinstance(error,urllib.error.URLError):return 'RELEASE_CHECK_UNAVAILABLE'
+    return 'PROVISION_FAILED_REVIEW_VPS'
+
 def provision(c,job,payload):
     target=approved_revision()
     class Pinned(paramiko.MissingHostKeyPolicy):
@@ -47,7 +56,7 @@ stage=$(mktemp -d)
 trap 'rm -rf "$stage"' EXIT
 git clone --branch codex/multi-school-platform https://github.com/lehuunghi/meet.git "$stage/source" >/dev/null 2>&1
 git -C "$stage/source" checkout --detach '''+shlex.quote(target)+''' >/dev/null 2>&1
-MEET_TARGET_SHA='''+shlex.quote(target)+''' MEET_DOMAIN='''+shlex.quote(payload['domain'])+''' MEET_MANAGED=true bash "$stage/source/deploy/install.sh" >/dev/null 2>&1
+MEET_TARGET_SHA='''+shlex.quote(target)+''' MEET_DOMAIN='''+shlex.quote(payload['domain'])+''' MEET_MANAGED=true bash "$stage/source/deploy/install.sh" >/root/meet-client-install.log 2>&1
 install -d -m 0700 /etc/meet
 '''
         # No host-supplied command strings; only a validated hostname is shell-quoted above.
@@ -59,7 +68,9 @@ install -d -m 0700 /etc/meet
             if channel.recv_stderr_ready():channel.recv_stderr(65536)
             if time.monotonic()>deadline:raise TimeoutError('PROVISION_TIMEOUT')
             time.sleep(.1)
-        if channel.recv_exit_status()!=0:raise ValueError('PROVISION_FAILED')
+        exit_code=channel.recv_exit_status()
+        if exit_code==20:raise ValueError('EXISTING_INSTALLATION')
+        if exit_code!=0:raise ValueError('PROVISION_FAILED')
         with client.open_sftp() as sftp:
             with sftp.file('/etc/meet/agent.json','w') as f:f.write(json.dumps(agent_config))
             sftp.chmod('/etc/meet/agent.json',0o600)
@@ -79,7 +90,7 @@ def start_worker(c):
                     db.execute("UPDATE jobs SET state='failed',result=? WHERE action='provision' AND state='running' AND lease_until<?",(json.dumps({'code':'PROVISION_INTERRUPTED_REVIEW_VPS'}),int(time.time())))
                 if job:
                     try:provision(c,job,c.decrypt(job['payload'],job['school']));state,code='success','WAITING_AGENT'
-                    except Exception:state,code='failed','PROVISION_FAILED_REVIEW_VPS'
+                    except Exception as error:state,code='failed',failure_code(error)
                     with c.connect() as db:
                         db.execute('UPDATE jobs SET state=?,result=?,payload=? WHERE id=?',(state,json.dumps({'code':code}),c.encrypt({},job['school']),job['id']))
                         c.audit(db,'provisioner',state,job['school'])

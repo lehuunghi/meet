@@ -660,6 +660,36 @@
         for (const e of p.querySelectorAll("button,input,textarea"))
           e.disabled = true;
     }
+    function jobMessage(code) {
+      return (
+        {
+          SSH_AUTH_FAILED:
+            "Không đăng nhập SSH được: kiểm tra mật khẩu root hoặc khóa SSH.",
+          SSH_HOST_KEY_MISMATCH:
+            "Fingerprint SSH không khớp. Đối chiếu lại từ Console/VNC.",
+          SSH_TIMEOUT:
+            "Kết nối SSH quá thời gian chờ. Kiểm tra IP/cổng/tường lửa.",
+          SSH_CONNECTION_FAILED: "Không thiết lập được kết nối SSH.",
+          EXISTING_INSTALLATION:
+            "VPS đã có /opt/meet. Cần kiểm tra bản cài hiện có, không chạy cài mới đè lên.",
+          CI_NOT_READY:
+            "Bản mã nguồn mới đang chờ đủ kiểm thử. Thử lại sau khi CI hoàn tất.",
+          RELEASE_CHECK_UNAVAILABLE:
+            "Chưa kiểm tra được phiên bản trên GitHub.",
+          AGENT_INSTALL_FAILED:
+            "Đã cài ứng dụng nhưng dịch vụ đồng bộ chưa được cài thành công.",
+          PROVISION_FAILED:
+            "Bộ cài trên VPS dừng. Người vận hành cần kiểm tra nhật ký cài đặt.",
+          PROVISION_FAILED_REVIEW_VPS:
+            "Tác vụ cài đặt dừng. Cần người vận hành kiểm tra VPS.",
+          WAITING_AGENT: "Đã cài xong, chờ VPS kết nối trung tâm.",
+          LIVE_MEETINGS: "Đang chờ buổi học kết thúc.",
+          OK: "Hoàn tất",
+        }[code] ||
+        code ||
+        ""
+      );
+    }
     async function jobs() {
       if (!selected) {
         $("#panel").textContent = "Lưu trường trước";
@@ -671,7 +701,7 @@
         rows
           .map(
             (j) =>
-              `<tr><td>${new Date(j.created * 1000).toLocaleString("vi-VN")}</td><td>${esc(j.action)}</td><td>${esc(j.state)}</td><td>${esc(JSON.parse(j.result).code || "")}</td></tr>`,
+              `<tr><td>${new Date(j.created * 1000).toLocaleString("vi-VN")}</td><td>${esc(j.action)}</td><td>${esc(j.state)}</td><td>${esc(jobMessage(JSON.parse(j.result).code))}</td></tr>`,
           )
           .join("") +
         "</table></div>";

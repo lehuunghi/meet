@@ -48,4 +48,10 @@ class AgentTests(unittest.TestCase):
             with self.assertRaises(ValueError):p.approved_revision()
         with patch.object(p.urllib.request,'urlopen',side_effect=responses([{'sha':target},{'workflow_runs':[run]},{'jobs':jobs[:-1]}])):
             with self.assertRaises(ValueError):p.approved_revision()
+    def test_provision_errors_never_expose_credentials(self):
+        spec=importlib.util.spec_from_file_location('provision',Path(__file__).with_name('provision.py'));p=importlib.util.module_from_spec(spec);spec.loader.exec_module(p)
+        self.assertEqual(p.failure_code(p.paramiko.AuthenticationException('password-private')), 'SSH_AUTH_FAILED')
+        self.assertEqual(p.failure_code(ValueError('SSH_HOST_KEY_MISMATCH')), 'SSH_HOST_KEY_MISMATCH')
+        self.assertEqual(p.failure_code(ValueError('EXISTING_INSTALLATION')), 'EXISTING_INSTALLATION')
+        self.assertEqual(p.failure_code(RuntimeError('token-private')), 'PROVISION_FAILED_REVIEW_VPS')
 if __name__=='__main__':unittest.main()
