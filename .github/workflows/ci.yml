@@ -32,6 +32,10 @@ jobs:
         working-directory: .
       - run: bash -n deploy/install-recorder.sh
         working-directory: .
+      - run: |
+          bash deploy/init-secrets.sh
+          docker compose -f deploy/recorder.compose.yaml config --format json | python3 -c 'import sys,json; c=json.load(sys.stdin); assert c["services"]["recorder"]["tmpfs"] == ["/tmp:size=256m,mode=1777"]'
+        working-directory: .
   control:
     runs-on: ubuntu-latest
     steps:
