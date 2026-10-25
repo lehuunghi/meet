@@ -1,5 +1,5 @@
 import { afterEach, expect, it, vi } from "vitest";
-import { ClassroomMedia, gather } from "./media";
+import { ClassroomMedia, gather, classroomIceServers } from "./media";
 afterEach(() => vi.unstubAllGlobals());
 it("switches camera devices without unmuting the camera or restarting other media", async () => {
   const old = { id: "old", kind: "video", enabled: false, stop: vi.fn() },
@@ -260,4 +260,18 @@ it("uses gathered candidates when STUN stalls, but rejects a completely empty IC
   } finally {
     vi.useRealTimers();
   }
+});
+
+it("does not stall direct SFU calls on STUN-only pools, and preserves authenticated TURN pools", () => {
+  expect(
+    classroomIceServers([{ urls: "stun:stun.cloudflare.com:3478" }]),
+  ).toEqual([]);
+  const pool = [
+    {
+      urls: ["stun:stun.cloudflare.com:3478", "turns:turn.cloudflare.com:5349"],
+      username: "ephemeral",
+      credential: "ephemeral-secret",
+    },
+  ];
+  expect(classroomIceServers(pool)).toBe(pool);
 });

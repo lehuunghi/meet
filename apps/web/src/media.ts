@@ -7,6 +7,19 @@ export type Publication = {
 };
 export const publicationKey = (p: Publication) =>
   p.user_id + (p.track_name.startsWith("screen-") ? ":screen" : "");
+// Cloudflare SFU accepts direct ICE connections. Do not make a configured-STUN-only
+// installation wait on an unreachable public STUN service; keep TURN pools intact.
+export function classroomIceServers(
+  servers: RTCIceServer[] = [],
+): RTCIceServer[] {
+  return servers.some((server) =>
+    (Array.isArray(server.urls) ? server.urls : [server.urls]).some((url) =>
+      /^turns?:/i.test(url),
+    ),
+  )
+    ? servers
+    : [];
+}
 export async function gather(pc: RTCPeerConnection) {
   if (pc.iceGatheringState === "complete") return;
   await new Promise<void>((resolve, reject) => {
@@ -93,7 +106,9 @@ export class ClassroomMedia {
     } else if (!presentation) this.local = stream;
     if (!stream.getTracks().length) return;
     const ice = await api(`/meetings/${this.meeting}/ice`, {});
-    const pc = new RTCPeerConnection({ iceServers: ice.iceServers });
+    const pc = new RTCPeerConnection({
+      iceServers: classroomIceServers(ice.iceServers),
+    });
     const sid = await this.session(pc);
     const ts = stream.getTracks().map((t) => ({
       t,
@@ -147,7 +162,9 @@ export class ClassroomMedia {
     if (this.closed || !fresh.length) return;
     if (!this.receiver) {
       const ice = await api(`/meetings/${this.meeting}/ice`, {});
-      this.receiver = new RTCPeerConnection({ iceServers: ice.iceServers });
+      this.receiver = new RTCPeerConnection({
+        iceServers: classroomIceServers(ice.iceServers),
+      });
       this.receiver.ontrack = (e) => {
         if (this.closed) {
           e.track.stop();
