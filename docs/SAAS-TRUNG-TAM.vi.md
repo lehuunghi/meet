@@ -29,7 +29,7 @@ sudo bash control/install.sh
 - **SFU / TURN**: mỗi SFU App một dòng, ID cấu hình ổn định, tên, App ID, Secret, trọng số 1–100, nhận lớp mới. TURN nhập Key ID/token. Mỗi trường có bộ credential riêng; chưa có thư viện credential dùng chung theo template.
 - **R2 / Backup**: dùng bucket riêng của trường. Video mặc định 30 ngày, backup tự động theo chu kỳ giờ đã chọn. Backup vẫn dùng công cụ AES-GCM và recovery key hiện có trên VPS. Chưa có thời hạn tự xóa riêng cho backup từ giao diện này; không nhầm retention video với backup.
 - **Lưu & đồng bộ** tạo revision và tác vụ. Chưa có agent thì tác vụ chờ.
-- **Cài đặt / Nâng cấp → Cài mới Ubuntu**: nhập cổng SSH, fingerprint SHA256 đã đối chiếu qua console nhà cung cấp, mật khẩu root hoặc private key. Trung tâm chỉ kết nối IP public đã lưu, không tự tin host key vừa gặp. Credential SSH được mã hóa trong tác vụ và xóa payload khi lần cài kết thúc; không lưu stdout remote.
+- **Cài đặt / Nâng cấp → Cài mới Ubuntu**: nhập cổng SSH, fingerprint SHA256 đã đối chiếu qua console nhà cung cấp, mật khẩu root hoặc private key. Trung tâm xác minh commit hiện hành đã đạt đủ bốn nhóm CI, cài đúng SHA đó; chỉ kết nối IP public đã lưu, không tự tin host key vừa gặp. Credential SSH được mã hóa trong tác vụ và xóa payload khi lần cài kết thúc; không lưu stdout remote.
 - VPS phải trống: có `/opt/meet` thì bộ cài dừng, không tự xóa/ghi đè. Lỗi cài giữa chừng cần người vận hành review máy, không bấm cài mới để cưỡng chế ghi đè. Chưa có trình tiếp tục mọi bước cài dở qua UI.
 - Sau cài, agent kết nối HTTPS trung tâm, đổi enrollment token một lần lấy token riêng; nhận cấu hình, khởi tạo trường/admin, tắt setup cũ và báo revision áp dụng. Chỉ lúc đó bảng mới hiện đồng bộ thành công.
 

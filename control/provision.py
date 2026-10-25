@@ -1,9 +1,26 @@
 """Provision a fresh Ubuntu VPS via pinned SSH host key. Never retain raw remote output."""
-import base64, hashlib, io, json, shlex, threading, time, secrets
+import base64, hashlib, io, json, shlex, threading, time, secrets, urllib.request, re
 from pathlib import Path
 import paramiko
 
+def approved_revision():
+    base='https://api.github.com/repos/lehuunghi/meet'
+    def get(path):
+        request=urllib.request.Request(base+path,headers={'User-Agent':'Meet-Control','Accept':'application/vnd.github+json'})
+        with urllib.request.urlopen(request,timeout=20) as response:return json.load(response)
+    target=get('/commits/codex%2Fmulti-school-platform')['sha']
+    if not re.fullmatch('[a-f0-9]{40}',target):raise ValueError('INVALID_RELEASE')
+    runs=get('/actions/runs?head_sha='+target+'&event=push&per_page=20')['workflow_runs']
+    runs=[r for r in runs if r.get('path')=='.github/workflows/ci.yml' and r.get('head_sha')==target]
+    if not runs:raise ValueError('CI_NOT_READY')
+    latest=max(runs,key=lambda r:(r.get('run_number',0),r.get('run_attempt',0),r['id']))
+    if latest['status']!='completed' or latest['conclusion']!='success':raise ValueError('CI_NOT_READY')
+    jobs=get('/actions/runs/'+str(latest['id'])+'/jobs?per_page=100')['jobs']
+    if not all(any(j['name']==name and j['status']=='completed' and j['conclusion']=='success' for j in jobs) for name in ('api','web','containers','control')):raise ValueError('CI_NOT_READY')
+    return target
+
 def provision(c,job,payload):
+    target=approved_revision()
     class Pinned(paramiko.MissingHostKeyPolicy):
         def missing_host_key(self,client,hostname,key):
             actual='SHA256:'+base64.b64encode(hashlib.sha256(key.asbytes()).digest()).decode().rstrip('=')
@@ -29,7 +46,8 @@ apt-get install -y git ca-certificates >/dev/null
 stage=$(mktemp -d)
 trap 'rm -rf "$stage"' EXIT
 git clone --branch codex/multi-school-platform https://github.com/lehuunghi/meet.git "$stage/source" >/dev/null 2>&1
-MEET_DOMAIN='''+shlex.quote(payload['domain'])+''' MEET_MANAGED=true bash "$stage/source/deploy/install.sh" >/dev/null 2>&1
+git -C "$stage/source" checkout --detach '''+shlex.quote(target)+''' >/dev/null 2>&1
+MEET_TARGET_SHA='''+shlex.quote(target)+''' MEET_DOMAIN='''+shlex.quote(payload['domain'])+''' MEET_MANAGED=true bash "$stage/source/deploy/install.sh" >/dev/null 2>&1
 install -d -m 0700 /etc/meet
 '''
         # No host-supplied command strings; only a validated hostname is shell-quoted above.

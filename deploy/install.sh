@@ -44,6 +44,11 @@ if [[ -d "$MEET_DIR/.git" ]]; then
 else
   [[ ! -e "$MEET_DIR" ]] || fail '/opt/meet đã tồn tại, không ghi đè.'
   git clone --branch "$MEET_BRANCH" "$MEET_REPO" "$MEET_DIR"
+  if [[ -n "${MEET_TARGET_SHA:-}" ]]; then
+    [[ "$MEET_TARGET_SHA" =~ ^[a-f0-9]{40}$ ]] || fail 'Commit cài đặt không hợp lệ.'
+    git -C "$MEET_DIR" cat-file -e "$MEET_TARGET_SHA^{commit}"
+    git -C "$MEET_DIR" checkout -B "$MEET_BRANCH" "$MEET_TARGET_SHA"
+  fi
 fi
 cd "$MEET_DIR"
 umask 077

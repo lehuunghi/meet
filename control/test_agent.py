@@ -35,4 +35,17 @@ class AgentTests(unittest.TestCase):
                 a.recover_domain()
             self.assertEqual((root/'.env').read_text(),'APP_ORIGIN=https://old.example.test')
             self.assertFalse(journal.exists());self.assertFalse((root/'runtime-config/maintenance').exists())
+    def test_provision_requires_exact_successful_ci_revision(self):
+        import io
+        spec=importlib.util.spec_from_file_location('provision',Path(__file__).with_name('provision.py'));p=importlib.util.module_from_spec(spec);spec.loader.exec_module(p)
+        target='a'*40
+        run={'id':1,'run_number':1,'run_attempt':1,'head_sha':target,'path':'.github/workflows/ci.yml','status':'completed','conclusion':'success'}
+        jobs=[{'name':n,'status':'completed','conclusion':'success'} for n in ('api','web','containers','control')]
+        def responses(values):return [io.BytesIO(json.dumps(v).encode()) for v in values]
+        with patch.object(p.urllib.request,'urlopen',side_effect=responses([{'sha':target},{'workflow_runs':[run]},{'jobs':jobs}])):
+            self.assertEqual(p.approved_revision(),target)
+        with patch.object(p.urllib.request,'urlopen',side_effect=responses([{'sha':target},{'workflow_runs':[{**run,'conclusion':'failure'}]}])):
+            with self.assertRaises(ValueError):p.approved_revision()
+        with patch.object(p.urllib.request,'urlopen',side_effect=responses([{'sha':target},{'workflow_runs':[run]},{'jobs':jobs[:-1]}])):
+            with self.assertRaises(ValueError):p.approved_revision()
 if __name__=='__main__':unittest.main()
