@@ -82,7 +82,7 @@ func TestProductionSafetyIntegration(t *testing.T) {
 		headers := http.Header{"Content-Type": []string{"application/json"}}
 		if r.URL.Host == "rtc.live.cloudflare.com" {
 			switch {
-			case strings.HasSuffix(r.URL.Path, "/new"):
+			case strings.HasSuffix(r.URL.Path, "/sessions/new"):
 				if r.Body != nil {
 					b, _ := io.ReadAll(r.Body)
 					if len(b) != 0 {

@@ -16,7 +16,7 @@ u=importlib.util.module_from_spec(spec);spec.loader.exec_module(u)
 u.ROOT=Path(__file__).resolve().parent.parent
 current=u.git('rev-parse','HEAD')
 # Stamp the disposable baseline like the real installer does, so updater can verify image == checkout.
-u.run('docker','build','--build-arg','MEET_COMMIT='+current,'--build-arg','MEET_VERSION=0.3.0','-t','meet-api:local',str(u.ROOT/'apps/api'),timeout=900)
+u.run('docker','build','--build-arg','MEET_COMMIT='+current,'--build-arg','MEET_VERSION='+u.manifest(current)['version'],'-t','meet-api:local',str(u.ROOT/'apps/api'),timeout=900)
 u.compose('up','-d','--no-deps','--no-build','--force-recreate','api')
 u.health(current)
 # CI checks a detached merge revision. GitHub authorization/dirty checks have separate unit tests.
@@ -92,6 +92,9 @@ with tempfile.TemporaryDirectory() as tmp:
     print('Interrupted update journal automatically recovered original database and application')
 
     # Prove the one-time bridge against the previous real schema-v4 source with no updater metadata.
+    # Recreate that baseline rather than labeling the current schema as legacy.
+    u.compose('stop','api','web')
+    u.sql('DROP TABLE room_votes; DROP TABLE room_polls; DROP TABLE room_members; DROP TABLE room_settings; DELETE FROM schema_migrations WHERE version>4')
     original_root=u.ROOT
     legacy=Path(tmp)/'legacy'
     old_revision='52c8fab08b29a450f2de9552a4f111d43da366ac'
@@ -111,6 +114,7 @@ with tempfile.TemporaryDirectory() as tmp:
     u.apply(current,str(uuid.uuid4()))
     original_health(current)
     assert u.git('rev-parse','HEAD')==current
+    assert int(u.sql('SELECT MAX(version) FROM schema_migrations'))==u.manifest(current)['schema_version']
     assert u.sql("SELECT name FROM users WHERE id='demo-admin'")==old_name
     assert json.loads((u.STATE/'status.json').read_text())['state']=='success'
     print('Legacy schema-v4 installation upgraded in place through the safe one-time bridge')

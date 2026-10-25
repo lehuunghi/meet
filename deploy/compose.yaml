@@ -5,7 +5,7 @@ x-api: &api
     context: ../apps/api
     args:
       MEET_COMMIT: ${MEET_COMMIT:-development}
-      MEET_VERSION: ${MEET_VERSION:-0.3.0}
+      MEET_VERSION: ${MEET_VERSION:-0.5.0}
   environment:
     CONFIG_DIR: /var/lib/meet-config
     MYSQL_DSN_FILE: /run/secrets/mysql_dsn
