@@ -54,6 +54,7 @@ WantedBy=multi-user.target
 UNIT
 install -d -m 0755 /etc/caddy/meet-sites
 printf '%s {\n reverse_proxy 127.0.0.1:8090\n header Strict-Transport-Security "max-age=31536000"\n}\n' "$domain" > "/etc/caddy/meet-sites/$domain.caddy"
+chmod 0644 "/etc/caddy/meet-sites/$domain.caddy"
 grep -Fq 'import /etc/caddy/meet-sites/*.caddy' /etc/caddy/Caddyfile || printf '\nimport /etc/caddy/meet-sites/*.caddy\n' >> /etc/caddy/Caddyfile
 caddy validate --config /etc/caddy/Caddyfile
 systemctl daemon-reload

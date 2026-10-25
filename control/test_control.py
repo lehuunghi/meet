@@ -39,6 +39,28 @@ class ControlTests(unittest.TestCase):
         status,result,_=self.request('/agent/poll',{'status':{}},agent=agent);self.assertIsNone(result['job'])
         self.assertEqual(self.request('/api/schools/save',{'id':sid,'name':'Name','domain':'school.example.test','ip':'8.8.8.8','revision':0,'config':cfg},cookie)[0],400)
         self.assertEqual(self.request('/api/schools/save',{'name':'Private','domain':'private.example.test','ip':'127.0.0.1','config':cfg},cookie)[0],400)
+    def test_twofactor_challenge_recovery_and_session_replacement(self):
+        import base64,hashlib,hmac,struct,time
+        owner=self.login();password='mfa-password-12345';email='mfa@example.test'
+        self.assertEqual(self.request('/api/admins',{'email':email,'password':password,'role':'operator','active':True},owner)[0],200)
+        _,_,cookie=self.request('/api/login',{'email':email,'password':password})
+        status,result,_=self.request('/api/security',{'action':'setup','password':password},cookie);self.assertEqual(status,200);secret=result['secret']
+        def code(step):
+            raw=hmac.new(base64.b32decode(secret),struct.pack('>Q',step),hashlib.sha1).digest();off=raw[-1]&15;return str((struct.unpack('>I',raw[off:off+4])[0]&0x7fffffff)%1000000).zfill(6)
+        step=int(time.time())//30
+        status,result,_=self.request('/api/security',{'action':'enable','password':password,'code':code(step)},cookie);self.assertEqual(status,200);codes=result['recovery_codes'];self.assertEqual(len(codes),8)
+        self.assertEqual(self.request('/api/me',cookie=cookie)[0],401)
+        def challenge():
+            status,result,issued=self.request('/api/login',{'email':email,'password':password});self.assertEqual(status,202);self.assertEqual(issued,'');return result['challenge']
+        token=challenge();self.assertEqual(self.request('/api/login/2fa',{'challenge':token,'code':code(step)})[0],401)
+        status,_,first=self.request('/api/login/2fa',{'challenge':token,'code':codes[0]});self.assertEqual(status,200)
+        token=challenge();self.assertEqual(self.request('/api/me',cookie=first)[0],200)
+        status,_,second=self.request('/api/login/2fa',{'challenge':token,'code':code(step+1)});self.assertEqual(status,200)
+        self.assertEqual(self.request('/api/me',cookie=first)[0],401)
+        self.assertEqual(self.request('/api/login/2fa',{'challenge':token,'code':codes[1]})[0],401)
+        token=challenge();self.assertEqual(self.request('/api/login/2fa',{'challenge':token,'code':codes[0]})[0],401)
+        self.assertEqual(self.request('/api/security',{'action':'disable','password':password,'code':codes[2]},second)[0],200)
+        self.assertEqual(self.request('/api/login',{'email':email,'password':password})[0],200)
     def test_vault_scope_and_mask_merge(self):
         value=c.encrypt({'token':'private'},'school-a');self.assertEqual(c.decrypt(value,'school-a')['token'],'private')
         with self.assertRaises(Exception):c.decrypt(value,'school-b')

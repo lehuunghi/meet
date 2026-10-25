@@ -249,18 +249,92 @@
         login();
       }
     }
-    function login() {
+    function login(challenge = "") {
       $("#identity").textContent = "";
       $("#content").innerHTML =
-        '<section class="login"><h2>Đăng nhập quản trị trung tâm</h2><form id="login">' +
-        input("email", "Email", "", "email") +
-        input("password", "Mật khẩu", "", "password") +
-        '<button class="primary">Đăng nhập</button></form></section>';
+        '<section class="login"><h2>' +
+        (challenge ? "Xác thực hai bước" : "Đăng nhập quản trị trung tâm") +
+        '</h2><form id="login">' +
+        (challenge
+          ? input("code", "Mã xác thực hoặc mã khôi phục")
+          : input("email", "Email", "", "email") +
+            input("password", "Mật khẩu", "", "password")) +
+        '<button class="primary">' +
+        (challenge ? "Xác thực" : "Đăng nhập") +
+        "</button></form></section>";
+      if (challenge) $("#login").append(button("Quay lại", () => login()));
       $("#login").onsubmit = async (e) => {
         e.preventDefault();
         try {
-          await api("login", Object.fromEntries(new FormData(e.target)));
-          await boot();
+          const f = Object.fromEntries(new FormData(e.target));
+          const result = await api(
+            challenge ? "login/2fa" : "login",
+            challenge ? { challenge, code: f.code } : f,
+          );
+          if (result.requires_2fa) login(result.challenge);
+          else await boot();
+        } catch (e) {
+          msg(e.message);
+        }
+      };
+    }
+    async function security() {
+      const d = $("#modal");
+      d.innerHTML =
+        "<h2>Bảo mật tài khoản</h2><p>2FA: " +
+        (me.mfa_enabled ? "Đang bật" : "Chưa bật") +
+        '</p><form id="security">' +
+        input("password", "Mật khẩu hiện tại", "", "password") +
+        (me.mfa_enabled ? input("code", "Mã xác thực hoặc mã khôi phục") : "") +
+        '<button class="primary">' +
+        (me.mfa_enabled ? "Tắt 2FA" : "Thiết lập 2FA") +
+        "</button></form>";
+      d.append(button("Đóng", () => d.close()));
+      if (!d.open) d.showModal();
+      $("#security").onsubmit = async (e) => {
+        e.preventDefault();
+        const values = Object.fromEntries(new FormData(e.target));
+        try {
+          if (me.mfa_enabled) {
+            await api("security", { ...values, action: "disable" });
+            d.close();
+            login();
+            msg("Đã tắt 2FA. Đăng nhập lại.");
+            return;
+          }
+          const result = await api("security", {
+            password: values.password,
+            action: "setup",
+          });
+          d.innerHTML =
+            '<h2>Kết nối ứng dụng xác thực</h2><p>Thêm tài khoản TOTP trong ứng dụng xác thực bằng khóa sau. Khóa chỉ dùng cho tài khoản của anh.</p><label>Khóa thiết lập<input readonly value="' +
+            esc(result.secret) +
+            '"></label><form id="enablemfa">' +
+            input("code", "Mã 6 chữ số từ ứng dụng") +
+            '<button class="primary">Bật 2FA</button></form>';
+          d.append(button("Hủy", () => d.close()));
+          $("#enablemfa").onsubmit = async (event) => {
+            event.preventDefault();
+            try {
+              const enabled = await api("security", {
+                password: values.password,
+                action: "enable",
+                code: new FormData(event.target).get("code"),
+              });
+              d.innerHTML =
+                '<h2>Lưu mã khôi phục</h2><p>Mỗi mã dùng một lần. Lưu ở nơi riêng trước khi đăng nhập lại.</p><pre id="recoverycodes"></pre>';
+              $("#recoverycodes").textContent =
+                enabled.recovery_codes.join("\n");
+              d.append(
+                button("Đã lưu · Đăng nhập lại", () => {
+                  d.close();
+                  login();
+                }),
+              );
+            } catch (e) {
+              msg(e.message);
+            }
+          };
         } catch (e) {
           msg(e.message);
         }
@@ -281,7 +355,10 @@
         $("#actions").append(
           button("+ Thêm trường", () => edit(null), "primary"),
         );
-      $("#actions").append(button("Tải lại", list));
+      $("#actions").append(
+        button("Tải lại", list),
+        button("Bảo mật tài khoản", security),
+      );
       $("#actions").append(button("Nhật ký", audit));
       if (me.role === "owner")
         $("#actions").append(button("Quản trị trung tâm", admins));

@@ -1,5 +1,5 @@
 """Meet control plane. Run behind HTTPS; SQLite is local to one control-plane node."""
-import sys, base64, contextlib, hashlib, hmac, ipaddress, json, os, re, secrets, sqlite3, ssl, time
+import struct, sys, base64, contextlib, hashlib, hmac, ipaddress, json, os, re, secrets, sqlite3, ssl, time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse
@@ -33,12 +33,18 @@ def init():
         CREATE TABLE IF NOT EXISTS attempts(key TEXT PRIMARY KEY,n INTEGER NOT NULL,until INTEGER NOT NULL);
         CREATE TABLE IF NOT EXISTS schools(id TEXT PRIMARY KEY,name TEXT NOT NULL,domain TEXT UNIQUE NOT NULL,ip TEXT NOT NULL,config TEXT NOT NULL,revision INTEGER NOT NULL DEFAULT 1,applied INTEGER NOT NULL DEFAULT 0,agent_hash TEXT UNIQUE,enroll_hash TEXT,enroll_expires INTEGER,seen INTEGER NOT NULL DEFAULT 0,status TEXT NOT NULL DEFAULT '{}');
         CREATE TABLE IF NOT EXISTS jobs(id TEXT PRIMARY KEY,school TEXT NOT NULL REFERENCES schools(id),action TEXT NOT NULL,payload TEXT NOT NULL,revision INTEGER NOT NULL,state TEXT NOT NULL DEFAULT 'queued',lease TEXT,lease_until INTEGER,attempts INTEGER NOT NULL DEFAULT 0,created INTEGER NOT NULL,result TEXT NOT NULL DEFAULT '{}');
+        CREATE TABLE IF NOT EXISTS mfa_challenges(hash TEXT PRIMARY KEY,admin TEXT NOT NULL REFERENCES admins(id),expires INTEGER NOT NULL,attempts INTEGER NOT NULL DEFAULT 0);
+        CREATE TABLE IF NOT EXISTS mfa_pending(admin TEXT PRIMARY KEY REFERENCES admins(id),secret TEXT NOT NULL,expires INTEGER NOT NULL);
+        CREATE TABLE IF NOT EXISTS mfa_recovery(admin TEXT NOT NULL REFERENCES admins(id),hash TEXT NOT NULL,PRIMARY KEY(admin,hash));
         CREATE TABLE IF NOT EXISTS audit(id INTEGER PRIMARY KEY,at INTEGER NOT NULL,actor TEXT NOT NULL,action TEXT NOT NULL,target TEXT NOT NULL);
         ''')
+        columns={r['name'] for r in db.execute('PRAGMA table_info(admins)')}
+        if 'mfa' not in columns:db.execute('ALTER TABLE admins ADD COLUMN mfa TEXT')
+        if 'last_step' not in columns:db.execute('ALTER TABLE admins ADD COLUMN last_step INTEGER NOT NULL DEFAULT 0')
         if not db.execute('SELECT 1 FROM admins').fetchone():
             password=Path(os.environ['MEET_CONTROL_PASSWORD_FILE']).read_text().strip()
             if not 12<=len(password.encode())<=72:raise ValueError('Initial password must have 12–72 bytes')
-            db.execute('INSERT INTO admins VALUES(?,?,?,?,1)',(secrets.token_hex(16),os.environ['MEET_CONTROL_EMAIL'].lower(),password_hash(password),'owner'))
+            db.execute('INSERT INTO admins(id,email,hash,role,active) VALUES(?,?,?,?,1)',(secrets.token_hex(16),os.environ['MEET_CONTROL_EMAIL'].lower(),password_hash(password),'owner'))
             Path(os.environ['MEET_CONTROL_PASSWORD_FILE']).unlink(missing_ok=True)
 
 def password_hash(password,salt=None):
@@ -83,6 +89,23 @@ def queue(db,school,action,payload,revision):
     db.execute('INSERT INTO jobs(id,school,action,payload,revision,created) VALUES(?,?,?,?,?,?)',(key,school,action,encrypt(payload,school),revision,int(time.time())))
     return key
 
+def otp_step(secret,code):
+    if not re.fullmatch('[0-9]{6}',code):return 0
+    now=int(time.time())//30
+    for step in (now-1,now,now+1):
+        raw=hmac.new(base64.b32decode(secret),struct.pack('>Q',step),hashlib.sha1).digest();offset=raw[-1]&15
+        expected=str((struct.unpack('>I',raw[offset:offset+4])[0]&0x7fffffff)%1000000).zfill(6)
+        if hmac.compare_digest(expected,code):return step
+    return 0
+
+def verify_mfa(db,user,code):
+    if not user['mfa']:return False
+    step=otp_step(decrypt(user['mfa'],'admin:'+user['id']),code)
+    if step and step>user['last_step']:
+        db.execute('UPDATE admins SET last_step=? WHERE id=?',(step,user['id']));return True
+    if re.fullmatch('[a-f0-9]{16}',code):return db.execute('DELETE FROM mfa_recovery WHERE admin=? AND hash=?',(user['id'],digest(code))).rowcount==1
+    return False
+
 class Handler(BaseHTTPRequestHandler):
     server_version='MeetControl'
     def log_message(self,*args):pass # Request bodies/cookies/tokens must never enter access logs.
@@ -115,13 +138,21 @@ class Handler(BaseHTTPRequestHandler):
                         row=db.execute('SELECT * FROM admins WHERE email=? AND active=1',(str(data.get('email','')).lower(),)).fetchone()
                         supplied=password_hash(str(data.get('password','')),row['hash'].split(':')[0] if row else '00'*16)
                         if not row or not hmac.compare_digest(supplied,row['hash']):db.commit();self.reply(401,{'error':'Thông tin đăng nhập không đúng'});return
-                        token=secrets.token_urlsafe(48);db.execute('DELETE FROM sessions WHERE admin=?',(row['id'],));db.execute('INSERT INTO sessions VALUES(?,?,?)',(digest(token),row['id'],int(time.time())+3600));audit(db,row['id'],'login',row['id']);db.commit()
-                        self.send_response(200);self.send_header('Set-Cookie','control_session='+token+'; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=3600');self.send_header('Content-Type','application/json');self.end_headers();self.wfile.write(b'{"ok":true}');return
+                        if row['mfa']:
+                            token=secrets.token_urlsafe(48);now=int(time.time());db.execute('DELETE FROM mfa_challenges WHERE expires<?',(now,));db.execute('INSERT INTO mfa_challenges VALUES(?,?,?,0)',(digest(token),row['id'],now+180));db.commit();self.reply(202,{'requires_2fa':True,'challenge':token});return
+                        self.start_session(db,row);return
+                    if self.path=='/api/login/2fa' and self.command=='POST':
+                        key=digest(str(data.get('challenge','')));challenge=db.execute('SELECT * FROM mfa_challenges WHERE hash=? AND expires>?',(key,int(time.time()))).fetchone()
+                        if not challenge or challenge['attempts']>=5:self.reply(401,{'error':'Yêu cầu đã hết hạn. Đăng nhập lại.'});return
+                        db.execute('UPDATE mfa_challenges SET attempts=attempts+1 WHERE hash=?',(key,))
+                        user=db.execute('SELECT * FROM admins WHERE id=? AND active=1',(challenge['admin'],)).fetchone()
+                        if not user or not verify_mfa(db,user,str(data.get('code',''))):db.commit();self.reply(401,{'error':'Mã xác thực không đúng hoặc đã dùng'});return
+                        db.execute('DELETE FROM mfa_challenges WHERE hash=?',(key,));self.start_session(db,user);return
                     from http.cookies import SimpleCookie
                     cookies=SimpleCookie();cookies.load(self.headers.get('Cookie',''));token=cookies.get('control_session');token=token.value if token else ''
                     admin=db.execute('SELECT a.* FROM sessions s JOIN admins a ON a.id=s.admin WHERE s.hash=? AND s.expires>? AND a.active=1',(digest(token),int(time.time()))).fetchone()
                     if not admin:self.reply(401,{'error':'Đăng nhập quản trị trung tâm'});return
-                    if self.command=='POST' and admin['role']=='viewer':self.reply(403,{'error':'Chỉ có quyền xem'});return
+                    if self.command=='POST' and admin['role']=='viewer' and self.path not in ('/api/logout','/api/security'):self.reply(403,{'error':'Chỉ có quyền xem'});return
                     result=self.admin(db,admin,data)
                 db.commit()
             self.reply(200,result)
@@ -129,6 +160,9 @@ class Handler(BaseHTTPRequestHandler):
         except ValueError as e:self.reply(400,{'error':str(e)})
         except (sqlite3.IntegrityError,KeyError,TypeError):self.reply(409,{'error':'Dữ liệu bị trùng, thiếu hoặc không hợp lệ'})
         except Exception:self.reply(503,{'error':'Tác vụ chưa hoàn tất. Kiểm tra dịch vụ trung tâm.'})
+    def start_session(self,db,row):
+        token=secrets.token_urlsafe(48);db.execute('DELETE FROM sessions WHERE admin=?',(row['id'],));db.execute('INSERT INTO sessions VALUES(?,?,?)',(digest(token),row['id'],int(time.time())+3600));audit(db,row['id'],'login',row['id']);db.commit()
+        self.send_response(200);self.send_header('Set-Cookie','control_session='+token+'; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=3600');self.send_header('Content-Type','application/json');self.end_headers();self.wfile.write(b'{"ok":true}')
     def agent(self,db,data):
         if self.command!='POST':raise ValueError('POST required')
         now=int(time.time())
@@ -169,7 +203,27 @@ class Handler(BaseHTTPRequestHandler):
         readonly=path in ('/api/me','/api/audit','/api/schools') or bool(re.fullmatch(r'/api/schools/[a-f0-9]{32}/(config|jobs)',path))
         if self.command=='GET' and not readonly and path!='/api/admins':raise ValueError('POST required')
         if path=='/api/logout':db.execute('DELETE FROM sessions WHERE admin=?',(actor,));return {'ok':True}
-        if path=='/api/me':return {'email':user['email'],'role':user['role']}
+        if path=='/api/me':return {'email':user['email'],'role':user['role'],'mfa_enabled':bool(user['mfa'])}
+        if path=='/api/security':
+            if not hmac.compare_digest(password_hash(str(data.get('password','')),user['hash'].split(':')[0]),user['hash']):raise ValueError('Mật khẩu hiện tại không đúng')
+            action=data.get('action')
+            if action=='setup':
+                if user['mfa']:raise ValueError('Tài khoản đã bật 2FA')
+                secret=base64.b32encode(secrets.token_bytes(20)).decode()
+                db.execute('INSERT INTO mfa_pending VALUES(?,?,?) ON CONFLICT(admin) DO UPDATE SET secret=excluded.secret,expires=excluded.expires',(actor,encrypt(secret,'admin:'+actor),int(time.time())+600));audit(db,actor,'mfa.setup',actor);return {'secret':secret}
+            if action=='enable':
+                row=db.execute('SELECT * FROM mfa_pending WHERE admin=? AND expires>?',(actor,int(time.time()))).fetchone()
+                if not row or user['mfa']:raise ValueError('Khởi tạo lại 2FA')
+                secret=decrypt(row['secret'],'admin:'+actor);step=otp_step(secret,str(data.get('code','')))
+                if not step:raise ValueError('Mã xác thực không đúng')
+                db.execute('UPDATE admins SET mfa=?,last_step=? WHERE id=?',(row['secret'],step,actor));db.execute('DELETE FROM mfa_pending WHERE admin=?',(actor,));db.execute('DELETE FROM mfa_recovery WHERE admin=?',(actor,))
+                codes=[secrets.token_hex(8) for _ in range(8)]
+                for code in codes:db.execute('INSERT INTO mfa_recovery VALUES(?,?)',(actor,digest(code)))
+            elif action=='disable':
+                if not verify_mfa(db,user,str(data.get('code',''))):raise ValueError('Mã xác thực không đúng')
+                db.execute('UPDATE admins SET mfa=NULL,last_step=0 WHERE id=?',(actor,));db.execute('DELETE FROM mfa_recovery WHERE admin=?',(actor,));codes=[]
+            else:raise ValueError('Thao tác không hợp lệ')
+            db.execute('DELETE FROM sessions WHERE admin=?',(actor,));db.execute('DELETE FROM mfa_challenges WHERE admin=?',(actor,));audit(db,actor,'mfa.'+action,actor);return {'ok':True,'recovery_codes':codes}
         if path=='/api/audit':return [dict(x) for x in db.execute('SELECT * FROM audit ORDER BY id DESC LIMIT 200')]
         if path=='/api/admins':
             if user['role']!='owner':raise ValueError('Cần quyền chủ hệ thống')
@@ -180,8 +234,8 @@ class Handler(BaseHTTPRequestHandler):
             if id==actor and (not data.get('active',True) or role!='owner'):raise ValueError('Không thể tự bỏ quyền chủ hệ thống')
             if password and not 12<=len(password.encode())<=72:raise ValueError('Mật khẩu 12–72 byte')
             if not old and not password:raise ValueError('Cần mật khẩu tài khoản mới')
-            db.execute('INSERT INTO admins VALUES(?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET email=excluded.email,hash=excluded.hash,role=excluded.role,active=excluded.active',(id,email,password_hash(password) if password else old['hash'],role,int(data.get('active',True))))
-            db.execute('DELETE FROM sessions WHERE admin=?',(id,));audit(db,actor,'admin.save',id);return {'ok':True}
+            db.execute('INSERT INTO admins(id,email,hash,role,active) VALUES(?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET email=excluded.email,hash=excluded.hash,role=excluded.role,active=excluded.active',(id,email,password_hash(password) if password else old['hash'],role,int(data.get('active',True))))
+            db.execute('DELETE FROM sessions WHERE admin=?',(id,));db.execute('DELETE FROM mfa_challenges WHERE admin=?',(id,));audit(db,actor,'admin.save',id);return {'ok':True}
         if path=='/api/schools' and self.command=='GET':return [{k:r[k] for k in ('id','name','domain','ip','revision','applied','seen','status')} for r in db.execute('SELECT * FROM schools ORDER BY name')]
         if path=='/api/schools/save':
             sid=data.get('id') or secrets.token_hex(16);domain=str(data['domain']).lower().strip();name=str(data['name']).strip();ip=str(data['ip'])

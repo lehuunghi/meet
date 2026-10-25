@@ -65,7 +65,7 @@ DNS A/AAAA phải trỏ tới VPS; tác vụ kiểm tra IP, cấp/chứng thực
 
 Tab Quản trị trường hiển thị ID/revision từ VPS. Tạo tài khoản mới hoặc nhập đúng ID/revision để sửa tên, email, mật khẩu, trạng thái và quyền. Chỉnh mật khẩu không bỏ qua hay xóa TOTP đang bật. Quản trị trung tâm không có phiên đăng nhập giả danh người học.
 
-Quản trị SaaS có owner/operator/viewer. Chưa có TOTP riêng cho tài khoản trung tâm, mã khôi phục hoặc liên kết quên mật khẩu trung tâm. Trước khi mở public cho nhiều operator cần bổ sung MFA trung tâm và nghiệm thu bảo mật. Không dùng trang này thay cho cổng công khai tự đăng ký/thanh toán; chưa có billing/quota/subscription.
+Quản trị SaaS có owner/operator/viewer. Có TOTP tùy chọn cho quản trị trung tâm trong Bảo mật tài khoản, xác minh mật khẩu khi thiết lập/tắt; tám mã khôi phục hiển thị một lần, lưu dạng hash và dùng một lần. Đăng nhập 2FA có challenge riêng, hết hạn và chống dùng lại. Chưa có liên kết quên mật khẩu trung tâm. Không dùng trang này thay cho cổng công khai tự đăng ký/thanh toán; chưa có billing/quota/subscription.
 
 ## Phục hồi và nghiệm thu
 
