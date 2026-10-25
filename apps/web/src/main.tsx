@@ -3,6 +3,7 @@ import { AccountSecurity } from "./account";
 import { AcademicAdmin } from "./academic";
 import { RoomTools } from "./room-tools";
 import { CallIcon } from "./call-icon";
+import { loadRoomResume, saveRoomResume, clearRoomResume } from "./room-resume";
 import React, { useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { api, ApiError } from "./api";
@@ -35,6 +36,7 @@ type User = {
   name: string;
   role: string;
   school_id: string;
+  session_version?: number;
   permissions?: string[] | null;
 };
 type Meeting = {
@@ -231,7 +233,9 @@ function App() {
   const openedRoom = useRef("");
   useEffect(() => {
     const code = /^\/([a-z0-9]{6})\/?$/.exec(location.pathname)?.[1];
-    const id = new URLSearchParams(location.search).get("room");
+    const id =
+      new URLSearchParams(location.search).get("room") ||
+      (!demo && user ? loadRoomResume(user)?.meeting : null);
     const key = code ? "short:" + code : id;
     if (!demo && user && key && key !== openedRoom.current) {
       openedRoom.current = key;
@@ -357,6 +361,7 @@ function App() {
         meeting={room}
         user={user}
         onExit={() => {
+          history.replaceState(null, "", "/");
           setRoom(null);
           void safe(refresh);
         }}
@@ -662,6 +667,15 @@ function Room({
     >({}),
     [busy, setBusy] = useState(false);
   const [connection, setConnection] = useState("");
+  const resumeHint = useRef(loadRoomResume(user, meeting.id));
+  const joining = useRef(false);
+  const [resumeTick, setResumeTick] = useState(0);
+  useEffect(() => {
+    const url = meeting.short_code
+      ? `/${meeting.short_code}`
+      : `/?room=${encodeURIComponent(meeting.id)}`;
+    history.replaceState(null, "", url);
+  }, [meeting.id]);
   const [toolsOpen, setToolsOpen] = useState(false);
   const [waitingCount, setWaitingCount] = useState(0);
   useEffect(() => {
@@ -725,8 +739,8 @@ function Room({
   }, []);
   const [serverRecording, setServerRecording] = useState("unavailable");
 
-  const [preMic, setPreMic] = useState(false),
-    [preCamera, setPreCamera] = useState(false),
+  const [preMic, setPreMic] = useState(resumeHint.current?.mic || false),
+    [preCamera, setPreCamera] = useState(resumeHint.current?.camera || false),
     [preview, setPreview] = useState<MediaStream | null>(null);
   const previewRef = useRef<MediaStream | null>(null);
   const toolbarRef = useRef<HTMLDivElement | null>(null);
@@ -774,6 +788,7 @@ function Room({
             setCanManage(current.can_manage);
           if (current.rules) setRules(current.rules);
           if (current.admission) setAdmission(current.admission);
+          setResumeTick((value) => value + 1);
           if (
             current.mute_request &&
             current.mute_request > muteRequest.current
@@ -798,6 +813,8 @@ function Room({
             current.admission === "removed" ||
             current.admission === "denied"
           ) {
+            clearRoomResume(user);
+            resumeHint.current = null;
             media.current?.close();
             joinedRef.current = false;
             setJoined(false);
@@ -807,6 +824,8 @@ function Room({
             setConnection("Giáo viên chưa cho phép vào buổi này");
           }
           if (current.status === "ended") {
+            clearRoomResume(user);
+            resumeHint.current = null;
             media.current?.close();
             joinedRef.current = false;
             setJoined(false);
@@ -938,7 +957,9 @@ function Room({
     if (kind === "audio") setPreMic(!enabled);
     else setPreCamera(!enabled);
   }
-  async function join() {
+  async function join(resuming = false) {
+    if (joining.current || joinedRef.current) return;
+    joining.current = true;
     let stream: MediaStream | undefined;
     let entered = false;
     try {
@@ -955,7 +976,16 @@ function Room({
         );
         return;
       }
-      stream = previewRef.current || (await captureDevices(preMic, preCamera));
+      try {
+        stream =
+          previewRef.current || (await captureDevices(preMic, preCamera));
+      } catch (e) {
+        if (!resuming) throw e;
+        stream = new MediaStream();
+        setConnection(
+          "Đã vào lại lớp · mic/camera chưa sẵn sàng, bấm biểu tượng để bật lại",
+        );
+      }
       await api(`/meetings/${meeting.id}/media/reset`, {});
       await api(`/meetings/${meeting.id}/presence`, { kind: "join" });
       entered = true;
@@ -981,6 +1011,13 @@ function Room({
       );
       if (stream.getTracks().length) await media.current.publish(stream);
       setPreview(null);
+      saveRoomResume(
+        user,
+        meeting.id,
+        preMic && stream.getAudioTracks().length > 0,
+        preCamera && stream.getVideoTracks().length > 0,
+      );
+      resumeHint.current = loadRoomResume(user, meeting.id);
       setJoined(true);
     } catch (e) {
       media.current?.close();
@@ -993,8 +1030,39 @@ function Room({
           () => {},
         );
       throw e;
+    } finally {
+      joining.current = false;
     }
   }
+  useEffect(() => {
+    if (
+      resumeTick > 0 &&
+      resumeHint.current &&
+      state === "live" &&
+      admission === "admitted" &&
+      !joinedRef.current &&
+      !joining.current
+    )
+      void run(() => join(true));
+  }, [resumeTick]);
+  useEffect(() => {
+    if (!joined) return;
+    const save = () => {
+      if (joinedRef.current)
+        saveRoomResume(user, meeting.id, preMic, preCamera);
+    };
+    save();
+    const timer = setInterval(save, 15000);
+    return () => clearInterval(timer);
+  }, [
+    joined,
+    preMic,
+    preCamera,
+    meeting.id,
+    user.id,
+    user.school_id,
+    user.session_version,
+  ]);
   const focusKey =
     pinned ||
     (localScreen
@@ -1163,11 +1231,16 @@ function Room({
           disabled={busy}
           onClick={() =>
             void run(async () => {
-              if (joined)
-                await api(`/meetings/${meeting.id}/presence`, {
-                  kind: "leave",
-                });
+              clearRoomResume(user);
+              resumeHint.current = null;
+              const wasJoined = joinedRef.current;
               joinedRef.current = false;
+              media.current?.close();
+              setJoined(false);
+              if (wasJoined)
+                void api(`/meetings/${meeting.id}/presence`, {
+                  kind: "leave",
+                }).catch(() => {});
               onExit();
             })
           }
@@ -1187,6 +1260,8 @@ function Room({
                       status: "ended",
                     });
                     setState("ended");
+                    clearRoomResume(user);
+                    resumeHint.current = null;
                     setJoined(false);
                     media.current?.close();
                     setLocal(null);

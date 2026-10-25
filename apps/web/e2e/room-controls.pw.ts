@@ -267,4 +267,3 @@ test("student waits without opening devices or crediting attendance, then joins 
     }),
   ).toBeDisabled();
 });
-

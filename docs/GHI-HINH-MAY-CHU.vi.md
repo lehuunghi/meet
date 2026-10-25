@@ -105,3 +105,5 @@ Tham khảo cơ chế sử dụng của Google:
 https://support.google.com/meet/answer/9308681?hl=en
 
 Giao diện cuộc gọi dùng thiết bị mặc định, không có chọn bố cục/tên lớp/live hoặc bảng chọn thiết bị. Trước khi vào lớp, mic/camera mặc định tắt; bấm biểu tượng để bật và cấp quyền. Có thể vào chỉ nghe mà không cấp quyền camera/mic.
+
+Khi đã tham gia, tab lưu mã buổi và trạng thái mic/camera tối đa 2 giờ từ lần hoạt động gần nhất. Reload sẽ xác thực lại rồi tự vào cùng buổi; rời lớp chủ động/kết thúc/bị loại sẽ xóa ghi nhớ. Không lưu token trong ghi nhớ này. Chia sẻ màn hình cần chọn lại theo quyền của trình duyệt; nếu mic/camera không mở lại được thì vẫn thử vào chỉ nghe.
