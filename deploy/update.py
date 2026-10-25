@@ -258,6 +258,25 @@ def recover(job, b):
     publish(state='rolled_back', phase='done', can_update=False, message='Nâng cấp không thành công; đã phục hồi dữ liệu và ứng dụng cũ.', current_sha=job['old_sha'])
     (ROOT / 'runtime-config/maintenance').unlink(missing_ok=True)
 
+def pause_recorders(job):
+    ids = run('docker', 'ps', '--quiet', '--no-trunc', '--filter', 'label=com.docker.compose.project=meet-recorder', '--filter', 'label=com.docker.compose.service=recorder').decode().split()
+    if any(not re.fullmatch(r'[a-f0-9]{64}', value) for value in ids):
+        raise ValueError('Invalid recorder container identity')
+    checkpoint(job, recorders=ids)
+    if ids:
+        run('docker', 'stop', '--time', '120', *ids, timeout=150)
+
+
+def resume_recorders(job):
+    ids = job.get('recorders', [])
+    if not ids:
+        return
+    if any(not re.fullmatch(r'[a-f0-9]{64}', value) for value in ids):
+        raise ValueError('Invalid recorder container identity')
+    run('docker', 'start', *ids)
+    checkpoint(job, recorders=[])
+
+
 def apply(target, request_id):
     checked = candidate()
     if target != checked['available_sha'] or not checked['can_update']:
@@ -309,6 +328,7 @@ def apply(target, request_id):
         compose('stop', 'api', 'web')
         if int(sql("SELECT COUNT(*) FROM meetings WHERE status='live'")):
             raise ValueError('A lesson started before the maintenance freeze')
+        pause_recorders(job)
         checkpoint(job, snapshot=snapshot(b, job))
         checkout_safe()
         if git('rev-parse','HEAD')!=job['old_sha']:raise ValueError('Checkout changed during snapshot; do not overwrite it')
@@ -342,6 +362,8 @@ def apply(target, request_id):
             publish(state='failed', phase='done', message='Dừng trước khi thay đổi dữ liệu. Xem nhật ký dịch vụ cập nhật.')
         raise
     finally:
+        if job.get('frozen') and not (ROOT / 'runtime-config/maintenance').exists():
+            resume_recorders(job)
         if stage.exists():
             try:
                 git('worktree', 'remove', str(stage))
@@ -357,10 +379,12 @@ def worker():
         health(job['target'] if job['result']=='success' else None)
         publish(state=job['result'],phase='done',can_update=False,message='Đã hoàn tất kiểm tra và mở lại hệ thống.')
         (ROOT / 'runtime-config/maintenance').unlink(missing_ok=True)
+        resume_recorders(job)
     if job.get('active'):
         if job.get('frozen'):
             try:
                 recover(job, backup_module())
+                resume_recorders(job)
             except Exception:
                 publish(state='recovery_required',phase='stopped',can_update=False,message='Phục hồi bị gián đoạn. Giữ khóa ghi; xem nhật ký dịch vụ trước khi xử lý.')
                 raise

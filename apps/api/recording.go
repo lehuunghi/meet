@@ -49,7 +49,7 @@ func (a *app) recordingList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	u := who(r)
-	a.query(w, r, "SELECT id,status,size_bytes,created_at,expires_at FROM recordings WHERE school_id=? AND meeting_id=? AND status='ready' AND deleted_at IS NULL AND expires_at>UTC_TIMESTAMP(6) ORDER BY created_at DESC LIMIT 100", u.School, r.PathValue("id"))
+	a.query(w, r, "SELECT id,status,size_bytes,created_at,expires_at FROM recordings WHERE school_id=? AND meeting_id=? AND status='ready' AND deleted_at IS NULL AND expires_at>UTC_TIMESTAMP(6) ORDER BY created_at ASC,id ASC LIMIT 1000", u.School, r.PathValue("id"))
 }
 func (a *app) recordingComplete(w http.ResponseWriter, r *http.Request) {
 	if _, ok := a.access(w, r, true); !ok {

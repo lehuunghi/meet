@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { RoomTools } from "./room-tools";
+import { CallIcon } from "./call-icon";
 export const previewRoles = [
   { id: "admin", name: "Lê Thu Hà", label: "Admin" },
   { id: "teacher", name: "Nguyễn Minh Anh", label: "Giáo viên" },
@@ -129,20 +130,16 @@ export function PreviewRoom({
 }) {
   const [mic, setMic] = useState(true),
     [camera, setCamera] = useState(true),
-    [recording, setRecording] = useState(false),
-    [tab, setTab] = useState("people"),
+    [toolsOpen, setToolsOpen] = useState(false),
     [message, setMessage] = useState("");
   const [pinned, setPinned] = useState("");
   return (
-    <main className="room">
+    <main className={"room" + (toolsOpen ? " room-tools-open" : "")}>
       <header>
         <span className="brand">
           m<span>●</span> meet
         </span>
         <h2>{title}</h2>
-        <button className="secondary" onClick={onExit}>
-          Rời lớp
-        </button>
       </header>
       <div className="banner">
         Phòng học xem trước · Các ô bên dưới là minh họa, không có luồng video
@@ -151,7 +148,6 @@ export function PreviewRoom({
       <div className="preview-classroom">
         <section>
           <div className="preview-stage">
-            <span className="pill">Toán học · 10A1</span>
             <div>
               <small>NỘI DUNG BÀI HỌC MẪU</small>
               <h1>Hàm số và đồ thị</h1>
@@ -183,95 +179,68 @@ export function PreviewRoom({
             )}
           </div>
           <div className="room-toolbar">
-            <button onClick={() => setMic(!mic)}>
-              {mic ? "Tắt mic" : "Bật mic"}
+            <button
+              className="call-control"
+              aria-label={mic ? "Tắt mic" : "Bật mic"}
+              aria-pressed={mic}
+              onClick={() => setMic(!mic)}
+            >
+              <CallIcon kind="mic" off={!mic} />
+              <span className="control-label">
+                {mic ? "Tắt mic" : "Bật mic"}
+              </span>
             </button>
-            <button onClick={() => setCamera(!camera)}>
-              {camera ? "Tắt camera" : "Bật camera"}
+            <button
+              className="call-control"
+              aria-label={camera ? "Tắt camera" : "Bật camera"}
+              aria-pressed={camera}
+              onClick={() => setCamera(!camera)}
+            >
+              <CallIcon kind="camera" off={!camera} />
+              <span className="control-label">
+                {camera ? "Tắt camera" : "Bật camera"}
+              </span>
             </button>
-            {role !== "student" && (
-              <>
-                <button
-                  className="secondary"
-                  onClick={() =>
-                    setMessage(
-                      "Chia sẻ màn hình cần cuộc gọi thật. Bản xem trước không yêu cầu quyền thiết bị.",
-                    )
-                  }
-                >
-                  Chia sẻ màn hình
-                </button>
-                <button
-                  className="secondary"
-                  onClick={() => {
-                    setRecording(!recording);
-                    setMessage(
-                      "Chỉ thay đổi trạng thái minh họa; không tạo bản ghi thật.",
-                    );
-                  }}
-                >
-                  {recording ? "● Dừng ghi mẫu" : "Ghi hình mẫu"}
-                </button>
-              </>
-            )}
-          </div>
+            <button
+              className="call-control"
+              aria-label="Chia sẻ màn hình"
+              onClick={() =>
+                setMessage(
+                  "Chia sẻ màn hình cần cuộc gọi thật. Bản xem trước không yêu cầu quyền thiết bị.",
+                )
+              }
+            >
+              <CallIcon kind="present" />
+              <span className="control-label">Chia sẻ màn hình</span>
+            </button>
+            <button
+              className="call-control"
+              aria-label="Người tham gia & trò chuyện"
+              aria-expanded={toolsOpen}
+              onClick={() => setToolsOpen(!toolsOpen)}
+            >
+              <CallIcon kind="people" />
+              <span className="control-label">Người tham gia & trò chuyện</span>
+            </button>
+            <button
+              className="call-control room-leave"
+              aria-label="Rời lớp"
+              onClick={onExit}
+            >
+              <CallIcon kind="leave" />
+              <span className="control-label">Rời lớp</span>
+            </button>
+          </div>{" "}
           {message && (
             <div className="banner" role="status">
               {message}
             </div>
           )}
         </section>
-        <section className="section preview-room-side">
-          <div className="preview-tabs">
-            <button
-              className={tab === "people" ? "selected" : ""}
-              onClick={() => setTab("people")}
-            >
-              Thành viên
-            </button>
-            <button
-              className={tab === "attendance" ? "selected" : ""}
-              onClick={() => setTab("attendance")}
-            >
-              Điểm danh
-            </button>
-          </div>
-          {tab === "people" ? (
-            <>
-              {previewUsers.slice(0, 4).map((v) => (
-                <div className="preview-person" key={v.id}>
-                  <span className="avatar">
-                    {v.name.split(" ").at(-1)?.[0]}
-                  </span>
-                  <div>
-                    <strong>{v.name}</strong>
-                    <small>
-                      {v.role === "teacher" ? "Giáo viên" : "Học sinh"}
-                    </small>
-                  </div>
-                </div>
-              ))}
-            </>
-          ) : (
-            <>
-              <h3>
-                {role === "student" ? "Thời gian của bạn" : "Theo dõi tham gia"}
-              </h3>
-              {(role === "student" ? roster.slice(0, 1) : roster).map((v) => (
-                <div className="preview-person" key={v.name}>
-                  <div>
-                    <strong>{v.name}</strong>
-                    <small>
-                      {v.time} · {v.status}
-                    </small>
-                  </div>
-                </div>
-              ))}
-            </>
-          )}
-        </section>
       </div>
       <RoomTools
+        open={toolsOpen}
+        onClose={() => setToolsOpen(false)}
         demo
         meeting="preview"
         user={{

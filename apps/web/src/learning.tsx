@@ -470,6 +470,7 @@ function LessonVideos({ meeting, demo }: { meeting: string; demo: boolean }) {
   const [rows, setRows] = useState<any[]>([]),
     [error, setError] = useState(""),
     [player, setPlayer] = useState(""),
+    [part, setPart] = useState(0),
     [loading, setLoading] = useState(true);
   const generation = useRef(0);
   useEffect(() => {
@@ -482,7 +483,12 @@ function LessonVideos({ meeting, demo }: { meeting: string; demo: boolean }) {
         : api<any[]>(`/meetings/${meeting}/recordings`)
     )
       .then((v) => {
-        if (active) setRows(v);
+        if (active)
+          setRows(
+            v.sort(
+              (a, b) => Date.parse(a.created_at) - Date.parse(b.created_at),
+            ),
+          );
       })
       .catch((e) => {
         if (active) setError(e.message);
@@ -496,6 +502,7 @@ function LessonVideos({ meeting, demo }: { meeting: string; demo: boolean }) {
     };
   }, [meeting, demo]);
   async function play(id: string) {
+    setPart(rows.findIndex((row) => row.id === id));
     const version = ++generation.current;
     setError("");
     if (demo) {
@@ -524,18 +531,38 @@ function LessonVideos({ meeting, demo }: { meeting: string; demo: boolean }) {
       ) : !rows.length ? (
         <p>Chưa có video đã hoàn tất cho buổi này.</p>
       ) : (
-        rows.map((r, i) => (
-          <button
-            key={r.id}
-            className="secondary"
-            onClick={() => void play(r.id)}
-          >
-            Xem video {i + 1}
-          </button>
-        ))
+        <button className="secondary" onClick={() => void play(rows[0].id)}>
+          Xem video buổi học
+        </button>
       )}
       {player && (
-        <video key={player} controls autoPlay playsInline src={player} />
+        <>
+          {rows.length > 1 && (
+            <label>
+              Đoạn video{" "}
+              <select
+                value={part}
+                onChange={(e) => void play(rows[Number(e.target.value)].id)}
+              >
+                {rows.map((r, i) => (
+                  <option key={r.id} value={i}>
+                    {i + 1} / {rows.length}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+          <video
+            key={player}
+            controls
+            autoPlay
+            playsInline
+            src={player}
+            onEnded={() => {
+              if (rows[part + 1]) void play(rows[part + 1].id);
+            }}
+          />
+        </>
       )}
     </section>
   );

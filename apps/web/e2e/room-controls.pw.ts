@@ -101,6 +101,10 @@ test("host admits waiting students, updates rules, pins video and sends reaction
   await expect(
     page.getByRole("heading", { name: "Bản ghi buổi học", exact: true }),
   ).toHaveCount(0);
+  await expect(page.locator(".room-tools")).toBeHidden();
+  await page
+    .getByRole("button", { name: "Người tham gia & trò chuyện", exact: true })
+    .click();
   await page.getByRole("button", { name: "Cho vào", exact: true }).click();
   expect(moderated).toEqual([{ action: "admit", user_id: "student" }]);
   const panel = page.locator(".room-moderation");
@@ -115,7 +119,7 @@ test("host admits waiting students, updates rules, pins video and sends reaction
   expect(rules.chat_enabled).toBe(false);
   await page
     .getByRole("button", {
-      name: "Vào lớp không dùng camera/micro",
+      name: "Vào lớp học",
       exact: true,
     })
     .click();
@@ -128,14 +132,40 @@ test("host admits waiting students, updates rules, pins video and sends reaction
     .click();
   await expect(page.locator(".video-grid .is-pinned")).toHaveCount(1);
   await page
-    .getByRole("combobox", { name: "Bố cục", exact: true })
-    .selectOption("grid");
+    .locator(".video-grid .tile-actions")
+    .getByRole("button", { name: "Bỏ ghim", exact: true })
+    .click();
   await expect(page.locator(".video-grid .is-pinned")).toHaveCount(0);
+  await expect(
+    page.getByRole("combobox", { name: "Bố cục", exact: true }),
+  ).toHaveCount(0);
+  await expect(page.locator(".room-device-settings")).toHaveCount(0);
   await page.getByRole("button", { name: "Phản ứng 👍", exact: true }).click();
   await expect(page.locator(".room-reaction-overlay")).toContainText("👍", {
     timeout: 10000,
   });
+  await page.screenshot({
+    path: "../../outputs/meet-v08-desktop.png",
+    fullPage: true,
+  });
   await page.setViewportSize({ width: 390, height: 844 });
+  await page.getByRole("button", { name: "Đóng công cụ", exact: true }).click();
+  await expect(page.locator(".room-tools")).toBeHidden();
+  await page.screenshot({
+    path: "../../outputs/meet-v08-mobile.png",
+    fullPage: true,
+  });
+  const bounds = await page.evaluate(() => ({
+    header: document.querySelector(".room > header")!.getBoundingClientRect()
+      .bottom,
+    controls: document.querySelector(".video-grid")!.getBoundingClientRect()
+      .top,
+  }));
+  expect(bounds.header).toBeLessThanOrEqual(bounds.controls);
+  await page.locator(".room-end-menu > summary").click();
+  await expect(
+    page.getByRole("button", { name: "Kết thúc buổi học", exact: true }),
+  ).toBeVisible();
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth,
@@ -207,20 +237,20 @@ test("student waits without opening devices or crediting attendance, then joins 
   admission = "admitted";
   await expect(
     page.getByRole("button", {
-      name: "Vào lớp không dùng camera/micro",
+      name: "Vào lớp học",
       exact: true,
     }),
   ).toBeEnabled({ timeout: 10000 });
   await page
     .getByRole("button", {
-      name: "Vào lớp không dùng camera/micro",
+      name: "Vào lớp học",
       exact: true,
     })
     .click();
   await expect(
     page.getByRole("button", { name: "Bật mic", exact: true }),
   ).toBeVisible();
-  expect(presence).toBeGreaterThan(0);
+  await expect.poll(() => presence).toBeGreaterThan(0);
   expect(devices).toBe(0);
   await expect(
     page.getByRole("button", { name: "Chia sẻ màn hình", exact: true }),
@@ -232,8 +262,9 @@ test("student waits without opening devices or crediting attendance, then joins 
   );
   await expect(
     page.getByRole("button", {
-      name: "Vào lớp không dùng camera/micro",
+      name: "Xin vào lớp",
       exact: true,
     }),
   ).toBeDisabled();
 });
+

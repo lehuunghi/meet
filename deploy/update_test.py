@@ -62,4 +62,17 @@ class UpdaterTests(unittest.TestCase):
                 u.worker();health.assert_called_once_with('a'*40);recover.assert_not_called()
             self.assertFalse((root/'runtime-config/maintenance').exists())
 
+    def test_recorder_is_journaled_before_stop_and_only_saved_ids_are_resumed(self):
+        job={}; container='a'*64
+        def save(value, **fields): value.update(fields)
+        with patch.object(u,'checkpoint',side_effect=save),patch.object(u,'run',side_effect=[(container+'\n').encode(),b'',b'']) as run:
+            u.pause_recorders(job)
+            self.assertEqual(job['recorders'],[container])
+            self.assertEqual(run.call_args_list[1].args,('docker','stop','--time','120',container))
+            u.resume_recorders(job)
+            self.assertEqual(job['recorders'],[])
+        with patch.object(u,'run') as run:
+            with self.assertRaisesRegex(ValueError,'identity'):u.resume_recorders({'recorders':['--all']})
+            run.assert_not_called()
+
 if __name__ == '__main__': unittest.main()

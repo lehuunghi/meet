@@ -3,6 +3,35 @@ on: [push, pull_request]
 permissions:
   contents: read
 jobs:
+  recorder:
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:7.4-alpine
+        ports: ["6379:6379"]
+        options: --health-cmd="redis-cli ping" --health-interval=5s --health-timeout=5s --health-retries=10
+    env:
+      TEST_REDIS_URL: redis://127.0.0.1:6379/15
+    defaults:
+      run:
+        working-directory: apps/recorder
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: apps/recorder/package-lock.json
+      - run: npm ci
+      - run: npm audit --omit=dev --audit-level=high
+      - run: npm test && npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - run: node --test browser-test.mjs
+      - run: docker build -f apps/recorder/Dockerfile apps -t meet-recorder:ci
+        working-directory: .
+      - run: bash -n deploy/install-recorder.sh
+        working-directory: .
   control:
     runs-on: ubuntu-latest
     steps:

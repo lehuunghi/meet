@@ -9,9 +9,11 @@ export type RoomRules = {
 export function RoomModeration({
   meeting,
   demo = false,
+  onWaitingChange,
 }: {
   meeting: string;
   demo?: boolean;
+  onWaitingChange?: (count: number) => void;
 }) {
   const [rules, setRules] = useState<RoomRules>({
       lobby: false,
@@ -25,6 +27,9 @@ export function RoomModeration({
   const pending = useRef(false),
     generation = useRef(0),
     panel = useRef<HTMLDetailsElement>(null);
+  useEffect(() => {
+    onWaitingChange?.(members.filter((m) => m.state === "waiting").length);
+  }, [members, onWaitingChange]);
   async function reload() {
     const revision = generation.current;
     const [s, list] = await Promise.all([

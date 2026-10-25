@@ -101,3 +101,5 @@ npm run dev
 ```
 
 Đặt `APP_ORIGIN=http://localhost:5173` khi chạy Vite; mở đúng hostname localhost. Vite proxy `/api` tới Go ở cổng 8080. Tích hợp: đặt `TEST_MYSQL_DSN` (database dùng một lần, có `parseTime=true&loc=UTC`) và `TEST_REDIS_URL`, rồi `go test -count=1 -v ./...`. Test seed dữ liệu, không trỏ vào production.
+
+Ghi hình tự động trên máy chủ: [cơ chế, cài đặt và năng lực nhiều lớp](docs/GHI-HINH-MAY-CHU.vi.md).

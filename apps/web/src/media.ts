@@ -81,11 +81,14 @@ export class ClassroomMedia {
     private onTrack: (key: string, stream: MediaStream, name: string) => void,
     private onRemove: (key: string) => void = () => {},
     private onState: (state: string) => void = () => {},
+    private request: typeof api = api,
   ) {}
   private async session(pc: RTCPeerConnection) {
     this.peers.push(pc);
     this.peerCreated.set(pc, Date.now());
-    const s = await api(`/meetings/${this.meeting}/sfu`, { op: "new" });
+    const s = await this.request(`/meetings/${this.meeting}/sfu`, {
+      op: "new",
+    });
     this.sessionIDs.set(pc, s.sessionId);
     if (this.closed) {
       pc.close();
@@ -95,7 +98,7 @@ export class ClassroomMedia {
   }
   private async call(body: unknown) {
     if (this.closed) throw new Error("Đã rời lớp");
-    return api(`/meetings/${this.meeting}/sfu`, body);
+    return this.request(`/meetings/${this.meeting}/sfu`, body);
   }
   publish(stream: MediaStream) {
     return this.serial(() => this.publishInternal(stream));
@@ -105,7 +108,7 @@ export class ClassroomMedia {
       stream.getTracks().forEach((t) => this.local!.addTrack(t));
     } else if (!presentation) this.local = stream;
     if (!stream.getTracks().length) return;
-    const ice = await api(`/meetings/${this.meeting}/ice`, {});
+    const ice = await this.request(`/meetings/${this.meeting}/ice`, {});
     const pc = new RTCPeerConnection({
       iceServers: classroomIceServers(ice.iceServers),
     });
@@ -161,7 +164,7 @@ export class ClassroomMedia {
     );
     if (this.closed || !fresh.length) return;
     if (!this.receiver) {
-      const ice = await api(`/meetings/${this.meeting}/ice`, {});
+      const ice = await this.request(`/meetings/${this.meeting}/ice`, {});
       this.receiver = new RTCPeerConnection({
         iceServers: classroomIceServers(ice.iceServers),
       });
@@ -260,7 +263,9 @@ export class ClassroomMedia {
       const sid = this.sessionIDs.get(pc);
       this.sessionIDs.delete(pc);
       if (sid)
-        await api(`/meetings/${this.meeting}/media/reset`, { session_id: sid });
+        await this.request(`/meetings/${this.meeting}/media/reset`, {
+          session_id: sid,
+        });
     }
   }
   private async shareInternal() {
@@ -417,7 +422,7 @@ export class ClassroomMedia {
       if (now < this.retryAt) return;
       this.onState("Đang kết nối lại…");
       try {
-        await api(`/meetings/${this.meeting}/media/reset`, {});
+        await this.request(`/meetings/${this.meeting}/media/reset`, {});
         this.peers.forEach((p) => p.close());
         this.peers = [];
         this.peerCreated.clear();

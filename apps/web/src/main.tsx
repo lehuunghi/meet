@@ -2,13 +2,14 @@ import { Accounts } from "./accounts";
 import { AccountSecurity } from "./account";
 import { AcademicAdmin } from "./academic";
 import { RoomTools } from "./room-tools";
+import { CallIcon } from "./call-icon";
 import React, { useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { api, ApiError } from "./api";
 import { ClassroomMedia } from "./media";
 import { captureDevices } from "./devices";
 import type { RoomRules } from "./room-moderation";
-import { RoomDevices } from "./room-devices";
+
 import "./style.css";
 import "./meet-room.css";
 import "./attendance.css";
@@ -19,16 +20,6 @@ import { Setup } from "./setup";
 import { AuditLog } from "./audit";
 import { PasswordRecovery } from "./password-recovery";
 import { RecordingRecovery } from "./recording-recovery";
-import {
-  appendChunk,
-  saveJob,
-  getJob,
-  stopJob,
-  uploadRecording,
-  acquireCapture,
-  MAX_RECORDING_SIZE,
-  PART_SIZE,
-} from "./recording-store";
 import "./workspace.css";
 import "./learning.css";
 import {
@@ -669,10 +660,17 @@ function Room({
     [remote, setRemote] = useState<
       Record<string, { stream: MediaStream; name: string }>
     >({}),
-    [, setRecordings] = useState<any[]>([]),
-    [recording, setRecording] = useState(false),
     [busy, setBusy] = useState(false);
   const [connection, setConnection] = useState("");
+  const [toolsOpen, setToolsOpen] = useState(false);
+  const [waitingCount, setWaitingCount] = useState(0);
+  useEffect(() => {
+    const escape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setToolsOpen(false);
+    };
+    window.addEventListener("keydown", escape);
+    return () => window.removeEventListener("keydown", escape);
+  }, []);
   const [canManage, setCanManage] = useState(user.role !== "student");
   const [rules, setRules] = useState<RoomRules>({
     lobby: false,
@@ -684,12 +682,6 @@ function Room({
   const muteRequest = useRef(0);
   const [localScreen, setLocalScreen] = useState<MediaStream | null>(null);
   const [pinned, setPinned] = useState("");
-  const [layout, setLayout] = useState("auto");
-  const [deviceIDs, setDeviceIDs] = useState<{
-    audio?: string;
-    video?: string;
-  }>({});
-  const [audioOutput, setAudioOutput] = useState("");
   const [reactions, setReactions] = useState<
     { id: string; name: string; emoji: string; received: number }[]
   >([]);
@@ -731,10 +723,10 @@ function Room({
     );
     return () => clearInterval(timer);
   }, []);
-  const [recordingStatus, setRecordingStatus] = useState("");
-  const [recordingJob, setRecordingJob] = useState("");
-  const [preMic, setPreMic] = useState(true),
-    [preCamera, setPreCamera] = useState(true),
+  const [serverRecording, setServerRecording] = useState("unavailable");
+
+  const [preMic, setPreMic] = useState(false),
+    [preCamera, setPreCamera] = useState(false),
     [preview, setPreview] = useState<MediaStream | null>(null);
   const previewRef = useRef<MediaStream | null>(null);
   const toolbarRef = useRef<HTMLDivElement | null>(null);
@@ -751,8 +743,6 @@ function Room({
     return () => resize.disconnect();
   }, []);
   const media = useRef<ClassroomMedia | null>(null),
-    rec = useRef<MediaRecorder | null>(null),
-    display = useRef<MediaStream | null>(null),
     joinedRef = useRef(false);
   const run = async (fn: () => Promise<void>) => {
     onError("");
@@ -775,9 +765,11 @@ function Room({
           rules?: RoomRules;
           admission?: string;
           mute_request?: number;
+          server_recording?: { state: string };
         }>(`/meetings/${meeting.id}`);
         if (active && current) {
           setState(current.status);
+          setServerRecording(current.server_recording?.state || "unavailable");
           if (typeof current.can_manage === "boolean")
             setCanManage(current.can_manage);
           if (current.rules) setRules(current.rules);
@@ -918,8 +910,7 @@ function Room({
     () => () => {
       media.current?.close();
       previewRef.current?.getTracks().forEach((t) => t.stop());
-      display.current?.getTracks().forEach((t) => t.stop());
-      if (rec.current?.state === "recording") rec.current.stop();
+
       if (joinedRef.current)
         void api(`/meetings/${meeting.id}/presence`, { kind: "leave" }).catch(
           () => {},
@@ -927,7 +918,27 @@ function Room({
     },
     [],
   );
-  async function join(listenOnly = false) {
+  async function togglePreview(kind: "audio" | "video") {
+    const enabled = kind === "audio" ? preMic : preCamera;
+    const current = previewRef.current || new MediaStream();
+    if (enabled) {
+      current
+        .getTracks()
+        .filter((t) => t.kind === kind)
+        .forEach((t) => {
+          current.removeTrack(t);
+          t.stop();
+        });
+    } else {
+      const captured = await captureDevices(kind === "audio", kind === "video");
+      captured.getTracks().forEach((t) => current.addTrack(t));
+    }
+    previewRef.current = current;
+    setPreview(new MediaStream(current.getTracks()));
+    if (kind === "audio") setPreMic(!enabled);
+    else setPreCamera(!enabled);
+  }
+  async function join() {
     let stream: MediaStream | undefined;
     let entered = false;
     try {
@@ -944,23 +955,14 @@ function Room({
         );
         return;
       }
-      if (listenOnly) {
-        previewRef.current?.getTracks().forEach((t) => t.stop());
-        previewRef.current = null;
-      }
-      stream = listenOnly
-        ? new MediaStream()
-        : previewRef.current ||
-          (await captureDevices(preMic, preCamera, deviceIDs));
+      stream = previewRef.current || (await captureDevices(preMic, preCamera));
       await api(`/meetings/${meeting.id}/media/reset`, {});
       await api(`/meetings/${meeting.id}/presence`, { kind: "join" });
       entered = true;
       stream.getAudioTracks().forEach((t) => (t.enabled = preMic));
       stream.getVideoTracks().forEach((t) => (t.enabled = preCamera));
-      setPreMic(!listenOnly && preMic && stream.getAudioTracks().length > 0);
-      setPreCamera(
-        !listenOnly && preCamera && stream.getVideoTracks().length > 0,
-      );
+      setPreMic(preMic && stream.getAudioTracks().length > 0);
+      setPreCamera(preCamera && stream.getVideoTracks().length > 0);
       setLocal(stream);
       media.current = new ClassroomMedia(
         meeting.id,
@@ -993,146 +995,14 @@ function Room({
       throw e;
     }
   }
-  async function record() {
-    if (rec.current?.state === "recording") {
-      rec.current.stop();
-      return;
-    }
-    const capture = await navigator.mediaDevices.getDisplayMedia({
-      video: true,
-      audio: true,
-    });
-    display.current = capture;
-    if (!MediaRecorder.isTypeSupported("video/webm")) {
-      capture.getTracks().forEach((t) => t.stop());
-      throw new Error(
-        "Trình duyệt này chưa hỗ trợ ghi WebM. Dùng trình duyệt đã nghiệm thu.",
-      );
-    }
-    let item: { id: string };
-    let createdID = "";
-    let releaseCapture: () => void = () => {};
-    try {
-      const storage = await navigator.storage?.estimate();
-      if (
-        storage?.quota &&
-        storage.quota - (storage.usage || 0) < 2 * PART_SIZE
-      )
-        throw new Error("Thiết bị không đủ dung lượng lưu tạm bản ghi");
-      item = await api(`/meetings/${meeting.id}/recordings/multipart`, {});
-      createdID = item.id;
-      await saveJob({
-        id: item.id,
-        owner: user.id,
-        school: user.school_id,
-        meeting: meeting.id,
-        title: meeting.title,
-        bytes: 0,
-        chunks: 0,
-        uploaded: 0,
-        stopped: false,
-        created: Date.now(),
-      });
-      releaseCapture = await acquireCapture(item.id);
-      void navigator.storage?.persist?.();
-    } catch (e) {
-      releaseCapture();
-      capture.getTracks().forEach((t) => t.stop());
-      if (createdID)
-        void api(
-          `/meetings/${meeting.id}/recordings/${createdID}/abort`,
-          {},
-        ).catch(() => {});
-      throw e;
-    }
-    setRecordingJob(item.id);
-    let writes: Promise<void> = Promise.resolve();
-    let recorder: MediaRecorder;
-    try {
-      recorder = new MediaRecorder(capture, {
-        mimeType: "video/webm",
-        videoBitsPerSecond: 1500000,
-        audioBitsPerSecond: 96000,
-      });
-    } catch (e) {
-      releaseCapture();
-      capture.getTracks().forEach((t) => t.stop());
-      setRecordingJob("");
-      throw e;
-    }
-    let writeFailed = false;
-    rec.current = recorder;
-    recorder.ondataavailable = (e) => {
-      if (!e.data.size) return;
-      writes = writes
-        .then(async () => {
-          await appendChunk(item.id, e.data);
-          const job = await getJob(item.id);
-          setRecordingStatus(
-            `Đã lưu tạm ${Math.round(job.bytes / 1048576)} MB trên thiết bị`,
-          );
-          if (
-            job.bytes >= MAX_RECORDING_SIZE - PART_SIZE &&
-            recorder.state === "recording"
-          )
-            recorder.stop();
-          void uploadRecording(item.id, setRecordingStatus).catch((e) =>
-            setRecordingStatus((e as Error).message),
-          );
-        })
-        .catch((e) => {
-          writeFailed = true;
-          onError((e as Error).message);
-          if (recorder.state === "recording") recorder.stop();
-        });
-    };
-    recorder.onstop = () => {
-      setRecording(false);
-      capture.getTracks().forEach((t) => t.stop());
-      void run(async () => {
-        await writes;
-        releaseCapture();
-        if (writeFailed) {
-          setRecordingJob("");
-          throw new Error(
-            "Ghi hình đã dừng vì lỗi lưu trên thiết bị. Kiểm tra phần đã lưu trong mục phục hồi bản ghi.",
-          );
-        }
-        await stopJob(item.id);
-        try {
-          await uploadRecording(item.id, setRecordingStatus);
-          await uploadRecording(item.id, setRecordingStatus);
-        } finally {
-          setRecordingJob("");
-        }
-        setRecordings(await api(`/meetings/${meeting.id}/recordings`));
-      });
-    };
-    recorder.onerror = () => {
-      writeFailed = true;
-      onError(
-        "Trình duyệt gặp lỗi ghi hình; các đoạn đã lưu được giữ để phục hồi.",
-      );
-      if (recorder.state === "recording") recorder.stop();
-    };
-    capture.getVideoTracks()[0].onended = () => {
-      if (recorder.state === "recording") recorder.stop();
-    };
-    recorder.start(1000);
-    setRecording(true);
-  }
   const focusKey =
     pinned ||
-    (layout === "grid"
-      ? ""
-      : localScreen
-        ? "self:screen"
-        : Object.keys(remote).find((k) => k.endsWith(":screen")) ||
-          (layout === "spotlight"
-            ? activeSpeaker || Object.keys(remote)[0] || "self"
-            : ""));
+    (localScreen
+      ? "self:screen"
+      : Object.keys(remote).find((k) => k.endsWith(":screen"))) ||
+    "";
   return (
-    <main className="room">
+    <main className={"room" + (toolsOpen ? " room-tools-open" : "")}>
       <header>
         <span className="brand">
           m<span>●</span> meet
@@ -1155,56 +1025,50 @@ function Room({
         >
           Sao chép liên kết
         </button>
-        <button
-          className="secondary"
-          disabled={busy || recording}
-          onClick={() =>
-            void run(async () => {
-              if (joined)
-                await api(`/meetings/${meeting.id}/presence`, {
-                  kind: "leave",
-                });
-              joinedRef.current = false;
-              onExit();
-            })
-          }
-        >
-          Rời lớp
-        </button>
       </header>
-      {(error || recordingStatus) && (
+      {error && (
         <div className="room-notices">
           {error && (
             <p className="error" role="alert">
               {error}
             </p>
           )}
-          {recordingStatus && (
-            <p className="banner" role="status">
-              {recordingStatus}
-            </p>
-          )}
         </div>
       )}
       {canManage && (
-        <RecordingRecovery
-          owner={user.id}
-          school={user.school_id}
-          active={recordingJob}
-        />
+        <RecordingRecovery owner={user.id} school={user.school_id} active="" />
       )}
       <div className="room-toolbar" ref={toolbarRef}>
+        {canManage && waitingCount > 0 && (
+          <span role="status" className="room-waiting-notice">
+            {waitingCount} người đang xin vào lớp
+          </span>
+        )}
         {connection && (
           <span role="status" aria-live="polite">
             {connection}
           </span>
         )}
-        <span className="pill">
-          {meeting.class_name} · {meeting.course}
-        </span>
-        <span>{state}</span>
         {!!meeting.recording_allowed && (
-          <span>Giáo viên có thể ghi hình buổi học này.</span>
+          <span>
+            {
+              (
+                {
+                  recording: "● Đang ghi tự động trên máy chủ",
+                  waiting: "● Đang ghi · chờ người tham gia",
+                  starting: "Đang khởi tạo ghi hình",
+                  queued: "Đang chờ bộ ghi",
+                  saving: "Đang lưu video",
+                  complete: "Đã dừng ghi · đang hoàn tất lưu",
+                  disabled: "Chưa bật R2 · không ghi hình",
+                  unavailable: "Bộ ghi máy chủ chưa sẵn sàng",
+                  error: "Ghi hình gián đoạn · đang thử lại",
+                  interrupted: "Mất kết nối bộ ghi · đang thử lại",
+                  limit: "Đã dừng ghi · đạt giới hạn 8 giờ",
+                } as Record<string, string>
+              )[serverRecording]
+            }
+          </span>
         )}
         {canManage && state === "scheduled" && (
           <button
@@ -1219,20 +1083,12 @@ function Room({
             Bắt đầu buổi học
           </button>
         )}
-        {state === "live" && !joined && (
-          <button
-            disabled={
-              busy || ["waiting", "removed", "denied"].includes(admission)
-            }
-            onClick={() => void run(join)}
-          >
-            {rules.lobby && !canManage ? "Xin vào lớp" : "Tham gia buổi học"}
-          </button>
-        )}
         {joined && (
           <>
             <button
               aria-pressed={preMic}
+              className="call-control"
+              aria-label={preMic ? "Tắt mic" : "Bật mic"}
               disabled={busy}
               onClick={() =>
                 void run(async () => {
@@ -1242,10 +1098,15 @@ function Room({
                 })
               }
             >
-              {preMic ? "Tắt mic" : "Bật mic"}
+              <CallIcon kind="mic" off={!preMic} />
+              <span className="control-label">
+                {preMic ? "Tắt mic" : "Bật mic"}
+              </span>
             </button>
             <button
               aria-pressed={preCamera}
+              className="call-control"
+              aria-label={preCamera ? "Tắt camera" : "Bật camera"}
               disabled={busy}
               onClick={() =>
                 void run(async () => {
@@ -1258,10 +1119,15 @@ function Room({
                 })
               }
             >
-              {preCamera ? "Tắt camera" : "Bật camera"}
+              <CallIcon kind="camera" off={!preCamera} />
+              <span className="control-label">
+                {preCamera ? "Tắt camera" : "Bật camera"}
+              </span>
             </button>
             <button
               disabled={busy || (!rules.present_enabled && !canManage)}
+              className="call-control"
+              aria-label={localScreen ? "Dừng trình bày" : "Chia sẻ màn hình"}
               onClick={() =>
                 void run(async () => {
                   const stream = await media.current!.share();
@@ -1274,82 +1140,64 @@ function Room({
                 })
               }
             >
-              {localScreen ? "Dừng trình bày" : "Chia sẻ màn hình"}
+              <CallIcon kind="present" />
+              <span className="control-label">
+                {localScreen ? "Dừng trình bày" : "Chia sẻ màn hình"}
+              </span>
             </button>
-            {canManage && !!meeting.recording_allowed && (
-              <button disabled={busy} onClick={() => void run(record)}>
-                {recording ? "● Dừng & lưu bản ghi" : "Ghi màn hình vào R2"}
-              </button>
-            )}
           </>
         )}
+        <button
+          className="call-control"
+          aria-label="Người tham gia & trò chuyện"
+          aria-controls="room-tools-panel"
+          aria-expanded={toolsOpen}
+          onClick={() => setToolsOpen(!toolsOpen)}
+        >
+          <CallIcon kind="people" />
+          <span className="control-label">Người tham gia & trò chuyện</span>
+        </button>
+        <button
+          className="call-control room-leave"
+          aria-label="Rời lớp"
+          disabled={busy}
+          onClick={() =>
+            void run(async () => {
+              if (joined)
+                await api(`/meetings/${meeting.id}/presence`, {
+                  kind: "leave",
+                });
+              joinedRef.current = false;
+              onExit();
+            })
+          }
+        >
+          <CallIcon kind="leave" />
+          <span className="control-label">Rời lớp</span>
+        </button>
         {canManage && state === "live" && (
-          <button
-            disabled={busy || recording}
-            onClick={() =>
-              void run(async () => {
-                await api(`/meetings/${meeting.id}/state`, { status: "ended" });
-                setState("ended");
-                setJoined(false);
-                media.current?.close();
-                setLocal(null);
-              })
-            }
-          >
-            Kết thúc buổi học
-          </button>
+          <details className="room-end-menu">
+            <summary aria-label="Thêm tùy chọn">⋮</summary>
+            <div>
+              <button
+                disabled={busy}
+                onClick={() =>
+                  void run(async () => {
+                    await api(`/meetings/${meeting.id}/state`, {
+                      status: "ended",
+                    });
+                    setState("ended");
+                    setJoined(false);
+                    media.current?.close();
+                    setLocal(null);
+                  })
+                }
+              >
+                Kết thúc buổi học
+              </button>
+            </div>
+          </details>
         )}
-      </div>
-      <div className="room-view-controls">
-        <label>
-          Bố cục
-          <select
-            value={layout}
-            onChange={(e) => {
-              setLayout(e.target.value);
-              setPinned("");
-            }}
-          >
-            <option value="auto">Tự động</option>
-            <option value="grid">Lưới</option>
-            <option value="spotlight">Người trình bày</option>
-          </select>
-        </label>
-        {pinned && (
-          <button className="secondary" onClick={() => setPinned("")}>
-            Bỏ ghim
-          </button>
-        )}
-        <RoomDevices
-          refreshKey={preview?.id || local?.id}
-          onInput={async (kind, id) => {
-            const next = { ...deviceIDs, [kind]: id };
-            setDeviceIDs(next);
-            if (joined) {
-              const stream = await media.current?.changeDevice(kind, id);
-              if (stream) setLocal(new MediaStream(stream.getTracks()));
-            } else {
-              previewRef.current?.getTracks().forEach((t) => t.stop());
-              previewRef.current = null;
-              setPreview(null);
-              const stream = await captureDevices(preMic, preCamera, next);
-              previewRef.current = stream;
-              setPreview(stream);
-            }
-          }}
-          onOutput={async (id) => {
-            await Promise.all(
-              Array.from(document.querySelectorAll("video")).map((v) =>
-                (
-                  v as HTMLVideoElement & {
-                    setSinkId?: (id: string) => Promise<void>;
-                  }
-                ).setSinkId?.(id),
-              ),
-            );
-            setAudioOutput(id);
-          }}
-        />
       </div>
       <div className="room-reaction-overlay" aria-live="polite">
         {reactions.map((r) => (
@@ -1358,7 +1206,7 @@ function Room({
           </span>
         ))}
       </div>
-      <div className={"video-grid layout-" + layout}>
+      <div className="video-grid layout-auto">
         {!joined && state !== "ended" && (
           <section className="section prejoin">
             <div>
@@ -1383,57 +1231,34 @@ function Room({
                       : "Camera chưa được mở"}
                   </strong>
                   <p>
-                    Bấm kiểm tra camera/mic để xem trước, hoặc vào lớp không
-                    dùng thiết bị.
+                    Bấm biểu tượng mic/camera để bật, hoặc vào lớp không dùng
+                    thiết bị.
                   </p>
                 </div>
               )}
-              <label className="checkbox">
-                <input
-                  type="checkbox"
-                  checked={preMic}
-                  onChange={(e) => {
-                    setPreMic(e.target.checked);
-                    previewRef.current
-                      ?.getAudioTracks()
-                      .forEach((t) => (t.enabled = e.target.checked));
-                  }}
-                />{" "}
-                Bật mic khi vào lớp
-              </label>
-              <label className="checkbox">
-                <input
-                  type="checkbox"
-                  checked={preCamera}
-                  onChange={(e) => {
-                    setPreCamera(e.target.checked);
-                    previewRef.current
-                      ?.getVideoTracks()
-                      .forEach((t) => (t.enabled = e.target.checked));
-                  }}
-                />{" "}
-                Bật camera khi vào lớp
-              </label>
-              <button
-                className="secondary"
-                disabled={busy}
-                onClick={() =>
-                  void run(async () => {
-                    previewRef.current?.getTracks().forEach((t) => t.stop());
-                    const s = await captureDevices(
-                      preMic,
-                      preCamera,
-                      deviceIDs,
-                    );
-                    s.getAudioTracks().forEach((t) => (t.enabled = preMic));
-                    s.getVideoTracks().forEach((t) => (t.enabled = preCamera));
-                    previewRef.current = s;
-                    setPreview(s);
-                  })
-                }
+              <div
+                className="prejoin-device-icons"
+                aria-label="Mic và camera trước khi vào lớp"
               >
-                Kiểm tra camera / mic
-              </button>
+                <button
+                  className="call-control"
+                  aria-label={preMic ? "Tắt mic" : "Bật mic"}
+                  aria-pressed={preMic}
+                  disabled={busy}
+                  onClick={() => void run(() => togglePreview("audio"))}
+                >
+                  <CallIcon kind="mic" off={!preMic} />
+                </button>
+                <button
+                  className="call-control"
+                  aria-label={preCamera ? "Tắt camera" : "Bật camera"}
+                  aria-pressed={preCamera}
+                  disabled={busy}
+                  onClick={() => void run(() => togglePreview("video"))}
+                >
+                  <CallIcon kind="camera" off={!preCamera} />
+                </button>
+              </div>{" "}
               {state === "live" && (
                 <div className="prejoin-actions">
                   <button
@@ -1443,17 +1268,9 @@ function Room({
                     }
                     onClick={() => void run(() => join())}
                   >
-                    Vào lớp với thiết bị đã chọn
-                  </button>
-                  <button
-                    className="secondary"
-                    disabled={
-                      busy ||
-                      ["waiting", "removed", "denied"].includes(admission)
-                    }
-                    onClick={() => void run(() => join(true))}
-                  >
-                    Vào lớp không dùng camera/micro
+                    {rules.lobby && admission !== "admitted"
+                      ? "Xin vào lớp"
+                      : "Vào lớp học"}
                   </button>
                 </div>
               )}
@@ -1515,7 +1332,7 @@ function Room({
               (activeSpeaker === k ? "is-speaking" : "")
             }
           >
-            <Video stream={v.stream} sinkId={audioOutput} />
+            <Video stream={v.stream} />
             {!v.stream
               .getVideoTracks()
               .some((t) => t.enabled && t.readyState !== "ended") && (
@@ -1544,6 +1361,9 @@ function Room({
         ))}
       </div>
       <RoomTools
+        onWaitingChange={setWaitingCount}
+        open={toolsOpen}
+        onClose={() => setToolsOpen(false)}
         meeting={meeting.id}
         user={user}
         joined={joined}

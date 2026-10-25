@@ -11,6 +11,9 @@ export function RoomTools({
   canManage = false,
   chatEnabled = true,
   onReactions,
+  open = true,
+  onClose,
+  onWaitingChange,
 }: {
   meeting: string;
   user: { id: string; name: string };
@@ -19,6 +22,9 @@ export function RoomTools({
   canManage?: boolean;
   chatEnabled?: boolean;
   onReactions?: (events: { id: string; name: string; emoji: string }[]) => void;
+  open?: boolean;
+  onClose?: () => void;
+  onWaitingChange?: (count: number) => void;
 }) {
   const [tab, setTab] = useState("people"),
     [people, setPeople] = useState<any[]>([]),
@@ -80,8 +86,31 @@ export function RoomTools({
     };
   }, [joined, meeting, demo, canManage, user.id, user.name]);
   return (
-    <section className="section room-tools">
-      {canManage && <RoomModeration meeting={meeting} demo={demo} />}
+    <section
+      className="section room-tools"
+      id="room-tools-panel"
+      hidden={!open}
+      aria-label="Công cụ lớp học"
+    >
+      {onClose && (
+        <div className="room-panel-heading">
+          <strong>Người tham gia & trò chuyện</strong>
+          <button
+            className="secondary"
+            aria-label="Đóng công cụ"
+            onClick={onClose}
+          >
+            ×
+          </button>
+        </div>
+      )}
+      {canManage && (
+        <RoomModeration
+          meeting={meeting}
+          demo={demo}
+          onWaitingChange={onWaitingChange}
+        />
+      )}
       <div className="room-tool-tabs">
         <button
           className={tab === "polls" ? "selected" : "secondary"}

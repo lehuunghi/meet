@@ -106,13 +106,11 @@ test("listen-only classroom keeps the mobile toolbar clear of page content", asy
   await expect(
     page.getByText("Camera chưa được mở", { exact: true }),
   ).toBeVisible();
-  await page
-    .getByRole("button", { name: "Kiểm tra camera / mic", exact: true })
-    .click();
+  await page.getByRole("button", { name: "Bật camera", exact: true }).click();
   await expect(page.getByRole("alert")).toContainText("đang bị chặn");
   await page
     .getByRole("button", {
-      name: "Vào lớp không dùng camera/micro",
+      name: "Vào lớp học",
       exact: true,
     })
     .click();

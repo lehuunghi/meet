@@ -637,3 +637,202 @@
     padding: 12px;
   }
 }
+
+/* Call stage stays primary; tools open as a dismissible side panel. */
+.room:not(.room-tools-open) {
+  grid-template-columns: minmax(0, 1fr);
+}
+.room .room-tools[hidden] {
+  display: none !important;
+}
+.room .room-panel-heading {
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.room .room-panel-heading button {
+  font-size: 24px;
+  width: 44px;
+  min-height: 44px;
+  padding: 0;
+}
+.room .room-tools {
+  max-height: calc(100dvh - var(--toolbar-height, 180px) - 110px);
+  overflow-y: auto;
+}
+.room .room-toolbar .call-control {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.room .room-toolbar .call-control svg {
+  flex-shrink: 0;
+}
+.room .room-toolbar .room-leave {
+  background: #ea4335;
+  color: #fff;
+}
+.room .room-toolbar button[aria-expanded="true"] {
+  background: #c2e7ff;
+  color: #001d35;
+}
+.room .room-toolbar button:focus-visible,
+.room .room-panel-heading button:focus-visible {
+  outline: 3px solid #8ab4f8;
+  outline-offset: 3px;
+}
+@media (max-width: 900px) {
+  .room.room-tools-open > .room-tools {
+    position: fixed;
+    z-index: 19;
+    top: 14px;
+    left: 8px;
+    right: 8px;
+    bottom: calc(var(--toolbar-height, 180px) + 12px);
+    margin: 0;
+    max-height: none;
+    box-shadow: 0 8px 32px #0008;
+    border-radius: 16px;
+  }
+}
+@media (max-width: 700px) {
+  .room .room-toolbar .call-control {
+    width: 46px;
+    min-width: 46px;
+    height: 46px;
+    padding: 0;
+    border-radius: 50%;
+  }
+  .room .call-control .control-label {
+    display: none;
+  }
+  .room .room-toolbar > span {
+    font-size: 10px;
+  }
+  .room .room-toolbar .room-leave {
+    width: 60px;
+    border-radius: 24px;
+  }
+}
+.room .room-toolbar .room-waiting-notice {
+  color: #c2e7ff;
+  font-weight: 600;
+}
+.room > header {
+  height: auto;
+  min-height: 52px;
+}
+.room > header button {
+  background: #303134;
+  color: #e8eaed;
+  border: 1px solid #5f6368;
+  white-space: nowrap;
+}
+.room-end-menu {
+  position: relative;
+}
+.room-end-menu > summary {
+  display: grid;
+  place-items: center;
+  list-style: none;
+  width: 44px;
+  height: 46px;
+  border-radius: 50%;
+  font-size: 26px;
+  cursor: pointer;
+  background: #3c4043;
+}
+.room-end-menu > summary::-webkit-details-marker {
+  display: none;
+}
+.room-end-menu > div {
+  position: absolute;
+  bottom: 58px;
+  right: 0;
+  width: 220px;
+  padding: 10px;
+  border-radius: 12px;
+  background: #303134;
+  box-shadow: 0 4px 20px #0007;
+}
+.room .room-end-menu button {
+  width: 100%;
+  color: #f28b82;
+}
+@media (max-width: 700px) {
+  .room > header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    margin-bottom: 8px;
+    min-height: 48px;
+  }
+  .room > header .brand {
+    display: none;
+  }
+  .room > header h2 {
+    font-size: 15px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .room > header button {
+    padding: 8px 10px;
+    font-size: 11px;
+  }
+}
+.room > .room-preferences {
+  grid-column: 1 / -1;
+  grid-row: 3;
+  margin: 0;
+}
+.room > .room-tools {
+  grid-row: 4;
+}
+.room-preferences > summary {
+  cursor: pointer;
+  color: #bdc1c6;
+  font-size: 12px;
+  padding: 8px 0;
+  width: fit-content;
+}
+.room-preferences .room-view-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin: 8px 0;
+}
+@media (max-width: 700px) {
+  .room .room-toolbar > .pill,
+  .room .room-toolbar > .room-state {
+    display: none;
+  }
+}
+
+.prejoin-device-icons {
+  display: flex;
+  gap: 12px;
+  margin: 16px 0;
+}
+.room .prejoin-device-icons button {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  padding: 0;
+  border-radius: 50%;
+  border: 0;
+  background: #3c4043;
+  color: #fff;
+}
+.room .prejoin-device-icons button[aria-pressed="false"] {
+  background: #f28b82;
+  color: #202124;
+}
+.room .prejoin-device-icons button:focus-visible {
+  outline: 3px solid #8ab4f8;
+  outline-offset: 3px;
+}

@@ -15,6 +15,9 @@ test("demo shows host moderation and poll creation, and students can change a vo
     .getByRole("button", { name: /Vào phòng dạy|Chuẩn bị dạy/ })
     .first()
     .click();
+  await page
+    .getByRole("button", { name: "Người tham gia & trò chuyện", exact: true })
+    .click();
   await expect(
     page.getByRole("button", { name: "Cho vào", exact: true }),
   ).toBeVisible();
@@ -46,6 +49,9 @@ test("demo shows host moderation and poll creation, and students can change a vo
   await page
     .getByRole("button", { name: /^Vào lớp/ })
     .first()
+    .click();
+  await page
+    .getByRole("button", { name: "Người tham gia & trò chuyện", exact: true })
     .click();
   await expect(page.locator(".room-moderation")).toHaveCount(0);
   await page.getByRole("button", { name: "Khảo sát", exact: true }).click();

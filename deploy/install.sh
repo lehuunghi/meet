@@ -129,6 +129,7 @@ if [[ -n "${MEET_RESTORE_OBJECT:-}" ]]; then
   python3 deploy/backup.py restore --object "$MEET_RESTORE_OBJECT" --credentials "$MEET_RESTORE_CREDENTIALS" --key "$MEET_RESTORE_KEY"
   curl -fsS --retry 30 --retry-connrefused --retry-delay 2 "https://$MEET_DOMAIN/api/health" >/dev/null
 fi
+bash deploy/install-recorder.sh
 if [[ "${MEET_MANAGED:-}" == true ]]; then exit 0; fi
 printf '\nCÀI ĐẶT THÀNH CÔNG · HTTPS VÀ DATABASE ĐÃ PHẢN HỒI\n'
 printf 'Mở trang cấu hình riêng tư dưới đây (không gửi link cho người khác):\nhttps://%s/setup#token=%s\n' "$MEET_DOMAIN" "$(cat runtime-config/setup-token)"
