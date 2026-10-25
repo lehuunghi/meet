@@ -342,3 +342,230 @@
   flex-wrap: wrap;
   margin-top: 16px;
 }
+.room > .room-view-controls {
+  grid-column: 1/-1;
+  grid-row: 3;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.room > .video-grid {
+  grid-row: 4;
+}
+.room:has(> .room-view-controls) > .room-tools {
+  grid-row: 4;
+}
+.room-view-controls > label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #e8eaed;
+}
+.room-view-controls select {
+  width: auto;
+  min-width: 140px;
+  margin: 0;
+  background: #303134;
+  color: #e8eaed;
+  border-color: #5f6368;
+}
+.room .video-grid .is-pinned {
+  grid-column: 1/-1;
+  min-height: 360px;
+}
+.room .video-grid .is-speaking {
+  outline: 2px solid #8ab4f8;
+  outline-offset: -2px;
+}
+.room .video-grid .is-pinned video {
+  min-height: 320px;
+}
+.room .tile-actions {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  display: flex;
+  gap: 6px;
+  z-index: 2;
+}
+.room .tile-actions button {
+  background: #202124df;
+  color: #fff;
+  border: 1px solid #5f6368;
+  border-radius: 6px;
+  padding: 6px 10px;
+  min-height: 32px;
+  font-size: 11px;
+}
+.room .room-device-settings {
+  position: relative;
+  border: 1px solid #5f6368;
+  border-radius: 8px;
+  background: #292a2d;
+  color: #e8eaed;
+  padding: 10px 12px;
+}
+.room-device-settings summary,
+.room-moderation summary {
+  cursor: pointer;
+  font-size: 12px;
+  min-height: 26px;
+  line-height: 26px;
+}
+.device-options {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 12px 0;
+}
+.device-options label {
+  flex: 1;
+  min-width: 160px;
+  color: #e8eaed;
+}
+.room-moderation {
+  padding: 12px;
+  border: 1px solid #5f6368;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  background: #303134;
+}
+.room-moderation article {
+  padding: 12px 0;
+  border-top: 1px solid #5f6368;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.room-moderation .checkbox {
+  font-size: 12px;
+  color: #e8eaed;
+  min-height: 40px;
+}
+.room .room-moderation input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  min-height: 0;
+}
+.member-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.room-reaction-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  margin: 12px 0;
+}
+.room .room-reaction-buttons button {
+  background: #3c4043;
+  min-width: 42px;
+  min-height: 42px;
+  padding: 8px;
+  font-size: 20px;
+}
+.room-reaction-overlay {
+  position: fixed;
+  left: 20px;
+  bottom: calc(var(--toolbar-height, 180px) + 18px);
+  z-index: 15;
+  display: flex;
+  gap: 8px;
+  pointer-events: none;
+  flex-wrap: wrap;
+  max-width: 80vw;
+}
+.room-reaction-overlay > span {
+  background: #303134e8;
+  border: 1px solid #5f6368;
+  border-radius: 20px;
+  padding: 8px 12px;
+  font-size: 24px;
+  box-shadow: 0 2px 12px #0003;
+}
+.room-reaction-overlay small {
+  font-size: 11px;
+  color: #e8eaed;
+}
+.room .room-moderation p {
+  font-size: 11px;
+  line-height: 1.6;
+  margin: 10px 0 0;
+}
+@media (max-width: 700px) {
+  .room-view-controls {
+    margin: 12px 0;
+  }
+  .room-view-controls > .room-device-settings {
+    width: 100%;
+  }
+  .room .tile-actions button {
+    min-height: 44px;
+  }
+  .room .video-grid .is-pinned {
+    min-height: 240px;
+  }
+  .room .video-grid .is-pinned video {
+    min-height: 220px;
+  }
+  .member-actions button {
+    min-height: 44px;
+  }
+}
+
+.preview-tiles article.is-pinned {
+  grid-column: 1/-1;
+}
+.preview-tiles article > button {
+  margin-top: 12px;
+  font-size: 11px;
+}
+
+.room-polls form {
+  display: grid;
+  gap: 10px;
+  margin: 12px 0;
+}
+.room .room-polls textarea {
+  width: 100%;
+  background: #202124;
+  color: #e8eaed;
+  border-color: #5f6368;
+  padding: 10px;
+}
+.room-poll {
+  border-top: 1px solid #5f6368;
+  padding: 16px 0;
+}
+.room-poll h4 {
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0 0 8px;
+}
+.room-poll > div {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0;
+}
+.room .room-poll > div > button {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  text-align: left;
+  background: #303134;
+  color: #e8eaed;
+  border: 1px solid #5f6368;
+  opacity: 1;
+}
+.room .room-poll > div > button.selected {
+  border-color: #8ab4f8;
+  background: #243b57;
+}
+.room-poll progress {
+  width: 100%;
+  height: 5px;
+  accent-color: #8ab4f8;
+}

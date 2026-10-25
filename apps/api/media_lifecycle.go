@@ -18,6 +18,16 @@ func (a *app) mediaReset(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	u := who(r)
+	var in struct {
+		Session string `json:"session_id"`
+	}
+	if !decode(w, r, &in) {
+		return
+	}
+	if len(in.Session) > 100 {
+		problem(w, 400, "Session không hợp lệ")
+		return
+	}
 	lock := "sfu-lock:" + u.School + ":" + u.ID + ":" + r.PathValue("id")
 	nonce := uid()
 	got, e := a.cache.SetNX(r.Context(), lock, nonce, 30*time.Second).Result()
@@ -26,7 +36,7 @@ func (a *app) mediaReset(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer a.cache.Eval(r.Context(), `if redis.call('GET',KEYS[1])==ARGV[1] then return redis.call('DEL',KEYS[1]) end return 0`, []string{lock}, nonce)
-	rows, e := a.db.QueryContext(r.Context(), "SELECT id FROM media_sessions WHERE school_id=? AND meeting_id=? AND user_id=?", u.School, r.PathValue("id"), u.ID)
+	rows, e := a.db.QueryContext(r.Context(), "SELECT id FROM media_sessions WHERE school_id=? AND meeting_id=? AND user_id=? AND (?='' OR id=?)", u.School, r.PathValue("id"), u.ID, in.Session, in.Session)
 	if e != nil {
 		problem(w, 503, "Không đọc được phiên media")
 		return
@@ -43,7 +53,8 @@ func (a *app) mediaReset(w http.ResponseWriter, r *http.Request) {
 		problem(w, 503, "Không đọc được phiên media")
 		return
 	}
-	if _, e = a.db.ExecContext(r.Context(), "DELETE FROM publications WHERE school_id=? AND meeting_id=? AND user_id=?", u.School, r.PathValue("id"), u.ID); e != nil {
+	rows.Close()
+	if _, e = a.db.ExecContext(r.Context(), "DELETE FROM publications WHERE school_id=? AND meeting_id=? AND user_id=? AND (?='' OR session_id=?)", u.School, r.PathValue("id"), u.ID, in.Session, in.Session); e != nil {
 		problem(w, 503, "Không thu hồi được track")
 		return
 	}

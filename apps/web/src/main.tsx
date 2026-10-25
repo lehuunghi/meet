@@ -7,6 +7,8 @@ import { createRoot } from "react-dom/client";
 import { api, ApiError } from "./api";
 import { ClassroomMedia } from "./media";
 import { captureDevices } from "./devices";
+import type { RoomRules } from "./room-moderation";
+import { RoomDevices } from "./room-devices";
 import "./style.css";
 import "./meet-room.css";
 import "./attendance.css";
@@ -90,14 +92,21 @@ const sample: Meeting[] = [
 function Video({
   stream,
   muted = false,
+  sinkId = "",
 }: {
   stream: MediaStream;
   muted?: boolean;
+  sinkId?: string;
 }) {
   const ref = useRef<HTMLVideoElement>(null);
   useEffect(() => {
     if (ref.current) ref.current.srcObject = stream;
   }, [stream]);
+  useEffect(() => {
+    const video = ref.current as
+      (HTMLVideoElement & { setSinkId?: (id: string) => Promise<void> }) | null;
+    if (video?.setSinkId) void video.setSinkId(sinkId).catch(() => {});
+  }, [sinkId]);
   return (
     <video ref={ref} autoPlay playsInline muted={muted} controls={!muted} />
   );
@@ -194,6 +203,16 @@ function App() {
   }, []);
   useEffect(() => {
     if (user) void safe(refresh);
+  }, [user]);
+  const openedRoom = useRef("");
+  useEffect(() => {
+    const id = new URLSearchParams(location.search).get("room");
+    if (!demo && user && id && id !== openedRoom.current) {
+      openedRoom.current = id;
+      void api<Meeting>(`/meetings/${encodeURIComponent(id)}`)
+        .then(setRoom)
+        .catch((e) => setError(e.message));
+    }
   }, [user]);
   if (loading)
     return (
@@ -739,6 +758,64 @@ function Room({
     [recording, setRecording] = useState(false),
     [busy, setBusy] = useState(false);
   const [connection, setConnection] = useState("");
+  const [canManage, setCanManage] = useState(user.role !== "student");
+  const [rules, setRules] = useState<RoomRules>({
+    lobby: false,
+    chat_enabled: true,
+    present_enabled: true,
+    revision: 0,
+  });
+  const [admission, setAdmission] = useState("admitted");
+  const muteRequest = useRef(0);
+  const [localScreen, setLocalScreen] = useState<MediaStream | null>(null);
+  const [pinned, setPinned] = useState("");
+  const [layout, setLayout] = useState("auto");
+  const [deviceIDs, setDeviceIDs] = useState<{
+    audio?: string;
+    video?: string;
+  }>({});
+  const [audioOutput, setAudioOutput] = useState("");
+  const [reactions, setReactions] = useState<
+    { id: string; name: string; emoji: string; received: number }[]
+  >([]);
+  const seenReactions = useRef(new Set<string>());
+  const [activeSpeaker, setActiveSpeaker] = useState("");
+  const lastSpeaker = useRef({ id: "", at: 0 });
+  useEffect(() => {
+    if (!joined) return;
+    let stopped = false,
+      pending = false;
+    const tick = async () => {
+      if (pending) return;
+      pending = true;
+      try {
+        const levels = await media.current?.audioLevels();
+        if (stopped || !levels) return;
+        const top = Object.entries(levels).sort((a, b) => b[1] - a[1])[0];
+        if (top && top[1] > 0.025) {
+          lastSpeaker.current = { id: top[0], at: Date.now() };
+          setActiveSpeaker(top[0]);
+        } else if (Date.now() - lastSpeaker.current.at > 3000)
+          setActiveSpeaker("");
+      } catch {
+      } finally {
+        pending = false;
+      }
+    };
+    const timer = setInterval(() => void tick(), 1000);
+    return () => {
+      stopped = true;
+      clearInterval(timer);
+    };
+  }, [joined]);
+  useEffect(() => {
+    const timer = setInterval(
+      () =>
+        setReactions((v) => v.filter((r) => Date.now() - r.received < 6000)),
+      1000,
+    );
+    return () => clearInterval(timer);
+  }, []);
   const [recordingStatus, setRecordingStatus] = useState("");
   const [recordingJob, setRecordingJob] = useState("");
   const [preMic, setPreMic] = useState(true),
@@ -761,8 +838,7 @@ function Room({
   const media = useRef<ClassroomMedia | null>(null),
     rec = useRef<MediaRecorder | null>(null),
     display = useRef<MediaStream | null>(null),
-    joinedRef = useRef(false),
-    canManage = user.role !== "student";
+    joinedRef = useRef(false);
   const run = async (fn: () => Promise<void>) => {
     onError("");
     setBusy(true);
@@ -778,17 +854,58 @@ function Room({
     let active = true;
     const poll = async () => {
       try {
-        const current = await api<{ status: string }>(
-          `/meetings/${meeting.id}`,
-        );
+        const current = await api<{
+          status: string;
+          can_manage?: boolean;
+          rules?: RoomRules;
+          admission?: string;
+          mute_request?: number;
+        }>(`/meetings/${meeting.id}`);
         if (active && current) {
           setState(current.status);
+          if (typeof current.can_manage === "boolean")
+            setCanManage(current.can_manage);
+          if (current.rules) setRules(current.rules);
+          if (current.admission) setAdmission(current.admission);
+          if (
+            current.mute_request &&
+            current.mute_request > muteRequest.current
+          ) {
+            muteRequest.current = current.mute_request;
+            setPreMic(false);
+            if (joinedRef.current)
+              void media.current
+                ?.setEnabled("audio", false)
+                .then(() => setConnection("Giáo viên yêu cầu tắt mic"))
+                .catch((e) => onError(e.message));
+          }
+          if (
+            current.rules &&
+            !current.rules.present_enabled &&
+            !current.can_manage
+          ) {
+            void media.current?.stopShare().catch((e) => onError(e.message));
+            setLocalScreen(null);
+          }
+          if (
+            current.admission === "removed" ||
+            current.admission === "denied"
+          ) {
+            media.current?.close();
+            joinedRef.current = false;
+            setJoined(false);
+            setLocal(null);
+            setLocalScreen(null);
+            setRemote({});
+            setConnection("Giáo viên chưa cho phép vào buổi này");
+          }
           if (current.status === "ended") {
             media.current?.close();
             joinedRef.current = false;
             setJoined(false);
             setLocal(null);
             setRemote({});
+            setLocalScreen(null);
           }
         } else if (active && !current) {
           media.current?.close();
@@ -801,7 +918,8 @@ function Room({
         if (active) onError((e as Error).message);
       }
     };
-    const timer = setInterval(() => void poll(), 10000);
+    void poll();
+    const timer = setInterval(() => void poll(), 5000);
     return () => {
       active = false;
       clearInterval(timer);
@@ -898,13 +1016,27 @@ function Room({
     let stream: MediaStream | undefined;
     let entered = false;
     try {
+      const result = await api<{ admission?: string }>(
+        `/meetings/${meeting.id}/admission`,
+        {},
+      );
+      setAdmission(result.admission || "admitted");
+      if (result.admission && result.admission !== "admitted") {
+        setConnection(
+          result.admission === "waiting"
+            ? "Đang chờ giáo viên duyệt vào lớp"
+            : "Chưa được phép vào lớp",
+        );
+        return;
+      }
       if (listenOnly) {
         previewRef.current?.getTracks().forEach((t) => t.stop());
         previewRef.current = null;
       }
       stream = listenOnly
         ? new MediaStream()
-        : previewRef.current || (await captureDevices(preMic, preCamera));
+        : previewRef.current ||
+          (await captureDevices(preMic, preCamera, deviceIDs));
       await api(`/meetings/${meeting.id}/media/reset`, {});
       await api(`/meetings/${meeting.id}/presence`, { kind: "join" });
       entered = true;
@@ -925,7 +1057,10 @@ function Room({
             delete next[key];
             return next;
           }),
-        setConnection,
+        (text) => {
+          setConnection(text);
+          if (text === "Đang kết nối lại…") setLocalScreen(null);
+        },
       );
       if (stream.getTracks().length) await media.current.publish(stream);
       setPreview(null);
@@ -1071,6 +1206,16 @@ function Room({
     recorder.start(1000);
     setRecording(true);
   }
+  const focusKey =
+    pinned ||
+    (layout === "grid"
+      ? ""
+      : localScreen
+        ? "self:screen"
+        : Object.keys(remote).find((k) => k.endsWith(":screen")) ||
+          (layout === "spotlight"
+            ? activeSpeaker || Object.keys(remote)[0] || "self"
+            : ""));
   return (
     <main className="room">
       <header>
@@ -1078,6 +1223,20 @@ function Room({
           m<span>●</span> meet
         </span>
         <h2>{meeting.title}</h2>
+        <button
+          className="secondary"
+          onClick={() => {
+            const link = `${location.origin}/?room=${meeting.id}`;
+            if (navigator.clipboard)
+              void navigator.clipboard
+                .writeText(link)
+                .then(() => setConnection("Đã sao chép liên kết lớp học"))
+                .catch(() => onError("Không sao chép được liên kết"));
+            else prompt("Liên kết lớp học", link);
+          }}
+        >
+          Sao chép liên kết
+        </button>
         <button
           className="secondary"
           disabled={busy || recording}
@@ -1143,8 +1302,13 @@ function Room({
           </button>
         )}
         {state === "live" && !joined && (
-          <button disabled={busy} onClick={() => void run(join)}>
-            Tham gia buổi học
+          <button
+            disabled={
+              busy || ["waiting", "removed", "denied"].includes(admission)
+            }
+            onClick={() => void run(join)}
+          >
+            {rules.lobby && !canManage ? "Xin vào lớp" : "Tham gia buổi học"}
           </button>
         )}
         {joined && (
@@ -1179,14 +1343,20 @@ function Room({
               {preCamera ? "Tắt camera" : "Bật camera"}
             </button>
             <button
-              disabled={busy}
+              disabled={busy || (!rules.present_enabled && !canManage)}
               onClick={() =>
                 void run(async () => {
-                  display.current = await media.current!.share();
+                  const stream = await media.current!.share();
+                  setLocalScreen(stream || null);
+                  stream
+                    ?.getVideoTracks()[0]
+                    ?.addEventListener("ended", () => setLocalScreen(null), {
+                      once: true,
+                    });
                 })
               }
             >
-              Chia sẻ màn hình
+              {localScreen ? "Dừng trình bày" : "Chia sẻ màn hình"}
             </button>
             {canManage && !!meeting.recording_allowed && (
               <button disabled={busy} onClick={() => void run(record)}>
@@ -1212,11 +1382,76 @@ function Room({
           </button>
         )}
       </div>
-      <div className="video-grid">
+      <div className="room-view-controls">
+        <label>
+          Bố cục
+          <select
+            value={layout}
+            onChange={(e) => {
+              setLayout(e.target.value);
+              setPinned("");
+            }}
+          >
+            <option value="auto">Tự động</option>
+            <option value="grid">Lưới</option>
+            <option value="spotlight">Người trình bày</option>
+          </select>
+        </label>
+        {pinned && (
+          <button className="secondary" onClick={() => setPinned("")}>
+            Bỏ ghim
+          </button>
+        )}
+        <RoomDevices
+          refreshKey={preview?.id || local?.id}
+          onInput={async (kind, id) => {
+            const next = { ...deviceIDs, [kind]: id };
+            setDeviceIDs(next);
+            if (joined) {
+              const stream = await media.current?.changeDevice(kind, id);
+              if (stream) setLocal(new MediaStream(stream.getTracks()));
+            } else {
+              previewRef.current?.getTracks().forEach((t) => t.stop());
+              previewRef.current = null;
+              setPreview(null);
+              const stream = await captureDevices(preMic, preCamera, next);
+              previewRef.current = stream;
+              setPreview(stream);
+            }
+          }}
+          onOutput={async (id) => {
+            await Promise.all(
+              Array.from(document.querySelectorAll("video")).map((v) =>
+                (
+                  v as HTMLVideoElement & {
+                    setSinkId?: (id: string) => Promise<void>;
+                  }
+                ).setSinkId?.(id),
+              ),
+            );
+            setAudioOutput(id);
+          }}
+        />
+      </div>
+      <div className="room-reaction-overlay" aria-live="polite">
+        {reactions.map((r) => (
+          <span key={r.id}>
+            {r.emoji} <small>{r.name}</small>
+          </span>
+        ))}
+      </div>
+      <div className={"video-grid layout-" + layout}>
         {!joined && state !== "ended" && (
           <section className="section prejoin">
             <div>
               <h2>Chuẩn bị trước khi vào lớp</h2>
+              {["waiting", "removed", "denied"].includes(admission) && (
+                <p role="status">
+                  {admission === "waiting"
+                    ? "Yêu cầu đã gửi. Chờ giáo viên duyệt, sau đó bấm vào lớp."
+                    : "Bạn chưa được phép tham gia buổi này. Liên hệ giáo viên để được cho vào lại."}
+                </p>
+              )}
               <p>
                 Chọn mic/camera hoặc tắt cả hai để vào chỉ nghe. Camera chỉ chia
                 sẻ khi tham gia.
@@ -1267,7 +1502,11 @@ function Room({
                 onClick={() =>
                   void run(async () => {
                     previewRef.current?.getTracks().forEach((t) => t.stop());
-                    const s = await captureDevices(preMic, preCamera);
+                    const s = await captureDevices(
+                      preMic,
+                      preCamera,
+                      deviceIDs,
+                    );
                     s.getAudioTracks().forEach((t) => (t.enabled = preMic));
                     s.getVideoTracks().forEach((t) => (t.enabled = preCamera));
                     previewRef.current = s;
@@ -1280,14 +1519,20 @@ function Room({
               {state === "live" && (
                 <div className="prejoin-actions">
                   <button
-                    disabled={busy}
+                    disabled={
+                      busy ||
+                      ["waiting", "removed", "denied"].includes(admission)
+                    }
                     onClick={() => void run(() => join())}
                   >
                     Vào lớp với thiết bị đã chọn
                   </button>
                   <button
                     className="secondary"
-                    disabled={busy}
+                    disabled={
+                      busy ||
+                      ["waiting", "removed", "denied"].includes(admission)
+                    }
                     onClick={() => void run(() => join(true))}
                   >
                     Vào lớp không dùng camera/micro
@@ -1301,25 +1546,107 @@ function Room({
           </section>
         )}
         {local && (
-          <article>
+          <article
+            className={
+              (focusKey === "self" ? "is-pinned " : "") +
+              (activeSpeaker === "self" ? "is-speaking" : "")
+            }
+          >
             <Video stream={local} muted />
             {!preCamera && <span className="video-avatar">{user.name[0]}</span>}
-            <strong>Bạn</strong>
+            <strong>Bạn{activeSpeaker === "self" ? " · Đang nói" : ""}</strong>
+            <div className="tile-actions">
+              <button
+                onClick={() => setPinned(pinned === "self" ? "" : "self")}
+              >
+                {pinned === "self" ? "Bỏ ghim" : "Ghim"}
+              </button>
+              <button
+                onClick={(e) =>
+                  void e.currentTarget
+                    .closest("article")
+                    ?.requestFullscreen?.()
+                    .catch((e) => onError(e.message))
+                }
+              >
+                Toàn màn hình
+              </button>
+            </div>
+          </article>
+        )}
+        {localScreen && (
+          <article className={focusKey === "self:screen" ? "is-pinned" : ""}>
+            <Video stream={localScreen} muted />
+            <strong>Màn hình của bạn</strong>
+            <div className="tile-actions">
+              <button
+                onClick={() =>
+                  setPinned(pinned === "self:screen" ? "" : "self:screen")
+                }
+              >
+                Ghim màn hình
+              </button>
+            </div>
           </article>
         )}
         {Object.entries(remote).map(([k, v]) => (
-          <article key={k}>
-            <Video stream={v.stream} />
+          <article
+            key={k}
+            className={
+              (focusKey === k ? "is-pinned " : "") +
+              (activeSpeaker === k ? "is-speaking" : "")
+            }
+          >
+            <Video stream={v.stream} sinkId={audioOutput} />
             {!v.stream
               .getVideoTracks()
               .some((t) => t.enabled && t.readyState !== "ended") && (
               <span className="video-avatar">{v.name[0]}</span>
             )}
-            <strong>{v.name}</strong>
+            <strong>
+              {v.name}
+              {activeSpeaker === k ? " · Đang nói" : ""}
+            </strong>
+            <div className="tile-actions">
+              <button onClick={() => setPinned(pinned === k ? "" : k)}>
+                {pinned === k ? "Bỏ ghim" : "Ghim"}
+              </button>
+              <button
+                onClick={(e) =>
+                  void e.currentTarget
+                    .closest("article")
+                    ?.requestFullscreen?.()
+                    .catch((e) => onError(e.message))
+                }
+              >
+                Toàn màn hình
+              </button>
+            </div>
           </article>
         ))}
       </div>
-      <RoomTools meeting={meeting.id} user={user} joined={joined} />
+      <RoomTools
+        meeting={meeting.id}
+        user={user}
+        joined={joined}
+        canManage={canManage}
+        chatEnabled={rules.chat_enabled}
+        onReactions={(events) => {
+          const fresh = events.filter((e) => !seenReactions.current.has(e.id));
+          fresh.forEach((e) => seenReactions.current.add(e.id));
+          if (seenReactions.current.size > 200)
+            seenReactions.current = new Set(
+              Array.from(seenReactions.current).slice(-100),
+            );
+          if (fresh.length)
+            setReactions((old) =>
+              [
+                ...old,
+                ...fresh.map((e) => ({ ...e, received: Date.now() })),
+              ].slice(-6),
+            );
+        }}
+      />
       <section className="section room-history">
         <h2>Điểm danh theo thời gian tham gia</h2>
         <button

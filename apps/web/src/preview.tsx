@@ -132,6 +132,7 @@ export function PreviewRoom({
     [recording, setRecording] = useState(false),
     [tab, setTab] = useState("people"),
     [message, setMessage] = useState("");
+  const [pinned, setPinned] = useState("");
   return (
     <main className="room">
       <header>
@@ -162,12 +163,21 @@ export function PreviewRoom({
           <div className="preview-tiles">
             {["Nguyễn Minh Anh", "Nguyễn Hoàng An", "Lê Thanh Bình"].map(
               (name, i) => (
-                <article key={name}>
+                <article
+                  key={name}
+                  className={pinned === name ? "is-pinned" : ""}
+                >
                   <span>{name.split(" ").at(-1)?.[0]}</span>
                   <strong>{name}</strong>
                   <small>
                     {i === 0 ? "Giáo viên" : "Học sinh"} · Hình đại diện mẫu
                   </small>
+                  <button
+                    className="secondary"
+                    onClick={() => setPinned(pinned === name ? "" : name)}
+                  >
+                    {pinned === name ? "Bỏ ghim" : "Ghim"}
+                  </button>
                 </article>
               ),
             )}
@@ -269,6 +279,11 @@ export function PreviewRoom({
           name: previewRoles.find((v) => v.id === role)?.name || "Bạn",
         }}
         joined
+        canManage={role !== "student"}
+        onReactions={(events) => {
+          if (events.length)
+            setMessage("Phản ứng minh họa: " + events[0].emoji);
+        }}
       />
     </main>
   );

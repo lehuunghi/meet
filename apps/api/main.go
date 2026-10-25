@@ -185,11 +185,12 @@ func (a *app) routes() http.Handler {
 	m.HandleFunc("GET /api/audit", a.auth(a.auditReport))
 	m.HandleFunc("GET /api/meetings", a.auth(a.meetings))
 	m.HandleFunc("GET /api/meetings/{id}", a.auth(func(w http.ResponseWriter, r *http.Request) {
-		m, ok := a.access(w, r, false)
-		if ok {
-			send(w, 200, map[string]string{"status": m.Status})
-		}
+		a.roomState(w, r)
 	}))
+	m.HandleFunc("POST /api/meetings/{id}/admission", a.auth(a.requestAdmission))
+	m.HandleFunc("GET /api/meetings/{id}/members", a.auth(a.roomMembers))
+	m.HandleFunc("POST /api/meetings/{id}/controls", a.auth(a.roomControl))
+	m.HandleFunc("POST /api/meetings/{id}/moderate", a.auth(a.moderateMember))
 	m.HandleFunc("GET /api/attendance/report", a.auth(a.attendanceReport))
 	m.HandleFunc("GET /api/recordings", a.auth(a.recordingLibrary))
 	m.HandleFunc("GET /api/attendance/policy", a.auth(a.attendancePolicy))
@@ -208,6 +209,11 @@ func (a *app) routes() http.Handler {
 	m.HandleFunc("GET /api/meetings/{id}/messages", a.auth(a.roomMessages))
 	m.HandleFunc("POST /api/meetings/{id}/messages", a.auth(a.sendMessage))
 	m.HandleFunc("POST /api/meetings/{id}/hand", a.auth(a.raiseHand))
+	m.HandleFunc("GET /api/meetings/{id}/reactions", a.auth(a.roomReactions))
+	m.HandleFunc("POST /api/meetings/{id}/reactions", a.auth(a.roomReactions))
+	m.HandleFunc("GET /api/meetings/{id}/polls", a.auth(a.roomPolls))
+	m.HandleFunc("POST /api/meetings/{id}/polls", a.auth(a.roomPolls))
+	m.HandleFunc("POST /api/meetings/{id}/polls/{poll}", a.auth(a.roomVote))
 	m.HandleFunc("POST /api/meetings/{id}/ice", a.auth(a.ice))
 	m.HandleFunc("POST /api/meetings/{id}/recordings", a.auth(a.recordingCreate))
 	m.HandleFunc("POST /api/meetings/{id}/recordings/multipart", a.auth(a.recordingMultipartStart))
@@ -269,7 +275,11 @@ func migrate(db *sql.DB) error {
 	if e = migrateV3(c); e != nil {
 		return e
 	}
-	return migrateV4(c)
+	if e = migrateV4(c); e != nil {
+		return e
+	}
+	_, e = c.ExecContext(context.Background(), "INSERT IGNORE INTO schema_migrations VALUES(5)")
+	return e
 }
 func main() {
 	db, e := sql.Open("mysql", secret("MYSQL_DSN"))

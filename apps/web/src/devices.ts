@@ -11,6 +11,7 @@ export function deviceError(error: unknown): string {
 export async function captureDevices(
   mic: boolean,
   camera: boolean,
+  devices: { audio?: string; video?: string } = {},
 ): Promise<MediaStream> {
   if (!mic && !camera) return new MediaStream();
   if (!navigator.mediaDevices?.getUserMedia)
@@ -19,8 +20,18 @@ export async function captureDevices(
     );
   try {
     return await navigator.mediaDevices.getUserMedia({
-      audio: mic,
-      video: camera ? { width: 640, height: 360 } : false,
+      audio: mic
+        ? devices.audio
+          ? { deviceId: { exact: devices.audio } }
+          : true
+        : false,
+      video: camera
+        ? {
+            width: 640,
+            height: 360,
+            ...(devices.video ? { deviceId: { exact: devices.video } } : {}),
+          }
+        : false,
     });
   } catch (e) {
     // A missing camera must not prevent a working microphone from joining.

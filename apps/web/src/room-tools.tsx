@@ -1,16 +1,24 @@
 import { useEffect, useRef, useState } from "react";
 import { api } from "./api";
 import "./room-tools.css";
+import { RoomModeration } from "./room-moderation";
+import { RoomPolls } from "./room-polls";
 export function RoomTools({
   meeting,
   user,
   joined,
   demo = false,
+  canManage = false,
+  chatEnabled = true,
+  onReactions,
 }: {
   meeting: string;
   user: { id: string; name: string };
   joined: boolean;
   demo?: boolean;
+  canManage?: boolean;
+  chatEnabled?: boolean;
+  onReactions?: (events: { id: string; name: string; emoji: string }[]) => void;
 }) {
   const [tab, setTab] = useState("people"),
     [people, setPeople] = useState<any[]>([]),
@@ -40,12 +48,14 @@ export function RoomTools({
       if (busy) return;
       busy = true;
       try {
-        const [p, m] = await Promise.all([
+        const [p, m, reactions] = await Promise.all([
           api<any[]>(`/meetings/${meeting}/participants`),
           api<any[]>(`/meetings/${meeting}/messages?after=${cursor.current}`),
+          api<any[]>(`/meetings/${meeting}/reactions`),
         ]);
         if (!active) return;
         setPeople(p);
+        onReactions?.(reactions);
         setRaised(!!p.find((v) => v.id === user.id)?.hand_raised);
         if (m.length) {
           cursor.current = Number(m[m.length - 1].id);
@@ -66,7 +76,14 @@ export function RoomTools({
   }, [joined, meeting, demo]);
   return (
     <section className="section room-tools">
+      {canManage && <RoomModeration meeting={meeting} demo={demo} />}
       <div className="room-tool-tabs">
+        <button
+          className={tab === "polls" ? "selected" : "secondary"}
+          onClick={() => setTab("polls")}
+        >
+          Khảo sát
+        </button>
         <button
           className={tab === "people" ? "selected" : "secondary"}
           onClick={() => setTab("people")}
@@ -112,7 +129,40 @@ export function RoomTools({
         </p>
       )}
       {!joined && <p>Tham gia buổi học để trò chuyện và giơ tay.</p>}
-      {tab === "people" ? (
+      <div className="room-reaction-buttons" aria-label="Phản ứng">
+        {["👍", "👏", "❤️", "😂", "🎉"].map((emoji) => (
+          <button
+            aria-label={"Phản ứng " + emoji}
+            key={emoji}
+            disabled={!joined || sending}
+            onClick={() => {
+              setSending(true);
+              setError("");
+              void (
+                demo
+                  ? Promise.resolve(
+                      onReactions?.([
+                        { id: crypto.randomUUID(), name: user.name, emoji },
+                      ]),
+                    )
+                  : api(`/meetings/${meeting}/reactions`, { emoji })
+              )
+                .catch((e) => setError(e.message))
+                .finally(() => setSending(false));
+            }}
+          >
+            {emoji}
+          </button>
+        ))}
+      </div>
+      {tab === "polls" ? (
+        <RoomPolls
+          meeting={meeting}
+          canManage={canManage}
+          joined={joined}
+          demo={demo}
+        />
+      ) : tab === "people" ? (
         <div className="room-people">
           {people.map((p) => (
             <div key={p.id}>
@@ -187,12 +237,22 @@ export function RoomTools({
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 maxLength={2000}
-                disabled={!joined}
+                disabled={!joined || (!chatEnabled && !canManage)}
                 placeholder="Gửi đến người trong lớp…"
               />
             </label>
-            <button disabled={!joined || sending || !text.trim()}>Gửi</button>
+            <button
+              disabled={
+                !joined ||
+                sending ||
+                !text.trim() ||
+                (!chatEnabled && !canManage)
+              }
+            >
+              Gửi
+            </button>
           </form>
+          {!chatEnabled && !canManage && <p>Giáo viên đã tắt gửi tin nhắn.</p>}
         </>
       )}
     </section>

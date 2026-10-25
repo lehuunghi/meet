@@ -60,6 +60,13 @@ func (a *app) sfu(w http.ResponseWriter, r *http.Request) {
 		problem(w, 409, "Meeting is not live")
 		return
 	}
+	if !a.roomGate(w, r) {
+		return
+	}
+	if !a.liveMember(r) {
+		problem(w, 409, "Tham gia buổi học trước khi tạo media")
+		return
+	}
 	var in struct {
 		Op          string          `json:"op"`
 		Session     string          `json:"session_id"`
@@ -152,6 +159,17 @@ func (a *app) sfu(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			for _, t := range in.Tracks {
+				if t.Location == "local" && strings.HasPrefix(t.Name, "screen-") {
+					rules, _, _, err := a.roomView(r)
+					if err != nil {
+						problem(w, 503, "Không đọc được quyền trình bày")
+						return
+					}
+					if !rules.Present && !a.roomHost(r, m) {
+						problem(w, 403, "Giáo viên đã tắt quyền trình bày")
+						return
+					}
+				}
 				if len(t.Name) == 0 || len(t.Name) > 100 {
 					problem(w, 400, "Invalid track")
 					return
@@ -208,6 +226,16 @@ func (a *app) sfu(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	if in.Op == "tracks" {
+		for _, t := range in.Tracks {
+			if t.Location == "local" && strings.HasPrefix(t.Name, "screen-") {
+				rules, _, _, err := a.roomView(r)
+				if err != nil || (!rules.Present && !a.roomHost(r, m)) {
+					a.cache.SetNX(r.Context(), "media-retired:"+in.Session, time.Now().Unix(), 0)
+					problem(w, 403, "Quyền trình bày đã thay đổi")
+					return
+				}
+			}
+		}
 		var state string
 		retired, err := a.cache.Exists(r.Context(), "media-retired:"+in.Session).Result()
 		if err != nil || retired > 0 || a.db.QueryRowContext(r.Context(), "SELECT status FROM meetings WHERE school_id=? AND id=?", u.School, id).Scan(&state) != nil || state != "live" {
@@ -233,6 +261,9 @@ func (a *app) sfu(w http.ResponseWriter, r *http.Request) {
 	send(w, 200, out)
 }
 func (a *app) tracks(w http.ResponseWriter, r *http.Request) {
+	if !a.roomGate(w, r) {
+		return
+	}
 	if _, ok := a.access(w, r, false); !ok {
 		return
 	}
@@ -247,6 +278,9 @@ type turnKey struct {
 }
 
 func (a *app) ice(w http.ResponseWriter, r *http.Request) {
+	if !a.roomGate(w, r) {
+		return
+	}
 	m, ok := a.access(w, r, false)
 	if !ok {
 		return

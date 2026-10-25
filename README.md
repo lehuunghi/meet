@@ -1,3 +1,5 @@
+> v0.5.0: [Phòng học mở rộng: phòng chờ, điều hành, camera + màn hình, khảo sát và phản ứng](docs/PHONG-HOC-v0.5.vi.md).
+
 > v0.4.0: [Kết nối lại, thu hồi media, ghi hình multipart và nghiệm thu](docs/ON-DINH-VA-NGHIEM-THU.vi.md). [Giao diện chung](docs/GIAO-DIEN.vi.md).
 
 > v0.3.3: [Điểm danh và bản ghi theo lớp → môn → buổi](docs/DIEM-DANH-VA-BAN-GHI.vi.md).

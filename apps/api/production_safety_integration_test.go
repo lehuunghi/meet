@@ -232,6 +232,7 @@ func TestProductionSafetyIntegration(t *testing.T) {
 		t.Fatal(state)
 	}
 	adminCookie := login("demo", "admin")
+	testRoomModeration(t, a, request, teacher, student, other)
 	must(request("POST", "/api/accounts/demo-student/recovery", `{}`, teacher), 403)
 	must(request("POST", "/api/accounts/other-student/recovery", `{}`, adminCookie), 404)
 	must(request("POST", "/api/accounts/demo-admin/recovery", `{}`, adminCookie), 403)

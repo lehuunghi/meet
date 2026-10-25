@@ -1,3 +1,5 @@
+> v0.5.0 / schema 5: GET `/api/meetings/{id}` returns details, rules, admission and can_manage. POST `/admission`, GET `/members`, POST `/controls` (complete rules + revision), POST `/moderate` (action + user_id; bulk actions omit user_id), GET/POST `/reactions`, GET/POST `/polls`, POST `/polls/{poll}` (vote/choice or close). All paths are scoped under `/api/meetings/{id}`. Scoped media reset optionally accepts session_id. See [room behavior and limits](PHONG-HOC-v0.5.vi.md).
+
 > v0.4.0 additions: `POST /api/meetings/{id}/media/reset`; multipart `POST /api/meetings/{id}/recordings/multipart`, `POST /api/meetings/{id}/recordings/{recording}/parts/{part}` with `{size}`, `/finish` with `{parts}`, and `/abort`; `GET /api/meetings/{id}` for authorized status; `POST /api/accounts/{user}/recovery` and public same-origin `POST /api/reset-password`; audit cursor pagination (`before`, exact `action`). See [current behavior and acceptance](ON-DINH-VA-NGHIEM-THU.vi.md). Legacy individual attendance adjustment returns 410.
 
 # API v1 (current routes)

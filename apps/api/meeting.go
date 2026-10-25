@@ -12,17 +12,22 @@ type meetingInfo struct {
 	Status    string
 	Recording bool
 	Teacher   string
+	Title     string
+	CourseID  string
+	Course    string
+	Class     string
+	Starts    time.Time
 }
 
 func (a *app) access(w http.ResponseWriter, r *http.Request, manage bool) (meetingInfo, bool) {
 	u := who(r)
 	var m meetingInfo
-	e := a.db.QueryRowContext(r.Context(), `SELECT m.status,m.recording_allowed,COALESCE(c.teacher_id,'') FROM meetings m JOIN courses c ON c.id=m.course_id AND c.school_id=m.school_id WHERE m.id=? AND `+courseAccess, r.PathValue("id"), u.School, u.Role, u.Role, u.ID, u.Role, u.ID).Scan(&m.Status, &m.Recording, &m.Teacher)
+	e := a.db.QueryRowContext(r.Context(), `SELECT m.status,m.recording_allowed,COALESCE(c.teacher_id,''),m.title,c.id,c.name,cl.name,m.starts_at FROM meetings m JOIN courses c ON c.id=m.course_id AND c.school_id=m.school_id JOIN classes cl ON cl.id=c.class_id AND cl.school_id=c.school_id WHERE m.id=? AND `+courseAccess, r.PathValue("id"), u.School, u.Role, u.Role, u.ID, u.Role, u.ID).Scan(&m.Status, &m.Recording, &m.Teacher, &m.Title, &m.CourseID, &m.Course, &m.Class, &m.Starts)
 	if e != nil {
 		problem(w, 404, "Meeting not found")
 		return m, false
 	}
-	if manage && u.Role != "admin" && m.Teacher != u.ID {
+	if manage && !a.roomHost(r, m) {
 		problem(w, 403, "Teacher required")
 		return m, false
 	}
@@ -95,8 +100,11 @@ func (a *app) meetingState(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if u.Role != "admin" && (!assigned.Valid || assigned.String != u.ID) {
-		problem(w, 403, "Phân công giáo viên đã thay đổi")
-		return
+		var n int
+		if tx.QueryRowContext(r.Context(), `SELECT COUNT(*) FROM course_assistants ca JOIN meetings m ON m.school_id=ca.school_id AND m.course_id=ca.course_id WHERE m.school_id=? AND m.id=? AND ca.user_id=?`, u.School, r.PathValue("id"), u.ID).Scan(&n) != nil || n != 1 {
+			problem(w, 403, "Phân công giáo viên đã thay đổi")
+			return
+		}
 	}
 	if in.Status == "live" && !assigned.Valid {
 		problem(w, 409, "Phân công giáo viên trước khi bắt đầu buổi học")
@@ -148,6 +156,9 @@ func (a *app) presence(w http.ResponseWriter, r *http.Request) {
 		problem(w, 409, "Meeting is not live")
 		return
 	}
+	if !a.roomGate(w, r) {
+		return
+	}
 	var in struct {
 		Kind string `json:"kind"`
 	}
@@ -170,6 +181,11 @@ func (a *app) presence(w http.ResponseWriter, r *http.Request) {
 	var state string
 	if e = tx.QueryRowContext(r.Context(), "SELECT status FROM meetings WHERE school_id=? AND id=? FOR UPDATE", u.School, id).Scan(&state); e != nil || state != "live" {
 		problem(w, 409, "Meeting is not live")
+		return
+	}
+	var permitted int
+	if tx.QueryRowContext(r.Context(), `SELECT COUNT(*) FROM meetings m LEFT JOIN room_settings s ON s.school_id=m.school_id AND s.meeting_id=m.id LEFT JOIN room_members rm ON rm.school_id=m.school_id AND rm.meeting_id=m.id AND rm.user_id=? WHERE m.school_id=? AND m.id=? AND COALESCE(rm.state,'') NOT IN ('denied','removed') AND (? OR COALESCE(s.lobby,FALSE)=FALSE OR rm.state='admitted')`, u.ID, u.School, id, a.roomHost(r, m)).Scan(&permitted) != nil || permitted != 1 {
+		problem(w, 403, "Chưa được phép vào phòng học")
 		return
 	}
 	var now time.Time

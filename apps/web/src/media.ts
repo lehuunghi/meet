@@ -5,6 +5,8 @@ export type Publication = {
   user_id: string;
   name: string;
 };
+export const publicationKey = (p: Publication) =>
+  p.user_id + (p.track_name.startsWith("screen-") ? ":screen" : "");
 export async function gather(pc: RTCPeerConnection) {
   if (pc.iceGatheringState === "complete") return;
   await new Promise<void>((resolve, reject) => {
@@ -26,6 +28,7 @@ export async function gather(pc: RTCPeerConnection) {
 export class ClassroomMedia {
   private peers: RTCPeerConnection[] = [];
   private peerCreated = new Map<RTCPeerConnection, number>();
+  private sessionIDs = new Map<RTCPeerConnection, string>();
   private local: MediaStream | null = null;
   private known = new Set<string>();
   private knownOwners = new Map<string, string>();
@@ -33,7 +36,7 @@ export class ClassroomMedia {
   private receiver?: RTCPeerConnection;
   private receiverID?: string;
   private screen?: MediaStream;
-  private screenSender?: RTCRtpSender;
+  private screenPeer?: RTCPeerConnection;
   private remoteStreams = new Map<string, MediaStream>();
   private labels = new Map<string, { key: string; name: string }>();
   private queue: Promise<unknown> = Promise.resolve();
@@ -61,6 +64,7 @@ export class ClassroomMedia {
     this.peers.push(pc);
     this.peerCreated.set(pc, Date.now());
     const s = await api(`/meetings/${this.meeting}/sfu`, { op: "new" });
+    this.sessionIDs.set(pc, s.sessionId);
     if (this.closed) {
       pc.close();
       throw new Error("Đã rời lớp");
@@ -74,10 +78,10 @@ export class ClassroomMedia {
   publish(stream: MediaStream) {
     return this.serial(() => this.publishInternal(stream));
   }
-  private async publishInternal(stream: MediaStream) {
-    if (this.local && this.local !== stream) {
+  private async publishInternal(stream: MediaStream, presentation = false) {
+    if (!presentation && this.local && this.local !== stream) {
       stream.getTracks().forEach((t) => this.local!.addTrack(t));
-    } else this.local = stream;
+    } else if (!presentation) this.local = stream;
     if (!stream.getTracks().length) return;
     const ice = await api(`/meetings/${this.meeting}/ice`, {});
     const pc = new RTCPeerConnection({ iceServers: ice.iceServers });
@@ -95,7 +99,8 @@ export class ClassroomMedia {
       tracks: ts.map(({ t, tr }) => ({
         location: "local",
         mid: tr.mid,
-        trackName: t.kind + "-" + crypto.randomUUID(),
+        trackName:
+          (presentation ? "screen-" : "") + t.kind + "-" + crypto.randomUUID(),
       })),
     });
     if (result.errorCode || result.tracks?.some((t: any) => t.errorCode))
@@ -109,8 +114,11 @@ export class ClassroomMedia {
     const present = new Set(
       list.filter((p) => p.user_id !== self).map((p) => p.user_id),
     );
+    const visibleStreams = new Set(
+      list.filter((p) => p.user_id !== self).map(publicationKey),
+    );
     this.remoteStreams.forEach((stream, key) => {
-      if (!present.has(key)) {
+      if (!visibleStreams.has(key)) {
         stream.getTracks().forEach((t) => t.stop());
         this.remoteStreams.delete(key);
         this.onRemove(key);
@@ -170,11 +178,17 @@ export class ClassroomMedia {
       })),
     });
     if (result.errorCode) throw new Error("Không nhận được media");
+    if (!Array.isArray(result.tracks) || result.tracks.length !== batch.length)
+      throw new Error("SFU trả thiếu các luồng nhận");
     result.tracks?.forEach((t: any, i: number) => {
       if (!t.errorCode && batch[i]) {
         const p = batch[i],
           key = p.session_id + ":" + p.track_name;
-        this.labels.set(t.mid, { key: p.user_id, name: p.name });
+        this.labels.set(t.mid, {
+          key: publicationKey(p),
+          name:
+            p.name + (p.track_name.startsWith("screen-") ? " · Màn hình" : ""),
+        });
         this.known.add(key);
         this.knownOwners.set(key, p.user_id);
       }
@@ -183,14 +197,17 @@ export class ClassroomMedia {
       await pc.setRemoteDescription(result.sessionDescription);
       await pc.setLocalDescription(await pc.createAnswer());
       await gather(pc);
-      await this.call({
+      const accepted = await this.call({
         op: "renegotiate",
         session_id: this.receiverID,
         sessionDescription: pc.localDescription,
       });
+      if (accepted.errorCode)
+        throw new Error("SFU chưa chấp nhận kết nối nhận");
     }
     if (result.tracks?.some((t: any) => t.errorCode))
       throw new Error("Một luồng nhận bị lỗi; đang chuẩn bị kết nối lại");
+    if (fresh.length > batch.length) await this.subscribeInternal(list, self);
   }
   toggle(kind: "audio" | "video") {
     this.local
@@ -201,50 +218,122 @@ export class ClassroomMedia {
   share() {
     return this.serial(() => this.shareInternal());
   }
+  stopShare() {
+    return this.serial(() => this.stopShareInternal());
+  }
+  private async stopShareInternal() {
+    const screen = this.screen,
+      pc = this.screenPeer;
+    this.screen = undefined;
+    this.screenPeer = undefined;
+    screen?.getTracks().forEach((t) => t.stop());
+    if (pc) {
+      pc.close();
+      this.peers = this.peers.filter((p) => p !== pc);
+      this.peerCreated.delete(pc);
+      const sid = this.sessionIDs.get(pc);
+      this.sessionIDs.delete(pc);
+      if (sid)
+        await api(`/meetings/${this.meeting}/media/reset`, { session_id: sid });
+    }
+  }
   private async shareInternal() {
-    const video = this.local?.getVideoTracks()[0];
-    let sender =
-      this.screenSender ||
-      this.peers.flatMap((p) => p.getSenders()).find((s) => s.track === video);
-    if (this.screen && sender) {
-      await sender.replaceTrack(video || null);
-      this.screen.getTracks().forEach((t) => t.stop());
-      this.screen = undefined;
+    if (this.screen) {
+      await this.stopShareInternal();
+      return undefined;
     }
     const display = await navigator.mediaDevices.getDisplayMedia({
       video: true,
+      audio: true,
     });
     const track = display.getVideoTracks()[0];
-    if (!sender) {
-      try {
-        await this.publishInternal(display);
-        sender = this.peers
-          .flatMap((p) => p.getSenders())
-          .find((s) => s.track === track);
-      } catch (e) {
-        display.getTracks().forEach((t) => t.stop());
-        throw e;
-      }
-      if (!sender) {
-        display.getTracks().forEach((t) => t.stop());
-        throw new Error("Không phát được màn hình");
-      }
+    try {
+      await this.publishInternal(display, true);
+      this.screen = display;
+      this.screenPeer = this.peers[this.peers.length - 1];
+    } catch (e) {
+      display.getTracks().forEach((t) => t.stop());
+      throw e;
     }
-    const activeSender = sender;
-    this.screen = display;
-    this.screenSender = sender;
-    await sender.replaceTrack(track);
     track.onended = () => {
-      if (this.screen === display) {
-        this.screen = undefined;
-        void activeSender.replaceTrack(video || null).catch(() => {});
-        if (!video) this.local?.removeTrack(track);
-      }
+      if (this.screen === display) void this.stopShare().catch(() => {});
     };
     return display;
   }
+  changeDevice(kind: "audio" | "video", deviceID: string) {
+    return this.serial(async () => {
+      const selected = deviceID ? { deviceId: { exact: deviceID } } : true;
+      const stream = await navigator.mediaDevices.getUserMedia(
+        kind === "audio"
+          ? { audio: selected, video: false }
+          : { video: selected, audio: false },
+      );
+      const next = stream.getTracks()[0],
+        old = this.local?.getTracks().find((t) => t.kind === kind);
+      next.enabled = old?.enabled ?? false;
+      const sender = this.peers
+        .flatMap((p) => p.getSenders())
+        .find((s) => s.track === old && !!old);
+      try {
+        if (sender && this.local) {
+          await sender.replaceTrack(next);
+          this.local.removeTrack(old!);
+          this.local.addTrack(next);
+          old?.stop();
+        } else await this.publishInternal(stream);
+      } catch (e) {
+        stream.getTracks().forEach((t) => t.stop());
+        throw e;
+      }
+      return this.local;
+    });
+  }
   setEnabled(kind: "audio" | "video", enabled: boolean) {
     return this.serial(() => this.setEnabledInternal(kind, enabled));
+  }
+  async audioLevels(): Promise<Record<string, number>> {
+    const levels: Record<string, number> = {};
+    if (this.receiver?.getStats) {
+      const report = await this.receiver.getStats();
+      report.forEach((stat) => {
+        if (
+          stat.type !== "inbound-rtp" ||
+          (stat.kind || stat.mediaType) !== "audio"
+        )
+          return;
+        let key = this.labels.get(stat.mid)?.key;
+        if (!key && stat.trackIdentifier)
+          this.remoteStreams.forEach((stream, id) => {
+            if (
+              stream.getAudioTracks().some((t) => t.id === stat.trackIdentifier)
+            )
+              key = id;
+          });
+        if (key && !key.endsWith(":screen"))
+          levels[key] = Number(stat.audioLevel) || 0;
+      });
+    }
+    if (
+      this.local
+        ?.getAudioTracks()
+        .some((t) => t.enabled && t.readyState !== "ended")
+    ) {
+      for (const pc of this.peers) {
+        if (!pc.getStats) continue;
+        const report = await pc.getStats();
+        report.forEach((stat) => {
+          if (
+            stat.type === "media-source" &&
+            stat.kind === "audio" &&
+            this.local
+              ?.getAudioTracks()
+              .some((t) => t.id === stat.trackIdentifier)
+          )
+            levels.self = Number(stat.audioLevel) || 0;
+        });
+      }
+    }
+    return levels;
   }
   private async setEnabledInternal(kind: "audio" | "video", enabled: boolean) {
     if (
@@ -301,12 +390,13 @@ export class ClassroomMedia {
         this.peers.forEach((p) => p.close());
         this.peers = [];
         this.peerCreated.clear();
+        this.sessionIDs.clear();
+        this.screenPeer = undefined;
         this.screen?.getTracks().forEach((t) => {
           t.stop();
           this.local?.removeTrack(t);
         });
         this.screen = undefined;
-        this.screenSender = undefined;
         this.receiver = undefined;
         this.receiverID = undefined;
         this.known.clear();

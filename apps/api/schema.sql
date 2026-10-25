@@ -114,3 +114,26 @@ CREATE TABLE IF NOT EXISTS attendance_adjustments(id BIGINT AUTO_INCREMENT PRIMA
 
 CREATE TABLE IF NOT EXISTS code_counters(kind VARCHAR(2) PRIMARY KEY,value INT NOT NULL DEFAULT 0);
 CREATE TABLE IF NOT EXISTS entity_short_codes(kind VARCHAR(2) NOT NULL,number INT NOT NULL,entity_id CHAR(36) NOT NULL UNIQUE,PRIMARY KEY(kind,number));
+
+CREATE TABLE IF NOT EXISTS room_settings (
+ school_id CHAR(36) NOT NULL,meeting_id CHAR(36) NOT NULL,lobby BOOLEAN NOT NULL DEFAULT FALSE,
+ chat_enabled BOOLEAN NOT NULL DEFAULT TRUE,present_enabled BOOLEAN NOT NULL DEFAULT TRUE,revision INT NOT NULL DEFAULT 0,
+ PRIMARY KEY(school_id,meeting_id),FOREIGN KEY(school_id,meeting_id) REFERENCES meetings(school_id,id)
+);
+CREATE TABLE IF NOT EXISTS room_members (
+ school_id CHAR(36) NOT NULL,meeting_id CHAR(36) NOT NULL,user_id CHAR(36) NOT NULL,
+ state ENUM('waiting','admitted','denied','removed') NOT NULL DEFAULT 'waiting',mute_request BIGINT NOT NULL DEFAULT 0,
+ requested_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),updated_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+ PRIMARY KEY(school_id,meeting_id,user_id),KEY room_waiting(school_id,meeting_id,state,requested_at),
+ FOREIGN KEY(school_id,meeting_id) REFERENCES meetings(school_id,id),FOREIGN KEY(school_id,user_id) REFERENCES users(school_id,id)
+);
+CREATE TABLE IF NOT EXISTS room_polls (
+ id CHAR(36) PRIMARY KEY,school_id CHAR(36) NOT NULL,meeting_id CHAR(36) NOT NULL,question VARCHAR(200) NOT NULL,
+ choices JSON NOT NULL,active BOOLEAN NOT NULL DEFAULT TRUE,created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+ UNIQUE KEY room_poll_tenant(school_id,meeting_id,id),FOREIGN KEY(school_id,meeting_id) REFERENCES meetings(school_id,id)
+);
+CREATE TABLE IF NOT EXISTS room_votes (
+ school_id CHAR(36) NOT NULL,meeting_id CHAR(36) NOT NULL,poll_id CHAR(36) NOT NULL,user_id CHAR(36) NOT NULL,choice INT NOT NULL,
+ PRIMARY KEY(school_id,poll_id,user_id),KEY room_vote_counts(school_id,meeting_id,poll_id,choice),KEY room_my_votes(school_id,meeting_id,user_id),FOREIGN KEY(school_id,meeting_id,poll_id) REFERENCES room_polls(school_id,meeting_id,id),
+ FOREIGN KEY(school_id,user_id) REFERENCES users(school_id,id),CHECK(choice>=0 AND choice<6)
+);

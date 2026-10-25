@@ -1,6 +1,31 @@
 import { afterEach, expect, it, vi } from "vitest";
 import { ClassroomMedia } from "./media";
 afterEach(() => vi.unstubAllGlobals());
+it("switches camera devices without unmuting the camera or restarting other media", async () => {
+  const old = { id: "old", kind: "video", enabled: false, stop: vi.fn() },
+    next = { id: "next", kind: "video", enabled: true, stop: vi.fn() };
+  let tracks: any[] = [old];
+  const local = {
+    getTracks: () => tracks,
+    removeTrack: (t: any) => {
+      tracks = tracks.filter((x) => x !== t);
+    },
+    addTrack: (t: any) => tracks.push(t),
+  };
+  const sender = { track: old, replaceTrack: vi.fn(async () => {}) };
+  vi.stubGlobal("navigator", {
+    mediaDevices: {
+      getUserMedia: vi.fn(async () => ({ getTracks: () => [next] })),
+    },
+  });
+  const media = new ClassroomMedia("lesson", () => {});
+  Object.assign(media, { local, peers: [{ getSenders: () => [sender] }] });
+  await media.changeDevice("video", "camera-two");
+  expect(next.enabled).toBe(false);
+  expect(old.stop).toHaveBeenCalledOnce();
+  expect(sender.replaceTrack).toHaveBeenCalledWith(next);
+  expect(local.getTracks()).toEqual([next]);
+});
 it("rebuilds failed connections without stopping local devices or enabling muted tracks", async () => {
   const camera = { kind: "video", enabled: false, stop: vi.fn() },
     stream = { getTracks: () => [camera] };
@@ -84,11 +109,29 @@ it("stops replaced screen captures and releases devices when leaving", async () 
   const media = new ClassroomMedia("meeting", () => {});
   (media as any).local = stream(camera);
   (media as any).peers = [{ getSenders: () => [sender], close: vi.fn() }];
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async () => ({ ok: true, json: async () => ({ ok: true }) })),
+  );
+  const publish = vi
+    .spyOn(media as any, "publishInternal")
+    .mockImplementation(async (s: any, presentation: any) => {
+      expect(presentation).toBe(true);
+      const pc = {
+        getSenders: () => s.getTracks().map((track: any) => ({ track })),
+        close: vi.fn(),
+      };
+      (media as any).peers.push(pc);
+      (media as any).sessionIDs.set(pc, "screen-session");
+    });
   await media.share();
   expect(first.stop).not.toHaveBeenCalled();
   await media.share();
   expect(first.stop).toHaveBeenCalledOnce();
-  expect(sender.track).toBe(second);
+  expect(sender.track).toBe(camera);
+  expect(camera.stop).not.toHaveBeenCalled();
+  await media.share();
+  expect(publish).toHaveBeenCalledTimes(2);
   media.close();
   expect(second.stop).toHaveBeenCalled();
   expect(camera.stop).toHaveBeenCalled();
@@ -142,7 +185,7 @@ it("merges remote microphone and camera into one participant stream", async () =
           body.op === "new"
             ? { sessionId: "receiver" }
             : body.op === "tracks"
-              ? { tracks: [{ mid: "0" }, { mid: "1" }] }
+              ? { tracks: [{ mid: "0" }, { mid: "1" }, { mid: "2" }] }
               : { iceServers: [] },
       };
     }),
@@ -163,6 +206,12 @@ it("merges remote microphone and camera into one participant stream", async () =
         user_id: "teacher",
         name: "Thầy A",
       },
+      {
+        session_id: "screen-sender",
+        track_name: "screen-video-test",
+        user_id: "teacher",
+        name: "Thầy A",
+      },
     ],
     "student",
   );
@@ -176,5 +225,14 @@ it("merges remote microphone and camera into one participant stream", async () =
   });
   expect(received.mock.lastCall?.[0]).toBe("teacher");
   expect(received.mock.lastCall?.[1].getTracks()).toHaveLength(2);
+  pc.ontrack({
+    transceiver: { mid: "2" },
+    track: { id: "s", kind: "video", stop: vi.fn() },
+  });
+  expect(received.mock.lastCall?.[0]).toBe("teacher:screen");
+  expect(received.mock.lastCall?.[1].getTracks()).toHaveLength(1);
+  expect((media as any).remoteStreams.get("teacher").getTracks()).toHaveLength(
+    2,
+  );
   media.close();
 });
