@@ -52,7 +52,7 @@ export function PasswordRecovery() {
                 name="password"
                 type="password"
                 autoComplete="new-password"
-                minLength={12}
+                minLength={6}
                 maxLength={72}
                 required
               />

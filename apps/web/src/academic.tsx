@@ -668,7 +668,9 @@ export function AcademicAdmin({
                           onChange={(e) =>
                             updateAccount(i, "password", e.target.value)
                           }
-                          placeholder={v.id ? "Giữ nguyên" : "12–72 byte"}
+                          placeholder={
+                            v.id ? "Giữ nguyên" : "6 ký tự, tối đa 72 byte"
+                          }
                         />
                       </td>
                     </tr>

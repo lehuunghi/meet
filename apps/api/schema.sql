@@ -137,3 +137,9 @@ CREATE TABLE IF NOT EXISTS room_votes (
  PRIMARY KEY(school_id,poll_id,user_id),KEY room_vote_counts(school_id,meeting_id,poll_id,choice),KEY room_my_votes(school_id,meeting_id,user_id),FOREIGN KEY(school_id,meeting_id,poll_id) REFERENCES room_polls(school_id,meeting_id,id),
  FOREIGN KEY(school_id,user_id) REFERENCES users(school_id,id),CHECK(choice>=0 AND choice<6)
 );
+CREATE TABLE IF NOT EXISTS meeting_links (
+ code CHAR(6) CHARACTER SET ascii COLLATE ascii_bin PRIMARY KEY,
+ school_id CHAR(36) NOT NULL,meeting_id CHAR(36) NOT NULL,
+ UNIQUE KEY one_link(school_id,meeting_id),
+ FOREIGN KEY(school_id,meeting_id) REFERENCES meetings(school_id,id)
+);

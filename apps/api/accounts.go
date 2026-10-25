@@ -34,6 +34,8 @@ func permissionFor(path string) string {
 		return "audit"
 	case strings.Contains(path, "/recordings"):
 		return "recordings"
+	case strings.HasPrefix(path, "/api/rooms/") || (strings.HasPrefix(path, "/api/courses/") && strings.HasSuffix(path, "/prepare")):
+		return "meetings"
 	case strings.HasPrefix(path, "/api/meetings"):
 		return "meetings"
 	case path == "/api/catalog":
@@ -147,7 +149,7 @@ func (a *app) accountSave(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			if in.Password != "" {
-				if len(in.Password) < 12 || len(in.Password) > 72 {
+				if !validAccountPassword(role, in.Password) {
 					problem(w, 400, "Mật khẩu 12–72 byte")
 					return
 				}

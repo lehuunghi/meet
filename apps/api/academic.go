@@ -122,8 +122,8 @@ func validateAccounts(rows []accountRow, role string) error {
 		v.Code = strings.ToUpper(strings.TrimSpace(v.Code))
 		v.Name = strings.TrimSpace(v.Name)
 		addr, e := mail.ParseAddress(v.Email)
-		if e != nil || addr.Address != v.Email || len(v.Email) > 190 || len(v.Name) == 0 || len(v.Name) > 200 || emails[v.Email] || (v.ID != "" && (ids[v.ID] || v.Revision < 1)) || (v.ID == "" && v.Password == "") || (v.Password != "" && (len(v.Password) < 12 || len(v.Password) > 72)) {
-			return fmt.Errorf("Dòng %d: kiểm tra email, tên, ID/phiên bản hoặc mật khẩu 12–72 byte", i+1)
+		if e != nil || addr.Address != v.Email || len(v.Email) > 190 || len(v.Name) == 0 || len(v.Name) > 200 || emails[v.Email] || (v.ID != "" && (ids[v.ID] || v.Revision < 1)) || (v.ID == "" && v.Password == "") || (v.Password != "" && !validAccountPassword(role, v.Password)) {
+			return fmt.Errorf("Dòng %d: kiểm tra email, tên, ID/phiên bản hoặc mật khẩu ít nhất 6 ký tự, tối đa 72 byte", i+1)
 		}
 		if role == "student" && (!studentCodePattern.MatchString(v.Code) || codes[v.Code]) {
 			return fmt.Errorf("Dòng %d: mã SV duy nhất, 1–40 ký tự A–Z, 0–9, dấu . _ -", i+1)

@@ -76,7 +76,12 @@ func (a *app) roomState(w http.ResponseWriter, r *http.Request) {
 			state = "not_requested"
 		}
 	}
-	send(w, 200, map[string]any{"id": r.PathValue("id"), "title": m.Title, "course_id": m.CourseID, "course": m.Course, "class_name": m.Class, "starts_at": m.Starts, "recording_allowed": m.Recording, "status": m.Status, "can_manage": host, "rules": rules, "admission": state, "mute_request": mute})
+	code, e := a.meetingCode(r.Context(), who(r).School, r.PathValue("id"))
+	if e != nil {
+		problem(w, 503, "Chưa tạo được liên kết phòng")
+		return
+	}
+	send(w, 200, map[string]any{"short_code": code, "id": r.PathValue("id"), "title": m.Title, "course_id": m.CourseID, "course": m.Course, "class_name": m.Class, "starts_at": m.Starts, "recording_allowed": m.Recording, "status": m.Status, "can_manage": host, "rules": rules, "admission": state, "mute_request": mute})
 }
 func (a *app) requestAdmission(w http.ResponseWriter, r *http.Request) {
 	m, ok := a.access(w, r, false)

@@ -52,7 +52,9 @@ func (a *app) query(w http.ResponseWriter, r *http.Request, q string, args ...an
 }
 func (a *app) catalog(w http.ResponseWriter, r *http.Request) {
 	u := who(r)
-	a.query(w, r, `SELECT c.id,c.short_id,c.revision,COALESCE((SELECT JSON_ARRAYAGG(ca.user_id) FROM course_assistants ca WHERE ca.school_id=c.school_id AND ca.course_id=c.id),JSON_ARRAY()) AS assistant_ids,c.name,c.class_id,cl.name AS class_name,c.teacher_id,COALESCE(u.name,'Chưa phân công') AS teacher FROM courses c JOIN classes cl ON cl.id=c.class_id AND cl.school_id=c.school_id LEFT JOIN users u ON u.id=c.teacher_id AND u.school_id=c.school_id WHERE c.school_id=? AND (?='admin' OR (?='teacher' AND EXISTS(SELECT 1 FROM users assigned WHERE assigned.id=? AND assigned.school_id=c.school_id AND (assigned.id=c.teacher_id OR EXISTS(SELECT 1 FROM course_assistants ca WHERE ca.school_id=c.school_id AND ca.course_id=c.id AND ca.user_id=assigned.id)))) OR (?='student' AND EXISTS(SELECT 1 FROM enrollments e WHERE e.school_id=c.school_id AND e.class_id=c.class_id AND e.user_id=?))) ORDER BY c.name LIMIT 1000`, u.School, u.Role, u.Role, u.ID, u.Role, u.ID)
+	a.query(w, r, `SELECT c.id,c.short_id,c.revision,
+(SELECT lm.id FROM meetings lm WHERE lm.school_id=c.school_id AND lm.course_id=c.id AND lm.status IN ('live','scheduled') ORDER BY (lm.status='live') DESC,lm.starts_at ASC LIMIT 1) AS ready_meeting_id,
+(SELECT lm.status FROM meetings lm WHERE lm.school_id=c.school_id AND lm.course_id=c.id AND lm.status IN ('live','scheduled') ORDER BY (lm.status='live') DESC,lm.starts_at ASC LIMIT 1) AS ready_status,(SELECT COUNT(*) FROM meetings lm WHERE lm.school_id=c.school_id AND lm.course_id=c.id) AS lesson_count,COALESCE((SELECT JSON_ARRAYAGG(ca.user_id) FROM course_assistants ca WHERE ca.school_id=c.school_id AND ca.course_id=c.id),JSON_ARRAY()) AS assistant_ids,c.name,c.class_id,cl.name AS class_name,c.teacher_id,COALESCE(u.name,'Chưa phân công') AS teacher FROM courses c JOIN classes cl ON cl.id=c.class_id AND cl.school_id=c.school_id LEFT JOIN users u ON u.id=c.teacher_id AND u.school_id=c.school_id WHERE c.school_id=? AND (?='admin' OR (?='teacher' AND EXISTS(SELECT 1 FROM users assigned WHERE assigned.id=? AND assigned.school_id=c.school_id AND (assigned.id=c.teacher_id OR EXISTS(SELECT 1 FROM course_assistants ca WHERE ca.school_id=c.school_id AND ca.course_id=c.id AND ca.user_id=assigned.id)))) OR (?='student' AND EXISTS(SELECT 1 FROM enrollments e WHERE e.school_id=c.school_id AND e.class_id=c.class_id AND e.user_id=?))) ORDER BY c.name LIMIT 1000`, u.School, u.Role, u.Role, u.ID, u.Role, u.ID)
 }
 func (a *app) users(w http.ResponseWriter, r *http.Request) {
 	if !admin(w, r) {
@@ -200,7 +202,7 @@ func validateImport(rows [][]string) ([]importRow, error) {
 			v.Class = strings.TrimSpace(row[4])
 		}
 		addr, e := mail.ParseAddress(v.Email)
-		if e != nil || addr.Address != v.Email || len(v.Email) > 190 || v.Name == "" || len(v.Name) > 200 || len(v.Class) > 100 || len(v.Password) < 12 || len(v.Password) > 72 || (v.Role != "student" && v.Role != "teacher") || seen[v.Email] {
+		if e != nil || addr.Address != v.Email || len(v.Email) > 190 || v.Name == "" || len(v.Name) > 200 || len(v.Class) > 100 || !validAccountPassword(v.Role, v.Password) || (v.Role != "student" && v.Role != "teacher") || seen[v.Email] {
 			return nil, fmt.Errorf("Row %d: invalid email/name/role/password/class or duplicate email", i+2)
 		}
 		if v.Role != "student" && v.Class != "" {

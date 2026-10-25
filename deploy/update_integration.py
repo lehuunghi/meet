@@ -95,7 +95,7 @@ with tempfile.TemporaryDirectory() as tmp:
     # Recreate that baseline rather than labeling the current schema as legacy.
     legacy_web_image=u.images()['web']
     u.compose('stop','api','web')
-    u.sql('DROP TABLE room_votes; DROP TABLE room_polls; DROP TABLE room_members; DROP TABLE room_settings; DELETE FROM schema_migrations WHERE version>4')
+    u.sql('DROP TABLE meeting_links; DROP TABLE room_votes; DROP TABLE room_polls; DROP TABLE room_members; DROP TABLE room_settings; DELETE FROM schema_migrations WHERE version>4')
     original_root=u.ROOT
     legacy=Path(tmp)/'legacy'
     old_revision='52c8fab08b29a450f2de9552a4f111d43da366ac'

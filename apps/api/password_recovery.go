@@ -50,8 +50,8 @@ func (a *app) resetPassword(w http.ResponseWriter, r *http.Request) {
 	if !decode(w, r, &in) {
 		return
 	}
-	if len(in.Token) != 64 || len(in.Password) < 12 || len(in.Password) > 72 {
-		problem(w, 400, "Liên kết không hợp lệ hoặc mật khẩu chưa đủ 12–72 byte")
+	if len(in.Token) != 64 || !validAccountPassword("student", in.Password) {
+		problem(w, 400, "Liên kết không hợp lệ hoặc mật khẩu chưa đủ độ dài hợp lệ")
 		return
 	}
 	ip, _, _ := net.SplitHostPort(r.RemoteAddr)
@@ -74,8 +74,8 @@ func (a *app) resetPassword(w http.ResponseWriter, r *http.Request) {
 		problem(w, 429, "Thử lại sau 15 phút")
 		return
 	}
-	if len(in.Token) != 64 || len(in.Password) < 12 || len(in.Password) > 72 {
-		problem(w, 400, "Liên kết không hợp lệ hoặc mật khẩu chưa đủ 12–72 byte")
+	if len(in.Token) != 64 || !validAccountPassword("student", in.Password) {
+		problem(w, 400, "Liên kết không hợp lệ hoặc mật khẩu chưa đủ độ dài hợp lệ")
 		return
 	}
 	key := "password-recovery:" + digest(in.Token)
@@ -83,6 +83,11 @@ func (a *app) resetPassword(w http.ResponseWriter, r *http.Request) {
 	var p passwordRecovery
 	if e != nil || json.Unmarshal([]byte(raw), &p) != nil {
 		problem(w, 400, "Liên kết không hợp lệ hoặc đã hết hạn")
+		return
+	}
+	var role string
+	if a.db.QueryRowContext(r.Context(), "SELECT role FROM users WHERE school_id=? AND id=?", p.School, p.User).Scan(&role) != nil || !validAccountPassword(role, in.Password) {
+		problem(w, 400, "Mật khẩu chưa đủ độ dài cho loại tài khoản")
 		return
 	}
 	var enabled int

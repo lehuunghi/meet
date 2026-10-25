@@ -13,8 +13,8 @@ import "./style.css";
 import "./meet-room.css";
 import "./attendance.css";
 import "./comparison-tables.css";
-import { RecordingLibrary } from "./recordings";
-import { AttendanceReport } from "./attendance";
+import { LearningWorkspace } from "./learning";
+
 import { Setup } from "./setup";
 import { AuditLog } from "./audit";
 import { PasswordRecovery } from "./password-recovery";
@@ -30,6 +30,7 @@ import {
   PART_SIZE,
 } from "./recording-store";
 import "./workspace.css";
+import "./learning.css";
 import {
   RoleSwitcher,
   PreviewRoom,
@@ -53,6 +54,7 @@ type Meeting = {
   starts_at: string;
   status: string;
   recording_allowed: number | boolean;
+  short_code?: string;
   course_id?: string;
 };
 const demo = new URLSearchParams(location.search).get("demo") === "1";
@@ -145,22 +147,17 @@ function App() {
     ),
     [loading, setLoading] = useState(!demo),
     [error, setError] = useState(""),
-    [page, setPage] = useState(
-      [
-        "overview",
-        "courses",
-        "meetings",
-        "settings",
-        "admin",
-        "recordings",
-        "attendance",
-        "audit",
-      ].includes(new URLSearchParams(location.search).get("page") || "")
-        ? new URLSearchParams(location.search).get("page")!
-        : demo && previewRole.id === "admin"
-          ? "admin"
-          : "overview",
-    ),
+    [page, setPage] = useState(() => {
+      const requested =
+        new URLSearchParams(location.search).get("page") || "overview";
+      if (["courses", "meetings"].includes(requested)) return "overview";
+      if (requested === "recordings") return "attendance";
+      return ["overview", "attendance", "settings", "admin", "audit"].includes(
+        requested,
+      )
+        ? requested
+        : "overview";
+    }),
     [menuOpen, setMenuOpen] = useState(false),
     [meetings, setMeetings] = useState<Meeting[]>(demo ? sample : []),
     [courses, setCourses] = useState<any[]>(
@@ -216,12 +213,36 @@ function App() {
   useEffect(() => {
     if (user) void safe(refresh);
   }, [user]);
+  useEffect(() => {
+    if (!user || demo) return;
+    let running = false,
+      active = true;
+    const timer = setInterval(() => {
+      if (running) return;
+      running = true;
+      void refresh()
+        .catch((e) => {
+          if (active) setError(e.message);
+        })
+        .finally(() => {
+          running = false;
+        });
+    }, 10000);
+    return () => {
+      active = false;
+      clearInterval(timer);
+    };
+  }, [user]);
   const openedRoom = useRef("");
   useEffect(() => {
+    const code = /^\/([a-z0-9]{6})\/?$/.exec(location.pathname)?.[1];
     const id = new URLSearchParams(location.search).get("room");
-    if (!demo && user && id && id !== openedRoom.current) {
-      openedRoom.current = id;
-      void api<Meeting>(`/meetings/${encodeURIComponent(id)}`)
+    const key = code ? "short:" + code : id;
+    if (!demo && user && key && key !== openedRoom.current) {
+      openedRoom.current = key;
+      void api<Meeting>(
+        code ? `/rooms/${code}` : `/meetings/${encodeURIComponent(id!)}`,
+      )
         .then(setRoom)
         .catch((e) => setError(e.message));
     }
@@ -381,49 +402,42 @@ function App() {
           className={menuOpen ? "mobile-open" : ""}
         >
           {[
-            ["overview", "▦", "Tổng quan"],
-            ["courses", "▤", "Lớp & môn học"],
-            ["meetings", "◉", "Buổi học"],
+            [
+              "overview",
+              "▤",
+              user.role === "student" ? "Môn học" : "Lớp học & môn học",
+            ],
+            ...(allowed("attendance")
+              ? [["attendance", "◷", "Điểm danh & video"]]
+              : []),
             ["settings", "⚙", "Tài khoản"],
             ...(user.role === "admin" ? [["admin", "⇧", "Quản trị"]] : []),
             ...(user.role === "admin" && allowed("audit")
               ? [["audit", "≡", "Nhật ký"]]
               : []),
-            [
-              "attendance",
-              "◷",
-              user.role === "student"
-                ? "Điểm danh của tôi"
-                : "Báo cáo điểm danh",
-            ],
-            ...(allowed("recordings")
-              ? [["recordings", "▷", "Bản ghi bài học"]]
-              : []),
-          ]
-            .filter(([key]) => key !== "attendance" || allowed("attendance"))
-            .filter(([key]) => key !== "meetings" || allowed("meetings"))
-            .map(([key, icon, label]) => (
-              <button
-                key={key}
-                aria-current={page === key ? "page" : undefined}
-                className={page === key ? "active" : ""}
-                onClick={() => {
-                  setPage(key);
-                  setMenuOpen(false);
-                  const params = new URLSearchParams(location.search);
-                  params.set("page", key);
-                  history.replaceState(null, "", "?" + params.toString());
-                  if (key === "admin" && !demo && allowed("academic"))
-                    void safe(async () => {
-                      setUsers(await api("/users"));
-                      setClasses(await api("/classes"));
-                    });
-                }}
-              >
-                <span>{icon}</span>
-                {label}
-              </button>
-            ))}
+          ].map(([key, icon, label]) => (
+            <button
+              key={key}
+              aria-current={page === key ? "page" : undefined}
+              className={page === key ? "active" : ""}
+              onClick={() => {
+                setPage(key);
+                setMenuOpen(false);
+                const params = new URLSearchParams(location.search);
+                params.set("page", key);
+                params.delete("room");
+                history.replaceState(null, "", "/?" + params.toString());
+                if (key === "admin" && !demo && allowed("academic"))
+                  void safe(async () => {
+                    setUsers(await api("/users"));
+                    setClasses(await api("/classes"));
+                  });
+              }}
+            >
+              <span>{icon}</span>
+              {label}
+            </button>
+          ))}
         </nav>
         <div className="aside-bottom">
           <span className="avatar">{user.name[0]}</span>
@@ -509,7 +523,9 @@ function App() {
               <span className="eyebrow">HỌC TẬP CÙNG NHAU</span>
               <h1>
                 {page === "overview"
-                  ? `Chào ${user.name},`
+                  ? user.role === "student"
+                    ? "Môn học của tôi"
+                    : "Lớp học & môn học"
                   : page === "courses"
                     ? "Lớp & môn học"
                     : page === "meetings"
@@ -532,171 +548,31 @@ function App() {
             </div>
             <span className="leaf">✳</span>
           </div>
-          {(page === "overview" || page === "meetings") && (
-            <>
-              <section className="stats">
-                {[
-                  [courses.length, "Môn học được phân công", "▤"],
-                  [
-                    meetings.filter((m) => m.status === "live").length,
-                    "Buổi học đang diễn ra",
-                    "◉",
-                  ],
-                  [
-                    meetings.filter((m) => m.status === "scheduled").length,
-                    "Buổi học sắp tới",
-                    "◷",
-                  ],
-                ].map(([v, label, icon]) => (
-                  <article key={label}>
-                    <span>{icon}</span>
-                    <strong>{v}</strong>
-                    <small>{label}</small>
-                  </article>
-                ))}
-              </section>
-              <section className="section">
-                <div className="section-title">
-                  <div>
-                    <h2>Lịch học của bạn</h2>
-                    <p>Sẵn sàng cho buổi học tiếp theo</p>
-                  </div>
-                  <span className="pill">{meetings.length} buổi học</span>
-                </div>
-                <div className="meeting-list">
-                  {meetings.length === 0 && (
-                    <p>
-                      Chưa có buổi học. Giáo viên có thể tạo buổi học bên dưới.
-                    </p>
-                  )}
-                  {meetings.map((m) => (
-                    <article className="meeting" key={m.id}>
-                      <div className="date-tile">
-                        <strong>{new Date(m.starts_at).getDate()}</strong>
-                        <small>
-                          THÁNG {new Date(m.starts_at).getMonth() + 1}
-                        </small>
-                      </div>
-                      <div className="meeting-info">
-                        <span className={"status " + m.status}>
-                          {m.status === "live"
-                            ? "● Đang diễn ra"
-                            : m.status === "ended"
-                              ? "Đã kết thúc"
-                              : "Sắp diễn ra"}
-                        </span>
-                        <h3>{m.title}</h3>
-                        <p>
-                          {m.course} <span>·</span> Lớp {m.class_name}{" "}
-                          <span>·</span>{" "}
-                          {new Date(m.starts_at).toLocaleTimeString("vi-VN", {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </p>
-                        {!!m.recording_allowed && (
-                          <small>Buổi học cho phép giáo viên ghi hình</small>
-                        )}
-                      </div>
-                      <button
-                        className="secondary"
-                        disabled={
-                          m.status === "ended" ||
-                          (user.role === "student" && m.status !== "live")
-                        }
-                        onClick={() => setRoom(m)}
-                      >
-                        {m.status === "ended"
-                          ? "Đã kết thúc"
-                          : user.role === "student" && m.status !== "live"
-                            ? "Đang chờ giáo viên"
-                            : "Vào lớp học ↗"}
-                      </button>
-                    </article>
-                  ))}
-                </div>
-              </section>
-              {user.role !== "student" && (
-                <section className="section">
-                  <h2>Tạo buổi học</h2>
-                  <form
-                    className="inline-form"
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      const f = new FormData(e.currentTarget);
-                      void safe(async () => {
-                        if (demo) throw new Error("Đăng nhập để tạo buổi học");
-                        await api("/meetings", {
-                          course_id: f.get("course_id"),
-                          title: f.get("title"),
-                          starts_at: new Date(
-                            String(f.get("starts_at")),
-                          ).toISOString(),
-                          recording_allowed: f.get("recording") === "on",
-                        });
-                        await refresh();
-                        setNotice("Đã tạo buổi học");
-                      });
-                    }}
-                  >
-                    <label>
-                      Môn học
-                      <select name="course_id" required>
-                        {courses.map((c) => (
-                          <option key={c.id} value={c.id}>
-                            {c.name} · {c.class_name}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                    <label>
-                      Chủ đề
-                      <input name="title" required maxLength={200} />
-                    </label>
-                    <label>
-                      Bắt đầu
-                      <input name="starts_at" type="datetime-local" required />
-                    </label>
-                    <label className="checkbox">
-                      <input name="recording" type="checkbox" /> Cho phép ghi
-                      hình
-                    </label>
-                    <button disabled={demo}>Tạo buổi học</button>
-                  </form>
-                </section>
-              )}
-            </>
-          )}
-          {page === "courses" && (
-            <section className="course-grid">
-              {courses.map((c) => (
-                <article key={c.id}>
-                  <span className="course-icon">∑</span>
-                  <span className="pill">Lớp {c.class_name}</span>
-                  <h2>{c.name}</h2>
-                  <p>Giáo viên: {c.teacher}</p>
-                  <button
-                    className="secondary"
-                    onClick={() => setPage("meetings")}
-                  >
-                    Xem lịch học →
-                  </button>
-                </article>
-              ))}
-            </section>
-          )}
-          {page === "attendance" && (
-            <AttendanceReport
+          {(page === "overview" || page === "attendance") && (
+            <LearningWorkspace
               role={user.role}
               courses={courses}
-              demo={demo}
-              preferredCourseId={
-                meetings.find((m) => m.status !== "scheduled")?.course_id
+              meetings={
+                demo
+                  ? meetings.map((m) => ({
+                      ...m,
+                      course_id:
+                        m.course_id ||
+                        courses.find(
+                          (c) =>
+                            c.name === m.course &&
+                            c.class_name === m.class_name,
+                        )?.id,
+                    }))
+                  : meetings
               }
+              demo={demo}
+              reports={page === "attendance"}
+              canTeach={allowed("meetings")}
+              canVideo={allowed("recordings")}
+              onRefresh={refresh}
+              onOpen={setRoom}
             />
-          )}
-          {page === "recordings" && (
-            <RecordingLibrary courses={courses} demo={demo} role={user.role} />
           )}
           {page === "settings" && <AccountSecurity demo={demo} user={user} />}
           {page === "settings" && (
@@ -729,7 +605,7 @@ function App() {
                     type="password"
                     name="new"
                     required
-                    minLength={12}
+                    minLength={user.role === "admin" ? 12 : 6}
                     maxLength={72}
                     autoComplete="new-password"
                   />
@@ -1260,15 +1136,18 @@ function Room({
         <h2>{meeting.title}</h2>
         <button
           className="secondary"
-          onClick={() => {
-            const link = `${location.origin}/?room=${meeting.id}`;
-            if (navigator.clipboard)
-              void navigator.clipboard
-                .writeText(link)
-                .then(() => setConnection("Đã sao chép liên kết lớp học"))
-                .catch(() => onError("Không sao chép được liên kết"));
-            else prompt("Liên kết lớp học", link);
-          }}
+          onClick={() =>
+            void run(async () => {
+              const info = await api<Meeting>(`/meetings/${meeting.id}`);
+              if (!info.short_code)
+                throw new Error("Chưa có liên kết phòng học");
+              const link = `${location.origin}/${info.short_code}`;
+              if (navigator.clipboard) {
+                await navigator.clipboard.writeText(link);
+                setConnection("Đã sao chép liên kết lớp học");
+              } else prompt("Liên kết lớp học", link);
+            })
+          }
         >
           Sao chép liên kết
         </button>

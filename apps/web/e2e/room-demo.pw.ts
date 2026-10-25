@@ -8,7 +8,11 @@ test("demo shows host moderation and poll creation, and students can change a vo
   });
   await page.goto("/?demo=1&role=teacher&page=overview");
   await page
-    .getByRole("button", { name: /^Vào lớp/ })
+    .getByRole("button", { name: "Xem môn học", exact: true })
+    .first()
+    .click();
+  await page
+    .getByRole("button", { name: /Vào phòng dạy|Chuẩn bị dạy/ })
     .first()
     .click();
   await expect(

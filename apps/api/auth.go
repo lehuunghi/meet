@@ -10,10 +10,18 @@ import (
 	"os"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"golang.org/x/crypto/bcrypt"
 )
 
+func validAccountPassword(role, password string) bool {
+	minimum := 12
+	if role == "teacher" || role == "student" {
+		minimum = 6
+	}
+	return utf8.RuneCountInString(password) >= minimum && len(password) <= 72
+}
 func (a *app) login(w http.ResponseWriter, r *http.Request) {
 	var in struct {
 		Code     string `json:"code"`
@@ -198,8 +206,8 @@ func (a *app) password(w http.ResponseWriter, r *http.Request) {
 	if !decode(w, r, &in) {
 		return
 	}
-	if len(in.New) < 12 || len(in.New) > 72 {
-		problem(w, 400, "Password must contain 12–72 bytes")
+	if !validAccountPassword(who(r).Role, in.New) {
+		problem(w, 400, "Mật khẩu giáo viên/học sinh ít nhất 6 ký tự; quản trị ít nhất 12; tối đa 72 byte")
 		return
 	}
 	u := who(r)

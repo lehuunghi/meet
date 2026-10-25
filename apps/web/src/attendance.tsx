@@ -105,16 +105,18 @@ export function AttendanceReport({
   courses,
   demo = false,
   preferredCourseId,
+  preferredMeetingId = "",
 }: {
   role: string;
   courses: ReportCourse[];
   demo?: boolean;
   preferredCourseId?: string;
+  preferredMeetingId?: string;
 }) {
   const [revision, setRevision] = useState(0);
   const [classChoice, setClass] = useState(""),
     [courseChoice, setCourse] = useState(""),
-    [meeting, setMeeting] = useState(""),
+    [meeting, setMeeting] = useState(preferredMeetingId),
     [page, setPage] = useState(0),
     [rows, setRows] = useState<ReportRow[]>([]),
     [lessons, setLessons] = useState<Lesson[]>([]),
@@ -125,18 +127,18 @@ export function AttendanceReport({
   const classes = availableClasses(courses),
     classId = classes.some((c) => c.id === classChoice)
       ? classChoice
-      : role === "teacher"
+      : preferredCourseId || role === "teacher"
         ? teacherDefault?.class_id || ""
         : "";
   const subjects = courses.filter((c) => c.class_id === classId),
     course =
       subjects.find((c) => c.id === courseChoice) ||
-      (role === "teacher"
+      (preferredCourseId || role === "teacher"
         ? subjects.find((c) => c.id === preferredCourseId) || subjects[0]
         : undefined),
     courseId = course?.id || "";
   useEffect(() => {
-    setMeeting("");
+    setMeeting(preferredMeetingId);
     setPage(0);
   }, [courseId]);
   useEffect(() => {
@@ -262,14 +264,14 @@ export function AttendanceReport({
                 setLessons([]);
                 setClass(id);
                 setCourse("");
-                setMeeting("");
+                setMeeting(preferredMeetingId);
                 setPage(0);
               }}
               onCourse={(id) => {
                 setRows([]);
                 setLessons([]);
                 setCourse(id);
-                setMeeting("");
+                setMeeting(preferredMeetingId);
                 setPage(0);
               }}
             />

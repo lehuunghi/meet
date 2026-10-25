@@ -88,12 +88,21 @@ test("listen-only classroom keeps the mobile toolbar clear of page content", asy
           recording_allowed: true,
         },
       ];
-    else if (path === "/api/meetings/lesson") data = { status: "live" };
+    else if (path === "/api/meetings/lesson")
+      data = {
+        id: "lesson",
+        title: "Buổi học thử",
+        status: "live",
+        class_name: "10A1",
+        course: "Toán",
+        course_id: "math",
+        starts_at: new Date().toISOString(),
+        recording_allowed: true,
+      };
     else if (route.request().method === "POST") data = { ok: true };
     await route.fulfill({ json: data });
   });
-  await page.goto("/?page=meetings");
-  await page.getByRole("button", { name: /^Vào lớp/ }).click();
+  await page.goto("/?room=lesson");
   await expect(
     page.getByText("Camera chưa được mở", { exact: true }),
   ).toBeVisible();
@@ -127,45 +136,46 @@ test("listen-only classroom keeps the mobile toolbar clear of page content", asy
     ),
   ).toBe(true);
 });
-test("attendance and recordings stay comparison tables on small screens", async ({
+test("class/subject reports include per-lesson statistics and videos in compact mobile tables", async ({
   page,
 }) => {
-  for (const role of ["admin", "teacher", "student"])
-    for (const section of ["attendance", "recordings"]) {
-      await page.goto(`/?demo=1&role=${role}&page=${section}`);
-      if (role === "admin") {
-        await page
-          .getByRole("combobox", { name: "Lớp học", exact: true })
-          .fill("10a1");
-        await page.getByRole("option", { name: /^10A1/ }).click();
-        await page
-          .getByRole("combobox", { name: "Môn học", exact: true })
-          .fill("toan");
-        await page.getByRole("option", { name: /^Toán học/ }).click();
-      }
-      const region = page.locator(".comparison-scroll");
-      await expect(region.locator("tbody tr").first()).toBeVisible();
-      for (const width of [360, 390]) {
-        await page.setViewportSize({ width, height: 844 });
-        expect(
-          await region
-            .locator("table")
-            .evaluate((el) => getComputedStyle(el).display),
-        ).toBe("table");
-        await expect(region.locator("thead")).toBeVisible();
-        const first = region.locator("tbody tr").first().locator("td").first();
-        const before = await first.boundingBox();
-        await region.evaluate((el) => (el.scrollLeft = 250));
-        const after = await first.boundingBox();
-        expect(Math.abs(before!.x - after!.x)).toBeLessThan(1);
-        expect(
-          await page.evaluate(
-            () => document.documentElement.scrollWidth <= innerWidth,
-          ),
-        ).toBe(true);
-        await region.evaluate((el) => (el.scrollLeft = 0));
-      }
+  for (const role of ["admin", "teacher", "student"]) {
+    await page.goto(`/?demo=1&role=${role}&page=attendance`);
+    await expect(
+      page.getByRole("button", { name: "Bản ghi bài học", exact: true }),
+    ).toHaveCount(0);
+    if (role !== "student")
+      await page
+        .getByRole("combobox", { name: "Lớp học", exact: true })
+        .selectOption({ label: "10A1" });
+    await page
+      .getByRole("button", { name: "Xem thống kê & video", exact: true })
+      .first()
+      .click();
+    await expect(
+      page.getByRole("button", { name: "Xem video", exact: true }).first(),
+    ).toBeVisible();
+    await page
+      .getByRole("button", { name: "Xem thống kê buổi", exact: true })
+      .first()
+      .click();
+    const region = page.locator(".comparison-scroll");
+    await expect(region.locator("tbody tr").first()).toBeVisible();
+    for (const width of [360, 390]) {
+      await page.setViewportSize({ width, height: 844 });
+      expect(
+        await region
+          .locator("table")
+          .evaluate((el) => getComputedStyle(el).display),
+      ).toBe("table");
+      await expect(region.locator("thead")).toBeVisible();
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+      ).toBe(true);
     }
+  }
 });
 test("recording survives reload and retries only the failed multipart upload", async ({
   page,

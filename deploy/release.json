@@ -1,6 +1,6 @@
 {
-  "version": "0.6.1",
-  "schema_version": 5,
+  "version": "0.7.0",
+  "schema_version": 6,
   "updater_protocol": 1,
   "infrastructure_version": 1
 }
