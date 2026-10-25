@@ -13,7 +13,7 @@ spec.loader.exec_module(u)
 class UpdaterTests(unittest.TestCase):
     def test_requires_latest_complete_ci_and_all_required_jobs(self):
         run = {'id': 10, 'head_sha': 'a' * 40, 'head_branch': u.BRANCH, 'path': '.github/workflows/ci.yml', 'status': 'completed', 'conclusion': 'success'}
-        jobs = [{'name': name, 'status': 'completed', 'conclusion': 'success'} for name in ['api', 'web', 'containers']]
+        jobs = [{'name': name, 'status': 'completed', 'conclusion': 'success'} for name in ['api', 'web', 'containers', 'control']]
         with patch.object(u, 'github', side_effect=[{'workflow_runs': [run]}, {'jobs': jobs}]):
             self.assertTrue(u.ci_passed('a' * 40))
         for bad in ['failure', 'skipped', None]:

@@ -145,7 +145,12 @@ func (a *app) routes() http.Handler {
 		}
 		send(w, 200, map[string]string{"status": "ok", "commit": buildCommit, "version": buildVersion})
 	})
+	m.HandleFunc("GET /api/public-config", func(w http.ResponseWriter, r *http.Request) {
+		_, e := os.Stat(configPath("managed.json"))
+		send(w, 200, map[string]bool{"managed": e == nil})
+	})
 	m.HandleFunc("POST /api/login", a.login)
+	m.HandleFunc("POST /api/login/2fa", a.loginOTP)
 	m.HandleFunc("POST /api/reset-password", a.resetPassword)
 	m.HandleFunc("POST /api/accounts/{user}/recovery", a.auth(a.issuePasswordRecovery))
 	m.HandleFunc("GET /api/setup/status", a.setupStatus)
@@ -226,6 +231,10 @@ func (a *app) routes() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("X-Content-Type-Options", "nosniff")
 		w.Header().Set("Cache-Control", "no-store")
+		if _, err := os.Stat(configPath("managed.json")); err == nil && strings.HasPrefix(r.URL.Path, "/api/setup/") {
+			problem(w, 404, "Cấu hình được quản lý tại trung tâm")
+			return
+		}
 		if r.Method != "GET" && r.Method != "HEAD" {
 			if r.Header.Get("Origin") != a.origin {
 				problem(w, 403, "Origin rejected")
@@ -303,6 +312,8 @@ func main() {
 				a := &app{client: &http.Client{Timeout: 40 * time.Second}, origin: os.Getenv("APP_ORIGIN")}
 				e = a.configureBucket(context.Background(), cfg.R2, cfg.Retention)
 			}
+		case "managed-config", "managed-account", "managed-status":
+			e = managedCommand(db, os.Args[1])
 		case "bootstrap":
 			e = bootstrap(db)
 		default:

@@ -83,7 +83,7 @@ def ci_passed(target):
     if latest['status'] != 'completed' or latest['conclusion'] != 'success':
         return False
     jobs = github('/actions/runs/' + str(latest['id']) + '/jobs?per_page=100')['jobs']
-    return all(any(j['name'] == name and j['status'] == 'completed' and j['conclusion'] == 'success' for j in jobs) for name in ['api', 'web', 'containers'])
+    return all(any(j['name'] == name and j['status'] == 'completed' and j['conclusion'] == 'success' for j in jobs) for name in ['api', 'web', 'containers', 'control'])
 
 def manifest(ref):
     try:

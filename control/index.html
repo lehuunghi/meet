@@ -1,0 +1,718 @@
+<!doctype html>
+<html lang="vi">
+  <meta charset="utf-8" /><meta
+    name="viewport"
+    content="width=device-width,initial-scale=1"
+  /><title>Meet · Quản trị trung tâm</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      background: #f7f8fa;
+      color: #202124;
+      font: 14px system-ui;
+    }
+    header {
+      background: white;
+      border-bottom: 1px solid #ddd;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    h1 {
+      font-size: 20px;
+      margin: 0;
+    }
+    h2 {
+      font-size: 18px;
+    }
+    h3 {
+      font-size: 15px;
+    }
+    main {
+      max-width: 1280px;
+      margin: auto;
+      padding: 24px;
+    }
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+      border: 1px solid #cbd0d7;
+      border-radius: 6px;
+      padding: 9px;
+    }
+    button {
+      cursor: pointer;
+      background: white;
+      color: #174ea6;
+    }
+    button.primary {
+      background: #1a73e8;
+      color: white;
+      border-color: #1a73e8;
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: wait;
+    }
+    input,
+    textarea,
+    select {
+      width: 100%;
+      background: white;
+    }
+    label {
+      display: block;
+      margin: 10px 0;
+      color: #444;
+    }
+    label span {
+      display: block;
+      margin-bottom: 5px;
+    }
+    section,
+    .card {
+      background: white;
+      border: 1px solid #e0e3e7;
+      border-radius: 10px;
+      padding: 20px;
+      margin: 16px 0;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 12px;
+    }
+    .toolbar,
+    .tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .table {
+      overflow: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      white-space: nowrap;
+    }
+    th,
+    td {
+      text-align: left;
+      padding: 12px;
+      border-bottom: 1px solid #eee;
+    }
+    th {
+      font-size: 12px;
+      color: #666;
+    }
+    p {
+      color: #5f6368;
+      line-height: 1.5;
+    }
+    .badge {
+      background: #eef3fc;
+      padding: 4px 8px;
+      border-radius: 20px;
+    }
+    #message {
+      position: sticky;
+      top: 0;
+      background: #fff7df;
+      padding: 12px;
+      border-radius: 6px;
+      display: none;
+      z-index: 5;
+    }
+    .login {
+      max-width: 420px;
+      margin: 10vh auto;
+    }
+    dialog {
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      width: min(900px, 96vw);
+      max-height: 90vh;
+      padding: 24px;
+    }
+    dialog::backdrop {
+      background: #0006;
+    }
+    .row {
+      border: 1px solid #ddd;
+      padding: 12px;
+      border-radius: 7px;
+      margin: 8px 0;
+    }
+    small {
+      color: #666;
+    }
+    pre {
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    a {
+      color: #1967d2;
+    }
+    @media (max-width: 600px) {
+      main {
+        padding: 12px;
+      }
+      header {
+        padding: 14px;
+      }
+      .grid {
+        grid-template-columns: 1fr;
+      }
+      section {
+        padding: 14px;
+      }
+    }
+  </style>
+  <header>
+    <h1>m·meet <small>Quản trị trung tâm</small></h1>
+    <div id="identity"></div>
+  </header>
+  <main>
+    <div id="message" role="alert"></div>
+    <div id="content"></div>
+  </main>
+  <dialog id="modal"></dialog>
+  <script>
+    const $ = (s) => document.querySelector(s),
+      esc = (v) =>
+        String(v ?? "").replace(
+          /[&<>"']/g,
+          (c) =>
+            ({
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#39;",
+            })[c],
+        );
+    let schools = [],
+      selected = null,
+      cfg = {},
+      tab = "general",
+      me = null;
+    function msg(s) {
+      $("#message").textContent = s;
+      $("#message").style.display = "block";
+    }
+    async function api(path, data) {
+      const r = await fetch("/api/" + path, {
+        method: data === undefined ? "GET" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: data === undefined ? undefined : JSON.stringify(data),
+      });
+      const v = await r.json();
+      if (!r.ok) throw Error(v.error || "Chưa hoàn tất");
+      return v;
+    }
+    function input(name, label, value = "", type = "text") {
+      return `<label><span>${esc(label)}</span><input name="${esc(name)}" type="${type}" value="${esc(value)}" ${type === "password" ? 'autocomplete="new-password"' : ""}></label>`;
+    }
+    function check(name, label, value) {
+      return `<label><input style="width:auto" type="checkbox" name="${name}" ${value ? "checked" : ""}> ${esc(label)}</label>`;
+    }
+    function button(text, fn, cls = "") {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.textContent = text;
+      b.className = cls;
+      b.onclick = async () => {
+        b.disabled = true;
+        try {
+          await fn();
+        } catch (e) {
+          msg(e.message);
+        } finally {
+          b.disabled = false;
+        }
+      };
+      return b;
+    }
+    async function boot() {
+      try {
+        me = await api("me");
+        await list();
+      } catch {
+        login();
+      }
+    }
+    function login() {
+      $("#identity").textContent = "";
+      $("#content").innerHTML =
+        '<section class="login"><h2>Đăng nhập quản trị trung tâm</h2><form id="login">' +
+        input("email", "Email", "", "email") +
+        input("password", "Mật khẩu", "", "password") +
+        '<button class="primary">Đăng nhập</button></form></section>';
+      $("#login").onsubmit = async (e) => {
+        e.preventDefault();
+        try {
+          await api("login", Object.fromEntries(new FormData(e.target)));
+          await boot();
+        } catch (e) {
+          msg(e.message);
+        }
+      };
+    }
+    async function list() {
+      schools = await api("schools");
+      $("#identity").textContent = me.email + " · " + me.role;
+      $("#identity").append(
+        button("Đăng xuất", async () => {
+          await api("logout", {});
+          login();
+        }),
+      );
+      $("#content").innerHTML =
+        '<div class="toolbar" id="actions"><h2>Trường học & VPS</h2></div><p>Cấu hình chỉ được xác nhận khi VPS áp dụng thành công. Tác vụ nhạy cảm chờ hết buổi học.</p><label>Tìm trường hoặc domain<input id="search" placeholder="Nhập để lọc danh sách"></label><section class="table"><table><thead><tr><th>Trường</th><th>Domain / VPS</th><th>Phiên bản</th><th>Đồng bộ</th><th>Kết nối</th><th>Đang học</th><th></th></tr></thead><tbody id="rows"></tbody></table></section>';
+      if (me.role !== "viewer")
+        $("#actions").append(
+          button("+ Thêm trường", () => edit(null), "primary"),
+        );
+      $("#actions").append(button("Tải lại", list));
+      $("#actions").append(button("Nhật ký", audit));
+      if (me.role === "owner")
+        $("#actions").append(button("Quản trị trung tâm", admins));
+      $("#search").oninput = renderRows;
+      renderRows();
+    }
+    function renderRows() {
+      const term = $("#search").value.toLowerCase();
+      $("#rows").innerHTML = "";
+      for (const s of schools.filter((s) =>
+        (s.name + " " + s.domain).toLowerCase().includes(term),
+      )) {
+        const st = JSON.parse(s.status),
+          tr = document.createElement("tr");
+        tr.innerHTML = `<td><strong>${esc(s.name)}</strong></td><td>${esc(s.domain)}<br><small>${esc(s.ip)}</small></td><td>${esc(st.version || "Chưa cài")}</td><td>${s.applied === s.revision ? "Đã áp dụng" : "Đang chờ"} ${s.applied}/${s.revision}</td><td>${Date.now() / 1000 - s.seen < 90 ? "Đang kết nối" : "Chưa kết nối"}</td><td>${esc(st.live ?? "—")}</td><td></td>`;
+        tr.lastChild.append(button("Chi tiết", () => edit(s)));
+        $("#rows").append(tr);
+      }
+    }
+    async function edit(s) {
+      selected = s;
+      cfg = s
+        ? (await api("schools/" + s.id + "/config")).config
+        : {
+            retention_days: 30,
+            sfu: [],
+            turn: [],
+            r2: { enabled: false },
+            backup: { enabled: false, interval_hours: 24 },
+            initial_admin: {},
+            school_slug: "",
+          };
+      tab = "general";
+      draw();
+    }
+    function draw() {
+      const d = $("#modal");
+      d.innerHTML =
+        '<div class="toolbar" id="dialogtop"><h2>' +
+        esc(selected?.name || "Thêm trường học") +
+        '</h2></div><div class="tabs" id="tabs"></div><div id="panel"></div>';
+      $("#dialogtop").append(button("Đóng", () => d.close()));
+      for (const [id, title] of [
+        ["general", "Thông tin"],
+        ["sfu", "SFU / TURN"],
+        ["r2", "R2 / Backup"],
+        ["ops", "Cài đặt / Nâng cấp"],
+        ["accounts", "Quản trị trường"],
+        ["jobs", "Lịch sử"],
+      ])
+        $("#tabs").append(
+          button(title, async () => {
+            if ($("#configform")) collect();
+            tab = id;
+            draw();
+          }),
+        );
+      if (!d.open) d.showModal();
+      panel();
+    }
+    function collect() {
+      const f = $("#configform");
+      if (!f) return;
+      const data = new FormData(f),
+        get = (n) => data.get(n) || "";
+      if (tab === "general") {
+        cfg.school_slug = get("slug");
+        cfg.initial_admin = {
+          email: get("admin_email"),
+          password: get("admin_password"),
+        };
+        cfg._name = get("name");
+        cfg._domain = get("domain");
+        cfg._ip = get("ip");
+      }
+      if (tab === "sfu") {
+        cfg.sfu = [...f.querySelectorAll("[data-sfu]")].map((row) =>
+          Object.fromEntries(
+            [...row.querySelectorAll("input")].map((x) => [
+              x.name,
+              x.type === "checkbox"
+                ? x.checked
+                : x.name === "weight"
+                  ? Number(x.value)
+                  : x.value,
+            ]),
+          ),
+        );
+        cfg.turn = [...f.querySelectorAll("[data-turn]")].map((row) =>
+          Object.fromEntries(
+            [...row.querySelectorAll("input")].map((x) => [x.name, x.value]),
+          ),
+        );
+      }
+      if (tab === "r2") {
+        cfg.retention_days = Number(get("retention"));
+        cfg.r2 = {
+          ...cfg.r2,
+          enabled: data.has("enabled"),
+          account_id: get("account"),
+          bucket: get("bucket"),
+          access_key_id: get("access"),
+          secret_access_key: get("secret"),
+        };
+        cfg.backup = {
+          enabled: data.has("backup"),
+          interval_hours: Number(get("interval")),
+        };
+      }
+    }
+    async function save() {
+      collect();
+      const value = { ...cfg };
+      delete value._name;
+      delete value._domain;
+      delete value._ip;
+      const result = await api("schools/save", {
+        id: selected?.id,
+        revision: selected?.revision,
+        name: cfg._name || selected?.name,
+        domain: cfg._domain || selected?.domain,
+        ip: cfg._ip || selected?.ip,
+        config: value,
+      });
+      $("#modal").close();
+      await list();
+      msg("Đã lưu cấu hình. VPS sẽ xác nhận sau khi áp dụng.");
+      await edit(schools.find((s) => s.id === result.id));
+    }
+    function panel() {
+      const p = $("#panel");
+      if (tab === "jobs") {
+        jobs();
+        return;
+      }
+      if (tab === "ops") {
+        operations();
+        return;
+      }
+      if (tab === "accounts") {
+        accounts();
+        return;
+      }
+      const f = document.createElement("form");
+      f.id = "configform";
+      f.onsubmit = (e) => {
+        e.preventDefault();
+        save().catch((e) => msg(e.message));
+      };
+      p.append(f);
+      if (tab === "general")
+        f.innerHTML =
+          '<div class="grid">' +
+          input("name", "Tên trường", cfg._name || selected?.name) +
+          input("domain", "Domain website", cfg._domain || selected?.domain) +
+          input("ip", "IP public VPS", cfg._ip || selected?.ip) +
+          input("slug", "Mã nội bộ (không hiện ở login)", cfg.school_slug) +
+          input(
+            "admin_email",
+            "Email admin đầu tiên",
+            cfg.initial_admin?.email,
+            "email",
+          ) +
+          input(
+            "admin_password",
+            "Mật khẩu khởi tạo (12–72 byte)",
+            cfg.initial_admin?.password,
+            "password",
+          ) +
+          "</div><p>Thông tin admin đầu tiên chỉ dùng khi trường chưa được khởi tạo. Đổi domain ở tab Cài đặt / Nâng cấp.</p>";
+      if (tab === "sfu") {
+        f.innerHTML =
+          '<h3>SFU Apps · cân bằng có trọng số theo lớp</h3><div id="sfus"></div><div id="addsf"></div><h3>TURN</h3><div id="turns"></div><div id="addturn"></div>';
+        for (const v of cfg.sfu || []) sfuRow(v);
+        for (const v of cfg.turn || []) turnRow(v);
+        $("#addsf").append(
+          button("+ SFU App", () =>
+            sfuRow({ id: crypto.randomUUID(), weight: 1, enabled: true }),
+          ),
+        );
+        $("#addturn").append(button("+ TURN key", () => turnRow({ id: "" })));
+      }
+      if (tab === "r2")
+        f.innerHTML =
+          check("enabled", "Bật lưu video R2", cfg.r2?.enabled) +
+          '<div class="grid">' +
+          input("account", "Cloudflare Account ID", cfg.r2?.account_id) +
+          input("bucket", "Bucket riêng của trường", cfg.r2?.bucket) +
+          input("access", "Access Key ID", cfg.r2?.access_key_id, "password") +
+          input(
+            "secret",
+            "Secret Access Key",
+            cfg.r2?.secret_access_key,
+            "password",
+          ) +
+          input(
+            "retention",
+            "Số ngày giữ video",
+            cfg.retention_days || 30,
+            "number",
+          ) +
+          "</div><h3>Sao lưu database + cấu hình + mã nguồn</h3>" +
+          check("backup", "Bật backup tự động", cfg.backup?.enabled) +
+          input(
+            "interval",
+            "Chu kỳ backup (giờ)",
+            cfg.backup?.interval_hours || 24,
+            "number",
+          ) +
+          "<p>Dùng bucket riêng cho từng trường. Khi đã có video, hệ thống hiện giữ nguyên account/bucket để bảo vệ vị trí dữ liệu cũ. Giảm thời hạn lưu có thể xóa video sớm hơn.</p>";
+      if (me.role !== "viewer") {
+        const b = document.createElement("button");
+        b.textContent = "Lưu & đồng bộ";
+        b.className = "primary";
+        f.append(b);
+      } else for (const e of f.elements) e.disabled = true;
+    }
+    function sfuRow(v) {
+      const row = document.createElement("div");
+      row.className = "row";
+      row.dataset.sfu = "";
+      row.innerHTML =
+        '<div class="grid">' +
+        input("id", "ID cấu hình", v.id) +
+        input("name", "Tên", v.name) +
+        input("app_id", "App ID", v.app_id) +
+        input("secret", "App Secret", v.secret, "password") +
+        input("weight", "Trọng số", v.weight || 1, "number") +
+        "</div>" +
+        check("enabled", "Nhận lớp mới", v.enabled);
+      row.append(button("Xóa dòng", () => row.remove()));
+      $("#sfus").append(row);
+    }
+    function turnRow(v) {
+      const row = document.createElement("div");
+      row.className = "row";
+      row.dataset.turn = "";
+      row.innerHTML =
+        '<div class="grid">' +
+        input("id", "TURN Key ID", v.id) +
+        input("token", "API Token", v.token, "password") +
+        "</div>";
+      row.append(button("Xóa dòng", () => row.remove()));
+      $("#turns").append(row);
+    }
+    async function action(name, payload = {}) {
+      if (!selected) throw Error("Lưu trường trước");
+      await api("schools/" + selected.id + "/action", {
+        action: name,
+        payload,
+      });
+      msg("Đã xếp hàng tác vụ. Xem Lịch sử để kiểm tra kết quả.");
+    }
+    function operations() {
+      const p = $("#panel");
+      if (!selected) {
+        p.textContent = "Lưu trường trước khi cài đặt.";
+        return;
+      }
+      const status = JSON.parse(selected.status);
+      p.innerHTML =
+        '<section><h3>Cài mới Ubuntu</h3><p>Chỉ dùng VPS trống. Đối chiếu fingerprint SSH trước khi cài. Không ghi đè bản đã có.</p><form id="provision"><div class="grid">' +
+        input("port", "Cổng SSH", 22, "number") +
+        input("fingerprint", "Fingerprint SSH SHA256") +
+        input("password", "Mật khẩu root ban đầu", "", "password") +
+        '</div><label>Hoặc khóa SSH riêng<textarea name="private_key" rows="3" autocomplete="off"></textarea></label><button class="primary">Cài trường lên VPS</button></form></section><section><h3>Phiên bản & Sao lưu</h3><p>Phiên bản mới: ' +
+        esc(status.update?.available_version || "Chưa kiểm tra") +
+        '</p><div id="opbuttons" class="toolbar"></div></section><section><h3>Đổi domain</h3><form id="domain">' +
+        input("domain", "Domain mới") +
+        "<button>Kiểm tra DNS/HTTPS & chuyển domain</button></form><p>Cần DNS trỏ tới VPS. Thao tác chờ hết buổi live.</p></section>";
+      $("#provision").onsubmit = async (e) => {
+        e.preventDefault();
+        const values = Object.fromEntries(new FormData(e.target));
+        values.port = Number(values.port);
+        try {
+          await action("provision", values);
+          e.target.reset();
+        } catch (e) {
+          msg(e.message);
+        }
+      };
+      $("#opbuttons").append(
+        button("Kiểm tra bản mới", () => action("check")),
+        button("Nâng cấp đã kiểm tra", () =>
+          action("update", { target: status.update?.available_sha || "" }),
+        ),
+        button("Backup ngay", () => action("backup")),
+        button("Đồng bộ lại", () => action("configure")),
+      );
+      $("#domain").onsubmit = async (e) => {
+        e.preventDefault();
+        try {
+          await action("domain", Object.fromEntries(new FormData(e.target)));
+        } catch (e) {
+          msg(e.message);
+        }
+      };
+      if (me.role === "viewer")
+        for (const e of p.querySelectorAll("button,input,textarea"))
+          e.disabled = true;
+    }
+    async function jobs() {
+      if (!selected) {
+        $("#panel").textContent = "Lưu trường trước";
+        return;
+      }
+      const rows = await api("schools/" + selected.id + "/jobs");
+      $("#panel").innerHTML =
+        '<div class="table"><table><tr><th>Thời gian</th><th>Tác vụ</th><th>Trạng thái</th><th>Kết quả</th></tr>' +
+        rows
+          .map(
+            (j) =>
+              `<tr><td>${new Date(j.created * 1000).toLocaleString("vi-VN")}</td><td>${esc(j.action)}</td><td>${esc(j.state)}</td><td>${esc(JSON.parse(j.result).code || "")}</td></tr>`,
+          )
+          .join("") +
+        "</table></div>";
+      $("#panel").append(button("Tải lại", jobs));
+    }
+    function accounts() {
+      const p = $("#panel");
+      if (!selected) {
+        p.textContent = "Lưu trường trước";
+        return;
+      }
+      const rows = JSON.parse(selected.status).admins || [];
+      p.innerHTML =
+        '<p>Tài khoản do VPS báo về. Nhập đúng ID và revision khi thay đổi. Quản trị gốc được bảo vệ theo chính sách hiện có.</p><div class="table"><table><tr><th>ID</th><th>Email</th><th>Tên</th><th>Revision</th></tr>' +
+        rows
+          .map(
+            (a) =>
+              `<tr><td>${esc(a.id)}</td><td>${esc(a.email)}</td><td>${esc(a.name)}</td><td>${esc(a.revision)}</td></tr>`,
+          )
+          .join("") +
+        '</table></div><form id="account"><div class="grid">' +
+        input("id", "ID (trống để tạo mới)") +
+        input("revision", "Revision", 0, "number") +
+        input("email", "Email", "", "email") +
+        input("name", "Tên") +
+        input("password", "Mật khẩu tài khoản mới", "", "password") +
+        '</div><label>Trạng thái<select name="state"><option value="active">Hoạt động</option><option value="suspended">Tạm ngưng</option><option value="disabled">Vô hiệu hóa</option></select></label><div id="permissions"></div><button>Lưu tài khoản</button></form>';
+      for (const [id, title] of [
+        ["academic", "Học vụ"],
+        ["accounts", "Tài khoản"],
+        ["attendance", "Điểm danh"],
+        ["meetings", "Buổi học"],
+        ["recordings", "Bản ghi"],
+        ["audit", "Nhật ký"],
+      ])
+        $("#permissions").insertAdjacentHTML(
+          "beforeend",
+          check(id, title, true),
+        );
+      $("#account").onsubmit = async (e) => {
+        e.preventDefault();
+        const fd = new FormData(e.target),
+          data = Object.fromEntries(fd);
+        data.revision = Number(data.revision);
+        data.permissions = [
+          "academic",
+          "accounts",
+          "attendance",
+          "meetings",
+          "recordings",
+          "audit",
+        ].filter((k) => fd.has(k));
+        for (const k of data.permissions) delete data[k];
+        try {
+          await action("accounts", data);
+          e.target.reset();
+        } catch (e) {
+          msg(e.message);
+        }
+      };
+      if (me.role === "viewer")
+        for (const e of p.querySelectorAll("button,input,select"))
+          e.disabled = true;
+    }
+    async function audit() {
+      const rows = await api("audit");
+      const d = $("#modal");
+      d.innerHTML =
+        '<h2>Nhật ký trung tâm</h2><div class="table"><table><tr><th>Thời gian</th><th>Người thực hiện</th><th>Thao tác</th><th>Đối tượng</th></tr>' +
+        rows
+          .map(
+            (r) =>
+              `<tr><td>${new Date(r.at * 1000).toLocaleString("vi-VN")}</td><td>${esc(r.actor)}</td><td>${esc(r.action)}</td><td>${esc(r.target)}</td></tr>`,
+          )
+          .join("") +
+        "</table></div>";
+      d.append(button("Đóng", () => d.close()));
+      if (!d.open) d.showModal();
+    }
+    async function admins() {
+      const rows = await api("admins");
+      const d = $("#modal");
+      d.innerHTML =
+        '<h2>Tài khoản quản trị trung tâm</h2><div class="table"><table><tr><th>ID</th><th>Email</th><th>Quyền</th><th>Hoạt động</th></tr>' +
+        rows
+          .map(
+            (r) =>
+              `<tr><td>${esc(r.id)}</td><td>${esc(r.email)}</td><td>${esc(r.role)}</td><td>${r.active ? "Có" : "Không"}</td></tr>`,
+          )
+          .join("") +
+        '</table></div><form id="admins">' +
+        input("id", "ID (trống để tạo mới)") +
+        input("email", "Email", "", "email") +
+        input(
+          "password",
+          "Mật khẩu mới (để trống nếu giữ nguyên)",
+          "",
+          "password",
+        ) +
+        '<label>Quyền<select name="role"><option value="operator">Vận hành</option><option value="viewer">Chỉ xem</option><option value="owner">Chủ hệ thống</option></select></label>' +
+        check("active", "Hoạt động", true) +
+        "<button>Lưu</button></form>";
+      d.append(button("Đóng", () => d.close()));
+      if (!d.open) d.showModal();
+      $("#admins").onsubmit = async (e) => {
+        e.preventDefault();
+        const f = new FormData(e.target);
+        try {
+          await api("admins", {
+            ...Object.fromEntries(f),
+            active: f.has("active"),
+          });
+          await admins();
+        } catch (e) {
+          msg(e.message);
+        }
+      };
+    }
+    boot();
+  </script>
+</html>

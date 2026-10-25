@@ -454,13 +454,28 @@ func TestIntegration(t *testing.T) {
 	if request("GET", "/api/me", "", limited).Code != 401 {
 		t.Fatal("2FA change kept previous session")
 	}
-	loginBody := `{"school":"demo","email":"` + adminEmail + `","password":"limited-password-123","code":"`
-	if request("POST", "/api/login", loginBody+`"}`, nil).Code != 401 || request("POST", "/api/login", loginBody+otp+`"}`, nil).Code != 401 {
-		t.Fatal("2FA missing/replayed code accepted")
+	w = request("POST", "/api/login", `{"school":"demo","email":"`+adminEmail+`","password":"limited-password-123"}`, nil)
+	if w.Code != 202 || len(w.Result().Cookies()) != 0 {
+		t.Fatal("2FA must return challenge without session", w.Body.String())
 	}
-	if request("POST", "/api/login", loginBody+otpForTest(setup["secret"], step+1)+`"}`, nil).Code != 200 {
-		t.Fatal("valid second factor rejected")
+	var challenge struct {
+		Token string `json:"challenge"`
 	}
+	json.Unmarshal(w.Body.Bytes(), &challenge)
+	if challenge.Token == "" {
+		t.Fatal("missing challenge")
+	}
+	if request("POST", "/api/login/2fa", `{"challenge":"`+challenge.Token+`","code":"`+otp+`"}`, nil).Code != 401 {
+		t.Fatal("replayed OTP accepted")
+	}
+	w = request("POST", "/api/login/2fa", `{"challenge":"`+challenge.Token+`","code":"`+otpForTest(setup["secret"], step+1)+`"}`, nil)
+	if w.Code != 200 {
+		t.Fatal("valid second factor rejected", w.Body.String())
+	}
+	if request("POST", "/api/login/2fa", `{"challenge":"`+challenge.Token+`","code":"123456"}`, nil).Code != 401 {
+		t.Fatal("challenge reused")
+	}
+
 	// Database constraint must reject a cross-tenant enrollment even outside the API.
 	if _, e = db.ExecContext(context.Background(), "INSERT INTO enrollments VALUES('school-demo','demo-class','other-student')"); e == nil {
 		t.Fatal("cross-school FK accepted")

@@ -11,9 +11,9 @@ fail(){ printf '%s\n' "$*" >&2; exit 1; }
 [[ -r /etc/os-release ]] || fail 'Không xác định được hệ điều hành.'
 . /etc/os-release
 [[ "$ID" == ubuntu && ( "$VERSION_ID" == 24.04 || "$VERSION_ID" == 26.04 ) ]] || fail 'Hỗ trợ Ubuntu 24.04/26.04.'
-[[ -r /dev/tty ]] || fail 'Cần terminal tương tác để nhập domain.'
+[[ -n "${MEET_DOMAIN:-}" || -r /dev/tty ]] || fail 'Cần terminal tương tác để nhập domain.'
 printf '\nMEET · CÀI ĐẶT VÀ KHỞI TẠO\nDomain cần có DNS trỏ về VPS và TCP 80/443 được mở.\n'
-read -r -p 'Domain quản lý (ví dụ meet.truong.edu.vn): ' MEET_DOMAIN </dev/tty
+if [[ -z "${MEET_DOMAIN:-}" ]]; then read -r -p 'Domain quản lý (ví dụ meet.truong.edu.vn): ' MEET_DOMAIN </dev/tty; fi
 MEET_DOMAIN=${MEET_DOMAIN,,}
 [[ ${#MEET_DOMAIN} -le 253 && "$MEET_DOMAIN" =~ ^([a-z0-9]([a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,63}$ ]] || fail 'Chỉ nhập hostname hợp lệ, không có https:// hoặc đường dẫn.'
 apt-get update
@@ -124,6 +124,7 @@ if [[ -n "${MEET_RESTORE_OBJECT:-}" ]]; then
   python3 deploy/backup.py restore --object "$MEET_RESTORE_OBJECT" --credentials "$MEET_RESTORE_CREDENTIALS" --key "$MEET_RESTORE_KEY"
   curl -fsS --retry 30 --retry-connrefused --retry-delay 2 "https://$MEET_DOMAIN/api/health" >/dev/null
 fi
+if [[ "${MEET_MANAGED:-}" == true ]]; then exit 0; fi
 printf '\nCÀI ĐẶT THÀNH CÔNG · HTTPS VÀ DATABASE ĐÃ PHẢN HỒI\n'
 printf 'Mở trang cấu hình riêng tư dưới đây (không gửi link cho người khác):\nhttps://%s/setup#token=%s\n' "$MEET_DOMAIN" "$(cat runtime-config/setup-token)"
 printf '\nTại trang này: tạo trường/admin → nhập SFU Apps/TURN → cấu hình R2 lưu 30 ngày.\n'

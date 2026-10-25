@@ -112,6 +112,14 @@ function Video({
   );
 }
 function App() {
+  const [loginChallenge, setLoginChallenge] = useState("");
+  const [managed, setManaged] = useState(false);
+  useEffect(() => {
+    if (!demo)
+      void api<any>("/public-config")
+        .then((v) => setManaged(v.managed))
+        .catch(() => {});
+  }, []);
   useEffect(() => {
     const ended = () => {
       setUser(null);
@@ -239,58 +247,78 @@ function App() {
           onSubmit={(e) => {
             e.preventDefault();
             const f = new FormData(e.currentTarget);
-            void safe(async () =>
-              setUser(await api("/login", Object.fromEntries(f))),
-            );
+            void safe(async () => {
+              const result = await api<any>(
+                loginChallenge ? "/login/2fa" : "/login",
+                loginChallenge
+                  ? { challenge: loginChallenge, code: f.get("code") }
+                  : Object.fromEntries(f),
+              );
+              if (result.requires_2fa) setLoginChallenge(result.challenge);
+              else {
+                setLoginChallenge("");
+                setUser(result);
+              }
+            });
           }}
         >
           <span className="eyebrow">CHÀO MỪNG TRỞ LẠI</span>
           <h2>Đăng nhập trường học</h2>
           <p>Tài khoản do nhà trường cung cấp.</p>
-          <label>
-            Mã trường
-            <input
-              name="school"
-              required
-              defaultValue="demo"
-              autoComplete="organization"
-            />
-          </label>
-          <label>
-            Email hoặc mã SV
-            <input
-              name="email"
-              type="text"
-              required
-              autoComplete="username"
-              placeholder="Email hoặc mã SV"
-            />
-          </label>
-          <label>
-            Mật khẩu
-            <input
-              name="password"
-              type="password"
-              required
-              autoComplete="current-password"
-            />
-          </label>
+          {!loginChallenge && (
+            <>
+              <label>
+                Email hoặc mã SV
+                <input
+                  name="email"
+                  type="text"
+                  required
+                  autoComplete="username"
+                  placeholder="Email hoặc mã SV"
+                />
+              </label>
+              <label>
+                Mật khẩu
+                <input
+                  name="password"
+                  type="password"
+                  required
+                  autoComplete="current-password"
+                />
+              </label>
+            </>
+          )}
           {error && (
             <p role="alert" className="error">
               {error}
             </p>
           )}
-          <label>
-            Mã 2FA (nếu đã bật)
-            <input
-              name="code"
-              inputMode="numeric"
-              pattern="[0-9]{6}"
-              autoComplete="one-time-code"
-              placeholder="6 chữ số"
-            />
-          </label>
-          <button>Đăng nhập →</button>
+          {loginChallenge && (
+            <>
+              <label>
+                Mã xác thực 2FA
+                <input
+                  name="code"
+                  inputMode="numeric"
+                  pattern="[0-9]{6}"
+                  autoComplete="one-time-code"
+                  placeholder="6 chữ số"
+                />
+              </label>
+            </>
+          )}
+          <button>{loginChallenge ? "Xác thực →" : "Đăng nhập →"}</button>
+          {loginChallenge && (
+            <button
+              type="button"
+              onClick={() => {
+                setLoginChallenge("");
+                setError("");
+              }}
+            >
+              Quay lại đăng nhập
+            </button>
+          )}
           <a href="?demo=1">Xem trước giao diện</a>
         </form>
       </main>
@@ -711,16 +739,18 @@ function App() {
                 <AcademicAdmin demo={demo} onChange={refresh} />
               )}
               {allowed("accounts") && <Accounts demo={demo} />}
-              <section className="section">
-                <h2>Cấu hình hệ thống dùng chung</h2>
-                <p>
-                  SFU theo lớp, TURN, R2, thời hạn ghi hình và lịch sao lưu. Cần
-                  mã cài đặt riêng của người vận hành VPS.
-                </p>
-                <a href="/setup" target="_blank" rel="noreferrer">
-                  Mở cấu hình SFU / R2 / sao lưu ↗
-                </a>
-              </section>
+              {!managed && (
+                <section className="section">
+                  <h2>Cấu hình hệ thống dùng chung</h2>
+                  <p>
+                    SFU theo lớp, TURN, R2, thời hạn ghi hình và lịch sao lưu.
+                    Cần mã cài đặt riêng của người vận hành VPS.
+                  </p>
+                  <a href="/setup" target="_blank" rel="noreferrer">
+                    Mở cấu hình SFU / R2 / sao lưu ↗
+                  </a>
+                </section>
+              )}
             </>
           )}
           {page === "audit" && user.role === "admin" && allowed("audit") && (

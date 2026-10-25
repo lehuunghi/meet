@@ -6,8 +6,10 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
+	"time"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -21,6 +23,13 @@ func (a *app) login(w http.ResponseWriter, r *http.Request) {
 	}
 	if !decode(w, r, &in) {
 		return
+	}
+	// Managed installs derive tenancy from the configured origin, never from form input.
+	if school, err := a.loginSchool(r); err != nil {
+		problem(w, 403, "Domain trường chưa được cấu hình")
+		return
+	} else if school != "" {
+		in.School = school
 	}
 	ip, _, _ := net.SplitHostPort(r.RemoteAddr)
 	// Atomic fixed window; never trust forwarded headers from the client.
@@ -50,10 +59,19 @@ func (a *app) login(w http.ResponseWriter, r *http.Request) {
 		problem(w, 503, "Authentication unavailable")
 		return
 	}
-	if enabled > 0 && !a.verifyOTP(r, u.ID, in.Code) {
-		problem(w, 401, "Cần mã xác thực 2FA hợp lệ, chưa sử dụng")
+	if enabled > 0 {
+		token := uid() + uid()
+		raw, _ := json.Marshal(u)
+		if a.cache.Set(r.Context(), "login-challenge:"+digest(token), raw, 3*time.Minute).Err() != nil {
+			problem(w, 503, "Authentication unavailable")
+			return
+		}
+		send(w, 202, map[string]any{"requires_2fa": true, "challenge": token})
 		return
 	}
+	a.finishLogin(w, r, u)
+}
+func (a *app) finishLogin(w http.ResponseWriter, r *http.Request, u identity) {
 	if u.Role == "admin" {
 		var grants []byte
 		err := a.db.QueryRowContext(r.Context(), "SELECT permissions FROM user_controls WHERE user_id=?", u.ID).Scan(&grants)
@@ -75,6 +93,93 @@ func (a *app) login(w http.ResponseWriter, r *http.Request) {
 	}
 	http.SetCookie(w, &http.Cookie{Name: "meet_session", Value: token, Path: "/api", HttpOnly: true, Secure: a.secure, SameSite: http.SameSiteStrictMode, MaxAge: 43200})
 	send(w, 200, u)
+}
+
+// A pending challenge is not a session and never revokes an existing login.
+func (a *app) loginOTP(w http.ResponseWriter, r *http.Request) {
+	var in struct {
+		Challenge string `json:"challenge"`
+		Code      string `json:"code"`
+	}
+	if !decode(w, r, &in) {
+		return
+	}
+	key := "login-challenge:" + digest(in.Challenge)
+	n, e := a.cache.Eval(r.Context(), `local n=redis.call('INCR',KEYS[1]);if n==1 then redis.call('EXPIRE',KEYS[1],180) end;return n`, []string{key + ":attempts"}).Int()
+	if e != nil {
+		problem(w, 503, "Authentication unavailable")
+		return
+	}
+	if n > 5 {
+		a.cache.Del(r.Context(), key)
+		problem(w, 429, "Hãy đăng nhập lại")
+		return
+	}
+	raw, e := a.cache.Get(r.Context(), key).Result()
+	var u identity
+	if e != nil || json.Unmarshal([]byte(raw), &u) != nil {
+		problem(w, 401, "Yêu cầu đã hết hạn. Đăng nhập lại.")
+		return
+	}
+	var active bool
+	var version int
+	if a.db.QueryRowContext(r.Context(), "SELECT active,session_version FROM users WHERE id=? AND school_id=?", u.ID, u.School).Scan(&active, &version) != nil || !active || version != u.Version {
+		problem(w, 401, "Account unavailable")
+		return
+	}
+	if school, err := a.loginSchool(r); err != nil {
+		problem(w, 403, "Domain không hợp lệ")
+		return
+	} else if school != "" {
+		var id string
+		if a.db.QueryRowContext(r.Context(), "SELECT id FROM schools WHERE slug=?", school).Scan(&id) != nil || id != u.School {
+			problem(w, 403, "Domain không hợp lệ")
+			return
+		}
+	}
+	if !a.verifyOTP(r, u.ID, in.Code) {
+		problem(w, 401, "Mã xác thực không hợp lệ hoặc đã dùng")
+		return
+	}
+	if a.cache.GetDel(r.Context(), key).Val() != raw {
+		problem(w, 401, "Yêu cầu đã được sử dụng")
+		return
+	}
+	a.finishLogin(w, r, u)
+}
+func (a *app) loginSchool(r *http.Request) (string, error) {
+	var binding struct {
+		School string `json:"school"`
+		Domain string `json:"domain"`
+	}
+	raw, e := os.ReadFile(configPath("managed.json"))
+	if e == nil {
+		if json.Unmarshal(raw, &binding) != nil || binding.School == "" {
+			return "", fmt.Errorf("invalid binding")
+		}
+		origin, err := url.Parse(a.origin)
+		host := strings.Split(r.Host, ":")[0]
+		if err != nil || !strings.EqualFold(host, origin.Hostname()) || !strings.EqualFold(host, binding.Domain) {
+			return "", fmt.Errorf("host mismatch")
+		}
+		return binding.School, nil
+	}
+	if !os.IsNotExist(e) && configPath("managed.json") != "" {
+		return "", e
+	}
+	var count int
+	var slug string
+	if a.db.QueryRowContext(r.Context(), "SELECT COUNT(*),COALESCE(MIN(slug),'') FROM schools").Scan(&count, &slug) != nil {
+		return "", fmt.Errorf("database")
+	}
+	if count == 1 {
+		return slug, nil
+	}
+	if value := os.Getenv("LOGIN_SCHOOL"); value != "" {
+		return value, nil
+	}
+	// Legacy multi-school APIs remain compatible until explicitly bound by the agent.
+	return "", nil
 }
 func (a *app) logout(w http.ResponseWriter, r *http.Request) {
 	c, _ := r.Cookie("meet_session")

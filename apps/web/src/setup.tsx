@@ -43,6 +43,13 @@ const blank: Settings = {
   backup: { enabled: false, interval_hours: 24 },
 };
 export function Setup() {
+  useEffect(() => {
+    void api<any>("/public-config")
+      .then((v) => {
+        if (v.managed) location.replace("/");
+      })
+      .catch(() => {});
+  }, []);
   const [token, setToken] = useState(
       () => new URLSearchParams(location.hash.slice(1)).get("token") || "",
     ),
