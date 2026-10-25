@@ -31,11 +31,16 @@ export function RoomTools({
   useEffect(() => {
     if (demo) {
       setPeople([
-        { id: user.id, name: user.name, role: "student", hand_raised: false },
+        {
+          id: user.id,
+          name: user.name,
+          role: canManage ? "teacher" : "student",
+          hand_raised: false,
+        },
         {
           id: "teacher",
-          name: "Nguyễn Minh Anh",
-          role: "teacher",
+          name: canManage ? "Nguyễn Hoàng An" : "Nguyễn Minh Anh",
+          role: canManage ? "student" : "teacher",
           hand_raised: false,
         },
       ]);
@@ -73,7 +78,7 @@ export function RoomTools({
       active = false;
       clearInterval(id);
     };
-  }, [joined, meeting, demo]);
+  }, [joined, meeting, demo, canManage, user.id, user.name]);
   return (
     <section className="section room-tools">
       {canManage && <RoomModeration meeting={meeting} demo={demo} />}
