@@ -1,5 +1,5 @@
 """Root-owned outbound Meet agent. Fixed operations only; no remote shell endpoint."""
-import fcntl, importlib.util, json, os, re, shutil, socket, subprocess, sys, time, urllib.request, uuid
+import base64, fcntl, importlib.util, json, os, re, shutil, socket, subprocess, sys, time, urllib.request, uuid
 from pathlib import Path
 from urllib.parse import urlparse
 STATE=Path('/etc/meet/agent.json');ROOT=Path('/opt/meet');JOURNAL=Path('/var/lib/meet-agent/jobs.json')
@@ -59,22 +59,38 @@ def _domain_change(payload):
         else:site.write_bytes(old)
         run('caddy','validate','--config','/etc/caddy/Caddyfile');run('systemctl','reload','caddy');compose('up','-d','--no-deps','--no-build','--force-recreate','api');raise
 
+DOMAIN_JOURNAL=Path('/var/lib/meet-agent/domain.json')
+
+def recover_domain():
+    if not DOMAIN_JOURNAL.exists():return
+    data=json.loads(DOMAIN_JOURNAL.read_text());domain=data['domain']
+    if not HOST.fullmatch(domain):raise ValueError('INVALID_DOMAIN_JOURNAL')
+    site=Path('/etc/caddy/meet-sites')/(domain+'.caddy')
+    (ROOT/'.env').write_bytes(base64.b64decode(data['env']));os.chmod(ROOT/'.env',0o600)
+    binding=ROOT/'runtime-config/managed.json';binding.write_bytes(base64.b64decode(data['binding']));os.chmod(binding,0o600);os.chown(binding,10001,10001)
+    if data['site'] is None:site.unlink(missing_ok=True)
+    else:site.write_bytes(base64.b64decode(data['site']));os.chmod(site,0o644)
+    run('caddy','validate','--config','/etc/caddy/Caddyfile');run('systemctl','reload','caddy')
+    compose('up','-d','--no-deps','--no-build','--force-recreate','api');updater().health()
+    compose('exec','-T','api','/usr/local/bin/meet','configure-storage')
+    DOMAIN_JOURNAL.unlink();(ROOT/'runtime-config/maintenance').unlink(missing_ok=True)
+
 def domain_change(payload):
-    maintenance=ROOT/'runtime-config/maintenance'
+    maintenance=ROOT/'runtime-config/maintenance';domain=payload.get('domain','')
+    if not HOST.fullmatch(domain):raise ValueError('INVALID_DOMAIN')
     if maintenance.exists():raise ValueError('MAINTENANCE_ALREADY_ACTIVE')
     with open('/run/meet-backup.lock','w') as lock:
         fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
+        site=Path('/etc/caddy/meet-sites')/(domain+'.caddy')
+        atomic(DOMAIN_JOURNAL,{'domain':domain,'env':base64.b64encode((ROOT/'.env').read_bytes()).decode(),'binding':base64.b64encode((ROOT/'runtime-config/managed.json').read_bytes()).decode(),'site':base64.b64encode(site.read_bytes()).decode() if site.exists() else None})
         with open(maintenance,'x') as f:f.write('domain-change')
         try:
             if cli('managed-status')['live']>0:raise ValueError('LIVE_MEETINGS')
             _domain_change(payload)
         except Exception:
-            # _domain_change restores its origin/binding before raising. If health is not
-            # restored, preserve maintenance and require operator recovery.
-            updater().health()
-            maintenance.unlink(missing_ok=True)
+            recover_domain() # Keep journal/maintenance if recovery itself fails.
             raise
-        maintenance.unlink(missing_ok=True)
+        DOMAIN_JOURNAL.unlink();maintenance.unlink(missing_ok=True)
 
 def execute(job,status):
     action=job['action'];payload=job['payload']
@@ -124,6 +140,10 @@ if __name__=='__main__':
     with open('/run/meet-agent.lock','w') as lock:
         fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
         while True:
-            try:tick()
+            try:
+                if DOMAIN_JOURNAL.exists():
+                    with open('/run/meet-backup.lock','w') as recovery_lock:
+                        fcntl.flock(recovery_lock,fcntl.LOCK_EX|fcntl.LOCK_NB);recover_domain()
+                tick()
             except Exception:pass
             time.sleep(20)

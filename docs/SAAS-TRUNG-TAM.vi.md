@@ -59,7 +59,7 @@ Mã đăng ký không đưa vào URL/history hoặc chat. Chỉ tắt setup cũ 
 
 ## Đổi domain
 
-DNS A/AAAA phải trỏ tới VPS; tác vụ kiểm tra IP, cấp/chứng thực HTTPS, khóa ghi, kiểm tra lại buổi live, đổi APP_ORIGIN/binding, recreate API và cập nhật R2 CORS. Lỗi thì khôi phục origin/binding/proxy; nếu health không trở lại, giữ maintenance để xử lý. Domain trung tâm chỉ cập nhật sau ACK success; sau đó xếp cấu hình mới. Chưa tự sửa DNS ở nhà cung cấp, chưa có journal phục hồi domain khi VPS mất điện giữa thao tác. Domain cũ không tự chuyển hướng trong bản này.
+DNS A/AAAA phải trỏ tới VPS; tác vụ kiểm tra IP, cấp/chứng thực HTTPS, khóa ghi, kiểm tra lại buổi live, đổi APP_ORIGIN/binding, recreate API và cập nhật R2 CORS. Lỗi thì khôi phục origin/binding/proxy; nếu health không trở lại, giữ maintenance để xử lý. Domain trung tâm chỉ cập nhật sau ACK success; sau đó xếp cấu hình mới. Chưa tự sửa DNS ở nhà cung cấp, có journal root-only để phục hồi origin/binding/proxy khi agent khởi động lại sau gián đoạn. Domain cũ không tự chuyển hướng trong bản này.
 
 ## Quản trị tài khoản
 

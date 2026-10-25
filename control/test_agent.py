@@ -20,4 +20,19 @@ class AgentTests(unittest.TestCase):
         with self.assertRaises(ValueError):a.request({'url':'http://attacker.test'},'/agent/poll',{})
         with patch.object(a,'compose',return_value=b'{"ok":true}') as call:
             self.assertEqual(a.cli('managed-status'),{'ok':True});self.assertEqual(call.call_args.args[:4],('exec','-T','api','/usr/local/bin/meet'))
+    def test_interrupted_domain_recovers_before_writes_reopen(self):
+        import base64
+        from unittest.mock import Mock
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);(root/'runtime-config').mkdir();(root/'sites').mkdir()
+            (root/'runtime-config/maintenance').write_text('domain-change')
+            journal=root/'domain.json';journal.write_text(json.dumps({'domain':'new.example.test','env':base64.b64encode(b'APP_ORIGIN=https://old.example.test').decode(),'binding':base64.b64encode(b'{"domain":"old.example.test"}').decode(),'site':None}))
+            original_path=Path
+            def mapped(value):
+                if str(value)=='/etc/caddy/meet-sites':return root/'sites'
+                return original_path(value)
+            with patch.object(a,'ROOT',root),patch.object(a,'DOMAIN_JOURNAL',journal),patch.object(a,'Path',side_effect=mapped),patch.object(a.os,'chown'),patch.object(a,'run'),patch.object(a,'compose'),patch.object(a,'updater',return_value=Mock()):
+                a.recover_domain()
+            self.assertEqual((root/'.env').read_text(),'APP_ORIGIN=https://old.example.test')
+            self.assertFalse(journal.exists());self.assertFalse((root/'runtime-config/maintenance').exists())
 if __name__=='__main__':unittest.main()
