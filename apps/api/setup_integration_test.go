@@ -72,6 +72,12 @@ func TestSetupAndRetentionIntegration(t *testing.T) {
 		status := 200
 		header := http.Header{"Content-Type": []string{"application/xml"}}
 		if r.URL.Host == "rtc.live.cloudflare.com" {
+			if r.Body != nil {
+				b, _ := io.ReadAll(r.Body)
+				if len(b) != 0 {
+					t.Fatalf("SFU credential check must send no body: %s", b)
+				}
+			}
 			body = `{"sessionId":"mock-session"}`
 			header.Set("Content-Type", "application/json")
 		} else if strings.Contains(r.URL.RawQuery, "lifecycle") {

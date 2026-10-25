@@ -284,7 +284,7 @@ func (a *app) setupCheckSFU(w http.ResponseWriter, r *http.Request) {
 		problem(w, 400, "Nhập App ID và Secret trước")
 		return
 	}
-	out, e := a.cloud(r, "POST", "apps/"+p.AppID+"/sessions/new", p.Secret, map[string]any{})
+	out, e := a.cloud(r, "POST", "apps/"+p.AppID+"/sessions/new", p.Secret, nil)
 	if e != nil || out["sessionId"] == nil {
 		problem(w, 502, "Cloudflare từ chối credential hoặc không truy cập được")
 		return

@@ -55,6 +55,15 @@ test("listen-only classroom keeps the mobile toolbar clear of page content", asy
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
+  await page.addInitScript(() =>
+    Object.defineProperty(navigator, "mediaDevices", {
+      configurable: true,
+      value: {
+        getUserMedia: () =>
+          Promise.reject(new DOMException("blocked", "NotAllowedError")),
+      },
+    }),
+  );
   await page.route("**/api/**", async (route) => {
     const path = new URL(route.request().url()).pathname;
     let data: unknown = [];
@@ -85,12 +94,18 @@ test("listen-only classroom keeps the mobile toolbar clear of page content", asy
   });
   await page.goto("/?page=meetings");
   await page.getByRole("button", { name: /^Vào lớp/ }).click();
-  await page.getByRole("checkbox", { name: "Bật mic khi vào lớp" }).uncheck();
+  await expect(
+    page.getByText("Camera chưa được mở", { exact: true }),
+  ).toBeVisible();
   await page
-    .getByRole("checkbox", { name: "Bật camera khi vào lớp" })
-    .uncheck();
+    .getByRole("button", { name: "Kiểm tra camera / mic", exact: true })
+    .click();
+  await expect(page.getByRole("alert")).toContainText("đang bị chặn");
   await page
-    .getByRole("button", { name: "Tham gia buổi học", exact: true })
+    .getByRole("button", {
+      name: "Vào lớp không dùng camera/micro",
+      exact: true,
+    })
     .click();
   await expect(
     page.getByRole("button", { name: "Bật mic", exact: true }),

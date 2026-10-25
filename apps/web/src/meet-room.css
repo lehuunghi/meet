@@ -308,3 +308,37 @@
   color: #b3261e;
   background: #fce8e6;
 }
+.prejoin-placeholder {
+  min-height: 180px;
+  margin: 14px 0;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: #202124;
+  border: 1px solid #5f6368;
+  border-radius: 12px;
+  text-align: center;
+}
+.prejoin-placeholder > span {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #445a7a;
+  color: #fff;
+  font-size: 28px;
+}
+.prejoin-placeholder p {
+  margin: 0;
+  max-width: 420px;
+}
+.prejoin-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}

@@ -126,6 +126,8 @@ func (a *app) sfu(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		path += "new"
+		// The endpoint distinguishes an absent body from an empty JSON object.
+		// {} selects SDP validation and is rejected without sessionDescription.
 	} else {
 		retired, e := a.cache.Exists(r.Context(), "media-retired:"+in.Session).Result()
 		if e != nil {
@@ -178,7 +180,11 @@ func (a *app) sfu(w http.ResponseWriter, r *http.Request) {
 			body["sessionDescription"] = in.Description
 		}
 	}
-	out, e := a.cloud(r, method, path, provider.Secret, body)
+	var requestBody any = body
+	if in.Op == "new" {
+		requestBody = nil
+	}
+	out, e := a.cloud(r, method, path, provider.Secret, requestBody)
 	if e != nil {
 		problem(w, 502, "SFU negotiation failed")
 		return

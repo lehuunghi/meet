@@ -83,6 +83,12 @@ func TestProductionSafetyIntegration(t *testing.T) {
 		if r.URL.Host == "rtc.live.cloudflare.com" {
 			switch {
 			case strings.HasSuffix(r.URL.Path, "/new"):
+				if r.Body != nil {
+					b, _ := io.ReadAll(r.Body)
+					if len(b) != 0 {
+						t.Fatalf("new SFU session must not send JSON: %s", b)
+					}
+				}
 				body = `{"sessionId":"` + session + `"}`
 			case strings.HasSuffix(r.URL.Path, "/tracks/close"):
 				closeCalls++

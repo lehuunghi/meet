@@ -6,6 +6,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { api, ApiError } from "./api";
 import { ClassroomMedia } from "./media";
+import { captureDevices } from "./devices";
 import "./style.css";
 import "./meet-room.css";
 import "./attendance.css";
@@ -893,20 +894,26 @@ function Room({
     },
     [],
   );
-  async function join() {
-    await api(`/meetings/${meeting.id}/media/reset`, {});
-    await api(`/meetings/${meeting.id}/presence`, { kind: "join" });
+  async function join(listenOnly = false) {
+    let stream: MediaStream | undefined;
+    let entered = false;
     try {
-      const stream =
-        previewRef.current ||
-        (preMic || preCamera
-          ? await navigator.mediaDevices.getUserMedia({
-              video: preCamera ? { width: 640, height: 360 } : false,
-              audio: preMic,
-            })
-          : new MediaStream());
+      if (listenOnly) {
+        previewRef.current?.getTracks().forEach((t) => t.stop());
+        previewRef.current = null;
+      }
+      stream = listenOnly
+        ? new MediaStream()
+        : previewRef.current || (await captureDevices(preMic, preCamera));
+      await api(`/meetings/${meeting.id}/media/reset`, {});
+      await api(`/meetings/${meeting.id}/presence`, { kind: "join" });
+      entered = true;
       stream.getAudioTracks().forEach((t) => (t.enabled = preMic));
       stream.getVideoTracks().forEach((t) => (t.enabled = preCamera));
+      setPreMic(!listenOnly && preMic && stream.getAudioTracks().length > 0);
+      setPreCamera(
+        !listenOnly && preCamera && stream.getVideoTracks().length > 0,
+      );
       setLocal(stream);
       media.current = new ClassroomMedia(
         meeting.id,
@@ -925,8 +932,14 @@ function Room({
       setJoined(true);
     } catch (e) {
       media.current?.close();
+      stream?.getTracks().forEach((t) => t.stop());
+      previewRef.current = null;
+      setPreview(null);
       setLocal(null);
-      await api(`/meetings/${meeting.id}/presence`, { kind: "leave" });
+      if (entered)
+        await api(`/meetings/${meeting.id}/presence`, { kind: "leave" }).catch(
+          () => {},
+        );
       throw e;
     }
   }
@@ -1208,6 +1221,20 @@ function Room({
                 Chọn mic/camera hoặc tắt cả hai để vào chỉ nghe. Camera chỉ chia
                 sẻ khi tham gia.
               </p>
+              {(!preview || !preview.getVideoTracks().length) && (
+                <div className="prejoin-placeholder">
+                  <span>{user.name[0]}</span>
+                  <strong>
+                    {preview?.getAudioTracks().length
+                      ? "Đã có micro · không có camera"
+                      : "Camera chưa được mở"}
+                  </strong>
+                  <p>
+                    Bấm kiểm tra camera/mic để xem trước, hoặc vào lớp không
+                    dùng thiết bị.
+                  </p>
+                </div>
+              )}
               <label className="checkbox">
                 <input
                   type="checkbox"
@@ -1240,10 +1267,7 @@ function Room({
                 onClick={() =>
                   void run(async () => {
                     previewRef.current?.getTracks().forEach((t) => t.stop());
-                    const s = await navigator.mediaDevices.getUserMedia({
-                      video: { width: 640, height: 360 },
-                      audio: true,
-                    });
+                    const s = await captureDevices(preMic, preCamera);
                     s.getAudioTracks().forEach((t) => (t.enabled = preMic));
                     s.getVideoTracks().forEach((t) => (t.enabled = preCamera));
                     previewRef.current = s;
@@ -1253,8 +1277,27 @@ function Room({
               >
                 Kiểm tra camera / mic
               </button>
+              {state === "live" && (
+                <div className="prejoin-actions">
+                  <button
+                    disabled={busy}
+                    onClick={() => void run(() => join())}
+                  >
+                    Vào lớp với thiết bị đã chọn
+                  </button>
+                  <button
+                    className="secondary"
+                    disabled={busy}
+                    onClick={() => void run(() => join(true))}
+                  >
+                    Vào lớp không dùng camera/micro
+                  </button>
+                </div>
+              )}
             </div>
-            {preview && <Video stream={preview} muted />}
+            {preview?.getVideoTracks().length ? (
+              <Video stream={preview} muted />
+            ) : null}
           </section>
         )}
         {local && (
