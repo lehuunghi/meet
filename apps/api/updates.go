@@ -10,7 +10,7 @@ import (
 )
 
 var buildCommit = "development"
-var buildVersion = "0.6.0"
+var buildVersion = "0.6.1"
 
 func (a *app) updateStatus(w http.ResponseWriter, r *http.Request) {
 	var status map[string]any

@@ -1,5 +1,5 @@
 import { afterEach, expect, it, vi } from "vitest";
-import { ClassroomMedia } from "./media";
+import { ClassroomMedia, gather } from "./media";
 afterEach(() => vi.unstubAllGlobals());
 it("switches camera devices without unmuting the camera or restarting other media", async () => {
   const old = { id: "old", kind: "video", enabled: false, stop: vi.fn() },
@@ -235,4 +235,29 @@ it("merges remote microphone and camera into one participant stream", async () =
     2,
   );
   media.close();
+});
+
+it("uses gathered candidates when STUN stalls, but rejects a completely empty ICE offer", async () => {
+  vi.useFakeTimers();
+  try {
+    const pc: any = {
+      iceGatheringState: "gathering",
+      localDescription: {
+        sdp: "v=0\r\na=candidate:1 1 udp 2122260223 192.0.2.1 1234 typ host\r\n",
+      },
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    };
+    const pending = gather(pc);
+    await vi.advanceTimersByTimeAsync(10000);
+    await expect(pending).resolves.toBeUndefined();
+    expect(pc.removeEventListener).toHaveBeenCalled();
+    pc.localDescription = { sdp: "v=0\r\n" };
+    const empty = gather(pc);
+    const assertion = expect(empty).rejects.toThrow("TURN");
+    await vi.advanceTimersByTimeAsync(10000);
+    await assertion;
+  } finally {
+    vi.useRealTimers();
+  }
 });

@@ -12,7 +12,16 @@ export async function gather(pc: RTCPeerConnection) {
   await new Promise<void>((resolve, reject) => {
     const timer = setTimeout(() => {
       pc.removeEventListener("icegatheringstatechange", check);
-      reject(new Error("ICE gathering timeout"));
+      // SFU is ICE-lite: available host/server-reflexive candidates can still
+      // establish outbound connectivity even if one STUN server never completes.
+      // Keep DTLS/ICE validation unchanged; do not accept an empty candidate set.
+      if (/^a=candidate:/m.test(pc.localDescription?.sdp || "")) resolve();
+      else
+        reject(
+          new Error(
+            "Không lấy được đường truyền media. Kiểm tra mạng và cấu hình TURN của trường.",
+          ),
+        );
     }, 10000);
     function check() {
       if (pc.iceGatheringState === "complete") {
