@@ -93,6 +93,7 @@ with tempfile.TemporaryDirectory() as tmp:
 
     # Prove the one-time bridge against the previous real schema-v4 source with no updater metadata.
     # Recreate that baseline rather than labeling the current schema as legacy.
+    legacy_web_image=u.images()['web']
     u.compose('stop','api','web')
     u.sql('DROP TABLE room_votes; DROP TABLE room_polls; DROP TABLE room_members; DROP TABLE room_settings; DELETE FROM schema_migrations WHERE version>4')
     original_root=u.ROOT
@@ -107,7 +108,7 @@ with tempfile.TemporaryDirectory() as tmp:
     u.ROOT=legacy;u.BOOTSTRAP=True
     u.candidate=lambda:{'current_sha':old_revision,'available_sha':current,'can_update':True}
     u.run('docker','build','-t','meet-api:legacy-test',str(legacy/'apps/api'),timeout=900)
-    baseline=u.override(u.STATE/'legacy.images.json','meet-api:legacy-test',u.images()['web'])
+    baseline=u.override(u.STATE/'legacy.images.json','meet-api:legacy-test',legacy_web_image)
     u.compose('up','-d','--no-deps','--no-build','--force-recreate','api','web',override=baseline)
     original_health()
     assert u.manifest(old_revision)['updater_protocol']==0
