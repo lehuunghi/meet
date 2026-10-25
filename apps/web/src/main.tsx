@@ -189,14 +189,18 @@ function App() {
     user.permissions.includes(p);
   async function refresh() {
     if (demo) return;
-    const [m, c] = await Promise.all([
+    const [m, c, allClasses] = await Promise.all([
       allowed("meetings") || allowed("attendance") || allowed("recordings")
         ? api<Meeting[]>("/meetings")
         : Promise.resolve([]),
       api<any[]>("/catalog"),
+      user?.role === "admin" && allowed("academic")
+        ? api<any[]>("/classes")
+        : Promise.resolve([]),
     ]);
     setMeetings(m);
     setCourses(c);
+    if (user?.role === "admin" && allowed("academic")) setClasses(allClasses);
   }
   useEffect(() => {
     if (demo) return;
@@ -552,6 +556,7 @@ function App() {
             <LearningWorkspace
               role={user.role}
               courses={courses}
+              classCatalog={user.role === "admin" ? classes : undefined}
               meetings={
                 demo
                   ? meetings.map((m) => ({

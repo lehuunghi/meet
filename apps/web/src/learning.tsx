@@ -26,6 +26,7 @@ type Lesson = {
 export function LearningWorkspace({
   role,
   courses,
+  classCatalog,
   meetings,
   demo = false,
   reports = false,
@@ -36,6 +37,7 @@ export function LearningWorkspace({
 }: {
   role: string;
   courses: Course[];
+  classCatalog?: { id: string; name: string }[];
   meetings: Lesson[];
   demo?: boolean;
   reports?: boolean;
@@ -49,9 +51,12 @@ export function LearningWorkspace({
     [busy, setBusy] = useState(""),
     [error, setError] = useState("");
   const classes = [
-    ...new Map(
-      courses.map((c) => [c.class_id, { id: c.class_id, name: c.class_name }]),
-    ).values(),
+    ...new Map([
+      ...courses.map(
+        (c) => [c.class_id, { id: c.class_id, name: c.class_name }] as const,
+      ),
+      ...(classCatalog || []).map((c) => [c.id, c] as const),
+    ]).values(),
   ];
   const active = (c: Course) =>
     meetings.find((m) => m.course_id === c.id && m.status === "live") ||
