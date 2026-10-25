@@ -75,4 +75,12 @@ class UpdaterTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,'identity'):u.resume_recorders({'recorders':['--all']})
             run.assert_not_called()
 
+    def test_committed_crash_after_unlock_still_resumes_recorders(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);(root/'runtime-config').mkdir();state=root/'state';state.mkdir()
+            journal={'active':False,'committed':True,'result':'success','recorders':['a'*64]}
+            (state/'journal.json').write_text(json.dumps(journal))
+            with patch.object(u,'ROOT',root),patch.object(u,'STATE',state),patch.object(u,'resume_recorders') as resume,patch.object(u,'publish'),patch.object(u.os,'O_NOFOLLOW',0,create=True):
+                u.worker();resume.assert_called_once()
+
 if __name__ == '__main__': unittest.main()

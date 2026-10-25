@@ -380,6 +380,8 @@ def worker():
         publish(state=job['result'],phase='done',can_update=False,message='Đã hoàn tất kiểm tra và mở lại hệ thống.')
         (ROOT / 'runtime-config/maintenance').unlink(missing_ok=True)
         resume_recorders(job)
+    if job.get('committed') and job.get('recorders') and not (ROOT / 'runtime-config/maintenance').exists():
+        resume_recorders(job)
     if job.get('active'):
         if job.get('frozen'):
             try:
