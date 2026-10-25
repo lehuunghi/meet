@@ -569,3 +569,71 @@
   height: 5px;
   accent-color: #8ab4f8;
 }
+
+@media (max-width: 700px) {
+  .room {
+    padding-inline: 8px;
+  }
+  .room header {
+    gap: 8px;
+    padding-bottom: 8px;
+  }
+  .room header h2 {
+    flex-basis: 100%;
+    margin: 0;
+    line-height: 1.4;
+  }
+  .room header button {
+    min-height: 44px;
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+  .room .room-toolbar {
+    gap: 6px;
+    padding: 8px 8px max(8px, env(safe-area-inset-bottom));
+    max-height: 35dvh;
+  }
+  .room .room-toolbar > span {
+    flex-basis: auto;
+    font-size: 11px;
+  }
+  .room .room-toolbar > .pill {
+    max-width: 55%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .room .room-toolbar button {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+  .room .video-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+    min-height: 30dvh;
+  }
+  .room .video-grid article {
+    min-height: 140px;
+    border-radius: 10px;
+  }
+  .room .video-grid article:only-child {
+    grid-column: 1 / -1;
+    min-height: 40dvh;
+  }
+  .room .video-grid article > strong {
+    bottom: 6px;
+    left: 6px;
+    max-width: calc(100% - 12px);
+    font-size: 11px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .room .video-grid .is-pinned {
+    grid-column: 1 / -1;
+  }
+  .room .room-tools {
+    margin-top: 12px;
+    padding: 12px;
+  }
+}

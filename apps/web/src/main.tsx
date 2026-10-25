@@ -669,8 +669,7 @@ function Room({
     [remote, setRemote] = useState<
       Record<string, { stream: MediaStream; name: string }>
     >({}),
-    [attendance, setAttendance] = useState<any[]>([]),
-    [recordings, setRecordings] = useState<any[]>([]),
+    [, setRecordings] = useState<any[]>([]),
     [recording, setRecording] = useState(false),
     [busy, setBusy] = useState(false);
   const [connection, setConnection] = useState("");
@@ -854,7 +853,7 @@ function Room({
         await api(`/meetings/${meeting.id}/presence`, { kind: "heartbeat" });
         heartbeatPassed = true;
         if (stopped) return;
-        setAttendance(await api(`/meetings/${meeting.id}/attendance`));
+
         await media.current?.subscribe(
           await api(`/meetings/${meeting.id}/tracks`),
           user.id,
@@ -1566,73 +1565,6 @@ function Room({
             );
         }}
       />
-      <section className="section room-history">
-        <h2>Điểm danh theo thời gian tham gia</h2>
-        <button
-          className="secondary"
-          onClick={() =>
-            void run(async () =>
-              setAttendance(await api(`/meetings/${meeting.id}/attendance`)),
-            )
-          }
-        >
-          Tải báo cáo
-        </button>
-        <table>
-          <thead>
-            <tr>
-              <th>Học sinh</th>
-              <th>Thời gian được ghi nhận</th>
-              <th>Trạng thái</th>
-            </tr>
-          </thead>
-          <tbody>
-            {attendance.map((a) => (
-              <tr key={a.id}>
-                <td>{a.name}</td>
-                <td>
-                  {Math.floor(a.seconds / 60)} phút {a.seconds % 60} giây
-                </td>
-                <td>{a.online ? "Trong lớp" : "Ngoại tuyến"}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <p>
-          Ghi nhận bằng heartbeat mỗi 15 giây; khoảng mất kết nối trên 45 giây
-          không được cộng. Đây là thời gian kết nối, không xác nhận mức độ chú
-          ý.
-        </p>
-      </section>
-      <section className="section">
-        <h2>Bản ghi buổi học</h2>
-        <button
-          className="secondary"
-          onClick={() =>
-            void run(async () =>
-              setRecordings(await api(`/meetings/${meeting.id}/recordings`)),
-            )
-          }
-        >
-          Tải danh sách
-        </button>
-        {recordings.map((v) => (
-          <p key={v.id}>
-            <button
-              onClick={() =>
-                void run(async () => {
-                  const d = await api(
-                    `/meetings/${meeting.id}/recordings/${v.id}/download`,
-                  );
-                  window.open(d.url, "_blank", "noopener");
-                })
-              }
-            >
-              Xem bản ghi · {Math.round(v.size_bytes / 1024 / 1024)} MB
-            </button>
-          </p>
-        ))}
-      </section>
     </main>
   );
 }

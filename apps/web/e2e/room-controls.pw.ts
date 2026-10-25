@@ -92,6 +92,15 @@ test("host admits waiting students, updates rules, pins video and sends reaction
   });
   await page.goto("/?room=lesson");
   await expect(page.locator(".room>header h2")).toHaveText("Lớp kiểm tra");
+  await expect(
+    page.getByRole("heading", {
+      name: "Điểm danh theo thời gian tham gia",
+      exact: true,
+    }),
+  ).toHaveCount(0);
+  await expect(
+    page.getByRole("heading", { name: "Bản ghi buổi học", exact: true }),
+  ).toHaveCount(0);
   await page.getByRole("button", { name: "Cho vào", exact: true }).click();
   expect(moderated).toEqual([{ action: "admit", user_id: "student" }]);
   const panel = page.locator(".room-moderation");

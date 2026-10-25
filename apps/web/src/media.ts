@@ -268,6 +268,11 @@ export class ClassroomMedia {
       await this.stopShareInternal();
       return undefined;
     }
+    if (!navigator.mediaDevices?.getDisplayMedia) {
+      throw new Error(
+        "Trình duyệt này chưa hỗ trợ chia sẻ màn hình. Hãy dùng Chrome, Edge hoặc Safari trên máy tính. Bạn vẫn có thể xem màn hình người khác chia sẻ.",
+      );
+    }
     const display = await navigator.mediaDevices.getDisplayMedia({
       video: true,
       audio: true,
