@@ -178,3 +178,63 @@ test("website reload protects checkbox-only edits", async ({ page }) => {
     .click();
   await expect(page).toHaveURL(/cai-dat$/);
 });
+
+test("logout clears previous account data before a different user signs in", async ({
+  page,
+}) => {
+  let current = "admin",
+    release: () => void = () => {};
+  const delay = new Promise<void>((r) => (release = r));
+  await page.route("**/api/**", async (r) => {
+    const path = new URL(r.request().url()).pathname;
+    let data: any = [];
+    if (path === "/api/me")
+      data = { id: "owner", role: "admin", name: "Quản trị" };
+    if (path === "/api/public-config") data = { platform_mode: "academy" };
+    if (path === "/api/academy/admin/courses")
+      data = [
+        {
+          id: "private",
+          title: "Khóa riêng tài khoản trước",
+          published: false,
+        },
+      ];
+    if (path === "/api/academy/courses" && current !== "admin") {
+      await delay;
+      data = [];
+    }
+    if (path === "/api/academy/me")
+      data = [{ name: current === "admin" ? "Quản trị" : "Học viên mới" }];
+    if (path === "/api/logout") {
+      current = "logged-out";
+      data = { ok: true };
+    }
+    if (path === "/api/login") {
+      current = "student";
+      data = { id: "new", role: "student", name: "Học viên mới" };
+    }
+    await r.fulfill({ json: data });
+  });
+  await page.goto("/hoc");
+  await expect(
+    page.getByRole("heading", {
+      name: "Khóa riêng tài khoản trước",
+      exact: true,
+    }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Đăng xuất", exact: true }).click();
+  await page.getByLabel("Email", { exact: true }).fill("new@example.test");
+  await page.getByLabel("Mật khẩu", { exact: true }).fill("password123");
+  await page
+    .getByRole("button", { name: "Đăng nhập", exact: true })
+    .last()
+    .click();
+  await expect(page.locator(".academy-shell")).toBeVisible();
+  await expect(
+    page.getByRole("heading", {
+      name: "Khóa riêng tài khoản trước",
+      exact: true,
+    }),
+  ).toHaveCount(0);
+  release();
+});

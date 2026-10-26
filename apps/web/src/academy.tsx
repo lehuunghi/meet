@@ -233,8 +233,22 @@ export function AcademyApp({
     setPlans(p);
     if (user) {
       const me = await api<any[]>("/academy/me");
-      setProfile(me[0] || {});
+      if (generation === refreshGeneration.current) setProfile(me[0] || {});
     }
+  }
+  function clearAccount() {
+    refreshGeneration.current++;
+    setUser(null);
+    setRoom(null);
+    setCourses([]);
+    setClassrooms([]);
+    setMeetings([]);
+    setProfile({});
+    setNotifications([]);
+    setNotificationError("");
+    setScheduleError("");
+    setClassroomsLoaded(false);
+    setCatalogLoaded(false);
   }
   useEffect(() => {
     if (demo) return;
@@ -243,8 +257,7 @@ export function AcademyApp({
       .catch(() => {})
       .finally(() => setLoading(false));
     const ended = () => {
-      setUser(null);
-      setRoom(null);
+      clearAccount();
     };
     window.addEventListener("meet-session-ended", ended);
     return () => window.removeEventListener("meet-session-ended", ended);
@@ -783,7 +796,7 @@ export function AcademyApp({
           onClick={() =>
             void perform(async () => {
               if (!demo) await api("/logout", {});
-              setUser(null);
+              clearAccount();
             })
           }
         >
