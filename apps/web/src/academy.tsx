@@ -4,6 +4,7 @@ import { LearningWorkspace } from "./learning";
 import { AcademicAdmin } from "./academic";
 import { Accounts } from "./accounts";
 import { AcademySettings } from "./academy-settings";
+import { AcademyIcon, AcademyAuthFrame } from "./academy-ui";
 import "./academy.css";
 const money = (n: number) =>
   new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(
@@ -44,7 +45,7 @@ export function AcademyApp({
             school_id: "demo",
             name:
               role === "admin"
-                ? "Quản trị trung tâm"
+                ? "Quản trị VA"
                 : role === "teacher"
                   ? "Giáo viên minh họa"
                   : "Học viên minh họa",
@@ -70,8 +71,10 @@ export function AcademyApp({
     [room, setRoom] = useState<any>(null),
     [classrooms, setClassrooms] = useState<any[]>([]),
     [meetings, setMeetings] = useState<any[]>([]),
-    [authTab, setAuthTab] = useState("login"),
+    [authTab, setAuthTab] = useState(new URLSearchParams(location.search).has("register") ? "register" : "login"),
     [challenge, setChallenge] = useState("");
+  const [brand,setBrand]=useState("VA Academy"),[freeQuota,setFreeQuota]=useState(4),[menuOpen,setMenuOpen]=useState(false);
+  useEffect(()=>{if(!demo){void api('/public-config').then(v=>setBrand(v.school_name||'VA Academy')).catch(()=>{});void api('/academy/public').then(v=>setFreeQuota(v.free_videos||4)).catch(()=>{});}},[]);
   const perform = async (fn: () => Promise<void>) => {
     setError("");
     setNotice("");
@@ -159,6 +162,7 @@ export function AcademyApp({
     );
   if (!user)
     return (
+      <AcademyAuthFrame brand={brand}>
       <main className="academy-auth">
         <a href="/">← Trang giới thiệu</a>
         <h1>
@@ -315,17 +319,17 @@ export function AcademyApp({
           </button>
         </form>
       </main>
+      </AcademyAuthFrame>
     );
   const admin = user.role === "admin",
     staff = user.role !== "student";
   return (
     <div className="academy-shell">
-      <aside>
-        <a className="academy-brand" href="/hoc">
-          HỌC<span>ACADEMY</span>
-        </a>
-        <p>{user.name}</p>
-        <nav>
+      <aside data-menu-open={menuOpen}>
+        <a className="academy-brand" href="/hoc"><span className="academy-logo-mark"><AcademyIcon name="courses"/></span><span className="academy-brand-name">{brand}<small>KHÔNG GIAN HỌC TẬP</small></span></a>
+        <button className="academy-menu-toggle" aria-expanded={menuOpen} aria-controls="academy-navigation" onClick={()=>setMenuOpen(!menuOpen)}><AcademyIcon name="menu"/>Danh mục</button>
+        <div className="academy-user-card"><span className="academy-user-avatar">{user.name?.trim().charAt(0)||'V'}</span><div><strong>{user.name}</strong><small>{admin?'Quản trị nền tảng':staff?'Giáo viên':'Học viên'}</small></div></div>
+        <nav id="academy-navigation" aria-label="Danh mục học tập">
           {[
             ["courses", "Khóa học"],
             ["live", "Lớp học trực tiếp"],
@@ -347,13 +351,13 @@ export function AcademyApp({
             <button
               key={id}
               className={tab === id ? "active" : ""}
-              onClick={() => setTab(id)}
+              onClick={() => {setTab(id);setMenuOpen(false);}}
             >
-              {label}
+              <AcademyIcon name={id}/><span>{label}</span>
             </button>
           ))}
         </nav>
-        <button
+        <button className="academy-logout"
           onClick={() =>
             void perform(async () => {
               if (!demo) await api("/logout", {});
@@ -361,18 +365,18 @@ export function AcademyApp({
             })
           }
         >
-          Đăng xuất
+          <AcademyIcon name="logout"/>Đăng xuất
         </button>
       </aside>
       <main>
         <header>
           <div>
             <small>
-              {demo ? "BẢN DEMO · DỮ LIỆU MINH HỌA" : "CỔNG HỌC TẬP"}
+              {demo ? "BẢN DEMO · DỮ LIỆU MINH HỌA" : admin ? "QUẢN TRỊ NỀN TẢNG" : staff ? "KHÔNG GIAN GIẢNG DẠY" : "KHÔNG GIAN HỌC TẬP"}
             </small>
             <h1>
               {tab === "courses"
-                ? "Học từng bước. Tiến bộ mỗi ngày."
+                ? (admin ? "Tổng quan khóa học" : staff ? "Không gian giảng dạy" : "Học từng bước. Tiến bộ mỗi ngày.")
                 : tab === "vip"
                   ? "Chọn gói học phù hợp"
                   : tab === "orders"
@@ -385,12 +389,16 @@ export function AcademyApp({
                           ? "Học viên"
                           : tab === "live"
                             ? "Lớp học trực tiếp"
-                            : "Hồ sơ của bạn"}
+                            : tab === "reports" ? "Điểm danh & bản ghi"
+                            : tab === "academic" ? "Lớp học và giáo viên"
+                            : tab === "accounts" ? "Tài khoản và phân quyền"
+                            : tab === "settings" ? "Cài đặt kinh doanh"
+                            : "Tài khoản của bạn"}
             </h1>
           </div>
           <span className="academy-badge">
             {staff
-              ? "Nhân sự"
+              ? (admin ? "Quản trị viên" : "Giáo viên")
               : vip
                 ? "VIP đang hoạt động"
                 : "Học thử miễn phí"}
@@ -414,13 +422,13 @@ export function AcademyApp({
                 <strong>{courses.length}</strong>
               </article>
               <article>
-                <small>Quyền xem video</small>
-                <strong>{vip ? "VIP" : "4 bài/tháng"}</strong>
+                <small>{staff ? "Không gian làm việc" : "Quyền xem video"}</small>
+                <strong>{staff ? (admin ? "Quản trị" : "Giảng dạy") : vip ? "VIP" : `${freeQuota} bài/tháng`}</strong>
               </article>
               <article>
-                <small>Hạn gói học</small>
+                <small>{staff ? "Truy cập lớp học" : "Hạn gói học"}</small>
                 <strong>
-                  {vip
+                  {staff ? "Theo phân công" : vip
                     ? new Date(profile.expires_at).toLocaleDateString("vi-VN")
                     : "Chưa đăng ký"}
                 </strong>

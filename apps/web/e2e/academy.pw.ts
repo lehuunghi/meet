@@ -37,7 +37,7 @@ test("academy demos are role-specific, mobile-friendly and never make real payme
       await page.goto(`/hoc?academy_demo=1&role=${role}`);
       await expect(
         page.getByRole("heading", {
-          name: "Học từng bước. Tiến bộ mỗi ngày.",
+          name: role === 'admin' ? 'Tổng quan khóa học' : role === 'teacher' ? 'Không gian giảng dạy' : "Học từng bước. Tiến bộ mỗi ngày.",
           exact: true,
         }),
       ).toBeVisible();
@@ -46,6 +46,7 @@ test("academy demos are role-specific, mobile-friendly and never make real payme
           () => document.documentElement.scrollWidth <= innerWidth,
         ),
       ).toBe(true);
+      if (width === 390 && role !== "teacher") await page.getByRole("button",{name:"Danh mục",exact:true}).click();
       if (role === "student") {
         await expect(
           page.getByRole("button", { name: "Quản lý nội dung", exact: true }),
