@@ -1,4 +1,4 @@
-import { submittingForm } from "./form-guard";
+import { submittingForm } from "./form-guard-core";
 export class ApiError extends Error {
   constructor(
     message: string,
