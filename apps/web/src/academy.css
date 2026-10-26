@@ -1399,1746 +1399,537 @@
     font-size: 10px;
     color: #53709c;
     font-weight: 650;
-    box-shadow…7050 tokens truncated…          </label>
-                <label>
-                  Mật khẩu
-                  <input
-                    name="password"
-                    type="password"
-                    minLength={6}
-                    required={authTab !== "register" || signupStep === 0}
-                    autoComplete={
-                      authTab === "register"
-                        ? "new-password"
-                        : "current-password"
-                    }
-                  />
-                </label>
-              </div>
-            )}
-            {authTab === "register" && (
-              <div hidden={signupStep === 0}>
-                <div className="academy-form-grid">
-                  {[
-                    ["name", "Họ tên", "text"],
-                    ["dob", "Ngày sinh", "date"],
-                    ["address", "Địa chỉ", "text"],
-                    ["school_name", "Trường đang học", "text"],
-                    ["phone", "Số điện thoại", "tel"],
-                    ["parent_phone", "Số điện thoại phụ huynh", "tel"],
-                  ].map(([key, label, type]) => (
-                    <label key={key}>
-                      {label}
-                      <input
-                        name={key}
-                        type={type}
-                        required={signupStep === 1}
-                      />
-                    </label>
-                  ))}
-                </div>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    const f = e.currentTarget.form!;
-                    void perform(async () => {
-                      await api("/academy/email-code", {
-                        email: (
-                          f.elements.namedItem("email") as HTMLInputElement
-                        ).value,
-                      });
-                      setNotice("Đã gửi mã email. Mã có hiệu lực 10 phút.");
-                    });
-                  }}
-                >
-                  Gửi mã xác thực email
-                </button>
-                <label>
-                  Mã xác thực email
-                  <input
-                    name="code"
-                    inputMode="numeric"
-                    pattern="[0-9]{6}"
-                    required={signupStep === 1}
-                  />
-                </label>
-                <label className="academy-check">
-                  <input type="checkbox" name="marketing_consent" />
-                  Tôi muốn nhận lịch khai giảng và ưu đãi.
-                </label>
-                <small>
-                  Thêm ảnh đại diện trong hồ sơ sau khi đăng nhập. Email OTP xác
-                  thực email; số điện thoại chưa được xác thực qua SMS/Zalo.
-                </small>
-              </div>
-            )}
-            {challenge && (
-              <label>
-                Mã xác thực hai bước
-                <input
-                  name="code"
-                  required
-                  inputMode="numeric"
-                  autoComplete="one-time-code"
-                />
-              </label>
-            )}
-            {authTab === "register" && signupStep === 1 && (
-              <button
-                type="button"
-                className="secondary"
-                onClick={() => setSignupStep(0)}
-              >
-                ← Quay lại tài khoản
-              </button>
-            )}
-            <button className="academy-primary">
-              {authTab === "register"
-                ? signupStep === 0
-                  ? "Tiếp tục"
-                  : "Tạo tài khoản"
-                : "Đăng nhập"}
-            </button>
-          </form>
-        </main>
-      </AcademyAuthFrame>
-    );
-  const admin = user.role === "admin",
-    staff = user.role !== "student";
-  const routePermission = (
-    {
-      manage: "content",
-      academic: "academic",
-      accounts: "accounts",
-      orders: "finance",
-      students: "accounts",
-      finance: "finance",
-      settings: "finance",
-    } as Record<string, string>
-  )[route.tab];
-  const routeForbidden =
-    (!!routePermission &&
-      (!admin ||
-        (user.permissions != null &&
-          !user.permissions.includes(routePermission)))) ||
-    (!!route.orderId && user.role !== "student");
-  return (
-    <div className={"academy-shell" + (!admin ? " classroom-shell" : "")}>
-      <aside data-menu-open={menuOpen}>
-        <a className="academy-brand" href="/hoc">
-          <span className="academy-logo-mark">
-            <AcademyIcon name="courses" />
-          </span>
-          <span className="academy-brand-name">
-            {brand}
-            <small>KHÔNG GIAN HỌC TẬP</small>
-          </span>
-        </a>
-        <button
-          className="academy-menu-toggle"
-          aria-expanded={menuOpen}
-          aria-controls="academy-navigation"
-          onClick={() => setMenuOpen(!menuOpen)}
-        >
-          <AcademyIcon name="menu" />
-          Danh mục
-        </button>
-        <div className="academy-user-card">
-          <span className="academy-user-avatar">
-            {user.name?.trim().charAt(0) || "V"}
-          </span>
-          <div>
-            <strong>{user.name}</strong>
-            <small>
-              {admin ? "Quản trị nền tảng" : staff ? "Giáo viên" : "Học viên"}
-            </small>
-          </div>
-        </div>
-        <nav id="academy-navigation" aria-label="Danh mục học tập">
-          {[
-            ...(admin
-              ? [
-                  ["courses", "Khóa học"],
-                  ["live", "Lớp học trực tiếp"],
-                ]
-              : [
-                  ["live", "Lớp học"],
-                  ["courses", "Kho bài giảng"],
-                ]),
-            ["reports", "Điểm danh & bản ghi"],
-            ["notifications", "Thông báo"],
-            ...(!staff ? [["vip", "Gói học & thanh toán"]] : []),
-            ["profile", staff ? "Tài khoản của bạn" : "Hồ sơ học viên"],
-            ...(admin
-              ? [
-                  ["manage", "Quản lý nội dung"],
-                  ["academic", "Lớp & giáo viên"],
-                  ["accounts", "Tài khoản & phân quyền"],
-                  ["orders", "Duyệt thanh toán"],
-                  ["students", "Học viên"],
-                  ["finance", "Thu chi"],
-                  ["settings", "Email & thanh toán"],
-                ]
-              : []),
-          ]
-            .filter(
-              ([id]) =>
-                !admin ||
-                user.permissions == null ||
-                !(
-                  {
-                    manage: "content",
-                    academic: "academic",
-                    accounts: "accounts",
-                    orders: "finance",
-                    students: "accounts",
-                    finance: "finance",
-                    settings: "finance",
-                  } as Record<string, string>
-                )[id] ||
-                user.permissions.includes(
-                  (
-                    {
-                      manage: "content",
-                      academic: "academic",
-                      accounts: "accounts",
-                      orders: "finance",
-                      students: "accounts",
-                      finance: "finance",
-                      settings: "finance",
-                    } as Record<string, string>
-                  )[id],
-                ),
-            )
-            .map(([id, label]) => (
-              <a
-                key={id}
-                role="button"
-                href={academyHref(academyPaths[id])}
-                aria-current={tab === id ? "page" : undefined}
-                className={tab === id ? "active" : ""}
-                onClick={(e) => {
-                  academyClick(e, academyPaths[id]);
-                  setMenuOpen(false);
-                }}
-              >
-                <AcademyIcon name={id} />
-                <span>
-                  {label}
-                  {id === "notifications" &&
-                    notifications.some((n) => !n.read) && (
-                      <b className="academy-notification-count">
-                        {notifications.filter((n) => !n.read).length}
-                      </b>
-                    )}
-                </span>
-              </a>
-            ))}
-        </nav>
-        <button
-          className="academy-logout"
-          onClick={() =>
-            void perform(async () => {
-              if (!demo) await api("/logout", {});
-              setUser(null);
-            })
-          }
-        >
-          <AcademyIcon name="logout" />
-          Đăng xuất
-        </button>
-      </aside>
-      <main key={route.subjectId ? "subject:" + route.subjectId : route.path}>
-        <header>
-          <div>
-            <small>
-              {demo
-                ? "BẢN DEMO · DỮ LIỆU MINH HỌA"
-                : admin
-                  ? "QUẢN TRỊ NỀN TẢNG"
-                  : staff
-                    ? "KHÔNG GIAN GIẢNG DẠY"
-                    : "KHÔNG GIAN HỌC TẬP"}
-            </small>
-            <h1>
-              {tab === "courses"
-                ? admin
-                  ? "Tổng quan khóa học"
-                  : staff
-                    ? "Không gian giảng dạy"
-                    : "Học từng bước. Tiến bộ mỗi ngày."
-                : tab === "vip"
-                  ? "Chọn gói học phù hợp"
-                  : tab === "orders"
-                    ? "Đối soát thanh toán"
-                    : tab === "manage"
-                      ? "Nội dung và khóa học"
-                      : tab === "finance"
-                        ? "Thu chi trung tâm"
-                        : tab === "students"
-                          ? "Học viên"
-                          : tab === "live"
-                            ? admin
-                              ? "Lớp học trực tiếp"
-                              : "Lớp học của tôi"
-                            : tab === "notifications"
-                              ? "Thông báo"
-                              : tab === "reports"
-                                ? "Điểm danh & bản ghi"
-                                : tab === "academic"
-                                  ? "Lớp học và giáo viên"
-                                  : tab === "accounts"
-                                    ? "Tài khoản và phân quyền"
-                                    : tab === "settings"
-                                      ? "Cài đặt kinh doanh"
-                                      : "Tài khoản của bạn"}
-            </h1>
-          </div>
-          <span className="academy-badge">
-            {staff
-              ? admin
-                ? "Quản trị viên"
-                : "Giáo viên"
-              : vip
-                ? "VIP đang hoạt động"
-                : "Học thử miễn phí"}
-          </span>
-        </header>
-        <AcademyBreadcrumbs
-          route={route}
-          courses={courses}
-          classrooms={demo ? demoClassrooms : classrooms}
-          title={routeTitle}
-        />
-        {routeBusy && (
-          <p role="status" className="academy-notice">
-            Đang mở nội dung đã chọn…
-          </p>
-        )}
-        {(route.invalid || routeError || routeForbidden) && (
-          <section className="academy-route-error" role="alert">
-            <h2>
-              {routeForbidden
-                ? "Bạn không có quyền mở trang này"
-                : route.invalid
-                  ? "Không tìm thấy trang"
-                  : routeError}
-            </h2>
-            <a
-              href={academyHref("/hoc")}
-              onClick={(e) => academyClick(e, "/hoc")}
-            >
-              Quay lại không gian học tập
-            </a>
-            {routeError && (
-              <button className="secondary" onClick={() => location.reload()}>
-                Thử lại
-              </button>
-            )}
-          </section>
-        )}
-        {tab === "notifications" && (
-          <AcademyNotificationList
-            rows={notifications}
-            error={notificationError}
-            onRead={readNotifications}
-          />
-        )}
-        {error && (
-          <p className="error" role="alert">
-            {error}
-          </p>
-        )}
-        {notice && (
-          <p className="academy-notice" role="status">
-            {notice}
-          </p>
-        )}
-        {!route.invalid &&
-          !routeError &&
-          !routeForbidden &&
-          !routeBusy &&
-          !admin &&
-          tab === "live" && (
-            <AcademyToday
-              demo={demo}
-              role={user.role}
-              onMeeting={(m: any) => void perform(() => openMeeting(m))}
-              onCourse={showCourse}
-            />
-          )}
-        {!routeBusy && !routeError && !route.invalid && tab === "courses" && (
-          <>
-            <div className="academy-stats">
-              <article>
-                <small>Khóa học đang mở</small>
-                <strong>{courses.length}</strong>
-              </article>
-              <article>
-                <small>
-                  {staff ? "Không gian làm việc" : "Quyền xem video"}
-                </small>
-                <strong>
-                  {staff
-                    ? admin
-                      ? "Quản trị"
-                      : "Giảng dạy"
-                    : vip
-                      ? "VIP"
-                      : `${freeQuota} bài/tháng`}
-                </strong>
-              </article>
-              <article>
-                <small>{staff ? "Truy cập lớp học" : "Hạn gói học"}</small>
-                <strong>
-                  {staff
-                    ? "Theo phân công"
-                    : vip
-                      ? new Date(profile.expires_at).toLocaleDateString("vi-VN")
-                      : "Chưa đăng ký"}
-                </strong>
-              </article>
-            </div>
-            {catalogLoaded &&
-              intentCourse &&
-              !courses.some((c) => c.id === intentCourse) && (
-                <p role="alert">
-                  Không tìm thấy khóa học hoặc tài khoản chưa có quyền truy cập.{" "}
-                  <a
-                    href={academyHref(academyPaths.courses)}
-                    onClick={(e) => academyClick(e, academyPaths.courses)}
-                  >
-                    Xem danh mục được cấp quyền
-                  </a>
-                </p>
-              )}
-            <div className="academy-course-grid">
-              {courses.map((c) => (
-                <CourseCard
-                  key={c.id}
-                  course={c}
-                  demo={demo}
-                  staff={staff}
-                  perform={perform}
-                  onNotice={setNotice}
-                  onUpgrade={(id: string) => {
-                    goAcademy(
-                      academyPaths.vip + "?khoa=" + encodeURIComponent(id),
-                    );
-                  }}
-                  focus={intentCourse === c.id}
-                  focusLesson={intentCourse === c.id ? intentLesson : ""}
-                  focusTasks={intentCourse === c.id && intentTasks}
-                  focusAssignment={
-                    intentCourse === c.id ? route.assignmentId : undefined
-                  }
-                />
-              ))}
-            </div>
-            {!courses.length && (
-              <p>Trung tâm đang chuẩn bị khóa học đầu tiên.</p>
-            )}
-          </>
-        )}
-        {!routeBusy &&
-          !routeError &&
-          !route.invalid &&
-          ["live", "reports"].includes(tab) &&
-          !classroomsLoaded && <p role="status">Đang tải lớp học…</p>}
-        {!routeBusy &&
-          !routeError &&
-          !route.invalid &&
-          classroomsLoaded &&
-          ["live", "reports"].includes(tab) && (
-            <LearningWorkspace
-              routed
-              role={user.role}
-              courses={demo ? demoClassrooms : classrooms}
-              meetings={demo ? demoMeetings : meetings}
-              demo={demo}
-              reports={tab === "reports"}
-              renderClasswork={(id) => {
-                const c = courses.find((v) => v.academic_course_id === id);
-                return c ? (
-                  <Assignments
-                    course={c.id}
-                    demo={demo}
-                    staff={staff}
-                    perform={perform}
-                  />
-                ) : null;
-              }}
-              canTeach={staff}
-              canVideo={true}
-              onRefresh={async () => {
-                if (demo) return;
-                setClassrooms(await api("/catalog"));
-                setMeetings(await api("/meetings"));
-              }}
-              onOpen={(m) => void perform(() => openMeeting(m))}
-            />
-          )}
-        {!routeForbidden && tab === "vip" && (
-          <VipPanel
-            intentPlan={intentPlan}
-            orderId={route.orderId}
-            onContinue={() => showCourse(intentCourse)}
-            refreshMembership={refresh}
-            demo={demo}
-            plans={plans}
-            perform={perform}
-            notice={setNotice}
-          />
-        )}
-        {tab === "profile" && (
-          <ProfilePanel
-            demo={demo}
-            profile={profile}
-            user={user}
-            perform={perform}
-            refresh={refresh}
-            notice={setNotice}
-          />
-        )}
-        {!routeForbidden && admin && tab === "manage" && (
-          <ManagePanel
-            demo={demo}
-            courses={courses}
-            perform={perform}
-            refresh={refresh}
-            notice={setNotice}
-          />
-        )}
-        {!routeForbidden && admin && tab === "settings" && (
-          <AcademySettings demo={demo} />
-        )}
-        {!routeForbidden && admin && tab === "academic" && (
-          <AcademicAdmin demo={demo} onChange={refresh} />
-        )}
-        {!routeForbidden && admin && tab === "accounts" && (
-          <Accounts demo={demo} />
-        )}
-        {!routeForbidden &&
-          admin &&
-          ["orders", "students", "finance"].includes(tab) && (
-            <BusinessTable
-              key={tab}
-              kind={tab}
-              demo={demo}
-              perform={perform}
-              notice={setNotice}
-            />
-          )}
-        <footer>
-          Thông tin học tập và thanh toán chỉ hiển thị theo quyền tài khoản.
-        </footer>
-      </main>
-    </div>
-  );
-}
-function CourseCard({
-  course,
-  demo,
-  staff,
-  perform,
-  onNotice,
-  onUpgrade,
-  focus = false,
-  focusLesson = "",
-  focusTasks = false,
-  focusAssignment = "",
-}: any) {
-  const [open, setOpen] = useState(false),
-    [lessons, setLessons] = useState<any[]>([]),
-    [video, setVideo] = useState<any>(null),
-    [tasks, setTasks] = useState(false);
-  const cardRef = useRef<HTMLElement>(null);
-  const ref = useRef<HTMLVideoElement>(null),
-    saved = useRef(0);
-  async function load() {
-    setOpen(!open);
-    if (!open)
-      setLessons(
-        demo
-          ? [
-              {
-                id: "demo-lesson",
-                title: "Bài 1 · Bắt đầu từ kiến thức cốt lõi",
-                duration_seconds: 1800,
-                progress_seconds: 420,
-                status: "ready",
-              },
-            ]
-          : await api(`/academy/courses/${course.id}/lessons`),
-      );
+    box-shadow: none;
   }
-  useEffect(() => {
-    if (!focus) return;
-    let active = true;
-    setOpen(true);
-    setTasks(focusTasks);
-    void perform(async () => {
-      const rows = demo
-        ? [
-            {
-              id: "demo-lesson",
-              title: "Bài 1 · Bắt đầu từ kiến thức cốt lõi",
-              duration_seconds: 1800,
-              progress_seconds: 420,
-              status: "ready",
-            },
-          ]
-        : await api(`/academy/courses/${course.id}/lessons`);
-      if (active) {
-        setLessons(rows);
-        cardRef.current?.scrollIntoView({ block: "start", behavior: "smooth" });
-      }
-    });
-    return () => {
-      active = false;
-    };
-  }, [focus, focusLesson, focusTasks, course.id]);
-  async function play(l: any) {
-    if (demo) {
-      onNotice("Video minh họa: chưa có file thật.");
-      return;
-    }
-    const v = await api(`/academy/lessons/${l.id}/play`, {});
-    setVideo({ ...v, id: l.id, position: l.progress_seconds || 0 });
+  .academy-menu-toggle svg {
+    width: 17px;
+    height: 17px;
   }
-  async function save(completed = false) {
-    if (!video || !ref.current || demo) return;
-    const seconds = Math.min(
-      video.duration_seconds,
-      Math.floor(ref.current.currentTime),
-    );
-    if (!completed && Math.abs(seconds - saved.current) < 15) return;
-    saved.current = seconds;
-    await api(`/academy/lessons/${video.id}/progress`, {
-      seconds,
-      completed,
-    }).catch(() => {});
+  .academy-shell #academy-navigation {
+    display: none;
+    grid-column: 1/-1;
+    overflow: visible;
+    gap: 6px;
+    padding: 17px 0 8px;
+    margin: 0;
+    min-width: 0;
   }
-  useEffect(() => {
-    if (!video || demo) return;
-    const timer = setInterval(() => {
-      const position = ref.current?.currentTime || 0;
-      void api(`/academy/lessons/${video.id}/play`, {})
-        .then((v) => setVideo((old: any) => ({ ...old, ...v, position })))
-        .catch(() => ref.current?.pause());
-    }, 90000);
-    return () => clearInterval(timer);
-  }, [video?.id]);
-  return (
-    <article
-      ref={cardRef}
-      className={"academy-course" + (focus ? " academy-course-selected" : "")}
-      id={"course-" + course.id}
-    >
-      <div className="academy-course-art">
-        <span>◈</span>
-        <small>KHÓA HỌC</small>
-      </div>
-      <div className="academy-course-body">
-        <h2>{course.title}</h2>
-        <p>{course.description}</p>
-        <a
-          className="academy-course-public-link"
-          href={"/khoa-hoc/" + course.id}
-        >
-          Thông tin khóa học ↗
-        </a>
-        <small>{course.teacher_name || "Đội ngũ giáo viên"}</small>
-        <div className="academy-actions">
-          <button
-            className="academy-primary"
-            onClick={() => {
-              if (open && !focus) void perform(load);
-              else goAcademy("/hoc/khoa-hoc/" + course.id);
-            }}
-          >
-            {open ? "Thu gọn" : "Xem bài học"}
-          </button>
-          <a
-            role="button"
-            href={academyHref("/hoc/khoa-hoc/" + course.id + "?bai-tap=1")}
-            onClick={(e) =>
-              academyClick(e, "/hoc/khoa-hoc/" + course.id + "?bai-tap=1")
-            }
-          >
-            Bài tập
-          </a>
-          {!staff && onUpgrade && (
-            <button className="secondary" onClick={() => onUpgrade(course.id)}>
-              Gói học & quyền lợi
-            </button>
-          )}
-          {course.academic_course_id && (
-            <button
-              onClick={() =>
-                void perform(async () => {
-                  if (!demo)
-                    await api(`/academy/courses/${course.id}/enroll`, {});
-                  onNotice("Đã đăng ký lớp. Mở mục Lớp học để xem lịch.");
-                })
-              }
-            >
-              Đăng ký lớp Live
-            </button>
-          )}
-        </div>
-        {open && (
-          <div>
-            {!lessons.length ? (
-              <p>Chưa có bài giảng xuất bản.</p>
-            ) : (
-              <table>
-                <thead>
-                  <tr>
-                    <th>Bài học</th>
-                    <th>Tiến độ</th>
-                    <th />
-                  </tr>
-                </thead>
-                <tbody>
-                  {lessons.map((l) => (
-                    <tr
-                      key={l.id}
-                      className={
-                        l.id === focusLesson ? "academy-selected-lesson" : ""
-                      }
-                    >
-                      <td>
-                        {l.title}
-                        {l.id === focusLesson && (
-                          <small> · Bài bạn đã chọn</small>
-                        )}
-                      </td>
-                      <td>
-                        <progress
-                          max={l.duration_seconds || 1}
-                          value={l.progress_seconds || 0}
-                        />
-                      </td>
-                      <td>
-                        {focusLesson === l.id ? (
-                          <button onClick={() => void perform(() => play(l))}>
-                            Phát bài giảng
-                          </button>
-                        ) : (
-                          <a
-                            role="button"
-                            href={academyHref("/hoc/bai-giang/" + l.id)}
-                            onClick={(e) =>
-                              academyClick(e, "/hoc/bai-giang/" + l.id)
-                            }
-                          >
-                            Xem
-                          </a>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
-        )}
-        {video && (
-          <div className="academy-player">
-            <video
-              ref={ref}
-              src={video.url}
-              controls
-              playsInline
-              autoPlay
-              onLoadedMetadata={() => {
-                if (ref.current) ref.current.currentTime = video.position || 0;
-              }}
-              onPause={() => void save()}
-              onEnded={() => void save(true)}
-              onTimeUpdate={() => void save()}
-            />
-            <label>
-              Tốc độ{" "}
-              <select
-                onChange={(e) => {
-                  if (ref.current)
-                    ref.current.playbackRate = Number(e.target.value);
-                }}
-              >
-                {[0.75, 1, 1.25, 1.5, 2].map((n) => (
-                  <option key={n} value={n}>
-                    {n}×
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-        )}
-        {tasks && (
-          <Assignments
-            course={course.id}
-            demo={demo}
-            staff={staff}
-            perform={perform}
-            preferred={focusAssignment}
-          />
-        )}
-      </div>
-    </article>
-  );
-}
-function VipPanel({
-  demo,
-  plans,
-  perform,
-  notice,
-  intentPlan = "",
-  onContinue,
-  refreshMembership,
-  orderId = "",
-}: any) {
-  const [order, setOrder] = useState<any>(null),
-    [creating, setCreating] = useState(false),
-    [history, setHistory] = useState<any[]>([]);
-  const creatingRef = useRef(false);
-  useEffect(() => {
-    if (!orderId) {
-      setOrder(null);
-      return;
-    }
-    let active = true;
-    void perform(async () => {
-      const v = demo
-        ? {
-            id: orderId,
-            amount: 299000,
-            description: "NAPVIP DEMO",
-            status: "pending",
-          }
-        : await api("/academy/orders/" + orderId);
-      if (active) setOrder(v);
-    });
-    return () => {
-      active = false;
-    };
-  }, [orderId, demo]);
-  useEffect(() => {
-    if (!demo)
-      void api<any[]>("/academy/orders")
-        .then(setHistory)
-        .catch(() => {});
-  }, []);
-  async function checkPayment() {
-    if (demo) {
-      notice("Bản minh họa không có thanh toán thật.");
-      return;
-    }
-    setHistory(await api("/academy/orders"));
-    if (orderId) setOrder(await api("/academy/orders/" + orderId));
-    await refreshMembership?.();
+  .academy-shell aside[data-menu-open="true"] #academy-navigation {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  useEffect(() => {
-    if (
-      demo ||
-      !order ||
-      history.some((v: any) => v.id === order.id && v.status === "paid")
-    )
-      return;
-    const timer = setInterval(() => void perform(checkPayment), 15000);
-    return () => clearInterval(timer);
-  }, [
-    order?.id,
-    demo,
-    history.some((v: any) => v.id === order?.id && v.status === "paid"),
-  ]);
-  return (
-    <>
-      <div className="academy-course-grid">
-        {plans.map((p: any) => (
-          <article
-            className={
-              "academy-plan" +
-              (p.id === intentPlan ? " academy-course-selected" : "")
-            }
-            key={p.id}
-          >
-            <small>GÓI HỌC</small>
-            <h2>{p.name}</h2>
-            <strong>{money(p.price_vnd)}</strong>
-            <p>
-              {p.days} ngày · {p.live_enabled ? "Có lớp Live" : "Video xem lại"}
-            </p>
-            <ul>
-              <li>Xem bài giảng trong danh mục trung tâm</li>
-              <li>Theo dõi tiến độ và làm bài tập</li>
-            </ul>
-            <button
-              className="academy-primary"
-              disabled={creating}
-              onClick={() => {
-                if (creatingRef.current) return;
-                creatingRef.current = true;
-                setCreating(true);
-                void perform(async () => {
-                  if (demo) {
-                    notice("Đơn hàng mô phỏng; không có thanh toán thật.");
-                    goAcademy("/hoc/thanh-toan/demo-order");
-                    return;
-                  }
-                  const created = await api("/academy/orders", {
-                    plan_id: p.id,
-                  });
-                  goAcademy("/hoc/thanh-toan/" + created.id);
-                }).finally(() => {
-                  creatingRef.current = false;
-                  setCreating(false);
-                });
-              }}
-            >
-              {creating ? "Đang tạo đơn…" : "Chọn gói"}
-            </button>
-          </article>
-        ))}
-      </div>
-      {order && (
-        <section className="academy-section">
-          <h2>Thanh toán đơn hàng</h2>
-          <p>
-            Số tiền: <strong>{money(order.amount)}</strong>
-          </p>
-          <p>
-            Nội dung: <strong>{order.description}</strong>
-          </p>
-          <p role="status">
-            {order.status === "paid"
-              ? "Đã thanh toán"
-              : order.status === "rejected"
-                ? "Đã từ chối"
-                : order.status === "refunded"
-                  ? "Đã hoàn tiền"
-                  : "Chờ thanh toán / đối soát"}
-          </p>
-          {order.status !== "paid" &&
-            order.status !== "refunded" &&
-            order.qr_url && (
-              <img
-                className="academy-qr"
-                src={order.qr_url}
-                alt="QR chuyển khoản"
-              />
-            )}
-          {order.status === "pending" && order.checkout_url && (
-            <a href={order.checkout_url} target="_blank" rel="noopener">
-              Mở trang thanh toán
-            </a>
-          )}
-          <p>
-            Ảnh biên lai đưa đơn vào hàng chờ duyệt, không tự kích hoạt VIP.
-          </p>
-          {order.status === "pending" && (
-            <label>
-              Đính kèm biên lai
-              <input
-                type="file"
-                accept="image/png,image/jpeg"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file)
-                    void perform(async () => {
-                      if (demo) {
-                        notice("Biên lai minh họa.");
-                        return;
-                      }
-                      const signed = await api("/academy/uploads", {
-                        kind: "receipts",
-                        type: file.type,
-                        size: file.size,
-                        order: order.id,
-                      });
-                      const response = await fetch(signed.url, {
-                        method: "PUT",
-                        headers: { "Content-Type": file.type },
-                        body: file,
-                      });
-                      if (!response.ok) throw Error("Tải biên lai thất bại");
-                      await api(`/academy/orders/${order.id}/receipt`, {
-                        key: signed.key,
-                      });
-                      notice("Đã gửi biên lai để đối soát.");
-                    });
-                }}
-              />
-            </label>
-          )}
-        </section>
-      )}
-      <div className="academy-actions">
-        <button
-          className="secondary"
-          onClick={() => void perform(checkPayment)}
-        >
-          Cập nhật trạng thái thanh toán
-        </button>
-        <button onClick={onContinue}>Tiếp tục khóa học đã chọn</button>
-      </div>
-      <DataTable
-        rows={history.map((row: any) => ({
-          ...row,
-          status:
-            (
-              {
-                pending: "Chờ thanh toán",
-                review: "Chờ đối soát",
-                paid: "Đã thanh toán",
-                rejected: "Đã từ chối",
-                expired: "Đã hết hạn",
-              } as Record<string, string>
-            )[row.status] || row.status,
-        }))}
-        actions={(row: any) => (
-          <a
-            href={academyHref("/hoc/thanh-toan/" + row.id)}
-            onClick={(e) => academyClick(e, "/hoc/thanh-toan/" + row.id)}
-          >
-            Xem đơn
-          </a>
-        )}
-        columns={[
-          ["code", "Mã đơn"],
-          ["price_vnd", "Số tiền"],
-          ["status", "Trạng thái"],
-          ["paid_at", "Ngày thu"],
-        ]}
-      />
-    </>
-  );
+  .academy-shell #academy-navigation :is(button, a[role="button"]) {
+    display: flex;
+    gap: 8px;
+    min-height: 44px;
+    font-size: 10px;
+    white-space: normal;
+    margin: 0;
+    padding: 10px;
+    border: 1px solid #e9eef7;
+    background: #fafbfe;
+    border-radius: 7px;
+  }
+  .academy-shell #academy-navigation :is(button, a[role="button"]) svg {
+    height: 17px;
+    width: 17px;
+  }
+  .academy-shell > aside > .academy-logout {
+    display: none;
+    grid-column: 1/-1;
+    grid-row: auto;
+    margin: 7px 0 0;
+    min-height: 40px;
+    align-self: auto;
+    justify-content: center;
+    font-size: 10px;
+    padding: 10px;
+  }
+  .academy-shell aside[data-menu-open="true"] > .academy-logout {
+    display: flex;
+  }
+  .academy-shell > main {
+    padding: 26px 19px 20px;
+  }
+  .academy-shell > main > header {
+    margin-bottom: 23px;
+    padding-bottom: 21px;
+    gap: 12px;
+    align-items: start;
+  }
+  .academy-shell > main > header small {
+    font-size: 7px;
+    letter-spacing: 1.3px;
+  }
+  .academy-shell > main > header h1 {
+    font-size: 23px;
+    letter-spacing: -0.7px;
+    line-height: 1.35;
+    margin-top: 8px;
+  }
+  .academy-badge {
+    font-size: 8px;
+    padding: 5px 7px;
+    margin-top: 4px;
+    gap: 5px;
+  }
+  .academy-stats {
+    gap: 10px;
+    margin-bottom: 22px;
+  }
+  .academy-stats article {
+    padding: 15px 12px;
+    border-radius: 9px;
+  }
+  .academy-stats article:first-child {
+    padding-top: 13px;
+  }
+  .academy-stats small {
+    font-size: 8px;
+  }
+  .academy-stats strong {
+    font-size: 18px;
+    letter-spacing: -0.5px;
+    margin-top: 6px;
+  }
+  .academy-section {
+    padding: 22px;
+  }
+  .academy-section h2 {
+    font-size: 19px;
+  }
+  .academy-section > p {
+    font-size: 11px;
+  }
+  .academy-settings-form {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .academy-shell input,
+  .academy-shell textarea,
+  .academy-shell select {
+    font-size: 16px;
+    min-height: 44px;
+  }
+  .academy-shell label {
+    font-size: 11px;
+  }
+  .academy-shell table {
+    font-size: 11px;
+  }
+  .academy-shell th {
+    font-size: 9px;
+  }
+  .academy-shell td,
+  .academy-shell th {
+    padding: 10px 12px;
+  }
+  .academy-shell > main > footer {
+    font-size: 9px;
+    margin-top: 25px;
+  }
+  .academy-auth-layout {
+    display: block;
+  }
+  .academy-auth-story {
+    position: relative;
+    height: auto;
+    min-height: 0;
+    padding: 22px 25px;
+    display: block;
+    overflow: hidden;
+  }
+  .academy-auth-story > div,
+  .academy-auth-story > small {
+    display: none;
+  }
+  .academy-auth-brand {
+    font-size: 21px;
+    gap: 10px;
+  }
+  .academy-auth-brand .academy-logo-mark {
+    height: 36px;
+    width: 36px;
+  }
+  .academy-auth-layout > .academy-auth {
+    max-width: 520px;
+    padding: 35px 28px 45px;
+  }
+  .academy-auth h1 {
+    font-size: 28px;
+    margin-top: 24px;
+  }
+  .academy-auth input {
+    font-size: 16px;
+  }
+  .academy-auth-story:after {
+    width: 220px;
+    height: 220px;
+    right: 0;
+    bottom: -195px;
+  }
 }
-function ProfilePanel({ demo, profile, user, perform, refresh, notice }: any) {
-  return (
-    <section className="academy-section">
-      <h2>Hồ sơ học viên</h2>
-      <p>Email: {profile.email || user.email || "—"}</p>
-      {!profile.email_verified && (
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            const code = new FormData(e.currentTarget).get("code");
-            void perform(async () => {
-              if (!demo) {
-                await api("/academy/profile/verify-email", { code });
-                await refresh();
-              }
-              notice("Đã xác thực email.");
-            });
-          }}
-        >
-          <p>Lưu hồ sơ bên dưới rồi xác thực email trước khi mua gói học.</p>
-          <button
-            type="button"
-            onClick={() =>
-              void perform(async () => {
-                if (!demo)
-                  await api("/academy/email-code", {
-                    email: profile.email || user.email,
-                  });
-                notice(
-                  demo
-                    ? "Mã xác thực minh họa."
-                    : "Đã gửi mã xác thực qua email.",
-                );
-              })
-            }
-          >
-            Gửi mã email
-          </button>
-          <label>
-            Mã xác thực
-            <input
-              name="code"
-              inputMode="numeric"
-              autoComplete="one-time-code"
-              required
-            />
-          </label>
-          <button>Xác thực email</button>
-        </form>
-      )}
-      <form
-        className="academy-form-grid"
-        onSubmit={(e) => {
-          e.preventDefault();
-          const v: any = Object.fromEntries(new FormData(e.currentTarget));
-          void perform(async () => {
-            if (demo) {
-              notice("Đã lưu hồ sơ minh họa.");
-              return;
-            }
-            await api("/academy/profile", {
-              ...v,
-              marketing_consent: v.marketing_consent === "on",
-              name: user.name,
-              avatar_key: profile.avatar_key || "",
-            });
-            await refresh();
-            notice("Đã lưu hồ sơ.");
-          });
-        }}
-      >
-        {[
-          ["dob", "Ngày sinh", "date"],
-          ["address", "Địa chỉ", "text"],
-          ["school_name", "Trường đang học", "text"],
-          ["phone", "Điện thoại", "tel"],
-          ["parent_phone", "Điện thoại phụ huynh", "tel"],
-        ].map(([key, label, type]) => (
-          <label key={key}>
-            {label}
-            <input
-              name={key}
-              type={type}
-              defaultValue={String(profile[key] || "").slice(
-                0,
-                type === "date" ? 10 : 500,
-              )}
-              required
-            />
-          </label>
-        ))}
-        <label className="academy-check">
-          <input
-            type="checkbox"
-            name="marketing_consent"
-            defaultChecked={!!profile.marketing_consent}
-          />
-          Đồng ý nhận thông tin khai giảng/ưu đãi
-        </label>
-        <button className="academy-primary">Lưu hồ sơ</button>
-      </form>
-      <label>
-        Ảnh đại diện
-        <input
-          type="file"
-          accept="image/png,image/jpeg"
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file)
-              void perform(async () => {
-                if (demo) {
-                  notice("Ảnh đại diện minh họa.");
-                  return;
-                }
-                const v = await api("/academy/uploads", {
-                  kind: "avatars",
-                  type: file.type,
-                  size: file.size,
-                });
-                const r = await fetch(v.url, {
-                  method: "PUT",
-                  headers: { "Content-Type": file.type },
-                  body: file,
-                });
-                if (!r.ok) throw Error("Tải ảnh thất bại");
-                await api("/academy/profile", {
-                  name: user.name,
-                  dob: String(profile.dob).slice(0, 10),
-                  address: profile.address,
-                  school_name: profile.school_name,
-                  phone: profile.phone,
-                  parent_phone: profile.parent_phone,
-                  avatar_key: v.key,
-                  marketing_consent: !!profile.marketing_consent,
-                });
-                await refresh();
-                notice("Đã cập nhật ảnh.");
-              });
-          }}
-        />
-      </label>
-    </section>
-  );
+@media (prefers-reduced-motion: reduce) {
+  .academy-shell *,
+  .academy-auth-layout * {
+    animation: none !important;
+    transition: none !important;
+  }
 }
-function DataTable({ rows, columns, actions }: any) {
-  return (
-    <div className="academy-table-scroll">
-      <table>
-        <thead>
-          <tr>
-            {columns.map(([key, label]: any) => (
-              <th key={key}>{label}</th>
-            ))}
-            {actions && <th>Thao tác</th>}
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row: any, i: number) => (
-            <tr key={row.id || i}>
-              {columns.map(([key]: any) => (
-                <td key={key}>{row[key] == null ? "—" : String(row[key])}</td>
-              ))}
-              {actions && <td>{actions(row)}</td>}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      {!rows.length && <p>Chưa có dữ liệu.</p>}
-    </div>
-  );
+/* Focus on the next action, with compact and readable learning information. */
+.academy-shell .academy-today {
+  margin: 0 0 30px;
+  border: 1px solid #dce4ef;
+  border-radius: 12px;
+  padding: 23px;
+  background: #f8fafd;
 }
-function BusinessTable({ kind, demo, perform, notice }: any) {
-  useAcademyRoute();
-  const focusedOrder =
-    kind === "orders" ? new URLSearchParams(location.search).get("don") : null;
-  const [rows, setRows] = useState<any[]>([]),
-    [receipt, setReceipt] = useState("");
-  const load = async () =>
-    setRows(
-      demo
-        ? kind === "orders"
-          ? [
-              {
-                id: "demo-order",
-                code: 1001,
-                name: "Học viên minh họa",
-                price_vnd: 299000,
-                status: "pending",
-              },
-            ]
-          : []
-        : await api(
-            kind === "finance" ? "/academy/finance" : `/academy/admin/${kind}`,
-          ),
-    );
-  useEffect(() => {
-    void perform(load);
-  }, [kind]);
-  return (
-    <section className="academy-section">
-      <div className="academy-actions">
-        {focusedOrder && (
-          <a
-            href={academyHref(academyPaths.orders)}
-            onClick={(e) => academyClick(e, academyPaths.orders)}
-          >
-            ← Tất cả đơn hàng
-          </a>
-        )}
-        <button onClick={() => void perform(load)}>Tải lại</button>
-        <a
-          href={
-            demo
-              ? undefined
-              : `/api/academy/export/${kind === "orders" ? "finance" : kind}`
-          }
-          onClick={(e) => {
-            if (demo) {
-              e.preventDefault();
-              notice("Xuất Excel cần dữ liệu thật.");
-            }
-          }}
-        >
-          Xuất Excel
-        </a>
-      </div>
-      {kind === "finance" && (
-        <form
-          className="academy-form-grid"
-          onSubmit={(e) => {
-            e.preventDefault();
-            const v: any = Object.fromEntries(new FormData(e.currentTarget));
-            void perform(async () => {
-              if (!demo)
-                await api("/academy/finance", {
-                  ...v,
-                  amount_vnd: Number(v.amount_vnd),
-                });
-              notice(demo ? "Khoản chi minh họa." : "Đã ghi khoản chi.");
-              await load();
-            });
-          }}
-        >
-          <label>
-            Nội dung chi
-            <input name="title" required />
-          </label>
-          <label>
-            Số tiền VND
-            <input name="amount_vnd" type="number" min="1" required />
-          </label>
-          <label>
-            Ngày chi
-            <input name="paid_on" type="date" required />
-          </label>
-          <button>Lưu khoản chi</button>
-        </form>
-      )}
-      <DataTable
-        rows={focusedOrder ? rows.filter((r) => r.id === focusedOrder) : rows}
-        columns={
-          kind === "students"
-            ? [
-                ["name", "Học viên"],
-                ["email", "Email"],
-                ["phone", "Điện thoại"],
-                ["parent_phone", "Phụ huynh"],
-                ["expires_at", "Hết hạn VIP"],
-              ]
-            : kind === "finance"
-              ? [
-                  ["day", "Ngày"],
-                  ["revenue", "Doanh thu VND"],
-                  ["orders", "Đơn đã thu"],
-                ]
-              : [
-                  ["code", "Mã đơn"],
-                  ["name", "Học viên"],
-                  ["price_vnd", "Số tiền"],
-                  ["status", "Trạng thái"],
-                ]
-        }
-        actions={
-          kind === "orders"
-            ? (row: any) => (
-                <div className="academy-actions">
-                  <button
-                    onClick={() =>
-                      void perform(async () => {
-                        if (demo) {
-                          notice("Biên lai mẫu chưa có ảnh.");
-                          return;
-                        }
-                        setReceipt(
-                          (await api(`/academy/orders/${row.id}/receipt`)).url,
-                        );
-                      })
-                    }
-                  >
-                    Biên lai
-                  </button>
-                  {row.status === "pending" &&
-                    ["approve", "reject"].map((action) => (
-                      <button
-                        key={action}
-                        onClick={() =>
-                          void perform(async () => {
-                            if (demo) {
-                              setRows((v) =>
-                                v.map((x) =>
-                                  x.id === row.id
-                                    ? {
-                                        ...x,
-                                        status:
-                                          action === "approve"
-                                            ? "paid"
-                                            : "rejected",
-                                      }
-                                    : x,
-                                ),
-                              );
-                              notice(
-                                "Thao tác mô phỏng; không có giao dịch thật.",
-                              );
-                              return;
-                            }
-                            await api(`/academy/orders/${row.id}/review`, {
-                              action,
-                              note: "",
-                            });
-                            await load();
-                          })
-                        }
-                      >
-                        {action === "approve" ? "Kích hoạt VIP" : "Từ chối"}
-                      </button>
-                    ))}
-                </div>
-              )
-            : undefined
-        }
-      />
-      {receipt && (
-        <div className="academy-receipt">
-          <button onClick={() => setReceipt("")}>Đóng ảnh</button>
-          <img src={receipt} alt="Biên lai chuyển khoản riêng tư" />
-        </div>
-      )}
-    </section>
-  );
+.academy-today-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 18px;
 }
-function ManagePanel({ demo, courses, perform, refresh, notice }: any) {
-  return (
-    <div className="academy-admin-grid">
-      <AcademyCourseEditor
-        demo={demo}
-        courses={courses}
-        perform={perform}
-        refresh={refresh}
-        notice={notice}
-      />
-      <section className="academy-section">
-        <h2>Tạo gói VIP</h2>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            const v: any = Object.fromEntries(new FormData(e.currentTarget));
-            void perform(async () => {
-              if (!demo)
-                await api("/academy/plans", {
-                  name: v.name,
-                  price_vnd: Number(v.price_vnd),
-                  days: Number(v.days),
-                  live_enabled: v.live_enabled === "on",
-                  active: true,
-                });
-              await refresh();
-              notice(demo ? "Gói giá minh họa." : "Đã lưu gói giá.");
-            });
-          }}
-        >
-          <label>
-            Tên gói
-            <input name="name" required />
-          </label>
-          <label>
-            Giá VND
-            <input name="price_vnd" type="number" min="1000" required />
-          </label>
-          <label>
-            Số ngày
-            <input
-              name="days"
-              type="number"
-              min="1"
-              defaultValue="30"
-              required
-            />
-          </label>
-          <label className="academy-check">
-            <input name="live_enabled" type="checkbox" />
-            Có quyền học Live
-          </label>
-          <button>Lưu gói</button>
-        </form>
-      </section>
-      <section className="academy-section">
-        <h2>Thêm bài giảng</h2>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            const f = e.currentTarget,
-              v: any = Object.fromEntries(new FormData(f)),
-              file = v.file as File;
-            void perform(async () => {
-              if (demo) {
-                notice("Tải video thật cần cấu hình R2.");
-                return;
-              }
-              const out = await api(`/academy/courses/${v.course}/lessons`, {
-                title: v.title,
-                duration_seconds: Number(v.duration),
-                size: file.size,
-                type: file.type,
-              });
-              const response = await fetch(out.url, {
-                method: "PUT",
-                headers: { "Content-Type": file.type },
-                body: file,
-              });
-              if (!response.ok) throw Error("Tải video thất bại");
-              await api(`/academy/lessons/${out.id}/finish`, {});
-              notice("Video đã xuất bản.");
-            });
-          }}
-        >
-          <label>
-            Khóa học
-            <select name="course" required>
-              {courses.map((c: any) => (
-                <option key={c.id} value={c.id}>
-                  {c.title}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            Tên bài giảng
-            <input name="title" required />
-          </label>
-          <label>
-            Thời lượng giây
-            <input name="duration" type="number" min="1" required />
-          </label>
-          <label>
-            Video MP4/WebM
-            <input
-              type="file"
-              name="file"
-              accept="video/mp4,video/webm"
-              required
-            />
-          </label>
-          <button>Tải và xuất bản</button>
-        </form>
-      </section>
-      <AcademySiteEditor
-        demo={demo}
-        courses={courses}
-        perform={perform}
-        notice={notice}
-      />
-    </div>
-  );
+.academy-shell .academy-today h2 {
+  font-size: 21px;
+  font-weight: 500;
+  color: #33445b;
+  margin: 0;
 }
-function Assignments({ course, demo, staff, perform, preferred = "" }: any) {
-  const [rows, setRows] = useState<any[]>([]),
-    [submissions, setSubmissions] = useState<any[]>([]),
-    [selected, setSelected] = useState(""),
-    [questions, setQuestions] = useState<any[]>([
-      { id: "1", prompt: "", options: [], answer: "" },
-    ]);
-  const load = async () => {
-    setRows(
-      demo
-        ? []
-        : preferred
-          ? [await api(`/academy/assignments/${preferred}`)]
-          : await api(`/academy/courses/${course}/assignments`),
-    );
-    if (staff && preferred && !demo) {
-      setSelected(preferred);
-      setSubmissions(
-        await api(`/academy/assignments/${preferred}/submissions`),
-      );
-    }
-  };
-  useEffect(() => {
-    void perform(load);
-  }, [course, preferred]);
-  return (
-    <section className="academy-assignments">
-      <h3>Bài tập & nhận xét</h3>
-      {staff && (
-        <details>
-          <summary>Giao bài tập</summary>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              const v: any = Object.fromEntries(new FormData(e.currentTarget));
-              void perform(async () => {
-                if (demo) return;
-                await api(`/academy/courses/${course}/assignments`, {
-                  title: v.title,
-                  due_at: new Date(v.due).toISOString(),
-                  questions,
-                });
-                await load();
-              });
-            }}
-          >
-            <label>
-              Tên bài tập
-              <input name="title" required />
-            </label>
-            <label>
-              Hạn nộp
-              <input name="due" type="datetime-local" required />
-            </label>
-            {questions.map((q, i) => (
-              <fieldset key={q.id}>
-                <legend>Câu {i + 1}</legend>
-                <label>
-                  Câu hỏi
-                  <textarea
-                    value={q.prompt}
-                    onChange={(e) =>
-                      setQuestions((v) =>
-                        v.map((x, n) =>
-                          n === i ? { ...x, prompt: e.target.value } : x,
-                        ),
-                      )
-                    }
-                    required
-                  />
-                </label>
-                <label>
-                  Lựa chọn trắc nghiệm, mỗi dòng một lựa chọn; để trống cho tự
-                  luận
-                  <textarea
-                    value={q.options.join("\n")}
-                    onChange={(e) =>
-                      setQuestions((v) =>
-                        v.map((x, n) =>
-                          n === i
-                            ? {
-                                ...x,
-                                options: e.target.value
-                                  .split("\n")
-                                  .filter(Boolean),
-                              }
-                            : x,
-                        ),
-                      )
-                    }
-                  />
-                </label>
-                <label>
-                  Đáp án/ghi chú chấm
-                  <input
-                    value={q.answer}
-                    onChange={(e) =>
-                      setQuestions((v) =>
-                        v.map((x, n) =>
-                          n === i ? { ...x, answer: e.target.value } : x,
-                        ),
-                      )
-                    }
-                  />
-                </label>
-                <button
-                  type="button"
-                  onClick={() =>
-                    setQuestions((v) => v.filter((_, n) => n !== i))
-                  }
-                >
-                  Xóa câu
-                </button>
-              </fieldset>
-            ))}
-            <button
-              type="button"
-              onClick={() =>
-                setQuestions((v) => [
-                  ...v,
-                  {
-                    id: crypto.randomUUID(),
-                    prompt: "",
-                    options: [],
-                    answer: "",
-                  },
-                ])
-              }
-            >
-              Thêm câu hỏi
-            </button>
-            <button>Giao bài</button>
-          </form>
-        </details>
-      )}
-      {rows.map((row) => (
-        <article
-          key={row.id}
-          id={"assignment-" + row.id}
-          className={row.id === preferred ? "academy-selected-lesson" : ""}
-        >
-          <h4>
-            <a
-              href={academyHref("/hoc/bai-tap/" + row.id)}
-              onClick={(e) => academyClick(e, "/hoc/bai-tap/" + row.id)}
-            >
-              {row.title}
-            </a>
-          </h4>
-          <p>
-            Hạn: {new Date(row.due_at).toLocaleString("vi-VN")} · Điểm:{" "}
-            {row.score ?? "Chưa chấm"}
-          </p>
-          {row.feedback && <p>{row.feedback}</p>}
-          {staff ? (
-            <button
-              onClick={() =>
-                void perform(async () => {
-                  if (preferred !== row.id) {
-                    goAcademy("/hoc/bai-tap/" + row.id);
-                    return;
-                  }
-                  setSelected(row.id);
-                  setSubmissions(
-                    await api(`/academy/assignments/${row.id}/submissions`),
-                  );
-                })
-              }
-            >
-              Xem bài nộp
-            </button>
-          ) : (
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                const answers = Object.fromEntries(
-                  new FormData(e.currentTarget),
-                );
-                void perform(async () => {
-                  await api(`/academy/assignments/${row.id}/submissions`, {
-                    answers,
-                  });
-                  await load();
-                });
-              }}
-            >
-              {row.questions.map((q: any) => (
-                <label key={q.id}>
-                  {q.prompt}
-                  {q.options?.length ? (
-                    <select name={q.id} required>
-                      <option value="">Chọn câu trả lời</option>
-                      {q.options.map((o: string) => (
-                        <option key={o}>{o}</option>
-                      ))}
-                    </select>
-                  ) : (
-                    <textarea name={q.id} required />
-                  )}
-                </label>
-              ))}
-              <button>Nộp bài</button>
-            </form>
-          )}
-        </article>
-      ))}
-      {submissions.map((s) => (
-        <form
-          key={s.user_id}
-          onSubmit={(e) => {
-            e.preventDefault();
-            const v: any = Object.fromEntries(new FormData(e.currentTarget));
-            void perform(async () => {
-              await api(`/academy/assignments/${selected}/grade`, {
-                user_id: s.user_id,
-                score: Number(v.score),
-                feedback: v.feedback,
-              });
-              setSubmissions(
-                await api(`/academy/assignments/${selected}/submissions`),
-              );
-            });
-          }}
-        >
-          <h4>{s.name}</h4>
-          <pre>
-            {Object.entries(parse(s.answers))
-              .map(([k, v]) => `${k}: ${v}`)
-              .join("\n")}
-          </pre>
-          <label>
-            Điểm
-            <input
-              type="number"
-              name="score"
-              min="0"
-              max="10"
-              step="0.01"
-              defaultValue={s.score || 0}
-              required
-            />
-          </label>
-          <label>
-            Nhận xét
-            <textarea name="feedback" defaultValue={s.feedback || ""} />
-          </label>
-          <button>Lưu điểm</button>
-        </form>
-      ))}
-    </section>
-  );
+.academy-today-heading > span {
+  font-size: 12px;
+  color: #65758a;
+}
+.academy-today-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+  gap: 18px;
+}
+.academy-today-grid > section {
+  padding: 18px;
+  background: white;
+  border: 1px solid #e0e6ef;
+  border-radius: 9px;
+  min-width: 0;
+}
+.academy-shell .academy-today h3 {
+  font-size: 16px;
+  font-weight: 500;
+  color: #33445b;
+  margin: 0 0 15px;
+}
+.academy-today-grid article {
+  padding: 14px 0;
+  border-top: 1px solid #e6ebf3;
+  display: grid;
+  gap: 8px;
+}
+.academy-today-grid article:first-of-type {
+  border-top: 0;
+  padding-top: 0;
+}
+.academy-today-grid article strong {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.6;
+}
+.academy-today-grid p {
+  font-size: 13px;
+  color: #62748c;
+  line-height: 1.8;
+  margin: 0;
+}
+.academy-today-grid small {
+  font-size: 12px;
+  color: #65758a;
+}
+.academy-task-counts {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.academy-task-counts span {
+  padding: 3px 7px;
+  background: #edf3ff;
+  border-radius: 5px;
+  font-size: 11px;
+  color: #315c9a;
+}
+.academy-today-grid progress {
+  width: 100%;
+  height: 8px;
+  accent-color: #1967d2;
+}
+.academy-today-grid button {
+  justify-self: start;
+}
+.academy-shell .academy-course-selected {
+  outline: 2px solid #8eb2ee;
+  outline-offset: 3px;
+  scroll-margin-top: 22px;
+}
+.academy-selected-lesson {
+  background: #e8f0fe !important;
+}
+.academy-course-public-link {
+  font-size: 13px;
+  color: #1967d2;
+  display: inline-block;
+  margin: 10px 0;
+}
+.academy-site-editor fieldset,
+.classroom-community fieldset {
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid #dfe6f1;
+  border-radius: 8px;
+  margin: 15px 0;
+  display: grid;
+  gap: 16px;
+}
+.academy-site-editor legend {
+  padding: 0 8px;
+  font-size: 13px;
+  color: #466387;
+}
+.academy-site-editor details {
+  padding: 14px 0;
+  border-bottom: 1px solid #e3e9f2;
+}
+.academy-site-editor summary {
+  cursor: pointer;
+  font-size: 14px;
+  color: #375f98;
+}
+.academy-site-editor textarea {
+  width: 100%;
+  max-width: 100%;
+  resize: vertical;
+}
+.academy-editor-row {
+  display: grid;
+  gap: 13px;
+  border: 1px solid #e0e7f2;
+  background: #f8fafd;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+.academy-signup-steps {
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: #eaf1ff;
+  color: #315c9a;
+  font-size: 13px;
+}
+.academy-intent-notice {
+  font-size: 13px;
+  line-height: 1.8;
+  color: #536c8c;
+  padding: 13px;
+  border: 1px solid #dce6f4;
+  border-radius: 8px;
+}
+.academy-auth form > div:not([hidden]) {
+  display: grid;
+  gap: 17px;
+}
+.academy-auth form [hidden] {
+  display: none !important;
+}
+.classroom-community {
+  padding: 20px;
+  border: 1px solid #dce4ee;
+  border-radius: 9px;
+  background: white;
+  margin-bottom: 24px;
+  color: #3c4043;
+}
+.classroom-community h3 {
+  font-size: 17px;
+  font-weight: 500;
+  margin: 0 0 15px;
+}
+.classroom-community p {
+  font-size: 14px;
+  line-height: 1.8;
+  color: #5f6d80;
+}
+.classroom-community summary {
+  cursor: pointer;
+  font-size: 14px;
+  color: #1967d2;
+  padding: 10px 0;
+}
+.classroom-community form {
+  display: grid;
+  gap: 14px;
+  margin: 12px 0 22px;
+}
+.classroom-community label {
+  font-size: 13px;
+  display: grid;
+  gap: 7px;
+}
+.classroom-community input,
+.classroom-community textarea {
+  width: 100%;
+  min-width: 0;
+  font-size: 14px;
+  border: 1px solid #cdd7e5;
+  border-radius: 6px;
+  padding: 11px;
+  color: #33445b;
+  background: white;
+}
+.classroom-community form button {
+  justify-self: start;
+}
+.classroom-announcement {
+  border-top: 1px solid #e1e7f0;
+  padding: 18px 0;
+}
+.classroom-announcement small {
+  font-size: 12px;
+  color: #697a91;
+}
+.classroom-announcement h4 {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.6;
+  margin: 9px 0;
+}
+.classroom-announcement p {
+  white-space: pre-wrap;
+  margin-bottom: 0;
+  overflow-wrap: anywhere;
+}
+.classroom-person {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 13px 0;
+  border-bottom: 1px solid #e5eaf2;
+}
+.classroom-person > span {
+  width: 35px;
+  height: 35px;
+  display: grid;
+  place-items: center;
+  background: #e8f0fe;
+  color: #1967d2;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.classroom-person strong {
+  font-size: 14px;
+  font-weight: 500;
+}
+.classroom-person small {
+  margin-left: auto;
+  font-size: 12px;
+  color: #65758a;
+}
+.classroom-person + h3 {
+  margin-top: 30px;
+}
+@media (max-width: 800px) {
+  .academy-shell .academy-today {
+    padding: 18px;
+    margin-bottom: 24px;
+  }
+  .academy-today-heading {
+    align-items: start;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .academy-today-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .academy-today-grid > section {
+    padding: 16px;
+  }
+  .classroom-community {
+    padding: 17px;
+  }
+  .classroom-community input,
+  .classroom-community textarea {
+    font-size: 16px;
+  }
+  .academy-site-editor fieldset {
+    padding: 13px;
+  }
+  .academy-editor-row {
+    padding: 12px;
+  }
+}
+
+.academy-breadcrumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  color: #687385;
+  font-size: 13px;
+  margin: 0 0 18px;
+  overflow-wrap: anywhere;
+}
+.academy-breadcrumbs a {
+  color: #325b9b;
+  text-decoration: none;
+}
+.academy-breadcrumbs a:hover {
+  text-decoration: underline;
+}
+.academy-shell #academy-navigation a {
+  text-decoration: none;
+}
+.academy-shell #academy-navigation a small {
+  margin-left: auto;
+  background: #dce7fa;
+  color: #174c91;
+  border-radius: 12px;
+  padding: 1px 6px;
+}
+.academy-notifications article {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border: 1px solid #e1e6ed;
+  border-radius: 12px;
+  padding: 16px;
+  margin: 10px 0;
+  background: #fff;
+}
+.academy-notifications article.is-unread {
+  border-left: 3px solid #3267d6;
+  background: #f6f9ff;
+}
+.academy-notifications p {
+  margin: 6px 0;
+}
+.academy-notifications small {
+  color: #64748b;
+}
+.academy-notifications a {
+  white-space: nowrap;
+  color: #245ac0;
+}
+.academy-shell form[data-submitting="true"] button[type="submit"],
+.academy-shell form[data-submitting="true"] button:not([type]),
+.academy-auth form[data-submitting="true"] button:not([type]) {
+  opacity: 0.55;
+  cursor: wait;
+  pointer-events: none;
+}
+@media (max-width: 600px) {
+  .academy-notifications article {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .academy-breadcrumbs {
+    font-size: 12px;
+    line-height: 1.7;
+  }
 }

@@ -9,6 +9,20 @@ import { Accounts } from "./accounts";
 import { AcademySettings } from "./academy-settings";
 import { AcademyIcon, AcademyAuthFrame } from "./academy-ui";
 import "./academy.css";
+import {
+  academyPaths,
+  academyHref,
+  academyClick,
+  goAcademy,
+  useAcademyRoute,
+  legacyAcademyPath,
+  safeNext,
+} from "./academy-route";
+import { useAcademyFormGuard, submittingForm } from "./form-guard";
+import {
+  AcademyNotificationList,
+  AcademyBreadcrumbs,
+} from "./academy-navigation";
 const money = (n: number) =>
   new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(
     n || 0,
@@ -88,6 +102,11 @@ export function AcademyApp({
 }: {
   RoomComponent: React.ComponentType<any>;
 }) {
+  const route = useAcademyRoute();
+  useAcademyFormGuard();
+  const [routeBusy, setRouteBusy] = useState(false),
+    [routeError, setRouteError] = useState(""),
+    [routeTitle, setRouteTitle] = useState("");
   const demo = new URLSearchParams(location.search).has("academy_demo"),
     role = new URLSearchParams(location.search).get("role") || "student";
   const [user, setUser] = useState<any>(
@@ -106,7 +125,9 @@ export function AcademyApp({
         : null,
     ),
     [loading, setLoading] = useState(!demo),
-    [tab, setTab] = useState(demo && role !== "admin" ? "live" : "courses"),
+    [tab, setTabState] = useState(
+      demo && role !== "admin" ? "live" : "courses",
+    ),
     [error, setError] = useState(""),
     [notice, setNotice] = useState(""),
     [courses, setCourses] = useState<any[]>(demo ? demoCourses : []),
@@ -129,6 +150,11 @@ export function AcademyApp({
         : "login",
     ),
     [challenge, setChallenge] = useState("");
+  const setTab = (id: string) => {
+    if (goAcademy(academyPaths[id] || "/hoc")) setTabState(id);
+  };
+  const [notifications, setNotifications] = useState<any[]>([]),
+    [notificationError, setNotificationError] = useState("");
   const safeIntent = (key: string) => {
     const v = new URLSearchParams(location.search).get(key) || "";
     return /^[a-zA-Z0-9-]{1,36}$/.test(v) ? v : "";
@@ -137,12 +163,26 @@ export function AcademyApp({
     [intentLesson, setIntentLesson] = useState(safeIntent("lesson")),
     [intentTasks, setIntentTasks] = useState(false),
     [signupStep, setSignupStep] = useState(0);
-  const intentPlan = safeIntent("plan");
+  const intentPlan = safeIntent("goi") || safeIntent("plan");
   const showCourse = (id: string, lesson = "", tasks = false) => {
-    setIntentCourse(id);
-    setIntentLesson(lesson);
-    setIntentTasks(tasks);
-    setTab("courses");
+    const path = lesson
+      ? "/hoc/bai-giang/" + lesson
+      : tasks
+        ? "/hoc/khoa-hoc/" + id + "?bai-tap=1"
+        : id
+          ? "/hoc/khoa-hoc/" + id
+          : academyPaths.courses;
+    goAcademy(path);
+  };
+  const openMeeting = async (m: any) => {
+    if (demo) {
+      goAcademy("/hoc/buoi-hoc/" + m.id);
+      return;
+    }
+    const info = await api(`/meetings/${m.id}`);
+    goAcademy(
+      info.short_code ? "/" + info.short_code : "/hoc/buoi-hoc/" + m.id,
+    );
   };
   const [brand, setBrand] = useState("VA Academy"),
     [freeQuota, setFreeQuota] = useState(4),
@@ -160,18 +200,21 @@ export function AcademyApp({
   const perform = async (fn: () => Promise<void>) => {
     setError("");
     setNotice("");
+    const finish = submittingForm();
     try {
       await fn();
+      finish(true);
     } catch (e) {
+      finish(false);
       setError((e as Error).message);
     }
   };
-  useEffect(() => {
-    if (user && user.role !== "admin")
-      setTab(intentPlan ? "vip" : intentCourse ? "courses" : "live");
-  }, [user?.id]);
+  const refreshGeneration = useRef(0);
+  const [catalogLoaded, setCatalogLoaded] = useState(demo),
+    [classroomsLoaded, setClassroomsLoaded] = useState(demo);
   async function refresh() {
     if (demo) return;
+    const generation = ++refreshGeneration.current;
     const [c, p] = await Promise.all([
       api<any[]>(
         user?.role === "admin" &&
@@ -183,7 +226,9 @@ export function AcademyApp({
       ),
       api<any[]>("/academy/plans"),
     ]);
+    if (generation !== refreshGeneration.current) return;
     setCourses(c);
+    setCatalogLoaded(true);
     setPlans(p);
     if (user) {
       const me = await api<any[]>("/academy/me");
@@ -207,14 +252,135 @@ export function AcademyApp({
     void perform(refresh);
   }, [user]);
   useEffect(() => {
-    if (!user || demo) return;
-    const code = /^\/([a-z0-9]{6})\/?$/.exec(location.pathname)?.[1],
-      id = new URLSearchParams(location.search).get("room");
-    if (code || id)
-      void perform(async () =>
-        setRoom(await api(code ? `/rooms/${code}` : `/meetings/${id}`)),
-      );
-  }, [user]);
+    const legacy = legacyAcademyPath(location.pathname, location.search);
+    if (legacy) {
+      goAcademy(legacy, true);
+      return;
+    }
+    if (location.pathname.length > 1 && location.pathname.endsWith("/")) {
+      goAcademy(location.pathname.slice(0, -1) + location.search, true);
+      return;
+    }
+    if (route.auth) {
+      setAuthTab(route.auth);
+      if (user)
+        goAcademy(
+          safeNext(new URLSearchParams(location.search).get("next")),
+          true,
+        );
+      return;
+    }
+    if (!user) {
+      if (!loading && !demo)
+        goAcademy(
+          "/dang-nhap?next=" +
+            encodeURIComponent(location.pathname + location.search),
+          true,
+        );
+      return;
+    }
+    if (user.role === "admin" && location.pathname === "/hoc") {
+      goAcademy(academyPaths.courses + location.search, true);
+      return;
+    }
+    let active = true;
+    setTabState(route.tab);
+    setRoom(null);
+    setRouteError("");
+    setRouteTitle("");
+    setIntentCourse(route.courseId || safeIntent("khoa"));
+    setIntentLesson(route.lessonId || "");
+    setIntentTasks(
+      !!route.assignmentId ||
+        new URLSearchParams(location.search).get("bai-tap") === "1",
+    );
+    if (route.roomId || route.roomCode) {
+      setRouteBusy(true);
+      void (
+        demo
+          ? Promise.resolve(
+              demoMeetings.find((v) => v.id === route.roomId) || {
+                id: route.roomId || "preview",
+                title: "Phòng học minh họa",
+                status: "live",
+              },
+            )
+          : api(
+              route.roomCode
+                ? `/rooms/${route.roomCode}`
+                : `/meetings/${route.roomId}`,
+            )
+      )
+        .then((v) => {
+          if (active) setRoom(v);
+        })
+        .catch((e) => {
+          if (active) setRouteError(e.message);
+        })
+        .finally(() => {
+          if (active) setRouteBusy(false);
+        });
+    } else if (route.lessonId || route.assignmentId) {
+      setRouteBusy(true);
+      const id = route.lessonId || route.assignmentId;
+      void (
+        demo
+          ? Promise.resolve({
+              id,
+              course_id: "demo-course",
+              title: "Nội dung minh họa",
+            })
+          : api(
+              route.lessonId
+                ? `/academy/lessons/${id}`
+                : `/academy/assignments/${id}`,
+            )
+      )
+        .then((v) => {
+          if (active) {
+            setIntentCourse(v.course_id);
+            setRouteTitle(v.title);
+          }
+        })
+        .catch((e) => {
+          if (active) setRouteError(e.message);
+        })
+        .finally(() => {
+          if (active) setRouteBusy(false);
+        });
+    } else setRouteBusy(false);
+    return () => {
+      active = false;
+    };
+  }, [route.path, location.search, user?.id, loading]);
+  useEffect(() => {
+    if (!user) return;
+    let active = true;
+    const load = async () => {
+      try {
+        const rows = demo ? [] : await api<any[]>("/academy/notifications");
+        if (active) {
+          setNotifications(rows);
+          setNotificationError("");
+        }
+      } catch (e) {
+        if (active) setNotificationError((e as Error).message);
+      }
+    };
+    void load();
+    const timer = setInterval(() => void load(), 60000);
+    return () => {
+      active = false;
+      clearInterval(timer);
+    };
+  }, [user?.id, demo]);
+  const readNotifications = async (ids: string[]) => {
+    if (!ids.length) return;
+    if (!demo) await api("/academy/notifications/read", { ids });
+    setNotifications((v) =>
+      v.map((n) => (ids.includes(n.id) ? { ...n, read: true } : n)),
+    );
+  };
   useEffect(() => {
     if (!user || demo || !["live", "reports"].includes(tab)) return;
     const load = () =>
@@ -224,6 +390,7 @@ export function AcademyApp({
           api<any[]>("/meetings"),
         ]);
         setClassrooms(c);
+        setClassroomsLoaded(true);
         setMeetings(m);
       });
     load();
@@ -238,7 +405,7 @@ export function AcademyApp({
       <PreviewRoom
         role={user.role}
         title={room.title}
-        onExit={() => setRoom(null)}
+        onExit={() => goAcademy(academyPaths.live)}
       />
     );
   if (room && user)
@@ -249,8 +416,7 @@ export function AcademyApp({
         error={error}
         onError={setError}
         onExit={() => {
-          history.replaceState(null, "", "/hoc");
-          setRoom(null);
+          goAcademy(academyPaths.live);
         }}
       />
     );
@@ -267,13 +433,20 @@ export function AcademyApp({
           <div className="academy-tabs">
             <button
               onClick={() => {
-                setAuthTab("login");
-                setChallenge("");
+                if (goAcademy("/dang-nhap" + location.search)) {
+                  setAuthTab("login");
+                  setChallenge("");
+                }
               }}
             >
               Đăng nhập
             </button>
-            <button onClick={() => setAuthTab("register")}>
+            <button
+              onClick={() => {
+                setSignupStep(0);
+                goAcademy("/dang-ky" + (location.search || ""));
+              }}
+            >
               Đăng ký học thử
             </button>
           </div>
@@ -336,6 +509,7 @@ export function AcademyApp({
                   setAuthTab("login");
                   setSignupStep(0);
                   setNotice("Đăng ký thành công. Anh/chị có thể đăng nhập.");
+                  goAcademy("/dang-nhap" + location.search, true);
                 }
               });
             }}
@@ -456,6 +630,23 @@ export function AcademyApp({
     );
   const admin = user.role === "admin",
     staff = user.role !== "student";
+  const routePermission = (
+    {
+      manage: "content",
+      academic: "academic",
+      accounts: "accounts",
+      orders: "finance",
+      students: "accounts",
+      finance: "finance",
+      settings: "finance",
+    } as Record<string, string>
+  )[route.tab];
+  const routeForbidden =
+    (!!routePermission &&
+      (!admin ||
+        (user.permissions != null &&
+          !user.permissions.includes(routePermission)))) ||
+    (!!route.orderId && user.role !== "student");
   return (
     <div className={"academy-shell" + (!admin ? " classroom-shell" : "")}>
       <aside data-menu-open={menuOpen}>
@@ -500,6 +691,7 @@ export function AcademyApp({
                   ["courses", "Kho bài giảng"],
                 ]),
             ["reports", "Điểm danh & bản ghi"],
+            ["notifications", "Thông báo"],
             ...(!staff ? [["vip", "Gói học & thanh toán"]] : []),
             ["profile", staff ? "Tài khoản của bạn" : "Hồ sơ học viên"],
             ...(admin
@@ -513,19 +705,60 @@ export function AcademyApp({
                   ["settings", "Email & thanh toán"],
                 ]
               : []),
-          ].map(([id, label]) => (
-            <button
-              key={id}
-              className={tab === id ? "active" : ""}
-              onClick={() => {
-                setTab(id);
-                setMenuOpen(false);
-              }}
-            >
-              <AcademyIcon name={id} />
-              <span>{label}</span>
-            </button>
-          ))}
+          ]
+            .filter(
+              ([id]) =>
+                !admin ||
+                user.permissions == null ||
+                !(
+                  {
+                    manage: "content",
+                    academic: "academic",
+                    accounts: "accounts",
+                    orders: "finance",
+                    students: "accounts",
+                    finance: "finance",
+                    settings: "finance",
+                  } as Record<string, string>
+                )[id] ||
+                user.permissions.includes(
+                  (
+                    {
+                      manage: "content",
+                      academic: "academic",
+                      accounts: "accounts",
+                      orders: "finance",
+                      students: "accounts",
+                      finance: "finance",
+                      settings: "finance",
+                    } as Record<string, string>
+                  )[id],
+                ),
+            )
+            .map(([id, label]) => (
+              <a
+                key={id}
+                role="button"
+                href={academyHref(academyPaths[id])}
+                aria-current={tab === id ? "page" : undefined}
+                className={tab === id ? "active" : ""}
+                onClick={(e) => {
+                  academyClick(e, academyPaths[id]);
+                  setMenuOpen(false);
+                }}
+              >
+                <AcademyIcon name={id} />
+                <span>
+                  {label}
+                  {id === "notifications" &&
+                    notifications.some((n) => !n.read) && (
+                      <b className="academy-notification-count">
+                        {notifications.filter((n) => !n.read).length}
+                      </b>
+                    )}
+                </span>
+              </a>
+            ))}
         </nav>
         <button
           className="academy-logout"
@@ -540,7 +773,7 @@ export function AcademyApp({
           Đăng xuất
         </button>
       </aside>
-      <main>
+      <main key={route.subjectId ? "subject:" + route.subjectId : route.path}>
         <header>
           <div>
             <small>
@@ -573,15 +806,17 @@ export function AcademyApp({
                             ? admin
                               ? "Lớp học trực tiếp"
                               : "Lớp học của tôi"
-                            : tab === "reports"
-                              ? "Điểm danh & bản ghi"
-                              : tab === "academic"
-                                ? "Lớp học và giáo viên"
-                                : tab === "accounts"
-                                  ? "Tài khoản và phân quyền"
-                                  : tab === "settings"
-                                    ? "Cài đặt kinh doanh"
-                                    : "Tài khoản của bạn"}
+                            : tab === "notifications"
+                              ? "Thông báo"
+                              : tab === "reports"
+                                ? "Điểm danh & bản ghi"
+                                : tab === "academic"
+                                  ? "Lớp học và giáo viên"
+                                  : tab === "accounts"
+                                    ? "Tài khoản và phân quyền"
+                                    : tab === "settings"
+                                      ? "Cài đặt kinh doanh"
+                                      : "Tài khoản của bạn"}
             </h1>
           </div>
           <span className="academy-badge">
@@ -594,6 +829,46 @@ export function AcademyApp({
                 : "Học thử miễn phí"}
           </span>
         </header>
+        <AcademyBreadcrumbs
+          route={route}
+          courses={courses}
+          classrooms={demo ? demoClassrooms : classrooms}
+          title={routeTitle}
+        />
+        {routeBusy && (
+          <p role="status" className="academy-notice">
+            Đang mở nội dung đã chọn…
+          </p>
+        )}
+        {(route.invalid || routeError || routeForbidden) && (
+          <section className="academy-route-error" role="alert">
+            <h2>
+              {routeForbidden
+                ? "Bạn không có quyền mở trang này"
+                : route.invalid
+                  ? "Không tìm thấy trang"
+                  : routeError}
+            </h2>
+            <a
+              href={academyHref("/hoc")}
+              onClick={(e) => academyClick(e, "/hoc")}
+            >
+              Quay lại không gian học tập
+            </a>
+            {routeError && (
+              <button className="secondary" onClick={() => location.reload()}>
+                Thử lại
+              </button>
+            )}
+          </section>
+        )}
+        {tab === "notifications" && (
+          <AcademyNotificationList
+            rows={notifications}
+            error={notificationError}
+            onRead={readNotifications}
+          />
+        )}
         {error && (
           <p className="error" role="alert">
             {error}
@@ -604,21 +879,20 @@ export function AcademyApp({
             {notice}
           </p>
         )}
-        {!admin && tab === "live" && (
-          <AcademyToday
-            demo={demo}
-            role={user.role}
-            onMeeting={(m: any) =>
-              demo
-                ? setRoom(m)
-                : void perform(async () =>
-                    setRoom(await api(`/meetings/${m.id}`)),
-                  )
-            }
-            onCourse={showCourse}
-          />
-        )}
-        {tab === "courses" && (
+        {!route.invalid &&
+          !routeError &&
+          !routeForbidden &&
+          !routeBusy &&
+          !admin &&
+          tab === "live" && (
+            <AcademyToday
+              demo={demo}
+              role={user.role}
+              onMeeting={(m: any) => void perform(() => openMeeting(m))}
+              onCourse={showCourse}
+            />
+          )}
+        {!routeBusy && !routeError && !route.invalid && tab === "courses" && (
           <>
             <div className="academy-stats">
               <article>
@@ -650,6 +924,19 @@ export function AcademyApp({
                 </strong>
               </article>
             </div>
+            {catalogLoaded &&
+              intentCourse &&
+              !courses.some((c) => c.id === intentCourse) && (
+                <p role="alert">
+                  Không tìm thấy khóa học hoặc tài khoản chưa có quyền truy cập.{" "}
+                  <a
+                    href={academyHref(academyPaths.courses)}
+                    onClick={(e) => academyClick(e, academyPaths.courses)}
+                  >
+                    Xem danh mục được cấp quyền
+                  </a>
+                </p>
+              )}
             <div className="academy-course-grid">
               {courses.map((c) => (
                 <CourseCard
@@ -660,12 +947,16 @@ export function AcademyApp({
                   perform={perform}
                   onNotice={setNotice}
                   onUpgrade={(id: string) => {
-                    setIntentCourse(id);
-                    setTab("vip");
+                    goAcademy(
+                      academyPaths.vip + "?khoa=" + encodeURIComponent(id),
+                    );
                   }}
                   focus={intentCourse === c.id}
                   focusLesson={intentCourse === c.id ? intentLesson : ""}
                   focusTasks={intentCourse === c.id && intentTasks}
+                  focusAssignment={
+                    intentCourse === c.id ? route.assignmentId : undefined
+                  }
                 />
               ))}
             </div>
@@ -674,43 +965,48 @@ export function AcademyApp({
             )}
           </>
         )}
-        {["live", "reports"].includes(tab) && (
-          <LearningWorkspace
-            role={user.role}
-            courses={demo ? demoClassrooms : classrooms}
-            meetings={demo ? demoMeetings : meetings}
-            demo={demo}
-            reports={tab === "reports"}
-            renderClasswork={(id) => {
-              const c = courses.find((v) => v.academic_course_id === id);
-              return c ? (
-                <Assignments
-                  course={c.id}
-                  demo={demo}
-                  staff={staff}
-                  perform={perform}
-                />
-              ) : null;
-            }}
-            canTeach={staff}
-            canVideo={true}
-            onRefresh={async () => {
-              if (demo) return;
-              setClassrooms(await api("/catalog"));
-              setMeetings(await api("/meetings"));
-            }}
-            onOpen={(m) =>
-              demo
-                ? setRoom(m)
-                : void perform(async () =>
-                    setRoom(await api(`/meetings/${m.id}`)),
-                  )
-            }
-          />
-        )}
-        {tab === "vip" && (
+        {!routeBusy &&
+          !routeError &&
+          !route.invalid &&
+          ["live", "reports"].includes(tab) &&
+          !classroomsLoaded && <p role="status">Đang tải lớp học…</p>}
+        {!routeBusy &&
+          !routeError &&
+          !route.invalid &&
+          classroomsLoaded &&
+          ["live", "reports"].includes(tab) && (
+            <LearningWorkspace
+              routed
+              role={user.role}
+              courses={demo ? demoClassrooms : classrooms}
+              meetings={demo ? demoMeetings : meetings}
+              demo={demo}
+              reports={tab === "reports"}
+              renderClasswork={(id) => {
+                const c = courses.find((v) => v.academic_course_id === id);
+                return c ? (
+                  <Assignments
+                    course={c.id}
+                    demo={demo}
+                    staff={staff}
+                    perform={perform}
+                  />
+                ) : null;
+              }}
+              canTeach={staff}
+              canVideo={true}
+              onRefresh={async () => {
+                if (demo) return;
+                setClassrooms(await api("/catalog"));
+                setMeetings(await api("/meetings"));
+              }}
+              onOpen={(m) => void perform(() => openMeeting(m))}
+            />
+          )}
+        {!routeForbidden && tab === "vip" && (
           <VipPanel
             intentPlan={intentPlan}
+            orderId={route.orderId}
             onContinue={() => showCourse(intentCourse)}
             refreshMembership={refresh}
             demo={demo}
@@ -729,7 +1025,7 @@ export function AcademyApp({
             notice={setNotice}
           />
         )}
-        {admin && tab === "manage" && (
+        {!routeForbidden && admin && tab === "manage" && (
           <ManagePanel
             demo={demo}
             courses={courses}
@@ -738,20 +1034,26 @@ export function AcademyApp({
             notice={setNotice}
           />
         )}
-        {admin && tab === "settings" && <AcademySettings demo={demo} />}
-        {admin && tab === "academic" && (
+        {!routeForbidden && admin && tab === "settings" && (
+          <AcademySettings demo={demo} />
+        )}
+        {!routeForbidden && admin && tab === "academic" && (
           <AcademicAdmin demo={demo} onChange={refresh} />
         )}
-        {admin && tab === "accounts" && <Accounts demo={demo} />}
-        {admin && ["orders", "students", "finance"].includes(tab) && (
-          <BusinessTable
-            key={tab}
-            kind={tab}
-            demo={demo}
-            perform={perform}
-            notice={setNotice}
-          />
+        {!routeForbidden && admin && tab === "accounts" && (
+          <Accounts demo={demo} />
         )}
+        {!routeForbidden &&
+          admin &&
+          ["orders", "students", "finance"].includes(tab) && (
+            <BusinessTable
+              key={tab}
+              kind={tab}
+              demo={demo}
+              perform={perform}
+              notice={setNotice}
+            />
+          )}
         <footer>
           Thông tin học tập và thanh toán chỉ hiển thị theo quyền tài khoản.
         </footer>
@@ -769,6 +1071,7 @@ function CourseCard({
   focus = false,
   focusLesson = "",
   focusTasks = false,
+  focusAssignment = "",
 }: any) {
   const [open, setOpen] = useState(false),
     [lessons, setLessons] = useState<any[]>([]),
@@ -874,11 +1177,22 @@ function CourseCard({
         <div className="academy-actions">
           <button
             className="academy-primary"
-            onClick={() => void perform(load)}
+            onClick={() => {
+              if (open && !focus) void perform(load);
+              else goAcademy("/hoc/khoa-hoc/" + course.id);
+            }}
           >
             {open ? "Thu gọn" : "Xem bài học"}
           </button>
-          <button onClick={() => setTasks(!tasks)}>Bài tập</button>
+          <a
+            role="button"
+            href={academyHref("/hoc/khoa-hoc/" + course.id + "?bai-tap=1")}
+            onClick={(e) =>
+              academyClick(e, "/hoc/khoa-hoc/" + course.id + "?bai-tap=1")
+            }
+          >
+            Bài tập
+          </a>
           {!staff && onUpgrade && (
             <button className="secondary" onClick={() => onUpgrade(course.id)}>
               Gói học & quyền lợi
@@ -932,9 +1246,21 @@ function CourseCard({
                         />
                       </td>
                       <td>
-                        <button onClick={() => void perform(() => play(l))}>
-                          Xem
-                        </button>
+                        {focusLesson === l.id ? (
+                          <button onClick={() => void perform(() => play(l))}>
+                            Phát bài giảng
+                          </button>
+                        ) : (
+                          <a
+                            role="button"
+                            href={academyHref("/hoc/bai-giang/" + l.id)}
+                            onClick={(e) =>
+                              academyClick(e, "/hoc/bai-giang/" + l.id)
+                            }
+                          >
+                            Xem
+                          </a>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -981,6 +1307,7 @@ function CourseCard({
             demo={demo}
             staff={staff}
             perform={perform}
+            preferred={focusAssignment}
           />
         )}
       </div>
@@ -995,9 +1322,33 @@ function VipPanel({
   intentPlan = "",
   onContinue,
   refreshMembership,
+  orderId = "",
 }: any) {
   const [order, setOrder] = useState<any>(null),
+    [creating, setCreating] = useState(false),
     [history, setHistory] = useState<any[]>([]);
+  const creatingRef = useRef(false);
+  useEffect(() => {
+    if (!orderId) {
+      setOrder(null);
+      return;
+    }
+    let active = true;
+    void perform(async () => {
+      const v = demo
+        ? {
+            id: orderId,
+            amount: 299000,
+            description: "NAPVIP DEMO",
+            status: "pending",
+          }
+        : await api("/academy/orders/" + orderId);
+      if (active) setOrder(v);
+    });
+    return () => {
+      active = false;
+    };
+  }, [orderId, demo]);
   useEffect(() => {
     if (!demo)
       void api<any[]>("/academy/orders")
@@ -1010,6 +1361,7 @@ function VipPanel({
       return;
     }
     setHistory(await api("/academy/orders"));
+    if (orderId) setOrder(await api("/academy/orders/" + orderId));
     await refreshMembership?.();
   }
   useEffect(() => {
@@ -1049,23 +1401,28 @@ function VipPanel({
             </ul>
             <button
               className="academy-primary"
-              onClick={() =>
+              disabled={creating}
+              onClick={() => {
+                if (creatingRef.current) return;
+                creatingRef.current = true;
+                setCreating(true);
                 void perform(async () => {
                   if (demo) {
                     notice("Đơn hàng mô phỏng; không có thanh toán thật.");
-                    setOrder({
-                      id: "demo-order",
-                      amount: p.price_vnd,
-                      description: "NAPVIP DEMO",
-                    });
+                    goAcademy("/hoc/thanh-toan/demo-order");
                     return;
                   }
-                  setOrder(await api("/academy/orders", { plan_id: p.id }));
-                  setHistory(await api("/academy/orders"));
-                })
-              }
+                  const created = await api("/academy/orders", {
+                    plan_id: p.id,
+                  });
+                  goAcademy("/hoc/thanh-toan/" + created.id);
+                }).finally(() => {
+                  creatingRef.current = false;
+                  setCreating(false);
+                });
+              }}
             >
-              Chọn gói
+              {creating ? "Đang tạo đơn…" : "Chọn gói"}
             </button>
           </article>
         ))}
@@ -1079,14 +1436,25 @@ function VipPanel({
           <p>
             Nội dung: <strong>{order.description}</strong>
           </p>
-          {order.qr_url && (
-            <img
-              className="academy-qr"
-              src={order.qr_url}
-              alt="QR chuyển khoản"
-            />
-          )}
-          {order.checkout_url && (
+          <p role="status">
+            {order.status === "paid"
+              ? "Đã thanh toán"
+              : order.status === "rejected"
+                ? "Đã từ chối"
+                : order.status === "refunded"
+                  ? "Đã hoàn tiền"
+                  : "Chờ thanh toán / đối soát"}
+          </p>
+          {order.status !== "paid" &&
+            order.status !== "refunded" &&
+            order.qr_url && (
+              <img
+                className="academy-qr"
+                src={order.qr_url}
+                alt="QR chuyển khoản"
+              />
+            )}
+          {order.status === "pending" && order.checkout_url && (
             <a href={order.checkout_url} target="_blank" rel="noopener">
               Mở trang thanh toán
             </a>
@@ -1094,39 +1462,41 @@ function VipPanel({
           <p>
             Ảnh biên lai đưa đơn vào hàng chờ duyệt, không tự kích hoạt VIP.
           </p>
-          <label>
-            Đính kèm biên lai
-            <input
-              type="file"
-              accept="image/png,image/jpeg"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file)
-                  void perform(async () => {
-                    if (demo) {
-                      notice("Biên lai minh họa.");
-                      return;
-                    }
-                    const signed = await api("/academy/uploads", {
-                      kind: "receipts",
-                      type: file.type,
-                      size: file.size,
-                      order: order.id,
+          {order.status === "pending" && (
+            <label>
+              Đính kèm biên lai
+              <input
+                type="file"
+                accept="image/png,image/jpeg"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file)
+                    void perform(async () => {
+                      if (demo) {
+                        notice("Biên lai minh họa.");
+                        return;
+                      }
+                      const signed = await api("/academy/uploads", {
+                        kind: "receipts",
+                        type: file.type,
+                        size: file.size,
+                        order: order.id,
+                      });
+                      const response = await fetch(signed.url, {
+                        method: "PUT",
+                        headers: { "Content-Type": file.type },
+                        body: file,
+                      });
+                      if (!response.ok) throw Error("Tải biên lai thất bại");
+                      await api(`/academy/orders/${order.id}/receipt`, {
+                        key: signed.key,
+                      });
+                      notice("Đã gửi biên lai để đối soát.");
                     });
-                    const response = await fetch(signed.url, {
-                      method: "PUT",
-                      headers: { "Content-Type": file.type },
-                      body: file,
-                    });
-                    if (!response.ok) throw Error("Tải biên lai thất bại");
-                    await api(`/academy/orders/${order.id}/receipt`, {
-                      key: signed.key,
-                    });
-                    notice("Đã gửi biên lai để đối soát.");
-                  });
-              }}
-            />
-          </label>
+                }}
+              />
+            </label>
+          )}
         </section>
       )}
       <div className="academy-actions">
@@ -1152,6 +1522,14 @@ function VipPanel({
               } as Record<string, string>
             )[row.status] || row.status,
         }))}
+        actions={(row: any) => (
+          <a
+            href={academyHref("/hoc/thanh-toan/" + row.id)}
+            onClick={(e) => academyClick(e, "/hoc/thanh-toan/" + row.id)}
+          >
+            Xem đơn
+          </a>
+        )}
         columns={[
           ["code", "Mã đơn"],
           ["price_vnd", "Số tiền"],
@@ -1334,6 +1712,9 @@ function DataTable({ rows, columns, actions }: any) {
   );
 }
 function BusinessTable({ kind, demo, perform, notice }: any) {
+  useAcademyRoute();
+  const focusedOrder =
+    kind === "orders" ? new URLSearchParams(location.search).get("don") : null;
   const [rows, setRows] = useState<any[]>([]),
     [receipt, setReceipt] = useState("");
   const load = async () =>
@@ -1360,6 +1741,14 @@ function BusinessTable({ kind, demo, perform, notice }: any) {
   return (
     <section className="academy-section">
       <div className="academy-actions">
+        {focusedOrder && (
+          <a
+            href={academyHref(academyPaths.orders)}
+            onClick={(e) => academyClick(e, academyPaths.orders)}
+          >
+            ← Tất cả đơn hàng
+          </a>
+        )}
         <button onClick={() => void perform(load)}>Tải lại</button>
         <a
           href={
@@ -1410,7 +1799,7 @@ function BusinessTable({ kind, demo, perform, notice }: any) {
         </form>
       )}
       <DataTable
-        rows={rows}
+        rows={focusedOrder ? rows.filter((r) => r.id === focusedOrder) : rows}
         columns={
           kind === "students"
             ? [
@@ -1626,18 +2015,31 @@ function ManagePanel({ demo, courses, perform, refresh, notice }: any) {
     </div>
   );
 }
-function Assignments({ course, demo, staff, perform }: any) {
+function Assignments({ course, demo, staff, perform, preferred = "" }: any) {
   const [rows, setRows] = useState<any[]>([]),
     [submissions, setSubmissions] = useState<any[]>([]),
     [selected, setSelected] = useState(""),
     [questions, setQuestions] = useState<any[]>([
       { id: "1", prompt: "", options: [], answer: "" },
     ]);
-  const load = async () =>
-    setRows(demo ? [] : await api(`/academy/courses/${course}/assignments`));
+  const load = async () => {
+    setRows(
+      demo
+        ? []
+        : preferred
+          ? [await api(`/academy/assignments/${preferred}`)]
+          : await api(`/academy/courses/${course}/assignments`),
+    );
+    if (staff && preferred && !demo) {
+      setSelected(preferred);
+      setSubmissions(
+        await api(`/academy/assignments/${preferred}/submissions`),
+      );
+    }
+  };
   useEffect(() => {
     void perform(load);
-  }, [course]);
+  }, [course, preferred]);
   return (
     <section className="academy-assignments">
       <h3>Bài tập & nhận xét</h3>
@@ -1749,8 +2151,19 @@ function Assignments({ course, demo, staff, perform }: any) {
         </details>
       )}
       {rows.map((row) => (
-        <article key={row.id}>
-          <h4>{row.title}</h4>
+        <article
+          key={row.id}
+          id={"assignment-" + row.id}
+          className={row.id === preferred ? "academy-selected-lesson" : ""}
+        >
+          <h4>
+            <a
+              href={academyHref("/hoc/bai-tap/" + row.id)}
+              onClick={(e) => academyClick(e, "/hoc/bai-tap/" + row.id)}
+            >
+              {row.title}
+            </a>
+          </h4>
           <p>
             Hạn: {new Date(row.due_at).toLocaleString("vi-VN")} · Điểm:{" "}
             {row.score ?? "Chưa chấm"}
@@ -1760,6 +2173,10 @@ function Assignments({ course, demo, staff, perform }: any) {
             <button
               onClick={() =>
                 void perform(async () => {
+                  if (preferred !== row.id) {
+                    goAcademy("/hoc/bai-tap/" + row.id);
+                    return;
+                  }
                   setSelected(row.id);
                   setSubmissions(
                     await api(`/academy/assignments/${row.id}/submissions`),
