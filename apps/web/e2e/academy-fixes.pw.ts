@@ -132,3 +132,49 @@ test("switching from two-factor login to registration clears the login challenge
     page.getByLabel("Mã xác thực hai bước", { exact: true }),
   ).toHaveCount(0);
 });
+
+test("website reload protects checkbox-only edits", async ({ page }) => {
+  let reads = 0;
+  await page.route("**/api/**", async (r) => {
+    const path = new URL(r.request().url()).pathname;
+    let data: any = [];
+    if (path === "/api/me") data = { id: "admin", role: "admin", name: "VA" };
+    if (path === "/api/public-config") data = { platform_mode: "academy" };
+    if (path === "/api/academy/site") {
+      reads++;
+      data = [
+        {
+          content: JSON.stringify({ headline: "VA đã lưu", published: true }),
+          revision: "unchanged",
+        },
+      ];
+    }
+    await r.fulfill({ json: data });
+  });
+  await page.goto("/quan-tri/noi-dung");
+  const published = page.getByLabel("Xuất bản website", { exact: true });
+  await expect(published).toBeChecked();
+  await published.uncheck();
+  page.once("dialog", (d) => void d.dismiss());
+  await page
+    .getByRole("button", {
+      name: "Tải lại nội dung website đã lưu",
+      exact: true,
+    })
+    .click();
+  expect(reads).toBe(1);
+  await expect(published).not.toBeChecked();
+  page.once("dialog", (d) => void d.accept());
+  await page
+    .getByRole("button", {
+      name: "Tải lại nội dung website đã lưu",
+      exact: true,
+    })
+    .click();
+  await expect.poll(() => reads).toBe(2);
+  await expect(published).toBeChecked();
+  await page
+    .getByRole("button", { name: "Email & thanh toán", exact: true })
+    .click();
+  await expect(page).toHaveURL(/cai-dat$/);
+});

@@ -124,6 +124,7 @@ export function AcademySiteEditor({ demo, courses, perform, notice }: any) {
         Tải lại nội dung website đã lưu
       </button>
       <form
+        ref={formRef}
         onSubmit={(e) => {
           e.preventDefault();
           if (!loaded || saving) return;

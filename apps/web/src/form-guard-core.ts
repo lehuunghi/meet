@@ -13,7 +13,12 @@ function values(f: HTMLFormElement) {
       f.querySelectorAll<
         HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
       >("input:not([name]),textarea:not([name]),select:not([name])"),
-    ).map((el) => [el.type, el.value]),
+    ).map((el) => [
+      el.type,
+      el instanceof HTMLInputElement && ["checkbox", "radio"].includes(el.type)
+        ? el.checked
+        : el.value,
+    ]),
   });
 }
 function prune() {
