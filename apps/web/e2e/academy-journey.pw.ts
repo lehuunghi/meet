@@ -45,7 +45,9 @@ test("registration keeps the selected course across two steps and requires a del
     .click();
   await expect.poll(() => registered?.profile.name).toBe("Nguyễn An");
   expect(registered.email).toBe("learner@example.test");
-  expect(page.url()).toContain("course=course-one");
+  expect(new URL(page.url()).searchParams.get("next")).toBe(
+    "/hoc/khoa-hoc/course-one",
+  );
 });
 test("workspace actions open the intended lesson and teacher cannot post through a student view", async ({
   page,
@@ -76,6 +78,12 @@ test("workspace actions open the intended lesson and teacher cannot post through
           academic_course_id: "subject",
         },
       ];
+    if (path === "/api/academy/lessons/lesson-one")
+      data = {
+        id: "lesson-one",
+        course_id: "course-one",
+        title: "Bài đang xem",
+      };
     if (path === "/api/academy/workspace")
       data = {
         meetings: [],
@@ -116,7 +124,7 @@ test("workspace actions open the intended lesson and teacher cannot post through
     .getByRole("button", { name: "Xem môn học", exact: true })
     .first()
     .click();
-  await page.locator(".classroom-card-cover h3 button").first().click();
+  await page.locator(".classroom-card-cover h3 [role=button]").first().click();
   await page.getByText("Đăng thông báo cho môn học", { exact: true }).click();
   await page
     .getByLabel("Tiêu đề thông báo", { exact: true })
@@ -132,7 +140,7 @@ test("workspace actions open the intended lesson and teacher cannot post through
   );
   expect(writes).toEqual([]);
   await page.goto("/hoc?academy_demo=1&role=student");
-  await page.locator(".classroom-card-cover h3 button").first().click();
+  await page.locator(".classroom-card-cover h3 [role=button]").first().click();
   await expect(
     page.getByText("Đăng thông báo cho môn học", { exact: true }),
   ).toHaveCount(0);

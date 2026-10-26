@@ -15,7 +15,7 @@ func TestAcademyWebsiteDesignAndEscaping(t *testing.T) {
 	if err := academyWeb.Execute(&html, data); err != nil {
 		t.Fatal(err)
 	}
-	for _, text := range []string{"Học thử miễn phí", "Minh họa giao diện", "Khóa học đầu tiên đang được chuẩn bị", "/hoc?register=1", "Đến nội dung chính"} {
+	for _, text := range []string{"Học thử miễn phí", "Minh họa giao diện", "Khóa học đầu tiên đang được chuẩn bị", "/dang-ky", "Đến nội dung chính"} {
 		if !strings.Contains(html.String(), text) {
 			t.Fatalf("missing %s", text)
 		}

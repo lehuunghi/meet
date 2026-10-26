@@ -1332,7 +1332,7 @@ function Room({
 }
 function PlatformEntry() {
   const forced =
-    location.pathname === "/hoc" ||
+    (/^\/(hoc|quan-tri)(\/|$)/.test(location.pathname)||["/dang-nhap","/dang-ky"].includes(location.pathname)) ||
     new URLSearchParams(location.search).has("academy_demo");
   const [mode, setMode] = useState(forced ? "academy" : "");
   useEffect(() => {

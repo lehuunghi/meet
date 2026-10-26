@@ -7,6 +7,10 @@ import (
 
 // A course is a subject taught to one class. Authorize it before querying the roster.
 func (a *app) attendanceReport(w http.ResponseWriter, r *http.Request) {
+	if _, _, _, e := reportMonth(r); e != nil {
+		problem(w, 400, e.Error())
+		return
+	}
 	u := who(r)
 	course := r.URL.Query().Get("course_id")
 	class := r.URL.Query().Get("class_id")
@@ -44,6 +48,7 @@ func (a *app) attendanceReport(w http.ResponseWriter, r *http.Request) {
 }
 func (a *app) renderAttendance(w http.ResponseWriter, r *http.Request, course, class, meeting string, page int) {
 	u := who(r)
+	month, from, to, _ := reportMonth(r)
 	limit := 51
 	if r.URL.Query().Get("format") == "xlsx" {
 		limit = 10001
@@ -61,6 +66,6 @@ func (a *app) renderAttendance(w http.ResponseWriter, r *http.Request, course, c
  LEFT JOIN presence p ON p.school_id=m.school_id AND p.meeting_id=m.id AND p.user_id=u.id
  LEFT JOIN meeting_timings mt ON mt.school_id=m.school_id AND mt.meeting_id=m.id
  LEFT JOIN attendance_policies policy ON policy.school_id=c.school_id
- WHERE `+courseAccess+` AND (?='' OR c.id=?) AND (?='' OR c.class_id=?) AND (?='' OR m.id=?) AND (?<>'student' OR u.id=?)
- ORDER BY m.starts_at DESC,m.id,u.name,u.id LIMIT ? OFFSET ?`, u.School, u.Role, u.Role, u.ID, u.Role, u.ID, course, course, class, class, meeting, meeting, u.Role, u.ID, limit, page*50)
+ WHERE `+courseAccess+` AND (?='' OR c.id=?) AND (?='' OR c.class_id=?) AND (?='' OR m.id=?) AND (?<>'student' OR u.id=?) AND (?='' OR (m.starts_at>=? AND m.starts_at<?))
+ ORDER BY m.starts_at DESC,m.id,u.name,u.id LIMIT ? OFFSET ?`, u.School, u.Role, u.Role, u.ID, u.Role, u.ID, course, course, class, class, meeting, meeting, u.Role, u.ID, month, from, to, limit, page*50)
 }

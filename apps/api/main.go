@@ -309,7 +309,7 @@ func migrate(db *sql.DB) error {
 	if e = migrateV4(c); e != nil {
 		return e
 	}
-	_, e = c.ExecContext(context.Background(), "INSERT IGNORE INTO schema_migrations VALUES(6),(7),(8)")
+	_, e = c.ExecContext(context.Background(), "INSERT IGNORE INTO schema_migrations VALUES(6),(7),(8),(9)")
 	return e
 }
 func main() {

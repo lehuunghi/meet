@@ -29,7 +29,7 @@ test("classroom cards, real lesson tabs and role actions work on desktop and mob
       path: `../../outputs/classroom-${role}-desktop.png`,
       fullPage: true,
     });
-    await page.locator(".classroom-card-cover h3 button").first().click();
+    await page.locator(".classroom-card-cover h3 [role=button]").first().click();
     await expect(
       page.getByRole("tab", { name: "Bảng tin", exact: true }),
     ).toHaveAttribute("aria-selected", "true");
@@ -77,3 +77,4 @@ test("classroom cards, real lesson tabs and role actions work on desktop and mob
   }
   expect(writes).toEqual([]);
 });
+

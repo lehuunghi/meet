@@ -16,7 +16,7 @@ func TestAcademyCourseAndPolicyTemplates(t *testing.T) {
 	if err := academyWeb.Execute(&out, data); err != nil {
 		t.Fatal(err)
 	}
-	for _, text := range []string{"Khóa học dành cho ai?", "Vận dụng", "course=course-preview", "lesson=preview-lesson", "/chinh-sach/bao-mat"} {
+	for _, text := range []string{"Khóa học dành cho ai?", "Vận dụng", "/hoc/khoa-hoc/course-preview", "/hoc/bai-giang/preview-lesson", "/chinh-sach/bao-mat"} {
 		if !strings.Contains(out.String(), text) {
 			t.Fatalf("missing %s", text)
 		}

@@ -33,7 +33,7 @@ func (a *app) academyAssignments(w http.ResponseWriter, r *http.Request) {
 	u := who(r)
 	course := r.PathValue("course")
 	teacher := a.academyTeach(r, course)
-	if !teacher && (u.Role != "student" || !a.hasVIP(r.Context(), u.School, u.ID, false)) {
+	if !teacher && (!a.academyStudentCourse(r, course) || !a.hasVIP(r.Context(), u.School, u.ID, false)) {
 		problem(w, 403, "Chưa có quyền bài tập")
 		return
 	}
@@ -116,7 +116,7 @@ func (a *app) academySubmission(w http.ResponseWriter, r *http.Request) {
 		a.query(w, r, "SELECT s.user_id,u.name,s.answers,s.score,s.feedback,s.submitted_at FROM academy_submissions s JOIN users u ON u.school_id=s.school_id AND u.id=s.user_id WHERE s.school_id=? AND s.assignment_id=? ORDER BY u.name", u.School, id)
 		return
 	}
-	if u.Role != "student" || !a.hasVIP(r.Context(), u.School, u.ID, false) {
+	if !a.academyStudentCourse(r, course) || !a.hasVIP(r.Context(), u.School, u.ID, false) {
 		problem(w, 402, "Cần quyền học bài tập")
 		return
 	}

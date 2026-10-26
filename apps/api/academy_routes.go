@@ -55,6 +55,11 @@ func (a *app) academyRoutes(m *http.ServeMux) {
 	}
 	member("GET /api/academy/me", a.academyMe)
 	member("GET /api/academy/workspace", a.academyWorkspace)
+	member("GET /api/academy/notifications", a.academyNotifications)
+	member("POST /api/academy/notifications/read", a.academyNotifications)
+	member("GET /api/academy/lessons/{lesson}", a.academyResolve)
+	member("GET /api/academy/assignments/{assignment}", a.academyResolve)
+	member("GET /api/academy/orders/{order}", a.academyOrderDetail)
 	member("GET /api/academy/settings", a.academySettings)
 	member("POST /api/academy/settings", a.academySettings)
 	control("GET /api/academy/control/people", "accounts", a.accounts)

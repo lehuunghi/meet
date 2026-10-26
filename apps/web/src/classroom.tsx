@@ -1,5 +1,12 @@
 import { useState, type ReactNode } from "react";
 import "./classroom.css";
+import {
+  useAcademyRoute,
+  goAcademy,
+  subjectPath,
+  academyHref,
+  academyClick,
+} from "./academy-route";
 import { ClassroomCommunity } from "./classroom-community";
 type Subject = {
   id: string;
@@ -19,6 +26,7 @@ type Lesson = {
   starts_at: string;
 };
 type Props = {
+  routed?: boolean;
   demo?: boolean;
   role: string;
   courses: Subject[];
@@ -36,11 +44,61 @@ const color = (id: string) =>
   colors[
     Array.from(id).reduce((n, c) => n + c.charCodeAt(0), 0) % colors.length
   ];
+function ClassroomLink({ routed, path, onClick, children, ...props }: any) {
+  return routed ? (
+    <a
+      {...props}
+      role={props.role || "button"}
+      href={academyHref(path)}
+      onClick={(e) => academyClick(e, path)}
+    >
+      {children}
+    </a>
+  ) : (
+    <button {...props} onClick={onClick}>
+      {children}
+    </button>
+  );
+}
 export function ClassroomCourses(p: Props) {
-  const [classId, setClassId] = useState(""),
-    [subjectId, setSubjectId] = useState(""),
-    [query, setQuery] = useState(""),
-    [tab, setTab] = useState("stream");
+  const route = useAcademyRoute();
+  const [classState, setClassState] = useState(""),
+    [subjectState, setSubjectState] = useState(""),
+    [queryState, setQueryState] = useState(""),
+    [tabState, setTabState] = useState("stream");
+  const subjectId = p.routed ? route.subjectId || "" : subjectState;
+  const classId = p.routed
+    ? route.classId || p.courses.find((c) => c.id === subjectId)?.class_id || ""
+    : classState;
+  const query = p.routed
+    ? new URLSearchParams(location.search).get("tim") || ""
+    : queryState;
+  const tab = p.routed ? route.subjectTab || "stream" : tabState;
+  const setClassId = (id: string) =>
+    p.routed ? goAcademy(id ? "/hoc/lop/" + id : "/hoc") : setClassState(id);
+  const setSubjectId = (id: string) => {
+    if (p.routed)
+      goAcademy(
+        id
+          ? subjectPath(id)
+          : p.role === "teacher" && classId
+            ? "/hoc/lop/" + classId
+            : "/hoc",
+      );
+    else setSubjectState(id);
+  };
+  const setTab = (next: string) =>
+    p.routed ? goAcademy(subjectPath(subjectId, next)) : setTabState(next);
+  const setQuery = (value: string) => {
+    if (!p.routed) {
+      setQueryState(value);
+      return;
+    }
+    const q = new URLSearchParams(location.search);
+    if (value) q.set("tim", value);
+    else q.delete("tim");
+    goAcademy(location.pathname + (q.size ? "?" + q.toString() : ""), true);
+  };
   const classes = [
     ...new Map(
       p.courses.map((c) => [
@@ -63,16 +121,28 @@ export function ClassroomCourses(p: Props) {
         }
       : undefined);
   const open = (id: string, next = "stream") => {
-    setSubjectId(id);
-    setTab(next);
+    if (p.routed) goAcademy(subjectPath(id, next));
+    else {
+      setSubjectState(id);
+      setTabState(next);
+    }
   };
   const shown = p.courses
     .filter(
       (c) =>
         (p.role === "student" || !classId || c.class_id === classId) &&
         (c.name + " " + c.class_name + " " + c.teacher)
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/đ/gi, "d")
           .toLocaleLowerCase("vi")
-          .includes(query.toLocaleLowerCase("vi")),
+          .includes(
+            query
+              .normalize("NFD")
+              .replace(/[\u0300-\u036f]/g, "")
+              .replace(/đ/gi, "d")
+              .toLocaleLowerCase("vi"),
+          ),
     )
     .sort(
       (a, b) =>
@@ -82,6 +152,17 @@ export function ClassroomCourses(p: Props) {
         a.name.localeCompare(b.name, "vi"),
     );
   const classwork = current && p.renderClasswork?.(current.id);
+  if (
+    p.routed &&
+    ((route.subjectId && !current) ||
+      (route.classId && !classes.some((c) => c.id === route.classId)))
+  )
+    return (
+      <section className="classroom-empty" role="alert">
+        <h2>Không tìm thấy lớp/môn hoặc bạn chưa được phân công.</h2>
+        <button onClick={() => goAcademy("/hoc")}>Quay lại lớp học</button>
+      </section>
+    );
   return (
     <section
       className="classroom-workspace"
@@ -105,9 +186,16 @@ export function ClassroomCourses(p: Props) {
           </p>
         </div>
         {current ? (
-          <button className="secondary" onClick={() => setSubjectId("")}>
+          <ClassroomLink
+            routed={p.routed}
+            path={
+              p.role === "teacher" && classId ? "/hoc/lop/" + classId : "/hoc"
+            }
+            className="secondary"
+            onClick={() => setSubjectId("")}
+          >
             ← Danh sách lớp
-          </button>
+          </ClassroomLink>
         ) : (
           <label className="classroom-search">
             <span>Tìm lớp hoặc môn học</span>
@@ -171,12 +259,14 @@ export function ClassroomCourses(p: Props) {
                     </small>
                   </div>
                   <footer>
-                    <button
+                    <ClassroomLink
+                      routed={p.routed}
+                      path={"/hoc/lop/" + cl.id}
                       className="secondary"
                       onClick={() => setClassId(cl.id)}
                     >
                       Xem môn học
-                    </button>
+                    </ClassroomLink>
                   </footer>
                 </article>
               );
@@ -198,7 +288,13 @@ export function ClassroomCourses(p: Props) {
                   <div className="classroom-card-cover">
                     <small>{c.class_name}</small>
                     <h3>
-                      <button onClick={() => open(c.id)}>{c.name}</button>
+                      <ClassroomLink
+                        routed={p.routed}
+                        path={subjectPath(c.id)}
+                        onClick={() => open(c.id)}
+                      >
+                        {c.name}
+                      </ClassroomLink>
                     </h3>
                     <span>{c.teacher || "Chưa phân công giáo viên"}</span>
                     <div className="classroom-cover-lines" />
@@ -246,12 +342,14 @@ export function ClassroomCourses(p: Props) {
                         </button>
                       )
                     )}
-                    <button
+                    <ClassroomLink
+                      routed={p.routed}
+                      path={subjectPath(c.id, "lessons")}
                       className="secondary"
                       onClick={() => open(c.id, "lessons")}
                     >
                       Các buổi học & video
-                    </button>
+                    </ClassroomLink>
                   </footer>
                 </article>
               );
@@ -297,14 +395,16 @@ export function ClassroomCourses(p: Props) {
               ["people", "Thành viên"],
               ["info", "Thông tin lớp"],
             ].map(([id, label]) => (
-              <button
+              <ClassroomLink
+                routed={p.routed}
+                path={subjectPath(current.id, id)}
                 role="tab"
                 id={"classroom-tab-" + id}
                 aria-selected={tab === id}
                 aria-controls="classroom-tab-content"
                 tabIndex={tab === id ? 0 : -1}
                 key={id}
-                onKeyDown={(e) => {
+                onKeyDown={(e: React.KeyboardEvent<HTMLButtonElement>) => {
                   if (
                     ["ArrowRight", "ArrowLeft", "Home", "End"].includes(e.key)
                   ) {
@@ -331,7 +431,7 @@ export function ClassroomCourses(p: Props) {
                 onClick={() => setTab(id)}
               >
                 {label}
-              </button>
+              </ClassroomLink>
             ))}
           </div>
           <div

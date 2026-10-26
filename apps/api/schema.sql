@@ -210,3 +210,11 @@ CREATE TABLE IF NOT EXISTS course_announcements (
  title VARCHAR(200) NOT NULL,body TEXT NOT NULL,created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
  KEY ca_feed(school_id,course_id,created_at),FOREIGN KEY(school_id,course_id) REFERENCES courses(school_id,id),FOREIGN KEY(school_id,author_id) REFERENCES users(school_id,id)
 );
+CREATE TABLE IF NOT EXISTS academy_order_links (
+ school_id CHAR(36) NOT NULL,order_id CHAR(36) NOT NULL,checkout_url VARCHAR(2000) NOT NULL,
+ PRIMARY KEY(school_id,order_id),FOREIGN KEY(school_id,order_id) REFERENCES academy_orders(school_id,id)
+);
+CREATE TABLE IF NOT EXISTS academy_notification_reads (
+ school_id CHAR(36) NOT NULL,user_id CHAR(36) NOT NULL,notification_id CHAR(64) NOT NULL,read_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+ PRIMARY KEY(school_id,user_id,notification_id),FOREIGN KEY(school_id,user_id) REFERENCES users(school_id,id)
+);

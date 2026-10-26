@@ -186,7 +186,7 @@ func TestAcademyIntegration(t *testing.T) {
 	must(request("POST", "/api/academy/site", `{"revision":"stale","content":{"headline":"không ghi đè","published":true}}`, admin), 409)
 	coursePage := request("GET", "/khoa-hoc/ac-course", "", nil)
 	must(coursePage, 200)
-	for _, needle := range []string{"Học sinh lớp 10", "Chương 1", "course=ac-course", "lesson=lesson-0"} {
+	for _, needle := range []string{"Học sinh lớp 10", "Chương 1", "/hoc/khoa-hoc/ac-course", "/hoc/bai-giang/lesson-0"} {
 		if !strings.Contains(coursePage.Body.String(), needle) {
 			t.Fatalf("missing course detail %s", needle)
 		}
@@ -255,6 +255,35 @@ func TestAcademyIntegration(t *testing.T) {
 	if strings.Contains(unassignedSummary.Body.String(), "ac-task") || strings.Contains(unassignedSummary.Body.String(), "ac-meeting") {
 		t.Fatal("unassigned teacher workspace leak")
 	}
+
+	direct := request("GET", "/api/academy/assignments/ac-task", "", student)
+	must(direct, 200)
+	if strings.Contains(direct.Body.String(), "ANSWER-SECRET") || !strings.Contains(direct.Body.String(), "course_id") {
+		t.Fatal("direct task leaks key or loses course")
+	}
+	must(request("GET", "/api/academy/lessons/lesson-0", "", student), 200)
+	must(request("GET", "/api/academy/assignments/ac-task", "", other), 404)
+	exec("DELETE FROM enrollments WHERE school_id='academy-school' AND class_id='ac-class' AND user_id='ac-student'")
+	must(request("GET", "/api/academy/assignments/ac-task", "", student), 404)
+	must(request("GET", "/api/academy/courses/ac-course/assignments", "", student), 403)
+	must(request("POST", "/api/academy/assignments/ac-task/submissions", `{"answers":{}}`, student), 402)
+	exec("INSERT INTO enrollments(school_id,class_id,user_id) VALUES('academy-school','ac-class','ac-student')")
+	notices := request("GET", "/api/academy/notifications", "", student)
+	must(notices, 200)
+	var ns []academyNotification
+	_ = json.Unmarshal(notices.Body.Bytes(), &ns)
+	if len(ns) == 0 {
+		t.Fatal("missing scoped notifications")
+	}
+	must(request("POST", "/api/academy/notifications/read", `{"ids":["`+ns[0].ID+`"]}`, student), 200)
+	notices = request("GET", "/api/academy/notifications", "", student)
+	_ = json.Unmarshal(notices.Body.Bytes(), &ns)
+	if !ns[0].Read {
+		t.Fatal("notification read state not persistent")
+	}
+	must(request("POST", "/api/academy/notifications/read", `{"ids":["bad"]}`, student), 400)
+	must(request("GET", "/api/meetings?month=2026-99", "", student), 400)
+	must(request("GET", "/api/attendance/report?month=2026-99", "", student), 400)
 	exec("DELETE FROM academy_memberships WHERE school_id='academy-school' AND user_id='ac-student'")
 	freeSummary := request("GET", "/api/academy/workspace", "", student)
 	must(freeSummary, 200)

@@ -23,8 +23,8 @@
   border-color: #e0e3e7;
   color: #3c4043;
 }
-.classroom-shell nav button,
-.academy-shell.classroom-shell nav button {
+.classroom-shell nav :is(button, a[role="button"]),
+.academy-shell.classroom-shell nav :is(button, a[role="button"]) {
   background: transparent;
   color: #3c4043;
   border: 0;
@@ -34,8 +34,8 @@
   font-size: 13px;
   box-shadow: none;
 }
-.classroom-shell nav button[aria-current="page"],
-.academy-shell.classroom-shell nav button.active {
+.classroom-shell nav :is(button, a[role="button"])[aria-current="page"],
+.academy-shell.classroom-shell nav :is(button, a[role="button"]).active {
   background: #e8f0fe;
   color: #1967d2;
 }
@@ -157,7 +157,7 @@
   font-size: 12px;
   color: #fff;
 }
-.classroom-card-cover h3 button {
+.classroom-card-cover h3 :is(button, a) {
   font: inherit;
   color: white;
   background: transparent !important;
@@ -170,7 +170,7 @@
   overflow-wrap: anywhere;
   box-shadow: none;
 }
-.classroom-card-cover h3 button:hover {
+.classroom-card-cover h3 :is(button, a):hover {
   text-decoration: underline;
 }
 .classroom-cover-lines {
@@ -310,7 +310,7 @@
   margin: 14px 0 28px;
   scrollbar-width: thin;
 }
-.classroom-workspace .classroom-tabs button {
+.classroom-workspace .classroom-tabs :is(button, a) {
   white-space: nowrap;
   background: white;
   border: 0;
@@ -321,7 +321,7 @@
   font-size: 13px;
   border-bottom: 3px solid transparent;
 }
-.classroom-workspace .classroom-tabs button[aria-selected="true"] {
+.classroom-workspace .classroom-tabs :is(button, a)[aria-selected="true"] {
   color: #1967d2;
   border-bottom-color: #1967d2;
   background: #f8faff;
@@ -448,7 +448,7 @@
   .classroom-tabs {
     gap: 0;
   }
-  .classroom-workspace .classroom-tabs button {
+  .classroom-workspace .classroom-tabs :is(button, a) {
     padding: 15px 13px;
     font-size: 12px;
     min-height: 50px;
@@ -470,8 +470,8 @@
     grid-template-columns: 95px minmax(0, 1fr);
     font-size: 13px;
   }
-  .classroom-shell nav button,
-  .academy-shell.classroom-shell nav button {
+  .classroom-shell nav :is(button, a[role="button"]),
+  .academy-shell.classroom-shell nav :is(button, a[role="button"]) {
     border-radius: 8px;
     font-size: 12px;
   }
@@ -544,4 +544,15 @@
   display: flex;
   gap: 8px;
   border-top: 1px solid #e0e3e7;
+}
+
+.classroom-workspace a[role="button"] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+.classroom-tabs a {
+  text-decoration: none;
+  cursor: pointer;
 }

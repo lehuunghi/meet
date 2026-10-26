@@ -102,7 +102,7 @@ func (a *app) academyCheckout(w http.ResponseWriter, r *http.Request, id string)
 	}
 	out := map[string]any{"id": id, "code": code, "amount": amount, "status": status, "description": memo, "bank_account": cfg.Commerce.BankAccount, "bank_name": cfg.Commerce.BankName, "qr_url": qr}
 	if cfg.Commerce.ClientID != "" && cfg.Commerce.APIKey != "" && cfg.Commerce.ChecksumKey != "" && status == "pending" {
-		data := map[string]any{"amount": json.Number(strconv.FormatInt(amount, 10)), "cancelUrl": a.origin + "/hoc", "description": memo, "orderCode": json.Number(strconv.FormatInt(code, 10)), "returnUrl": a.origin + "/hoc"}
+		data := map[string]any{"amount": json.Number(strconv.FormatInt(amount, 10)), "cancelUrl": a.origin + "/hoc/thanh-toan/" + id, "description": memo, "orderCode": json.Number(strconv.FormatInt(code, 10)), "returnUrl": a.origin + "/hoc/thanh-toan/" + id}
 		signature, _ := paySignature(data, cfg.Commerce.ChecksumKey)
 		data["signature"] = signature
 		raw, _ := json.Marshal(data)
@@ -120,9 +120,9 @@ func (a *app) academyCheckout(w http.ResponseWriter, r *http.Request, id string)
 				}
 			}
 			if json.NewDecoder(io.LimitReader(res.Body, 1<<20)).Decode(&response) == nil && res.StatusCode == 200 && response.Code == "00" {
-				p, err := url.Parse(response.Data.CheckoutURL)
-				if err == nil && p.Scheme == "https" && (p.Hostname() == "pay.payos.vn" || strings.HasSuffix(p.Hostname(), ".payos.vn")) {
+				if validCheckoutURL(response.Data.CheckoutURL) {
 					out["checkout_url"] = response.Data.CheckoutURL
+					_, _ = a.db.ExecContext(r.Context(), "INSERT INTO academy_order_links(school_id,order_id,checkout_url) VALUES(?,?,?) ON DUPLICATE KEY UPDATE checkout_url=VALUES(checkout_url)", who(r).School, id, response.Data.CheckoutURL)
 				}
 			}
 		}

@@ -38,6 +38,11 @@ func (a *app) access(w http.ResponseWriter, r *http.Request, manage bool) (meeti
 	return m, true
 }
 func (a *app) meetings(w http.ResponseWriter, r *http.Request) {
+	month, from, to, e := reportMonth(r)
+	if e != nil {
+		problem(w, 400, e.Error())
+		return
+	}
 	page := 0
 	if value := r.URL.Query().Get("page"); value != "" {
 		var e error
@@ -48,7 +53,7 @@ func (a *app) meetings(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	u := who(r)
-	a.query(w, r, `SELECT m.id,m.title,m.starts_at,m.status,m.recording_allowed,c.id AS course_id,c.class_id,c.name AS course,cl.name AS class_name FROM meetings m JOIN courses c ON c.id=m.course_id AND c.school_id=m.school_id JOIN classes cl ON cl.id=c.class_id AND cl.school_id=c.school_id WHERE `+courseAccess+` AND (?='' OR c.id=?) ORDER BY (m.status='live') DESC,(m.status='scheduled') DESC,m.starts_at DESC,m.id DESC LIMIT 200 OFFSET ?`, u.School, u.Role, u.Role, u.ID, u.Role, u.ID, r.URL.Query().Get("course_id"), r.URL.Query().Get("course_id"), page*200)
+	a.query(w, r, `SELECT m.id,m.title,m.starts_at,m.status,m.recording_allowed,c.id AS course_id,c.class_id,c.name AS course,cl.name AS class_name FROM meetings m JOIN courses c ON c.id=m.course_id AND c.school_id=m.school_id JOIN classes cl ON cl.id=c.class_id AND cl.school_id=c.school_id WHERE `+courseAccess+` AND (?='' OR c.id=?) AND (?='' OR (m.starts_at>=? AND m.starts_at<?)) ORDER BY (m.status='live') DESC,(m.status='scheduled') DESC,m.starts_at DESC,m.id DESC LIMIT 200 OFFSET ?`, u.School, u.Role, u.Role, u.ID, u.Role, u.ID, r.URL.Query().Get("course_id"), r.URL.Query().Get("course_id"), month, from, to, page*200)
 }
 func (a *app) createMeeting(w http.ResponseWriter, r *http.Request) {
 	u := who(r)

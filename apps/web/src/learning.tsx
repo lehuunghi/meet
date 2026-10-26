@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import {ClassroomCourses} from "./classroom";
-import type {ReactNode} from "react";
+import { ClassroomCourses } from "./classroom";
+import type { ReactNode } from "react";
 import { api } from "./api";
+import { useAcademyRoute, reportQuery } from "./academy-route";
 import { AttendanceReport } from "./attendance";
 
 type Course = {
@@ -37,6 +38,7 @@ export function LearningWorkspace({
   canTeach = true,
   canVideo = true,
   renderClasswork,
+  routed = false,
 }: {
   role: string;
   courses: Course[];
@@ -48,12 +50,38 @@ export function LearningWorkspace({
   onRefresh: () => Promise<void>;
   canTeach?: boolean;
   canVideo?: boolean;
-  renderClasswork?: (id:string)=>ReactNode;
+  renderClasswork?: (id: string) => ReactNode;
+  routed?: boolean;
 }) {
-  const [classId, setClassId] = useState(""),
-    [expanded, setExpanded] = useState(""),
+  useAcademyRoute();
+  const q = new URLSearchParams(location.search);
+  const [classState, setClassState] = useState(""),
+    [expandedState, setExpandedState] = useState(""),
     [busy, setBusy] = useState(""),
     [error, setError] = useState("");
+  const classId = routed && reports ? q.get("lop") || "" : classState,
+    expanded = routed && reports ? q.get("mon") || "" : expandedState;
+  const setClassId = (id: string) =>
+    routed && reports
+      ? reportQuery({
+          lop: id,
+          mon: null,
+          buoi: null,
+          video: null,
+          "thong-ke": null,
+          trang: null,
+        })
+      : setClassState(id);
+  const setExpanded = (id: string) =>
+    routed && reports
+      ? reportQuery({
+          mon: id,
+          buoi: null,
+          video: null,
+          "thong-ke": null,
+          trang: null,
+        })
+      : setExpandedState(id);
   const classes = [
     ...new Map([
       ...courses.map(
@@ -113,7 +141,35 @@ export function LearningWorkspace({
     }
   }
   const selected = courses.find((c) => c.id === expanded);
-  if(!reports && role!=='admin')return <ClassroomCourses demo={demo} role={role} courses={courses} meetings={meetings} busy={busy} error={error} canTeach={canTeach} onPrepare={c=>void prepare(c)} onOpen={onOpen} renderClasswork={renderClasswork} renderLessons={c=><CourseLessons key={c.id} course={c} role={role} demo={demo} reports={false} canVideo={canVideo} samples={meetings.filter(m=>m.course_id===c.id)} onOpen={onOpen}/>}/>;
+  if (!reports && role !== "admin")
+    return (
+      <ClassroomCourses
+        routed={routed}
+        demo={demo}
+        role={role}
+        courses={courses}
+        meetings={meetings}
+        busy={busy}
+        error={error}
+        canTeach={canTeach}
+        onPrepare={(c) => void prepare(c)}
+        onOpen={onOpen}
+        renderClasswork={renderClasswork}
+        renderLessons={(c) => (
+          <CourseLessons
+            key={c.id}
+            course={c}
+            role={role}
+            demo={demo}
+            reports={false}
+            routed={routed}
+            canVideo={canVideo}
+            samples={meetings.filter((m) => m.course_id === c.id)}
+            onOpen={onOpen}
+          />
+        )}
+      />
+    );
   return (
     <section className="section learning-workspace">
       <div className="section-title">
@@ -140,7 +196,7 @@ export function LearningWorkspace({
             value={classId}
             onChange={(e) => {
               setClassId(e.target.value);
-              setExpanded("");
+              if (!routed) setExpanded("");
             }}
           >
             <option value="">Tất cả lớp được phân công</option>
@@ -150,6 +206,24 @@ export function LearningWorkspace({
               </option>
             ))}
           </select>
+        </label>
+      )}
+      {routed && reports && (
+        <label className="learning-filter">
+          Tháng báo cáo
+          <input
+            type="month"
+            value={q.get("thang") || ""}
+            onChange={(e) =>
+              reportQuery({
+                thang: e.target.value,
+                buoi: null,
+                video: null,
+                "thong-ke": null,
+                trang: null,
+              })
+            }
+          />
         </label>
       )}
       {error && (
@@ -196,7 +270,7 @@ export function LearningWorkspace({
                         className="secondary"
                         onClick={() => {
                           setClassId(cl.id);
-                          setExpanded("");
+                          if (!routed) setExpanded("");
                         }}
                       >
                         Xem môn học
@@ -311,6 +385,7 @@ export function LearningWorkspace({
           role={role}
           demo={demo}
           reports={reports}
+          routed={routed}
           canVideo={canVideo}
           samples={meetings.filter((m) => m.course_id === selected.id)}
           onOpen={onOpen}
@@ -324,6 +399,7 @@ function CourseLessons({
   role,
   demo,
   reports,
+  routed = false,
   canVideo,
   samples,
   onOpen,
@@ -332,15 +408,40 @@ function CourseLessons({
   role: string;
   demo: boolean;
   reports: boolean;
+  routed?: boolean;
   canVideo: boolean;
   samples: Lesson[];
   onOpen: (m: any) => void;
 }) {
+  useAcademyRoute();
+  const params = new URLSearchParams(location.search),
+    routeReport = routed;
   const [lessons, setLessons] = useState<Lesson[]>([]),
-    [page, setPage] = useState(0),
-    [detail, setDetail] = useState<string | null>(null),
-    [videoLesson, setVideoLesson] = useState(""),
+    [pageState, setPageState] = useState(0),
+    [detailState, setDetailState] = useState<string | null>(null),
+    [videoState, setVideoState] = useState(""),
     [error, setError] = useState("");
+  const page = routeReport
+      ? Math.max(0, Number(params.get("trang")) || 0)
+      : pageState,
+    detail = routeReport
+      ? params.has("thong-ke")
+        ? params.get("buoi") || ""
+        : null
+      : detailState,
+    videoLesson = routeReport ? params.get("video") || "" : videoState,
+    month = routeReport ? params.get("thang") || "" : "";
+  const setPage = (v: number | ((old: number) => number)) => {
+    const next = typeof v === "function" ? v(page) : v;
+    if (routeReport) reportQuery({ trang: String(next) });
+    else setPageState(next);
+  };
+  const setDetail = (id: string | null) =>
+    routeReport
+      ? reportQuery({ buoi: id, "thong-ke": id === null ? null : "1" })
+      : setDetailState(id);
+  const setVideoLesson = (id: string) =>
+    routeReport ? reportQuery({ video: id }) : setVideoState(id);
   useEffect(() => {
     let current = true;
     setError("");
@@ -357,11 +458,11 @@ function CourseLessons({
               })),
         )
       : api<Lesson[]>(
-          `/meetings?course_id=${encodeURIComponent(course.id)}&page=${page}`,
+          `/meetings?course_id=${encodeURIComponent(course.id)}&page=${page}&month=${encodeURIComponent(month)}`,
         );
     void req
       .then((v) => {
-        if (current) setLessons(v);
+        if (current) setLessons(month&&demo?v.filter(l=>new Date(new Date(l.starts_at).getTime()+7*3600000).toISOString().slice(0,7)===month):v);
       })
       .catch((e) => {
         if (current) setError(e.message);
@@ -369,7 +470,7 @@ function CourseLessons({
     return () => {
       current = false;
     };
-  }, [course.id, page, demo]);
+  }, [course.id, page, demo, month]);
   return (
     <div className="learning-detail">
       <div className="section-title">
@@ -466,6 +567,8 @@ function CourseLessons({
           demo={demo}
           preferredCourseId={course.id}
           preferredMeetingId={detail}
+          month={month}
+          routed={routeReport}
         />
       )}
     </div>

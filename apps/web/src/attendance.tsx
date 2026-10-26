@@ -1,6 +1,7 @@
 import { ClassSubjectPicker } from "./class-subject-picker";
 import { useEffect, useState } from "react";
 import { AttendancePolicy, LessonTiming } from "./attendance-admin";
+import { reportQuery, useAcademyRoute } from "./academy-route";
 import { api } from "./api";
 export type ReportCourse = {
   id: string;
@@ -106,13 +107,18 @@ export function AttendanceReport({
   demo = false,
   preferredCourseId,
   preferredMeetingId = "",
+  month = "",
+  routed = false,
 }: {
   role: string;
   courses: ReportCourse[];
   demo?: boolean;
   preferredCourseId?: string;
   preferredMeetingId?: string;
+  month?: string;
+  routed?: boolean;
 }) {
+  useAcademyRoute();
   const [revision, setRevision] = useState(0);
   const [classChoice, setClass] = useState(""),
     [courseChoice, setCourse] = useState(""),
@@ -140,7 +146,7 @@ export function AttendanceReport({
   useEffect(() => {
     setMeeting(preferredMeetingId);
     setPage(0);
-  }, [courseId]);
+  }, [courseId, preferredMeetingId]);
   useEffect(() => {
     let active = true;
     setLessons([]);
@@ -173,6 +179,7 @@ export function AttendanceReport({
       class_id: classId,
       meeting_id: meeting,
       page: String(page),
+      month,
     });
     const request = demo
       ? Promise.resolve(
@@ -209,7 +216,7 @@ export function AttendanceReport({
     return () => {
       active = false;
     };
-  }, [courseId, classId, meeting, page, role, demo, revision]);
+  }, [courseId, classId, meeting, page, role, demo, revision, month]);
   const shown = rows.slice(0, 50),
     scope =
       role === "admin"
@@ -294,6 +301,11 @@ export function AttendanceReport({
                         value={meeting}
                         onChange={(e) => {
                           setMeeting(e.target.value);
+                          if (routed)
+                            reportQuery({
+                              buoi: e.target.value,
+                              "thong-ke": "1",
+                            });
                           setPage(0);
                         }}
                       >
@@ -318,6 +330,7 @@ export function AttendanceReport({
                         course_id: courseId,
                         meeting_id: meeting,
                         format: "xlsx",
+                        month,
                       })
                     }
                   >
