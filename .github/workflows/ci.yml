@@ -127,6 +127,8 @@ jobs:
       - run: docker compose -f deploy/compose.yaml config --quiet
         env:
           APP_ORIGIN: http://localhost:8080
+      - name: Reproduce restrictive public asset permissions
+        run: chmod 600 apps/web/public/academy-site.css
       - run: docker compose -f deploy/compose.yaml up --build -d
         env:
           APP_ORIGIN: http://localhost:8080
@@ -139,6 +141,15 @@ jobs:
           exit 1
         env:
           APP_ORIGIN: http://localhost:8080
+      - name: Verify public stylesheet is served as CSS
+        run: |
+          python3 - <<'PY'
+          import urllib.request
+          with urllib.request.urlopen('http://localhost:8080/academy-site.css') as r:
+              assert r.status == 200
+              assert r.headers.get_content_type() == 'text/css'
+              assert b'.hero' in r.read()
+          PY
       - run: sudo apt-get update && sudo apt-get install -y python3-cryptography
       - run: sudo --preserve-env=APP_ORIGIN,MEET_DISPOSABLE_BACKUP_TEST python3 deploy/academy_bootstrap_integration.py
         env:
