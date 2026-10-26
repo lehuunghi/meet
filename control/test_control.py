@@ -12,9 +12,9 @@ class ControlTests(unittest.TestCase):
         cls.server=ThreadingHTTPServer(('127.0.0.1',0),c.Handler);threading.Thread(target=cls.server.serve_forever,daemon=True).start();cls.port=cls.server.server_port
     @classmethod
     def tearDownClass(cls):cls.server.shutdown();cls.server.server_close();cls.tmp.cleanup()
-    def request(self,path,data=None,cookie='',agent='',origin=None):
+    def request(self,path,data=None,cookie='',agent='',origin=None,method=None):
         conn=http.client.HTTPConnection('127.0.0.1',self.port,timeout=5);headers={'Origin':origin or c.ORIGIN,'Cookie':cookie,'Authorization':'Bearer '+agent,'Content-Type':'application/json'}
-        conn.request('GET' if data is None else 'POST',path,None if data is None else json.dumps(data),headers)
+        conn.request(method or ('GET' if data is None else 'POST'),path,None if data is None else json.dumps(data),headers)
         response=conn.getresponse();raw=response.read();cookies=response.getheader('Set-Cookie','').split(';')[0];status=response.status;conn.close();return status,json.loads(raw),cookies
     def login(self):
         status,_,cookie=self.request('/api/login',{'email':'owner@example.test','password':'integration-password-123'});self.assertEqual(status,200);return cookie
@@ -26,7 +26,7 @@ class ControlTests(unittest.TestCase):
         status,result,_=self.request('/api/schools/save',{'name':'Trường thử nghiệm','domain':'school.example.test','ip':'8.8.8.8','config':cfg},cookie);self.assertEqual(status,200);sid=result['id']
         with c.connect() as db:
             row=db.execute('SELECT config FROM schools WHERE id=?',(sid,)).fetchone();self.assertNotIn('secret-never-plain',row['config'])
-        status,result,_=self.request('/api/schools/'+sid+'/config',cookie=cookie);self.assertEqual(status,200);self.assertEqual(result['config']['sfu'][0]['secret'],'••••••••');self.assertEqual(result['config']['turn'][0]['token'],'••••••••')
+        status,result,_=self.request('/api/schools/'+sid+'/config',cookie=cookie);self.assertEqual(status,200);self.assertEqual(result['config']['sfu'][0]['secret'],'••••••••');self.assertEqual(result['config']['turn'],[])
         status,_,_=self.request('/api/schools/'+sid+'/enroll',cookie=cookie);self.assertEqual(status,400) # GET must not issue enrollment credentials.
         status,result,_=self.request('/api/schools/'+sid+'/enroll',{},cookie);self.assertEqual(status,200);enroll=result['token']
         status,result,_=self.request('/agent/enroll',{'token':enroll});self.assertEqual(status,200);agent=result['token']
@@ -116,5 +116,41 @@ class ControlTests(unittest.TestCase):
         self.assertEqual(self.request('/api/schools/save',{},viewer)[0],403)
         self.assertEqual(self.request('/api/admins',cookie=viewer)[0],400)
         self.assertEqual(self.request('/api/schools',cookie=viewer)[0],200)
+    def test_scoped_api_key_and_recoverable_deletion(self):
+        owner=self.login();_,out,_=self.request('/api/schools/save',{'name':'API school','domain':'api-school.example.test','ip':'8.8.8.8','config':{}},owner);sid=out['id'];base='/api/schools/'+sid
+        status,key,_=self.request(base+'/keys',{'label':'Integration','days':30},owner);self.assertEqual(status,200);token=key['token']
+        endpoint='/api/v1/schools/'+sid
+        self.assertEqual(self.request(endpoint,agent='wrong')[0],401)
+        self.assertEqual(self.request(endpoint,agent=token)[1]['revision'],1)
+        self.assertEqual(self.request(endpoint,{'revision':1,'name':'Tên qua API','retention_days':45},agent=token,method='PATCH')[0],200)
+        self.assertEqual(self.request(endpoint,{'revision':1,'name':'stale'},agent=token,method='PATCH')[0],400)
+        self.assertEqual(self.request(endpoint,{'revision':2,'ip':'1.1.1.1'},agent=token,method='PATCH')[0],400)
+        with c.connect() as db:
+            self.assertNotIn(token,db.execute('SELECT hash FROM school_keys WHERE id=?',(key['id'],)).fetchone()['hash'])
+            self.assertEqual(db.execute('SELECT name FROM schools WHERE id=?',(sid,)).fetchone()['name'],'Tên qua API')
+        self.assertEqual(self.request(base+'/lifecycle',{'action':'archive','confirm':'api-school.example.test'},owner)[0],400)
+        self.assertEqual(self.request(base+'/lifecycle',{'action':'suspend'},owner)[0],200)
+        self.assertEqual(self.request(base+'/lifecycle',{'action':'archive','confirm':'wrong'},owner)[0],400)
+        self.assertEqual(self.request(base+'/lifecycle',{'action':'archive','confirm':'api-school.example.test'},owner)[0],200)
+        self.assertEqual(self.request(endpoint,agent=token)[0],401)
+        self.assertEqual(self.request(base+'/lifecycle',{'action':'restore'},owner)[0],200)
+        self.assertEqual(self.request(base+'/lifecycle',{'action':'resume'},owner)[0],200)
+        self.assertEqual(self.request(base+'/keys',cookie=owner)[1][0]['revoked'],1)
+    def test_pending_suspension_requires_ack_and_relocation_is_server_only(self):
+        owner=self.login();_,out,_=self.request('/api/schools/save',{'name':'Migration QA','domain':'move.example.test','ip':'8.8.8.8','config':{}},owner);sid=out['id'];base='/api/schools/'+sid;agent='lifecycle-agent-token'
+        self.assertEqual(self.request(base+'/relocations',{'action':'backup'},owner)[0],400)
+        with c.connect() as db:
+            db.execute("UPDATE schools SET seen=1,applied=1,agent_hash=?,status=? WHERE id=?",(c.digest(agent),json.dumps({'control_protocol':2,'features':['lifecycle','relocation'],'live':0}),sid));db.execute("UPDATE jobs SET state='success' WHERE school=?",(sid,))
+        self.assertEqual(self.request(base+'/lifecycle',{'action':'suspend'},owner)[0],200)
+        with c.connect() as db:self.assertEqual(db.execute('SELECT applied_state FROM schools WHERE id=?',(sid,)).fetchone()['applied_state'],'active')
+        _,out,_=self.request('/agent/poll',{'status':{}},agent=agent);job=out['job'];self.assertEqual(job['action'],'lifecycle')
+        self.assertEqual(self.request('/agent/ack',{'id':job['id'],'lease':job['lease'],'state':'success','code':'OK'},agent=agent)[0],200)
+        with c.connect() as db:db.execute('UPDATE schools SET status=? WHERE id=?',(json.dumps({'control_protocol':2,'features':['lifecycle','relocation'],'live':0}),sid))
+        credentials={'fingerprint':'SHA256:'+'b'*43,'password':'private-move-root'}
+        status,out,_=self.request(base+'/relocations',{'action':'backup','source':credentials},owner);self.assertEqual(status,200);rid=out['id']
+        self.assertEqual(self.request('/agent/poll',{'status':{}},agent=agent)[1]['job'],None)
+        self.assertEqual(self.request(base+'/lifecycle',{'action':'resume'},owner)[0],400)
+        self.assertEqual(self.request(base+'/relocations',{'action':'cancel','id':rid},owner)[0],400)
+        with c.connect() as db:self.assertNotIn('private-move-root',db.execute("SELECT payload FROM jobs WHERE id=?",(out['job'],)).fetchone()['payload'])
 
 if __name__=='__main__':unittest.main()

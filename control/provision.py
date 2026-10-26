@@ -22,7 +22,7 @@ def approved_revision():
 def failure_code(error):
     if isinstance(error,paramiko.AuthenticationException):return 'SSH_AUTH_FAILED'
     if isinstance(error,TimeoutError):return 'SSH_TIMEOUT'
-    known={'SSH_HOST_KEY_MISMATCH','INVALID_SSH_KEY','CI_NOT_READY','INVALID_RELEASE','EXISTING_INSTALLATION','AGENT_INSTALL_FAILED','PROVISION_TIMEOUT','PROVISION_FAILED','DNS_NOT_READY'}
+    known={'SSH_HOST_KEY_MISMATCH','INVALID_SSH_KEY','CI_NOT_READY','INVALID_RELEASE','EXISTING_INSTALLATION','AGENT_INSTALL_FAILED','PROVISION_TIMEOUT','PROVISION_FAILED','DNS_NOT_READY','SNAPSHOT_INVALID','SNAPSHOT_TOO_LARGE','BACKUP_DISK_FULL','WRONG_SOURCE_SCHOOL','BACKUP_MISSING','RESTORE_VERIFY_FAILED','WRONG_TARGET_VPS','TARGET_AGENT_NOT_READY','RELOCATION_REMOTE_FAILED','REMOTE_TIMEOUT'}
     if isinstance(error,ValueError) and str(error) in known:return str(error)
     if isinstance(error,paramiko.SSHException):return 'SSH_CONNECTION_FAILED'
     if isinstance(error,urllib.error.URLError):return 'RELEASE_CHECK_UNAVAILABLE'
@@ -82,18 +82,37 @@ install -d -m 0700 /etc/meet
     finally:client.close()
 
 def start_worker(c):
+    # A single control service owns these SSH jobs. A restart cannot safely
+    # replay an interrupted install/restore; retain data and require review.
+    with c.connect() as db:
+        for interrupted in db.execute("SELECT * FROM jobs WHERE action IN ('provision','relocate') AND state='running'").fetchall():
+            if interrupted['action']=='relocate':
+                payload=c.decrypt(interrupted['payload'],interrupted['school'])
+                phase=payload['phase'];fallback='cutover_failed' if phase=='cutover' else 'backup_ready' if phase=='prepare' else 'failed'
+                db.execute('UPDATE relocations SET state=? WHERE id=?',(fallback,payload['relocation_id']))
+            db.execute("UPDATE jobs SET state='failed',result=?,payload=? WHERE id=?",(json.dumps({'code':'PROVISION_INTERRUPTED_REVIEW_VPS'}),c.encrypt({},interrupted['school']),interrupted['id']))
     def loop():
         while True:
             job=None
             try:
                 with c.connect() as db:
                     db.execute('BEGIN IMMEDIATE')
-                    job=db.execute("SELECT * FROM jobs WHERE action='provision' AND state='queued' ORDER BY created LIMIT 1").fetchone()
-                    if job:db.execute("UPDATE jobs SET state='running',lease_until=? WHERE id=?",(int(time.time())+2100,job['id']))
+                    job=db.execute("SELECT * FROM jobs WHERE action IN ('provision','relocate') AND state='queued' ORDER BY created LIMIT 1").fetchone()
+                    if job:db.execute("UPDATE jobs SET state='running',lease_until=? WHERE id=?",(int(time.time())+7200,job['id']))
                     db.execute("UPDATE jobs SET state='failed',result=? WHERE action='provision' AND state='running' AND lease_until<?",(json.dumps({'code':'PROVISION_INTERRUPTED_REVIEW_VPS'}),int(time.time())))
                 if job:
-                    try:provision(c,job,c.decrypt(job['payload'],job['school']));state,code='success','WAITING_AGENT'
-                    except Exception as error:state,code='failed',failure_code(error)
+                    payload=c.decrypt(job['payload'],job['school'])
+                    try:
+                        if job['action']=='relocate':
+                            from relocation import perform
+                            code=perform(c,job,payload)
+                        else:provision(c,job,payload);code='WAITING_AGENT'
+                        state='success'
+                    except Exception as error:
+                        state,code='failed',failure_code(error)
+                        if job['action']=='relocate':
+                            phase=payload['phase'];fallback='cutover_failed' if phase=='cutover' else 'backup_ready' if phase=='prepare' else 'failed'
+                            with c.connect() as db:db.execute('UPDATE relocations SET state=? WHERE id=?',(fallback,payload['relocation_id']))
                     with c.connect() as db:
                         db.execute('UPDATE jobs SET state=?,result=?,payload=? WHERE id=?',(state,json.dumps({'code':code}),c.encrypt({},job['school']),job['id']))
                         c.audit(db,'provisioner',state,job['school'])

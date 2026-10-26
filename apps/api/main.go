@@ -261,6 +261,10 @@ func (a *app) routes() http.Handler {
 				problem(w, 500, "Internal error")
 			}
 		}()
+		if schoolSuspended() && r.URL.Path != "/api/health" {
+			problem(w, 503, "Đơn vị đang tạm ngưng hoạt động. Vui lòng liên hệ quản trị.")
+			return
+		}
 		if _, e := os.Stat(configPath("maintenance")); e == nil && r.URL.Path != "/api/health" && r.URL.Path != "/api/setup/unlock" && r.URL.Path != "/api/setup/status" && !(r.Method == "GET" && r.URL.Path == "/api/setup/updates") {
 			w.Header().Set("Retry-After", "10")
 			problem(w, 503, "Hệ thống đang cập nhật an toàn. Vui lòng chờ hoàn tất.")

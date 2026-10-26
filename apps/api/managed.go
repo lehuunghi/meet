@@ -104,7 +104,11 @@ func managedCommand(db *sql.DB, action string) error {
 		if mode == "" {
 			mode = "school"
 		}
-		return json.NewEncoder(os.Stdout).Encode(map[string]any{"live": live, "admins": accounts, "version": buildVersion, "commit": buildCommit, "platform_mode": mode, "features": []string{"academy_management"}})
+		state := "active"
+		if schoolSuspended() {
+			state = "suspended"
+		}
+		return json.NewEncoder(os.Stdout).Encode(map[string]any{"live": live, "admins": accounts, "version": buildVersion, "commit": buildCommit, "platform_mode": mode, "school_state": state, "features": []string{"academy_management", "lifecycle", "relocation"}})
 	}
 	if action == "managed-config" {
 		var in struct {

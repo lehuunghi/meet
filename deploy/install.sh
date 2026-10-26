@@ -133,5 +133,5 @@ bash deploy/install-recorder.sh
 if [[ "${MEET_MANAGED:-}" == true ]]; then exit 0; fi
 printf '\nCÀI ĐẶT THÀNH CÔNG · HTTPS VÀ DATABASE ĐÃ PHẢN HỒI\n'
 printf 'Mở trang cấu hình riêng tư dưới đây (không gửi link cho người khác):\nhttps://%s/setup#token=%s\n' "$MEET_DOMAIN" "$(cat runtime-config/setup-token)"
-printf '\nTại trang này: tạo trường/admin → nhập SFU Apps/TURN → cấu hình R2 lưu 30 ngày.\n'
+printf '\nTại trang này: tạo trường/admin → nhập SFU Apps → cấu hình R2 lưu 30 ngày.\n'
 printf 'Mã quản trị cấu hình lưu tại: /opt/meet/runtime-config/setup-token\nLệnh vận hành: sudo meet ps | sudo meet logs --tail=100\n'

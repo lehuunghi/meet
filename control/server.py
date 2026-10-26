@@ -8,7 +8,7 @@ from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 ROOT=Path(os.environ.get('MEET_CONTROL_DATA','/var/lib/meet-control'))
 ORIGIN=os.environ.get('MEET_CONTROL_ORIGIN','https://admin.tn.edu.vn').rstrip('/')
 HOST=re.compile(r'(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,63}')
-ACTIONS={'configure','check','update','backup','domain','accounts','provision','academy'}
+ACTIONS={'configure','check','update','backup','domain','accounts','provision','academy','lifecycle','relocate'}
 
 class ClosingConnection(sqlite3.Connection):
     def __exit__(self,*args):
@@ -37,7 +37,12 @@ def init():
         CREATE TABLE IF NOT EXISTS mfa_pending(admin TEXT PRIMARY KEY REFERENCES admins(id),secret TEXT NOT NULL,expires INTEGER NOT NULL);
         CREATE TABLE IF NOT EXISTS mfa_recovery(admin TEXT NOT NULL REFERENCES admins(id),hash TEXT NOT NULL,PRIMARY KEY(admin,hash));
         CREATE TABLE IF NOT EXISTS audit(id INTEGER PRIMARY KEY,at INTEGER NOT NULL,actor TEXT NOT NULL,action TEXT NOT NULL,target TEXT NOT NULL);
+        CREATE TABLE IF NOT EXISTS school_keys(id TEXT PRIMARY KEY,school TEXT NOT NULL REFERENCES schools(id),issuer TEXT NOT NULL REFERENCES admins(id),label TEXT NOT NULL,hash TEXT UNIQUE NOT NULL,expires INTEGER NOT NULL,revoked INTEGER NOT NULL DEFAULT 0,created INTEGER NOT NULL);
+        CREATE TABLE IF NOT EXISTS relocations(id TEXT PRIMARY KEY,school TEXT NOT NULL REFERENCES schools(id),state TEXT NOT NULL,details TEXT NOT NULL,created INTEGER NOT NULL);
         ''')
+        school_columns={r['name'] for r in db.execute('PRAGMA table_info(schools)')}
+        for name in ('desired_state','applied_state'):
+            if name not in school_columns:db.execute("ALTER TABLE schools ADD COLUMN "+name+" TEXT NOT NULL DEFAULT 'active'")
         columns={r['name'] for r in db.execute('PRAGMA table_info(admins)')}
         if 'mfa' not in columns:db.execute('ALTER TABLE admins ADD COLUMN mfa TEXT')
         if 'last_step' not in columns:db.execute('ALTER TABLE admins ADD COLUMN last_step INTEGER NOT NULL DEFAULT 0')
@@ -65,8 +70,9 @@ def limited(db,key,maximum,seconds):
 
 def validate_config(value):
     if not isinstance(value,dict):raise ValueError('Cấu hình không hợp lệ')
+    value['turn']=[] # Removed: old snapshots remain readable but no TURN keys are applied.
     if value.get('platform_mode','school') not in ('school','academy'):raise ValueError('Loại nền tảng không hợp lệ')
-    if not 1<=int(value.get('retention_days',30))<=3650:raise ValueError('Thời hạn video phải từ 1 đến 3650 ngày')
+    if type(value.get('retention_days',30)) is not int or not 1<=value.get('retention_days',30)<=3650:raise ValueError('Thời hạn video phải từ 1 đến 3650 ngày')
     for name in ('sfu','turn'):
         if not isinstance(value.get(name,[]),list) or len(value.get(name,[]))>50:raise ValueError('Danh sách credential không hợp lệ')
         if any(not isinstance(x,dict) for x in value.get(name,[])):raise ValueError('Credential không hợp lệ')
@@ -105,7 +111,7 @@ def deployment_readiness(row,cfg):
         add('email','Đăng ký bằng mã email',bool(commerce.get('smtp_address') and commerce.get('smtp_from')),'Cấu hình SMTP STARTTLS; cần gửi thử email trước khi mở đăng ký.')
         add('bank','Chuyển khoản / QR',all(commerce.get(k) for k in ('bank_bin','bank_account','bank_name')),'Cần BIN ngân hàng, số tài khoản và tên người nhận để bán gói.')
         add('payos','Thanh toán tự động payOS',all(commerce.get(k) for k in ('client_id','api_key','checksum_key')),'Tùy chọn. Khi chưa có, quản trị đối soát và duyệt thủ công.')
-    return {'platform_mode':cfg.get('platform_mode','school'),'can_install':not connected and not any(x['state']=='blocked' for x in checks),'connected':connected,'checks':checks,'notice':'Kiểm tra thông tin đã nhập; không thay thế nghiệm thu DNS/SSH/Cloudflare/thanh toán thật.'}
+    return {'platform_mode':cfg.get('platform_mode','school'),'can_install':row['desired_state']=='active' and not connected and not any(x['state']=='blocked' for x in checks),'connected':connected,'checks':checks,'notice':'Kiểm tra thông tin đã nhập; không thay thế nghiệm thu DNS/SSH/Cloudflare/thanh toán thật.'}
 
 def redact(value):
     if isinstance(value,list):return [redact(v) for v in value]
@@ -153,12 +159,13 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers();self.wfile.write(body)
     def do_GET(self):self.dispatch()
     def do_POST(self):self.dispatch()
+    def do_PATCH(self):self.dispatch()
     def dispatch(self):
         try:
             if self.path=='/' and self.command=='GET':
                 body=Path(__file__).with_name('index.html').read_bytes();self.send_response(200);self.send_header('Content-Type','text/html; charset=utf-8');self.send_header('Cache-Control','no-store');self.send_header('Content-Security-Policy',"default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' https://*.r2.cloudflarestorage.com; frame-ancestors 'none'; base-uri 'none'");self.end_headers();self.wfile.write(body);return
             if self.path=='/health' and self.command=='GET':self.reply(200,{'ok':True});return
-            if self.command=='POST':
+            if self.command in ('POST','PATCH'):
                 n=int(self.headers.get('Content-Length','0'))
                 if not 0<n<=262144:raise ValueError('Nội dung quá lớn hoặc rỗng')
                 data=json.loads(self.rfile.read(n))
@@ -166,9 +173,12 @@ class Handler(BaseHTTPRequestHandler):
             else:data={}
             with connect() as db:
                 db.execute('BEGIN IMMEDIATE')
-                if self.path.startswith('/agent/'):
+                if self.path.startswith('/api/v1/'):
+                    result=self.school_api(db,data)
+                elif self.path.startswith('/agent/'):
                     result=self.agent(db,data)
                 else:
+                    if self.command=='PATCH':raise ValueError('PATCH chỉ dùng cho API tích hợp')
                     if self.command=='POST' and self.headers.get('Origin')!=ORIGIN:self.reply(403,{'error':'Origin rejected'});return
                     if self.path=='/api/login' and self.command=='POST':
                         key=digest(self.client_address[0]+str(data.get('email','')).lower())
@@ -213,12 +223,13 @@ class Handler(BaseHTTPRequestHandler):
         if not row:raise PermissionError('Agent chưa đăng ký')
         sid=row['id'];status=data.get('status',{})
         # Only known, non-secret telemetry is retained.
-        safe={k:status[k] for k in ('version','commit','live','disk_free','config_revision','backup','update','admins','platform_mode','features') if k in status}
+        safe={k:status[k] for k in ('version','commit','live','disk_free','config_revision','backup','update','admins','platform_mode','features','school_state','control_protocol') if k in status}
         if self.path=='/agent/poll':db.execute('UPDATE schools SET seen=?,status=? WHERE id=?',(now,json.dumps(safe),sid))
         else:db.execute('UPDATE schools SET seen=? WHERE id=?',(now,sid))
         if self.path=='/agent/poll':
+            if row['desired_state']=='deleted':return {'job':None}
             db.execute("UPDATE jobs SET state='failed',result=? WHERE school=? AND state='running' AND lease_until<? AND attempts>=5",(json.dumps({'error':'Agent không xác nhận sau 5 lượt'}),sid,now))
-            job=db.execute("SELECT * FROM jobs WHERE school=? AND action<>'provision' AND ((state='queued' AND COALESCE(lease_until,0)<?) OR (state='running' AND lease_until<? AND attempts<5)) ORDER BY created,rowid LIMIT 1",(sid,now,now)).fetchone()
+            job=db.execute("SELECT * FROM jobs WHERE school=? AND action NOT IN ('provision','relocate') AND ((state='queued' AND COALESCE(lease_until,0)<?) OR (state='running' AND lease_until<? AND attempts<5)) ORDER BY created,rowid LIMIT 1",(sid,now,now)).fetchone()
             if not job:return {'job':None}
             lease=secrets.token_urlsafe(32);db.execute("UPDATE jobs SET state='running',lease=?,lease_until=?,attempts=attempts+1 WHERE id=?",(digest(lease),now+1800,job['id']))
             return {'job':{'id':job['id'],'lease':lease,'action':job['action'],'revision':job['revision'],'payload':decrypt(job['payload'],sid)}}
@@ -234,14 +245,119 @@ class Handler(BaseHTTPRequestHandler):
                 result={'code':'OK','payload':encrypt(data['code'],sid)}
             db.execute('UPDATE jobs SET state=?,result=?,lease=NULL,lease_until=? WHERE id=?',('queued' if state=='waiting' else state,json.dumps(result),now+60,job['id']))
             if state=='success' and job['action']=='configure':db.execute('UPDATE schools SET applied=MAX(applied,?) WHERE id=?',(job['revision'],sid))
+            if state=='success' and job['action']=='lifecycle':db.execute('UPDATE schools SET applied_state=? WHERE id=?',(decrypt(job['payload'],sid)['state'],sid))
             if state=='success' and job['action']=='domain':
                 payload=decrypt(job['payload'],sid);db.execute('UPDATE schools SET domain=?,revision=revision+1 WHERE id=?',(payload['domain'],sid))
                 queue(db,sid,'configure',{'settings':decrypt(row['config'],sid),'name':row['name'],'domain':payload['domain']},row['revision']+1)
             audit(db,'agent',job['action']+'.'+state,sid);return {'ok':True}
         raise ValueError('Unknown endpoint')
+    def school_api(self,db,data):
+        match=re.fullmatch(r'/api/v1/schools/([a-f0-9]{32})',self.path)
+        if not match or self.command not in ('GET','PATCH'):raise ValueError('API hỗ trợ GET/PATCH thông tin đơn vị')
+        bearer=self.headers.get('Authorization','').removeprefix('Bearer ')
+        key=db.execute("SELECT k.*,a.role,a.active FROM school_keys k JOIN admins a ON a.id=k.issuer WHERE k.hash=? AND k.school=? AND k.revoked=0 AND k.expires>?",(digest(bearer),match[1],int(time.time()))).fetchone()
+        if not key or key['role']!='owner' or not key['active']:raise PermissionError('API key không hợp lệ hoặc hết hạn')
+        if limited(db,'api:'+key['id'],120,60):raise ValueError('Quá nhiều yêu cầu API; thử lại sau một phút')
+        row=db.execute('SELECT * FROM schools WHERE id=?',(key['school'],)).fetchone()
+        if row['desired_state']=='deleted':raise PermissionError('Đơn vị đã xóa')
+        if self.command=='GET':return {k:row[k] for k in ('id','name','domain','ip','revision','applied','desired_state','applied_state')}
+        if 'name' in data and not isinstance(data['name'],str):raise ValueError('Tên đơn vị không hợp lệ')
+        if set(data)-{'revision','name','retention_days','free_videos'} or 'revision' not in data:raise ValueError('Chỉ sửa name, retention_days, free_videos; cần revision hiện tại')
+        cfg=decrypt(row['config'],row['id'])
+        if 'retention_days' in data:cfg['retention_days']=data['retention_days']
+        if 'free_videos' in data:cfg.setdefault('commerce',{})['free_videos']=data['free_videos']
+        user=db.execute('SELECT * FROM admins WHERE id=?',(key['issuer'],)).fetchone()
+        old_path,old_command=self.path,self.command
+        self.path='/api/schools/save';self.command='POST'
+        try:result=self.admin(db,user,{'id':row['id'],'revision':data['revision'],'name':data.get('name',row['name']),'domain':row['domain'],'ip':row['ip'],'config':cfg})
+        finally:self.path,self.command=old_path,old_command
+        audit(db,'api-key:'+key['id'],'school.api.patch',row['id'])
+        return {**result,'state':'queued','message':'Đã cập nhật trung tâm. VPS nhận qua HTTPS, không dùng SSH.'}
+
+    def relocation_request(self,db,user,row,data):
+        sid=row['id'];now=int(time.time())
+        records=db.execute('SELECT * FROM relocations WHERE school=? ORDER BY created DESC',(sid,)).fetchall()
+        if self.command=='GET':return [{'id':x['id'],'state':x['state'],'created':x['created'],'details':decrypt(x['details'],x['id'])} for x in records]
+        action=data.get('action')
+        if action=='cancel':
+            record=next((x for x in records if x['id']==data.get('id')),None)
+            if not record or record['state'] not in ('backup_ready','prepared','failed'):raise ValueError('Chỉ hủy được giai đoạn chưa chuyển domain; tác vụ chạy cần hoàn tất trước')
+            db.execute("UPDATE relocations SET state='canceled' WHERE id=?",(record['id'],))
+            revision=row['revision']+1;db.execute('UPDATE schools SET revision=? WHERE id=?',(revision,sid))
+            queue(db,sid,'configure',{'settings':decrypt(row['config'],sid),'name':row['name'],'domain':row['domain']},revision)
+            audit(db,user['id'],'relocation.cancel',sid);return {'state':'canceled','message':'Đã hủy. Chờ đồng bộ lại cấu hình máy cũ trước khi kích hoạt.'}
+        if row['desired_state']!='suspended' or row['applied_state']!='suspended':raise ValueError('Tạm ngưng thành công trước khi sao lưu/chuyển VPS')
+        if 'relocation' not in json.loads(row['status']).get('features',[]) or json.loads(row['status']).get('control_protocol',0)<2:raise ValueError('Client cần nâng cấp 0.9.1 và agent mới trước khi chuyển VPS')
+        if db.execute("SELECT 1 FROM jobs WHERE school=? AND state IN ('queued','running')",(sid,)).fetchone():raise ValueError('Chờ các tác vụ đang chạy hoàn tất')
+        if action not in ('backup','prepare','cutover'):raise ValueError('Giai đoạn chuyển VPS không hợp lệ')
+        if action=='backup':
+            if any(x['state'] not in ('completed','canceled','failed') for x in records):raise ValueError('Đã có quá trình chuyển VPS chưa kết thúc')
+            identifier=secrets.token_hex(16);details={'source_ip':row['ip'],'domain':row['domain']}
+        else:
+            record=next((x for x in records if x['id']==data.get('id')),None)
+            allowed=('backup_ready',) if action=='prepare' else ('prepared','cutover_failed')
+            if not record or record['state'] not in allowed:raise ValueError('Giai đoạn hiện tại không cho phép thao tác này')
+            identifier=record['id'];details=decrypt(record['details'],identifier)
+        name='source' if action=='backup' else 'target';credential=data.get(name,{})
+        if not isinstance(credential,dict) or not re.fullmatch(r'SHA256:[A-Za-z0-9+/]{43}',str(credential.get('fingerprint',''))):raise ValueError('Cần fingerprint SSH đã đối chiếu')
+        if not credential.get('password') and not credential.get('private_key'):raise ValueError('Cần mật khẩu root hoặc khóa SSH')
+        port=int(credential.get('port',22))
+        if not 1<=port<=65535:raise ValueError('Cổng SSH không hợp lệ')
+        credential={k:str(credential.get(k,'')) for k in ('fingerprint','password','private_key')};credential['port']=port
+        if action=='prepare':
+            address=ipaddress.ip_address(str(data.get('target_ip','')));domain=str(data.get('staging_domain','')).lower().strip()
+            if not address.is_global or str(address)==details['source_ip'] or not HOST.fullmatch(domain) or domain==row['domain']:raise ValueError('Cần VPS mới và domain tạm riêng trỏ về máy mới')
+            if db.execute('SELECT 1 FROM schools WHERE ip=? AND id<>?',(str(address),sid)).fetchone():raise ValueError('IP đang gán cho một đơn vị khác')
+            details.update(target_ip=str(address),staging_domain=domain,target_fingerprint=credential['fingerprint'])
+        if action=='cutover' and credential['fingerprint']!=details['target_fingerprint']:raise ValueError('Fingerprint VPS mới đã thay đổi; kiểm tra trước khi tiếp tục')
+        state='cutting_over' if action=='cutover' else 'preparing'
+        if action=='backup':db.execute('INSERT INTO relocations VALUES(?,?,?,?,?)',(identifier,sid,state,encrypt(details,identifier),int(time.time())))
+        else:db.execute('UPDATE relocations SET state=?,details=? WHERE id=?',(state,encrypt(details,identifier),identifier))
+        job=queue(db,sid,'relocate',{'relocation_id':identifier,'phase':action,name:credential},row['revision']);audit(db,user['id'],'relocation.'+action,sid)
+        return {'id':identifier,'job':job,'state':state}
+
+    def manage_school(self,db,user,row,op,data):
+        sid=row['id'];actor=user['id'];now=int(time.time())
+        if user['role']!='owner':raise ValueError('Cần quyền chủ hệ thống')
+        if op=='keys':
+            if self.command=='GET':return [dict(x) for x in db.execute('SELECT id,label,expires,revoked,created FROM school_keys WHERE school=? ORDER BY created DESC',(sid,))]
+            if row['desired_state']=='deleted':raise ValueError('Đơn vị đã xóa')
+            if data.get('action')=='revoke':
+                db.execute('UPDATE school_keys SET revoked=1 WHERE school=? AND id=?',(sid,str(data.get('id',''))));audit(db,actor,'school.key.revoke',sid);return {'ok':True}
+            days=data.get('days',30);label=str(data.get('label','')).strip()
+            if not isinstance(days,int) or not 1<=days<=90 or not 1<=len(label)<=100:raise ValueError('Tên khóa và hạn dùng 1–90 ngày là bắt buộc')
+            token='meet_'+secrets.token_urlsafe(40);kid=secrets.token_hex(16)
+            db.execute('INSERT INTO school_keys(id,school,issuer,label,hash,expires,created) VALUES(?,?,?,?,?,?,?)',(kid,sid,actor,label,digest(token),now+days*86400,now));audit(db,actor,'school.key.create',sid)
+            return {'id':kid,'token':token,'expires':now+days*86400}
+        if op=='relocations':return self.relocation_request(db,user,row,data)
+        if db.execute("SELECT 1 FROM relocations WHERE school=? AND state IN ('backup_ready','preparing','prepared','cutting_over','cutover_failed')",(sid,)).fetchone():raise ValueError('Đang chuyển VPS; không đổi trạng thái lúc này')
+        action=data.get('action');state=row['desired_state'];connected=bool(row['seen'] or row['agent_hash'])
+        if action=='archive':
+            if data.get('confirm')!=row['domain']:raise ValueError('Nhập đúng domain để xác nhận xóa')
+            if state!='suspended' or row['applied_state']!='suspended':raise ValueError('Tạm ngưng thành công trước khi xóa')
+            if db.execute("SELECT 1 FROM jobs WHERE school=? AND state IN ('queued','running')",(sid,)).fetchone():raise ValueError('Chờ các tác vụ hoàn tất')
+            db.execute("UPDATE schools SET desired_state='deleted' WHERE id=?",(sid,));db.execute('UPDATE school_keys SET revoked=1 WHERE school=?',(sid,));audit(db,actor,'school.archive',sid)
+            return {'state':'deleted','message':'Đã đưa vào thùng rác; dữ liệu VPS và bản sao lưu được giữ nguyên.'}
+        if action=='restore':
+            if state!='deleted':raise ValueError('Đơn vị chưa bị xóa')
+            db.execute("UPDATE schools SET desired_state='suspended' WHERE id=?",(sid,));audit(db,actor,'school.restore',sid);return {'state':'suspended'}
+        if state=='deleted' or action not in ('suspend','resume'):raise ValueError('Thao tác trạng thái không hợp lệ')
+        target='suspended' if action=='suspend' else 'active'
+        if action=='resume' and connected and row['applied']!=row['revision']:raise ValueError('Chờ VPS áp dụng cấu hình trước khi kích hoạt lại')
+        if connected and ('lifecycle' not in json.loads(row['status']).get('features',[]) or json.loads(row['status']).get('control_protocol',0)<2):raise ValueError('Nâng cấp client lên 0.9.1 trở lên trước khi điều khiển trạng thái')
+        if db.execute("SELECT 1 FROM jobs WHERE school=? AND action='provision' AND state IN ('queued','running')",(sid,)).fetchone():raise ValueError('Đang cài VPS; chờ hoàn tất')
+        db.execute("UPDATE jobs SET state='superseded',payload=? WHERE school=? AND action='lifecycle' AND state='queued'",(encrypt({},sid),sid))
+        db.execute('UPDATE schools SET desired_state=? WHERE id=?',(target,sid))
+        if connected:job=queue(db,sid,'lifecycle',{'state':target},row['revision'])
+        else:
+            db.execute('UPDATE schools SET applied_state=? WHERE id=?',(target,sid));job=None
+            if target=='suspended':db.execute("UPDATE jobs SET state='superseded',payload=? WHERE school=? AND state='queued'",(encrypt({},sid),sid))
+        audit(db,actor,'school.'+action,sid)
+        return {'state':target,'job':job,'applied':not connected,'message':'VPS đang học sẽ chờ hết buổi trước khi tạm ngưng.'}
+
     def admin(self,db,user,data):
         path=self.path;actor=user['id']
-        readonly=path in ('/api/me','/api/audit','/api/schools') or bool(re.fullmatch(r'/api/schools/[a-f0-9]{32}/(config|jobs|readiness)',path))
+        readonly=path in ('/api/me','/api/audit','/api/schools') or bool(re.fullmatch(r'/api/schools/[a-f0-9]{32}/(config|jobs|readiness|keys|relocations)',path))
         if self.command=='GET' and not readonly and path!='/api/admins':raise ValueError('POST required')
         if path=='/api/logout':db.execute('DELETE FROM sessions WHERE admin=?',(actor,));return {'ok':True}
         if path=='/api/me':return {'email':user['email'],'role':user['role'],'mfa_enabled':bool(user['mfa'])}
@@ -277,15 +393,18 @@ class Handler(BaseHTTPRequestHandler):
             if not old and not password:raise ValueError('Cần mật khẩu tài khoản mới')
             db.execute('INSERT INTO admins(id,email,hash,role,active) VALUES(?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET email=excluded.email,hash=excluded.hash,role=excluded.role,active=excluded.active',(id,email,password_hash(password) if password else old['hash'],role,int(data.get('active',True))))
             db.execute('DELETE FROM sessions WHERE admin=?',(id,));db.execute('DELETE FROM mfa_challenges WHERE admin=?',(id,));audit(db,actor,'admin.save',id);return {'ok':True}
-        if path=='/api/schools' and self.command=='GET':return [{**{k:r[k] for k in ('id','name','domain','ip','revision','applied','seen','status')},'platform_mode':decrypt(r['config'],r['id']).get('platform_mode','school')} for r in db.execute('SELECT * FROM schools ORDER BY name')]
+        if path=='/api/schools' and self.command=='GET':return [{**{k:r[k] for k in ('id','name','domain','ip','revision','applied','seen','status','desired_state','applied_state')},'platform_mode':decrypt(r['config'],r['id']).get('platform_mode','school')} for r in db.execute('SELECT * FROM schools ORDER BY name')]
         if path=='/api/schools/save':
             sid=data.get('id') or secrets.token_hex(16);domain=str(data['domain']).lower().strip();name=str(data['name']).strip();ip=str(data['ip'])
             if not HOST.fullmatch(domain) or not 1<=len(name)<=200:raise ValueError('Tên trường/domain không hợp lệ')
             address=ipaddress.ip_address(ip)
             if not address.is_global:raise ValueError('VPS phải có IP public')
             old=db.execute('SELECT * FROM schools WHERE id=?',(sid,)).fetchone()
+            if old and old['desired_state']=='deleted':raise ValueError('Khôi phục đơn vị trước khi sửa')
+            if old and db.execute("SELECT 1 FROM relocations WHERE school=? AND state IN ('backup_ready','preparing','prepared','cutting_over','cutover_failed')",(sid,)).fetchone():raise ValueError('Đang chuyển VPS; giữ nguyên cấu hình tới khi hoàn tất')
             if old and db.execute("SELECT 1 FROM jobs WHERE school=? AND action='domain' AND state IN ('queued','running')",(sid,)).fetchone():raise ValueError('Đang đổi domain, chờ hoàn tất trước khi lưu')
             if old and data.get('revision')!=old['revision']:raise ValueError('Cấu hình đã thay đổi. Tải lại trước khi lưu')
+            if old and type(data.get('revision')) is not int:raise ValueError('Revision phải là số nguyên')
             cfg=validate_config(merge_secrets(data.get('config',{}),decrypt(old['config'],sid) if old else {}));revision=old['revision']+1 if old else 1
             installing=old and db.execute("SELECT 1 FROM jobs WHERE school=? AND action='provision' AND state IN ('queued','running')",(sid,)).fetchone()
             if installing:raise ValueError('Đang cài VPS; chờ cài đặt hoàn tất trước khi đổi cấu hình')
@@ -296,10 +415,12 @@ class Handler(BaseHTTPRequestHandler):
             db.execute('INSERT INTO schools(id,name,domain,ip,config,revision) VALUES(?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET name=excluded.name,domain=excluded.domain,ip=excluded.ip,config=excluded.config,revision=excluded.revision',(sid,name,domain,ip,encrypt(cfg,sid),revision))
             db.execute("UPDATE jobs SET state='superseded',payload=? WHERE school=? AND action='configure' AND state='queued'",(encrypt({},sid),sid))
             queue(db,sid,'configure',{'settings':cfg,'name':name,'domain':domain},revision);audit(db,actor,'school.save',sid);return {'id':sid,'revision':revision}
-        match=re.fullmatch(r'/api/schools/([a-f0-9]{32})/(config|enroll|jobs|action|readiness)',path)
+        match=re.fullmatch(r'/api/schools/([a-f0-9]{32})/(config|enroll|jobs|action|readiness|lifecycle|keys|relocations)',path)
         if match:
             sid,op=match.groups();row=db.execute('SELECT * FROM schools WHERE id=?',(sid,)).fetchone()
             if not row:raise ValueError('Không tìm thấy trường')
+            if op in ('lifecycle','keys','relocations'):return self.manage_school(db,user,row,op,data)
+            if row['desired_state']=='deleted' and op not in ('config','jobs','readiness'):raise ValueError('Đơn vị nằm trong thùng rác')
             if op=='config':return {'config':redact(decrypt(row['config'],sid)),'revision':row['revision']}
             if op=='readiness':
                 report=deployment_readiness(row,decrypt(row['config'],sid))
@@ -322,11 +443,14 @@ class Handler(BaseHTTPRequestHandler):
                 return output
             if op=='action':
                 action=data['action'];payload=data.get('payload',{})
+                if action in ('lifecycle','relocate'):raise ValueError('Dùng chức năng quản lý riêng')
+                if db.execute("SELECT 1 FROM relocations WHERE school=? AND state IN ('backup_ready','preparing','prepared','cutting_over','cutover_failed')",(sid,)).fetchone():raise ValueError('Đang chuyển VPS; chờ hoàn tất')
                 if not isinstance(payload,dict):raise ValueError('Nội dung tác vụ không hợp lệ')
                 if action=='academy':
                     if user['role']!='owner':raise ValueError('Chỉ chủ hệ thống được quản trị kinh doanh')
                     if decrypt(row['config'],sid).get('platform_mode','school')!='academy':raise ValueError('Đơn vị này đang ở chế độ trường học')
                 if action=='provision':
+                    if row['desired_state']!='active':raise ValueError('Kích hoạt đơn vị trước khi cài mới')
                     if user['role']!='owner':raise ValueError('Cần quyền chủ hệ thống')
                     if not db.in_transaction:db.execute('BEGIN IMMEDIATE')
                     row=db.execute('SELECT * FROM schools WHERE id=?',(sid,)).fetchone()

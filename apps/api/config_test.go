@@ -40,7 +40,7 @@ func TestConfigSecretsAndValidation(t *testing.T) {
 	if next.SFU[0].Secret != "" || !next.SFU[0].SecretSet || next.TURN[0].Token != "" || !next.TURN[0].TokenSet {
 		t.Fatal("secrets not redacted")
 	}
-	if e := validateSettings(&next, old); e != nil || next.SFU[0].Secret != old.SFU[0].Secret || next.TURN[0].Token != old.TURN[0].Token {
+	if e := validateSettings(&next, old); e != nil || next.SFU[0].Secret != old.SFU[0].Secret || len(next.TURN) != 0 {
 		t.Fatal("blank update did not preserve secret")
 	}
 	if e := saveSettings(next); e != nil {

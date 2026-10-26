@@ -3,6 +3,16 @@ from pathlib import Path
 from unittest.mock import patch
 spec=importlib.util.spec_from_file_location('meet_agent',Path(__file__).with_name('agent.py'));a=importlib.util.module_from_spec(spec);spec.loader.exec_module(a)
 class AgentTests(unittest.TestCase):
+    def test_suspension_waits_for_live_and_can_resume(self):
+        with tempfile.TemporaryDirectory() as tmp,patch.object(a,'ROOT',Path(tmp)),patch.object(a.os,'chown'),patch.object(a,'cli',return_value={'live':1}):
+            job={'action':'lifecycle','payload':{'state':'suspended'}}
+            self.assertEqual(a.execute(job,{'live':1}),('waiting','LIVE_MEETINGS'))
+            self.assertEqual(a.execute(job,{'live':0}),('waiting','LIVE_MEETINGS'))
+            self.assertFalse((a.ROOT/'runtime-config/school-state.json').exists())
+            with patch.object(a,'cli',return_value={'live':0}):self.assertEqual(a.execute(job,{'live':0}),('success','OK'))
+            self.assertEqual(json.loads((a.ROOT/'runtime-config/school-state.json').read_text())['state'],'suspended')
+            self.assertEqual(a.execute({'action':'lifecycle','payload':{'state':'active'}},{'live':0}),('success','OK'))
+            self.assertEqual(json.loads((a.ROOT/'runtime-config/school-state.json').read_text())['state'],'active')
     def test_live_blocks_sensitive_changes(self):
         with patch.object(a,'configure') as cfg,patch.object(a,'run') as run:
             for action in ('configure','update','domain'):

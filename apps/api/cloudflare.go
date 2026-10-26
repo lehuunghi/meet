@@ -6,7 +6,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -289,30 +288,5 @@ func (a *app) ice(w http.ResponseWriter, r *http.Request) {
 		problem(w, 409, "Meeting is not live")
 		return
 	}
-	cfg, err := loadSettings()
-	if err != nil {
-		problem(w, 503, "TURN configuration invalid")
-		return
-	}
-	keys := cfg.TURN
-	if len(keys) == 0 {
-		send(w, 200, map[string]any{"iceServers": []any{map[string]string{"urls": "stun:stun.cloudflare.com:3478"}}})
-		return
-	}
-	// Stable per-user distribution, with failover. Keys are owned and billed by the operator.
-	h := digest(who(r).School + who(r).ID)
-	value, _ := strconv.ParseUint(h[:8], 16, 32)
-	start := int(value % uint64(len(keys)))
-	for i := range keys {
-		k := keys[(start+i)%len(keys)]
-		if strings.TrimSpace(k.ID) == "" || k.Token == "" {
-			continue
-		}
-		out, e := a.cloud(r, "POST", "turn/keys/"+url.PathEscape(k.ID)+"/credentials/generate-ice-servers", k.Token, map[string]int{"ttl": 3600})
-		if e == nil {
-			send(w, 200, out)
-			return
-		}
-	}
-	problem(w, 502, "TURN credential generation failed")
+	send(w, 200, map[string]any{"iceServers": []any{map[string]string{"urls": "stun:stun.cloudflare.com:3478"}}})
 }

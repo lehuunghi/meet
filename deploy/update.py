@@ -83,7 +83,7 @@ def ci_passed(target):
     if latest['status'] != 'completed' or latest['conclusion'] != 'success':
         return False
     jobs = github('/actions/runs/' + str(latest['id']) + '/jobs?per_page=100')['jobs']
-    return all(any(j['name'] == name and j['status'] == 'completed' and j['conclusion'] == 'success' for j in jobs) for name in ['api', 'web', 'containers', 'control'])
+    return all(any(j['name'] == name and j['status'] == 'completed' and j['conclusion'] == 'success' for j in jobs) for name in ['api', 'web', 'containers', 'control', 'recorder'])
 
 def manifest(ref):
     try:
@@ -370,7 +370,16 @@ def apply(target, request_id):
             except Exception:
                 pass
 
+def refresh_control_agent():
+    source=ROOT/'control/agent.py';installed=Path('/etc/meet/agent.py')
+    if not Path('/etc/meet/agent.json').exists() or not source.exists() or not installed.exists():return
+    if source.read_bytes()==installed.read_bytes():return
+    temporary=installed.with_suffix('.next');temporary.write_bytes(source.read_bytes());os.chmod(temporary,0o600);os.replace(temporary,installed)
+    # The existing agent may still be acknowledging its completed upgrade.
+    run('systemd-run','--unit=meet-agent-refresh-'+str(int(time.time())),'--on-active=20s','systemctl','restart','meet-control-agent.service')
+
 def worker():
+    refresh_control_agent()
     job = read_json(STATE / 'journal.json')
     if job.get('committed') and (ROOT / 'runtime-config/maintenance').exists():
         if job['result']=='rolled_back':

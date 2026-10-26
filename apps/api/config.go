@@ -56,6 +56,7 @@ func loadSettings() (systemSettings, error) {
 		b, e := os.ReadFile(p)
 		if e == nil {
 			e = json.Unmarshal(b, &c)
+			c.TURN = []turnKey{}
 			if c.Retention == 0 {
 				c.Retention = 30
 			}
@@ -68,16 +69,12 @@ func loadSettings() (systemSettings, error) {
 	if id, key := secret("CF_SFU_APP_ID"), secret("CF_SFU_SECRET"); id != "" && key != "" {
 		c.SFU = append(c.SFU, sfuProvider{ID: "legacy", Name: "SFU mặc định", AppID: id, Secret: key, Weight: 1, Enabled: true})
 	}
-	if raw := secret("CF_TURN_KEYS"); raw != "" {
-		if e := json.Unmarshal([]byte(raw), &c.TURN); e != nil {
-			return c, e
-		}
-	}
 	c.R2 = r2Settings{Account: secret("R2_ACCOUNT_ID"), Bucket: secret("R2_BUCKET"), Access: secret("R2_ACCESS_KEY_ID"), Secret: secret("R2_SECRET_ACCESS_KEY")}
 	c.R2.Enabled = c.R2.Account != "" && c.R2.Bucket != "" && c.R2.Access != "" && c.R2.Secret != ""
 	return c, nil
 }
 func saveSettings(c systemSettings) error {
+	c.TURN = []turnKey{}
 	p := configPath("settings.json")
 	if p == "" {
 		return errors.New("CONFIG_DIR is not configured")
@@ -169,8 +166,8 @@ func validateSettings(next *systemSettings, old systemSettings) error {
 		return errors.New("Bật R2 trước khi bật sao lưu")
 	}
 	next.R2.Lifecycle = false
-	if len(next.SFU) > 32 || len(next.TURN) > 32 {
-		return errors.New("Tối đa 32 SFU app và 32 TURN key")
+	if len(next.SFU) > 32 {
+		return errors.New("Tối đa 32 SFU app")
 	}
 	seen := map[string]bool{}
 	apps := map[string]bool{}
@@ -190,22 +187,7 @@ func validateSettings(next *systemSettings, old systemSettings) error {
 		apps[p.AppID] = true
 		p.SecretSet = false
 	}
-	seen = map[string]bool{}
-	for i := range next.TURN {
-		p := &next.TURN[i]
-		if p.Token == "" {
-			for _, v := range old.TURN {
-				if v.ID == p.ID {
-					p.Token = v.Token
-				}
-			}
-		}
-		if !cfID.MatchString(p.ID) || len(p.Token) < 8 || len(p.Token) > 4096 || seen[p.ID] {
-			return errors.New("TURN cần Key ID duy nhất và API token")
-		}
-		seen[p.ID] = true
-		p.TokenSet = false
-	}
+	next.TURN = []turnKey{} // Legacy field accepted for backup compatibility; TURN is no longer used.
 	if next.R2.Account == old.R2.Account && next.R2.Bucket == old.R2.Bucket {
 		if next.R2.Access == "" {
 			next.R2.Access = old.R2.Access

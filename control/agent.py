@@ -95,6 +95,18 @@ def domain_change(payload):
 def execute(job,status):
     action=job['action'];payload=job['payload']
     if action in ('configure','update','domain') and status['live']>0:return 'waiting','LIVE_MEETINGS'
+    if action=='lifecycle':
+        state=payload.get('state')
+        if state not in ('active','suspended'):raise ValueError('invalid lifecycle state')
+        if state=='suspended' and status['live']>0:return 'waiting','LIVE_MEETINGS'
+        path=ROOT/'runtime-config/school-state.json'
+        old=path.read_bytes() if path.exists() else None
+        atomic(path,{'state':state},(10001,10001))
+        if state=='suspended' and cli('managed-status')['live']>0:
+            if old is None:path.unlink(missing_ok=True)
+            else:path.write_bytes(old)
+            return 'waiting','LIVE_MEETINGS'
+        return 'success','OK'
     if action=='configure':
         revision=ROOT/'runtime-config/control-revision.json'
         if not revision.exists() or json.loads(revision.read_text()).get('revision',0)<job['revision']:configure(job)
@@ -115,6 +127,7 @@ def execute(job,status):
 
 def tick():
     status=cli('managed-status')
+    status['control_protocol']=2
     status['disk_free']=shutil.disk_usage(ROOT).free
     for name,path in [('update','update-status.json'),('backup','backup-status.json'),('config_revision','control-revision.json')]:
         p=ROOT/'runtime-config'/path

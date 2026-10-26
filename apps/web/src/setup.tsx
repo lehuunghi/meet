@@ -181,7 +181,7 @@ export function Setup() {
             <SystemUpdates />
             <div className="setup-steps">
               <a href="#setup-school">1. Trường & admin</a>
-              <a href="#setup-sfu">2. SFU & TURN</a>
+              <a href="#setup-sfu">2. SFU</a>
               <a href="#setup-r2">3. R2 · Lưu trữ</a>
             </div>
             <form
@@ -425,78 +425,6 @@ export function Setup() {
                     </div>
                   </article>
                 ))}
-                <h3>TURN keys</h3>
-                <p>
-                  TURN là cấu hình riêng, không thay thế SFU App. Credential
-                  ngắn hạn được cấp từ backend; không gửi API token dài hạn cho
-                  học sinh.
-                </p>
-                {settings.turn.map((t, i) => (
-                  <div className="setup-turn" key={i}>
-                    <label>
-                      TURN Key ID
-                      <input
-                        value={t.id}
-                        required
-                        onChange={(e) =>
-                          setSettings((s) => ({
-                            ...s,
-                            turn: s.turn.map((v, n) =>
-                              n === i ? { ...v, id: e.target.value.trim() } : v,
-                            ),
-                          }))
-                        }
-                      />
-                    </label>
-                    <label>
-                      TURN API token
-                      <input
-                        type="password"
-                        autoComplete="off"
-                        value={t.token}
-                        placeholder={
-                          t.token_set
-                            ? "Đã lưu — để trống để giữ"
-                            : "Nhập API token"
-                        }
-                        required={!t.token_set}
-                        onChange={(e) =>
-                          setSettings((s) => ({
-                            ...s,
-                            turn: s.turn.map((v, n) =>
-                              n === i ? { ...v, token: e.target.value } : v,
-                            ),
-                          }))
-                        }
-                      />
-                    </label>
-                    <button
-                      type="button"
-                      className="secondary"
-                      onClick={() =>
-                        setSettings((s) => ({
-                          ...s,
-                          turn: s.turn.filter((_, n) => n !== i),
-                        }))
-                      }
-                    >
-                      Xóa
-                    </button>
-                  </div>
-                ))}
-                <button
-                  type="button"
-                  className="secondary"
-                  disabled={settings.turn.length >= 32}
-                  onClick={() =>
-                    setSettings((s) => ({
-                      ...s,
-                      turn: [...s.turn, { id: "", token: "" }],
-                    }))
-                  }
-                >
-                  + Thêm TURN key
-                </button>
               </section>
               <section className="section" id="setup-r2">
                 <div className="section-title">

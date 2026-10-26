@@ -131,6 +131,85 @@ const origin = `http://127.0.0.1:${port}`;
       .click();
     await install.waitFor();
     assert.equal(await install.isDisabled(), true); // Existing school must not be reinstalled.
+    await page.getByRole("button", { name: "Đóng", exact: true }).click();
+    await page.locator("#modefilter").selectOption("academy");
+    await page.getByRole("button", { name: "Chi tiết", exact: true }).click();
+    await page.getByRole("button", { name: "SFU", exact: true }).click();
+    assert.equal(await page.getByText("TURN keys", { exact: true }).count(), 0);
+    await page
+      .getByRole("button", { name: "API tích hợp", exact: true })
+      .click();
+    await page.locator("#new-key [name=label]").fill("UI integration");
+    await page
+      .getByRole("button", { name: "Tạo API key", exact: true })
+      .click();
+    await page.locator("#issued-api-key").waitFor();
+    const token = await page.locator("#issued-api-key").inputValue();
+    const endpoint = await page.locator("#api-example").innerText();
+    const url = endpoint.split("\n")[0].replace("GET ", "");
+    const before = await (
+      await page.request.get(url, {
+        headers: { Authorization: "Bearer " + token },
+      })
+    ).json();
+    const patched = await page.request.patch(url, {
+      headers: { Authorization: "Bearer " + token },
+      data: { revision: before.revision, name: "Academy API" },
+    });
+    assert.equal(patched.status(), 200);
+    await page
+      .getByRole("button", { name: "Hoạt động / Xóa", exact: true })
+      .click();
+    await page
+      .getByRole("button", { name: "Tạm ngưng đơn vị", exact: true })
+      .click();
+    await page
+      .getByRole("heading", { name: "Kiểm tra trước khi cài", exact: true })
+      .waitFor();
+    await page
+      .getByRole("button", { name: "Hoạt động / Xóa", exact: true })
+      .click();
+    await page
+      .locator("#archive-school [name=confirm]")
+      .fill("academy.example.test");
+    await page
+      .getByRole("button", { name: "Xóa vào thùng rác", exact: true })
+      .click();
+    await page
+      .getByRole("heading", { name: "Kiểm tra trước khi cài", exact: true })
+      .waitFor();
+    assert.equal(
+      (
+        await page.request.get(url, {
+          headers: { Authorization: "Bearer " + token },
+        })
+      ).status(),
+      401,
+    );
+    await page
+      .getByRole("button", { name: "Hoạt động / Xóa", exact: true })
+      .click();
+    await page
+      .getByRole("button", { name: "Khôi phục từ thùng rác", exact: true })
+      .click();
+    await page
+      .getByRole("heading", { name: "Kiểm tra trước khi cài", exact: true })
+      .waitFor();
+    await page
+      .getByRole("button", { name: "Backup / Chuyển VPS", exact: true })
+      .click();
+    await page
+      .getByRole("heading", {
+        name: "Backup và chuyển sang VPS mới",
+        exact: true,
+      })
+      .waitFor();
+    assert.equal(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth > innerWidth,
+      ),
+      false,
+    );
     assert.deepEqual(errors, []);
     console.log(
       "Academy creation, saved drafts, readiness, mobile layout, school isolation and reinstall guards passed.",
