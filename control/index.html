@@ -2168,6 +2168,7 @@
         document.body.append(dialog);
       }
       let timer;
+      dialog.dataset.job=id;
       dialog.innerHTML =
         '<h2>Màn hình theo dõi tác vụ</h2><p>Tiến độ theo giai đoạn thực tế, không phải ước lượng thời gian. Nhật ký chỉ chứa thông báo đã lọc; mật khẩu và token không hiển thị.</p><div id="job-state"></div><pre class="job-console" id="job-console" aria-label="Nhật ký cài đặt"></pre>';
       dialog.append(button("Đóng màn hình", () => dialog.close()));
@@ -2176,7 +2177,7 @@
       const load = async () => {
         try {
           const list = await api("schools/" + sid + "/jobs");
-          if (!dialog.open) return;
+          if (!dialog.open || dialog.dataset.job!==id) return;
           const job = list.find((j) => j.id === id);
           if (!job) throw Error("Không tìm thấy tác vụ");
           $("#job-state").innerHTML =
@@ -2207,7 +2208,7 @@
           )
             timer = setTimeout(() => void load(), 2000);
         } catch (e) {
-          if (dialog.open) $("#job-state").textContent = e.message;
+          if (dialog.open && dialog.dataset.job===id) $("#job-state").textContent = e.message;
         }
       };
       await load();
