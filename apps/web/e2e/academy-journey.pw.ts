@@ -141,3 +141,93 @@ test("workspace actions open the intended lesson and teacher cannot post through
     "Danh sách chi tiết học sinh do giáo viên",
   );
 });
+
+test("website editor preserves existing content, sends revision and edits course information", async ({
+  page,
+}) => {
+  let posted: any = null;
+  await page.route("**/api/**", async (r) => {
+    const path = new URL(r.request().url()).pathname;
+    let data: any = [];
+    if (path === "/api/me")
+      data = {
+        id: "owner",
+        role: "admin",
+        name: "Quản trị",
+        school_id: "school",
+      };
+    if (path === "/api/public-config")
+      data = { platform_mode: "academy", school_name: "VA" };
+    if (path === "/api/academy/admin/courses")
+      data = [
+        {
+          id: "course-one",
+          title: "Toán",
+          description: "Giới thiệu",
+          teacher_name: "Giáo viên",
+          published: true,
+        },
+      ];
+    if (path === "/api/academy/site") {
+      if (r.request().method() === "POST") {
+        posted = r.request().postDataJSON();
+        data = { ok: true, revision: "next-revision" };
+      } else
+        data = [
+          {
+            content: JSON.stringify({
+              headline: "VA",
+              description: "Nội dung thật",
+              published: true,
+              posts: [
+                {
+                  Slug: "bai-cu",
+                  Title: "Bài cũ",
+                  Summary: "Tóm tắt",
+                  Body: "Giữ nguyên",
+                  Published: true,
+                },
+              ],
+              terms: "Điều khoản đã duyệt",
+            }),
+            revision: "saved-revision",
+          },
+        ];
+    }
+    await r.fulfill({ json: data });
+  });
+  await page.goto("/hoc");
+  await page
+    .getByRole("button", { name: "Quản lý nội dung", exact: true })
+    .click();
+  await page.getByText("Liên hệ & chính sách", { exact: true }).click();
+  await page
+    .getByLabel("Email liên hệ", { exact: true })
+    .fill("support@example.test");
+  await page.getByText("Trang chi tiết khóa học", { exact: true }).click();
+  await page
+    .getByRole("combobox", { name: "Chọn khóa học để biên tập", exact: true })
+    .selectOption("course-one");
+  await page
+    .getByLabel("Đối tượng học", { exact: true })
+    .fill("Học sinh lớp 10");
+  await page
+    .getByLabel("Mục tiêu · mỗi dòng một mục", { exact: true })
+    .fill("Nắm kiến thức\nVận dụng");
+  await page.getByRole("button", { name: "Lưu website", exact: true }).click();
+  await expect.poll(() => posted?.revision).toBe("saved-revision");
+  expect(posted.content.posts[0].Body).toBe("Giữ nguyên");
+  expect(posted.content.terms).toBe("Điều khoản đã duyệt");
+  expect(posted.content.contact_email).toBe("support@example.test");
+  expect(posted.content.course_pages["course-one"].audience).toBe(
+    "Học sinh lớp 10",
+  );
+  for (const width of [390, 360]) {
+    await page.setViewportSize({ width, height: 844 });
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+  }
+});

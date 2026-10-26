@@ -659,6 +659,10 @@ export function AcademyApp({
                   staff={staff}
                   perform={perform}
                   onNotice={setNotice}
+                  onUpgrade={(id: string) => {
+                    setIntentCourse(id);
+                    setTab("vip");
+                  }}
                   focus={intentCourse === c.id}
                   focusLesson={intentCourse === c.id ? intentLesson : ""}
                   focusTasks={intentCourse === c.id && intentTasks}
@@ -707,6 +711,8 @@ export function AcademyApp({
         {tab === "vip" && (
           <VipPanel
             intentPlan={intentPlan}
+            onContinue={() => showCourse(intentCourse)}
+            refreshMembership={refresh}
             demo={demo}
             plans={plans}
             perform={perform}
@@ -759,6 +765,7 @@ function CourseCard({
   staff,
   perform,
   onNotice,
+  onUpgrade,
   focus = false,
   focusLesson = "",
   focusTasks = false,
@@ -872,13 +879,18 @@ function CourseCard({
             {open ? "Thu gọn" : "Xem bài học"}
           </button>
           <button onClick={() => setTasks(!tasks)}>Bài tập</button>
+          {!staff && onUpgrade && (
+            <button className="secondary" onClick={() => onUpgrade(course.id)}>
+              Gói học & quyền lợi
+            </button>
+          )}
           {course.academic_course_id && (
             <button
               onClick={() =>
                 void perform(async () => {
                   if (!demo)
                     await api(`/academy/courses/${course.id}/enroll`, {});
-                  onNotice("Đã đăng ký lớp. Xem mục Lớp học trực tiếp.");
+                  onNotice("Đã đăng ký lớp. Mở mục Lớp học để xem lịch.");
                 })
               }
             >
@@ -975,7 +987,15 @@ function CourseCard({
     </article>
   );
 }
-function VipPanel({ demo, plans, perform, notice, intentPlan = "" }: any) {
+function VipPanel({
+  demo,
+  plans,
+  perform,
+  notice,
+  intentPlan = "",
+  onContinue,
+  refreshMembership,
+}: any) {
   const [order, setOrder] = useState<any>(null),
     [history, setHistory] = useState<any[]>([]);
   useEffect(() => {
@@ -984,6 +1004,28 @@ function VipPanel({ demo, plans, perform, notice, intentPlan = "" }: any) {
         .then(setHistory)
         .catch(() => {});
   }, []);
+  async function checkPayment() {
+    if (demo) {
+      notice("Bản minh họa không có thanh toán thật.");
+      return;
+    }
+    setHistory(await api("/academy/orders"));
+    await refreshMembership?.();
+  }
+  useEffect(() => {
+    if (
+      demo ||
+      !order ||
+      history.some((v: any) => v.id === order.id && v.status === "paid")
+    )
+      return;
+    const timer = setInterval(() => void perform(checkPayment), 15000);
+    return () => clearInterval(timer);
+  }, [
+    order?.id,
+    demo,
+    history.some((v: any) => v.id === order?.id && v.status === "paid"),
+  ]);
   return (
     <>
       <div className="academy-course-grid">
@@ -1087,8 +1129,29 @@ function VipPanel({ demo, plans, perform, notice, intentPlan = "" }: any) {
           </label>
         </section>
       )}
+      <div className="academy-actions">
+        <button
+          className="secondary"
+          onClick={() => void perform(checkPayment)}
+        >
+          Cập nhật trạng thái thanh toán
+        </button>
+        <button onClick={onContinue}>Tiếp tục khóa học đã chọn</button>
+      </div>
       <DataTable
-        rows={history}
+        rows={history.map((row: any) => ({
+          ...row,
+          status:
+            (
+              {
+                pending: "Chờ thanh toán",
+                review: "Chờ đối soát",
+                paid: "Đã thanh toán",
+                rejected: "Đã từ chối",
+                expired: "Đã hết hạn",
+              } as Record<string, string>
+            )[row.status] || row.status,
+        }))}
         columns={[
           ["code", "Mã đơn"],
           ["price_vnd", "Số tiền"],
