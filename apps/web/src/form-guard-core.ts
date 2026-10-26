@@ -34,6 +34,21 @@ export function allowPageLeave() {
   }
   return ok;
 }
+// Reloading a single form must not discard dirty state in other forms.
+export function confirmFormReload(form: HTMLFormElement | null) {
+  return (
+    !form ||
+    (!dirty.has(form) && !pending.has(form)) ||
+    window.confirm(
+      "Tải lại sẽ bỏ nội dung chưa lưu trong biểu mẫu này. Tiếp tục?",
+    )
+  );
+}
+export function markFormClean(form: HTMLFormElement | null) {
+  if (!form) return;
+  baselines.set(form, values(form));
+  dirty.delete(form);
+}
 export function submittingForm() {
   const f = active;
   if (!f || pending.has(f)) return () => {};

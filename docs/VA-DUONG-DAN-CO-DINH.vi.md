@@ -28,3 +28,11 @@ Khi sửa biểu mẫu, rời trang hoặc đóng tab sẽ có cảnh báo chưa
 Cài đặt: triển khai qua bộ nâng cấp an toàn hiện có, chọn commit đã vượt qua CI. Bản này thêm hai bảng lưu trạng thái đọc và URL thanh toán, nâng schema lên 9; không đổi mật khẩu, SFU, R2, thời hạn lưu hoặc dữ liệu học tập. Bộ nâng cấp phải xác thực bản sao lưu trước khi thay phiên bản. Admin trung tâm tiếp tục chỉ quản lý hạ tầng; nghiệp vụ VA ở VA.
 
 Kiểm tra sau cập nhật: đăng nhập, mở lớp/môn rồi F5; dùng Quay lại/Tiến tới; mở link bài tập bằng tài khoản đúng/sai lớp; mở lại đơn thanh toán; chọn lớp/môn/tháng và xuất Excel; sửa biểu mẫu rồi thử rời trang. Link đơn không tạo lại đơn, không tự cấp VIP; webhook hoặc duyệt có quyền vẫn quyết định thanh toán.
+
+## Bản vá 0.12.1
+
+Sửa nút Thu gọn/Xem bài học trên trang khóa học; giữ khóa học đã chọn trong URL khi chuyển sang đơn thanh toán và tải lại trang. Khi chuyển từ bước 2FA sang đăng ký, biểu mẫu bỏ challenge đăng nhập cũ.
+
+Tải lại cài đặt kinh doanh và nội dung website yêu cầu xác nhận nếu có nội dung chưa lưu. Tải lại thành công phục hồi đúng giá trị trên máy chủ dù revision không đổi; lỗi tải lại không đánh dấu bản nháp đã lưu.
+
+Tự làm mới lịch học không xóa thông báo/lỗi từ thao tác của người dùng, không gửi chồng yêu cầu và bỏ kết quả đến muộn khi đã rời trang. Nút liên kết được chuẩn hóa vùng bấm và trạng thái bàn phím trên mobile.

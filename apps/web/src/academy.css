@@ -1933,3 +1933,34 @@
     line-height: 1.7;
   }
 }
+
+/* Link actions retain the same target size and contrast as adjacent buttons. */
+.academy-shell
+  a[role="button"]:not(#academy-navigation a):not(.classroom-card-cover a) {
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  min-height: 38px;
+  box-sizing: border-box;
+  padding: 9px 14px;
+  border: 1px solid #d8e1ed;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  color: #2459ac;
+  background: white;
+  cursor: pointer;
+}
+.academy-shell
+  a[role="button"]:not(#academy-navigation a):not(
+    .classroom-card-cover a
+  ):hover {
+  background: #f1f6ff;
+  border-color: #a8c0e7;
+}
+.academy-shell a[role="button"]:focus-visible {
+  outline: 2px solid #1967d2;
+  outline-offset: 3px;
+}

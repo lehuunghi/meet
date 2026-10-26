@@ -1,6 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { api } from "./api";
+import { confirmFormReload, markFormClean } from "./form-guard-core";
 export function AcademySiteEditor({ demo, courses, perform, notice }: any) {
+  const formRef = useRef<HTMLFormElement>(null);
+  const [reloadSerial, setReloadSerial] = useState(0);
+  useEffect(() => {
+    markFormClean(formRef.current);
+  }, [reloadSerial]);
   const [value, setValue] = useState<any>({
       headline: "",
       description: "",
@@ -30,6 +36,7 @@ export function AcademySiteEditor({ demo, courses, perform, notice }: any) {
       setValue(parsed || { headline: "", description: "", published: false });
       setRevision(rows[0]?.revision || "");
       setLoaded(true);
+      setReloadSerial((n) => n + 1);
     } catch (e) {
       setError((e as Error).message);
     }
@@ -96,10 +103,26 @@ export function AcademySiteEditor({ demo, courses, perform, notice }: any) {
       </p>
       {error && (
         <p className="error" role="alert">
-          {error} <button onClick={() => void load()}>Tải lại nội dung</button>
+          {error}{" "}
+          <button
+            onClick={() => {
+              if (confirmFormReload(formRef.current)) void load();
+            }}
+          >
+            Tải lại nội dung
+          </button>
         </p>
       )}
-      <button type="button" className="secondary" disabled={demo||saving} onClick={()=>void load()}>Tải lại nội dung website đã lưu</button>
+      <button
+        type="button"
+        className="secondary"
+        disabled={demo || saving}
+        onClick={() => {
+          if (confirmFormReload(formRef.current)) void load();
+        }}
+      >
+        Tải lại nội dung website đã lưu
+      </button>
       <form
         onSubmit={(e) => {
           e.preventDefault();

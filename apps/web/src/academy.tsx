@@ -211,7 +211,8 @@ export function AcademyApp({
   };
   const refreshGeneration = useRef(0);
   const [catalogLoaded, setCatalogLoaded] = useState(demo),
-    [classroomsLoaded, setClassroomsLoaded] = useState(demo);
+    [classroomsLoaded, setClassroomsLoaded] = useState(demo),
+    [scheduleError, setScheduleError] = useState("");
   async function refresh() {
     if (demo) return;
     const generation = ++refreshGeneration.current;
@@ -383,19 +384,34 @@ export function AcademyApp({
   };
   useEffect(() => {
     if (!user || demo || !["live", "reports"].includes(tab)) return;
-    const load = () =>
-      void perform(async () => {
+    let active = true,
+      inFlight = false;
+    const load = async () => {
+      if (inFlight) return;
+      inFlight = true;
+      try {
         const [c, m] = await Promise.all([
           api<any[]>("/catalog"),
           api<any[]>("/meetings"),
         ]);
-        setClassrooms(c);
-        setClassroomsLoaded(true);
-        setMeetings(m);
-      });
-    load();
-    const t = setInterval(load, 10000);
-    return () => clearInterval(t);
+        if (active) {
+          setClassrooms(c);
+          setClassroomsLoaded(true);
+          setMeetings(m);
+          setScheduleError("");
+        }
+      } catch (e) {
+        if (active) setScheduleError((e as Error).message);
+      } finally {
+        inFlight = false;
+      }
+    };
+    void load();
+    const timer = setInterval(() => void load(), 10000);
+    return () => {
+      active = false;
+      clearInterval(timer);
+    };
   }, [user, tab]);
   const vip = profile.expires_at && Date.parse(profile.expires_at) > Date.now();
   if (loading)
@@ -443,8 +459,10 @@ export function AcademyApp({
             </button>
             <button
               onClick={() => {
-                setSignupStep(0);
-                goAcademy("/dang-ky" + (location.search || ""));
+                if (goAcademy("/dang-ky" + (location.search || ""))) {
+                  setSignupStep(0);
+                  setChallenge("");
+                }
               }}
             >
               Đăng ký học thử
@@ -869,6 +887,11 @@ export function AcademyApp({
             onRead={readNotifications}
           />
         )}
+        {scheduleError && ["live", "reports"].includes(tab) && (
+          <p role="alert" className="error">
+            Không tải được lịch học: {scheduleError}
+          </p>
+        )}
         {error && (
           <p className="error" role="alert">
             {error}
@@ -1006,6 +1029,7 @@ export function AcademyApp({
         {!routeForbidden && tab === "vip" && (
           <VipPanel
             intentPlan={intentPlan}
+            intentCourse={intentCourse}
             orderId={route.orderId}
             onContinue={() => showCourse(intentCourse)}
             refreshMembership={refresh}
@@ -1178,7 +1202,8 @@ function CourseCard({
           <button
             className="academy-primary"
             onClick={() => {
-              if (open && !focus) void perform(load);
+              if (open) setOpen(false);
+              else if (focus) void perform(load);
               else goAcademy("/hoc/khoa-hoc/" + course.id);
             }}
           >
@@ -1320,6 +1345,7 @@ function VipPanel({
   perform,
   notice,
   intentPlan = "",
+  intentCourse = "",
   onContinue,
   refreshMembership,
   orderId = "",
@@ -1327,6 +1353,10 @@ function VipPanel({
   const [order, setOrder] = useState<any>(null),
     [creating, setCreating] = useState(false),
     [history, setHistory] = useState<any[]>([]);
+  const orderPath = (id: string) =>
+    "/hoc/thanh-toan/" +
+    id +
+    (intentCourse ? "?khoa=" + encodeURIComponent(intentCourse) : "");
   const creatingRef = useRef(false);
   useEffect(() => {
     if (!orderId) {
@@ -1409,13 +1439,13 @@ function VipPanel({
                 void perform(async () => {
                   if (demo) {
                     notice("Đơn hàng mô phỏng; không có thanh toán thật.");
-                    goAcademy("/hoc/thanh-toan/demo-order");
+                    goAcademy(orderPath("demo-order"));
                     return;
                   }
                   const created = await api("/academy/orders", {
                     plan_id: p.id,
                   });
-                  goAcademy("/hoc/thanh-toan/" + created.id);
+                  goAcademy(orderPath(created.id));
                 }).finally(() => {
                   creatingRef.current = false;
                   setCreating(false);
@@ -1524,8 +1554,8 @@ function VipPanel({
         }))}
         actions={(row: any) => (
           <a
-            href={academyHref("/hoc/thanh-toan/" + row.id)}
-            onClick={(e) => academyClick(e, "/hoc/thanh-toan/" + row.id)}
+            href={academyHref(orderPath(row.id))}
+            onClick={(e) => academyClick(e, orderPath(row.id))}
           >
             Xem đơn
           </a>
