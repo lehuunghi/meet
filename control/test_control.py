@@ -18,6 +18,34 @@ class ControlTests(unittest.TestCase):
         response=conn.getresponse();raw=response.read();cookies=response.getheader('Set-Cookie','').split(';')[0];status=response.status;conn.close();return status,json.loads(raw),cookies
     def login(self):
         status,_,cookie=self.request('/api/login',{'email':'owner@example.test','password':'integration-password-123'});self.assertEqual(status,200);return cookie
+    def test_permanent_delete_requires_trash_reauthentication_and_exclusive_job(self):
+        owner=self.login();domain='purge-qa.example.test'
+        _,unit,_=self.request('/api/schools/save',{'name':'Purge QA','domain':domain,'ip':'8.8.8.8','config':{'school_slug':'purge-qa'}},owner);sid=unit['id'];base='/api/schools/'+sid
+        payload={'action':'purge','confirm':domain,'phrase':'XOA VINH VIEN','erase_vps':True,'admin_password':'integration-password-123','ssh':{'fingerprint':'SHA256:'+'a'*43,'password':'root-private-test'}}
+        self.assertEqual(self.request(base+'/lifecycle',payload,owner)[0],400)
+        with c.connect() as db:
+            db.execute("UPDATE schools SET desired_state='deleted',applied_state='suspended' WHERE id=?",(sid,));db.execute("UPDATE jobs SET state='superseded' WHERE school=?",(sid,))
+        for key,value in [('admin_password','wrong'),('phrase',''),('confirm','other.example.test'),('erase_vps',False),('ssh',{'password':'secret','fingerprint':'bad'})]:
+            self.assertEqual(self.request(base+'/lifecycle',{**payload,key:value},owner)[0],400)
+        self.assertEqual(self.request(base+'/action',{'action':'purge','payload':payload},owner)[0],400)
+        status,out,_=self.request(base+'/lifecycle',payload,owner);self.assertEqual(status,200);jid=out['id']
+        self.assertEqual(self.request(base+'/lifecycle',{'action':'restore'},owner)[0],400)
+        self.assertEqual(self.request('/api/purges/'+jid,cookie=owner)[1]['state'],'queued')
+        with c.connect() as db:
+            row=db.execute('SELECT payload FROM jobs WHERE id=?',(jid,)).fetchone();self.assertNotIn('root-private-test',row['payload'])
+            saved=c.decrypt(row['payload'],sid);self.assertEqual(saved['ssh']['password'],'root-private-test');self.assertNotIn('admin_password',saved);self.assertNotIn('code',saved)
+            db.execute('UPDATE schools SET agent_hash=? WHERE id=?',(c.digest('purge-agent-test'),sid))
+        self.assertIsNone(self.request('/agent/poll',{'status':{}},agent='purge-agent-test')[1]['job'])
+        from purge import finalize
+        with c.connect() as db:job=dict(db.execute('SELECT * FROM jobs WHERE id=?',(jid,)).fetchone());before=db.execute('SELECT COUNT(*) FROM schools').fetchone()[0]
+        for group in ('portable-backups','portable-recovery'):
+            path=c.ROOT/group/sid;path.mkdir(parents=True);(path/'encrypted').write_text('test-only')
+        finalize(c,job)
+        with c.connect() as db:
+            self.assertEqual(db.execute('SELECT COUNT(*) FROM schools').fetchone()[0],before-1)
+            self.assertIsNone(db.execute('SELECT id FROM jobs WHERE id=?',(jid,)).fetchone())
+        receipt=self.request('/api/purges/'+jid,cookie=owner)[1];self.assertEqual(receipt['state'],'success');self.assertEqual(receipt['progress'][-1]['percent'],100)
+        self.assertFalse((c.ROOT/'portable-backups'/sid).exists())
     def test_auto_link_save_ack_and_failure_status(self):
         cookie=self.login();data={'name':'Sync QA','domain':'sync-qa.example.test','ip':'8.8.4.4','config':{'platform_mode':'academy','school_slug':'sync-qa','retention_days':30}}
         status,result,_=self.request('/api/academies/save',data,cookie);self.assertEqual(status,200);sid=result['id'];self.assertTrue(result['job_id'])

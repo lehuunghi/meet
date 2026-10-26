@@ -139,6 +139,33 @@ const port = process.env.CONTROL_FEATURE_TEST_PORT || "8094",
     await p
       .getByRole("heading", { name: "Nền tảng & VPS", exact: true })
       .waitFor();
+    await p.locator("#statefilter").selectOption("deleted");
+    await p.getByRole("button", { name: "Chi tiết", exact: true }).click();
+    await p
+      .getByRole("button", { name: "Hoạt động / Xóa", exact: true })
+      .click();
+    await p.locator("#purge-school").waitFor();
+    assert.equal(
+      await p.locator("#purge-school [name=erase_vps]").isChecked(),
+      false,
+    );
+    assert.equal(
+      await p.locator("#purge-school [name=confirm]").getAttribute("required"),
+      "",
+    );
+    assert.equal(
+      await p
+        .locator("#purge-school [name=admin_password]")
+        .getAttribute("type"),
+      "password",
+    );
+    assert.equal(await p.locator("#purge-school [name=code]").count(), 1);
+    assert.equal(
+      await p.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+      true,
+    );
     assert.deepEqual(errors, []);
     console.log(
       "Central UI: installation progress/console, snapshot selection, own credentials and real TOTP/recovery authentication passed (disposable fixtures)",

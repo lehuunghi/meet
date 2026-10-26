@@ -1381,7 +1381,7 @@
               "Đã cập nhật yêu cầu trạng thái. Xem Tổng quan / Lịch sử.",
           );
         };
-        if (state === "deleted")
+        if (state === "deleted") {
           $("#statebuttons").append(
             button(
               "Khôi phục từ thùng rác",
@@ -1389,7 +1389,73 @@
               "primary",
             ),
           );
-        else {
+
+          root.insertAdjacentHTML(
+            "beforeend",
+            '<section><h3>Xóa vĩnh viễn nền tảng và dữ liệu VPS</h3><p class="backup-note">Gỡ containers, cơ sở dữ liệu MySQL/Redis, mã nguồn, cấu hình, khóa và bản sao lưu cục bộ trên VPS. Xóa cấu hình, token và sao lưu di chuyển của đơn vị tại trung tâm. Giữ bản sao lưu/video trên R2, Ubuntu và dịch vụ dùng chung. Không thể khôi phục bằng nút Thùng rác sau khi hoàn tất.</p><form id="purge-school">' +
+              input("confirm", "Nhập domain cần xóa: " + selected.domain) +
+              input("phrase", "Nhập XOA VINH VIEN") +
+              input(
+                "admin_password",
+                "Mật khẩu quản trị trung tâm",
+                "",
+                "password",
+              ) +
+              (me.mfa_enabled
+                ? input("code", "Mã 2FA hoặc mã khôi phục")
+                : "") +
+              "<h4>Xác thực VPS cần gỡ</h4>" +
+              sshFields("purge_") +
+              '<label><input name="erase_vps" type="checkbox" required style="width:auto"> Tôi xác nhận xóa vĩnh viễn cả nền tảng và dữ liệu trên VPS này.</label><button class="primary">Xóa vĩnh viễn cả VPS và trung tâm</button></form></section>',
+          );
+          const purgeForm = $("#purge-school");
+          for (const name of [
+            "confirm",
+            "phrase",
+            "admin_password",
+            "purge_fingerprint",
+          ])
+            purgeForm.elements.namedItem(name).required = true;
+          purgeForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const submit = purgeForm.querySelector("button");
+            submit.disabled = true;
+            try {
+              if (
+                !confirm(
+                  "Xóa vĩnh viễn nền tảng " +
+                    selected.domain +
+                    " và dữ liệu của nó trên VPS " +
+                    selected.ip +
+                    "?",
+                )
+              )
+                return;
+              const v = Object.fromEntries(new FormData(purgeForm)),
+                ssh = {
+                  port: Number(v.purge_port),
+                  fingerprint: v.purge_fingerprint,
+                  password: v.purge_password,
+                  private_key: v.purge_private_key,
+                };
+              const job = await api("schools/" + sid + "/lifecycle", {
+                action: "purge",
+                confirm: v.confirm,
+                phrase: v.phrase,
+                admin_password: v.admin_password,
+                code: v.code || "",
+                erase_vps: new FormData(purgeForm).has("erase_vps"),
+                ssh,
+              });
+              purgeForm.reset();
+              await openJobMonitor(job.id, true);
+            } catch (e) {
+              msg(e.message);
+            } finally {
+              submit.disabled = false;
+            }
+          };
+        } else {
           const b = button(
             state === "active" ? "Tạm ngưng đơn vị" : "Kích hoạt lại",
             () => change(state === "active" ? "suspend" : "resume"),
@@ -2064,6 +2130,24 @@
             "Danh sách R2 quá lớn hoặc chưa đầy đủ; cần kiểm tra lưu trữ.",
           RESTORE_RECOVERY_REQUIRED:
             "Phục hồi bị gián đoạn. Hệ thống giữ khóa ghi; cần kiểm tra bản hoàn tác trước khi mở lại.",
+          PURGED: "Đã xóa vĩnh viễn nền tảng và dữ liệu trên VPS.",
+          PURGE_WRONG_VPS:
+            "VPS không còn thuộc đơn vị này hoặc đã cài nền tảng khác. Không xóa dữ liệu.",
+          PURGE_WRONG_DATABASE: "Cơ sở dữ liệu không khớp đơn vị; không xóa.",
+          PURGE_NOT_SUSPENDED: "VPS chưa tạm ngưng; không gỡ dữ liệu.",
+          PURGE_LIVE_MEETINGS: "Vẫn còn buổi học đang chạy; không gỡ dữ liệu.",
+          PURGE_UNSAFE_PATH:
+            "Phát hiện đường dẫn liên kết/không an toàn; cần kiểm tra VPS.",
+          PURGE_UNOWNED_CONTAINER:
+            "Có container ngoài phạm vi nền tảng; không xóa.",
+          PURGE_UNOWNED_VOLUME:
+            "Volume dữ liệu đang dùng chung hoặc không thuộc nền tảng; không xóa.",
+          PURGE_CUSTOM_PROXY:
+            "Cấu hình web đã tùy chỉnh; kiểm tra trước khi gỡ.",
+          PURGE_COMMAND_FAILED:
+            "Gỡ VPS chưa hoàn tất. Đơn vị vẫn ở thùng rác; kiểm tra rồi thử lại.",
+          PURGE_INTERRUPTED_RETRY:
+            "Tác vụ xóa bị gián đoạn. Giữ đơn vị trong thùng rác; đối chiếu VPS rồi thử lại.",
           CONFIG_R2_REJECTED:
             "R2 chưa được chấp nhận. Kiểm tra đúng Account ID/bucket và khóa S3 có quyền Admin Read & Write để đọc/ghi CORS và lifecycle. Cấu hình mới chưa áp dụng lên website; cấu hình cũ tiếp tục hoạt động.",
           CONFIG_REJECTED:
@@ -2157,7 +2241,11 @@
         "%</small></div>"
       );
     }
-    async function openJobMonitor(id) {
+    async function listAfterPurge() {
+      await list();
+      msg("Đã gỡ nền tảng và dữ liệu VPS, xóa đơn vị khỏi trung tâm.");
+    }
+    async function openJobMonitor(id, purge = false) {
       const sid = selected.id;
       let dialog = $("#job-monitor");
       if (dialog) dialog.close();
@@ -2168,7 +2256,7 @@
         document.body.append(dialog);
       }
       let timer;
-      dialog.dataset.job=id;
+      dialog.dataset.job = id;
       dialog.innerHTML =
         '<h2>Màn hình theo dõi tác vụ</h2><p>Tiến độ theo giai đoạn thực tế, không phải ước lượng thời gian. Nhật ký chỉ chứa thông báo đã lọc; mật khẩu và token không hiển thị.</p><div id="job-state"></div><pre class="job-console" id="job-console" aria-label="Nhật ký cài đặt"></pre>';
       dialog.append(button("Đóng màn hình", () => dialog.close()));
@@ -2176,9 +2264,11 @@
       dialog.showModal();
       const load = async () => {
         try {
-          const list = await api("schools/" + sid + "/jobs");
-          if (!dialog.open || dialog.dataset.job!==id) return;
-          const job = list.find((j) => j.id === id);
+          const list = purge ? null : await api("schools/" + sid + "/jobs");
+          const job = purge
+            ? await api("purges/" + id)
+            : list.find((j) => j.id === id);
+          if (!dialog.open || dialog.dataset.job !== id) return;
           if (!job) throw Error("Không tìm thấy tác vụ");
           $("#job-state").innerHTML =
             jobBar(job) +
@@ -2196,6 +2286,13 @@
                   e.label,
               )
               .join("\n") || "Đang chờ tác vụ bắt đầu.";
+          if (purge && job.state === "success") {
+            selected = null;
+            clearTimeout(syncTimer);
+            if ($("#modal").open) $("#modal").close();
+            history.replaceState(null, "", location.pathname);
+            await listAfterPurge();
+          }
           if (job.state === "failed")
             $("#job-console").textContent +=
               "\nDừng an toàn: " + jobMessage(JSON.parse(job.result).code);
@@ -2208,7 +2305,8 @@
           )
             timer = setTimeout(() => void load(), 2000);
         } catch (e) {
-          if (dialog.open && dialog.dataset.job===id) $("#job-state").textContent = e.message;
+          if (dialog.open && dialog.dataset.job === id)
+            $("#job-state").textContent = e.message;
         }
       };
       await load();
@@ -2344,7 +2442,7 @@
         cell.append(
           button(
             j.action === "provision" ? "Mở màn hình cài đặt" : "Xem tiến độ",
-            () => openJobMonitor(j.id),
+            () => openJobMonitor(j.id, j.action === "purge"),
           ),
         );
       }

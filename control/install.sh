@@ -19,7 +19,7 @@ apt-get install -y python3 python3-cryptography python3-paramiko caddy
 id meet-control >/dev/null 2>&1 || useradd --system --home /var/lib/meet-control --shell /usr/sbin/nologin meet-control
 install -d -m 0755 /opt/meet-control
 install -d -m 0700 -o meet-control -g meet-control /var/lib/meet-control
-install -m 0644 "$(dirname "$0")"/{server.py,provision.py,relocation.py,index.html,workspace.js} /opt/meet-control/
+install -m 0644 "$(dirname "$0")"/{server.py,provision.py,relocation.py,purge.py,purge_remote.py,index.html,workspace.js} /opt/meet-control/
 umask 077
 printf '%s' "$password" > /var/lib/meet-control/bootstrap-password
 unset password

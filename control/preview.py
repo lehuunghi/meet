@@ -22,6 +22,8 @@ if os.environ.get('CONTROL_FEATURE_FIXTURES')=='1':
         db.execute("UPDATE schools SET desired_state='suspended',applied_state='suspended',agent_hash=?,status=? WHERE id=?",(c.digest('fixture-only-agent'),json.dumps({'version':'0.13.0','live':0,'control_protocol':3}),sid))
         install=c.queue(db,sid,'provision',{},1);db.execute("UPDATE jobs SET state='running' WHERE id=?",(install,));c.progress(db,install,'ssh');c.progress(db,install,'images')
         listing=c.queue(db,sid,'backup-list',{},1);db.execute("UPDATE jobs SET state='success',result=? WHERE id=?",(json.dumps({'code':'OK','backups':[{'object_key':'backups/2026/qa.meet','bytes':4000,'modified':'2026-10-27T00:00:00Z'}]}),listing))
+        trash='2'*32
+        db.execute("INSERT INTO schools(id,name,domain,ip,config,desired_state,applied_state) VALUES(?,?,?,?,?,'deleted','suspended')",(trash,'Trash QA','trash.example.test','8.8.4.4',c.encrypt(cfg,trash)))
 
 class Preview(c.Handler):
     def send_header(self,key,value):

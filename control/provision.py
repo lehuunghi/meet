@@ -20,6 +20,7 @@ def approved_revision():
     return target
 
 def failure_code(error):
+    if isinstance(error,ValueError) and re.fullmatch(r'PURGE_[A-Z_]{1,60}',str(error)):return str(error)
     if isinstance(error,paramiko.AuthenticationException):return 'SSH_AUTH_FAILED'
     if isinstance(error,TimeoutError):return 'SSH_TIMEOUT'
     known={'SSH_HOST_KEY_MISMATCH','INVALID_SSH_KEY','CI_NOT_READY','INVALID_RELEASE','EXISTING_INSTALLATION','AGENT_INSTALL_FAILED','PROVISION_TIMEOUT','PROVISION_FAILED','DNS_NOT_READY','SNAPSHOT_INVALID','SNAPSHOT_TOO_LARGE','BACKUP_DISK_FULL','WRONG_SOURCE_SCHOOL','BACKUP_MISSING','RESTORE_VERIFY_FAILED','WRONG_TARGET_VPS','TARGET_AGENT_NOT_READY','RELOCATION_REMOTE_FAILED','REMOTE_TIMEOUT'}
@@ -101,24 +102,28 @@ def start_worker(c):
     # A single control service owns these SSH jobs. A restart cannot safely
     # replay an interrupted install/restore; retain data and require review.
     with c.connect() as db:
-        for interrupted in db.execute("SELECT * FROM jobs WHERE action IN ('provision','relocate') AND state='running'").fetchall():
+        for interrupted in db.execute("SELECT * FROM jobs WHERE action IN ('provision','relocate','purge') AND state='running'").fetchall():
             if interrupted['action']=='relocate':
                 payload=c.decrypt(interrupted['payload'],interrupted['school'])
                 phase=payload['phase'];fallback='cutover_failed' if phase=='cutover' else 'backup_ready' if phase=='prepare' else 'failed'
                 db.execute('UPDATE relocations SET state=? WHERE id=?',(fallback,payload['relocation_id']))
-            db.execute("UPDATE jobs SET state='failed',result=?,payload=? WHERE id=?",(json.dumps({'code':'PROVISION_INTERRUPTED_REVIEW_VPS'}),c.encrypt({},interrupted['school']),interrupted['id']))
+            if interrupted['action']=='purge':db.execute("UPDATE purge_receipts SET state='failed',code='PURGE_INTERRUPTED_RETRY',updated=? WHERE id=?",(int(time.time()),interrupted['id']))
+            db.execute("UPDATE jobs SET state='failed',result=?,payload=? WHERE id=?",(json.dumps({'code':'PURGE_INTERRUPTED_RETRY' if interrupted['action']=='purge' else 'PROVISION_INTERRUPTED_REVIEW_VPS'}),c.encrypt({},interrupted['school']),interrupted['id']))
     def loop():
         while True:
             job=None
             try:
                 with c.connect() as db:
                     db.execute('BEGIN IMMEDIATE')
-                    job=db.execute("SELECT * FROM jobs WHERE action IN ('provision','relocate') AND state='queued' ORDER BY created LIMIT 1").fetchone()
+                    job=db.execute("SELECT * FROM jobs WHERE action IN ('provision','relocate','purge') AND state='queued' ORDER BY created LIMIT 1").fetchone()
                     if job:db.execute("UPDATE jobs SET state='running',lease_until=? WHERE id=?",(int(time.time())+7200,job['id']))
                     db.execute("UPDATE jobs SET state='failed',result=? WHERE action='provision' AND state='running' AND lease_until<?",(json.dumps({'code':'PROVISION_INTERRUPTED_REVIEW_VPS'}),int(time.time())))
                 if job:
                     payload=c.decrypt(job['payload'],job['school'])
                     try:
+                        if job['action']=='purge':
+                            from purge import perform,finalize
+                            code=perform(c,job,payload);finalize(c,job);continue
                         if job['action']=='relocate':
                             from relocation import perform
                             code=perform(c,job,payload)
@@ -134,6 +139,7 @@ def start_worker(c):
                             school=db.execute('SELECT applied,agent_hash FROM schools WHERE id=?',(job['school'],)).fetchone()
                             if school['agent_hash'] and school['applied']>=job['revision']:code='OK';c.progress(db,job['id'],'done')
                         db.execute('UPDATE jobs SET state=?,result=?,payload=? WHERE id=?',(state,json.dumps({'code':code}),c.encrypt({},job['school']),job['id']))
+                        if job['action']=='purge':db.execute('UPDATE purge_receipts SET state=?,code=?,updated=? WHERE id=?',(state,code,int(time.time()),job['id']))
                         c.audit(db,'provisioner',state,job['school'])
             except Exception:pass
             time.sleep(5)

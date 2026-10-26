@@ -52,6 +52,7 @@ jobs:
       - uses: actions/checkout@v4
       - run: sudo apt-get update && sudo apt-get install -y python3-cryptography python3-paramiko
       - run: /usr/bin/python3 control/test_control.py
+      - run: /usr/bin/python3 control/test_purge.py
       - run: /usr/bin/python3 control/test_agent.py
       - run: /usr/bin/python3 deploy/managed_restore_test.py
       - run: /usr/bin/python3 deploy/relocate_test.py
@@ -178,6 +179,9 @@ jobs:
       - run: sudo --preserve-env=APP_ORIGIN,MEET_DISPOSABLE_BACKUP_TEST python3 deploy/update_integration.py
         env:
           APP_ORIGIN: http://localhost:8080
+          MEET_DISPOSABLE_BACKUP_TEST: 'true'
+      - run: sudo --preserve-env=MEET_DISPOSABLE_BACKUP_TEST python3 control/purge_integration.py
+        env:
           MEET_DISPOSABLE_BACKUP_TEST: 'true'
       - run: docker compose -f deploy/compose.yaml down -v
         if: always()

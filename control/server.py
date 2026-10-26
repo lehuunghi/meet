@@ -8,9 +8,9 @@ from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 ROOT=Path(os.environ.get('MEET_CONTROL_DATA','/var/lib/meet-control'))
 ORIGIN=os.environ.get('MEET_CONTROL_ORIGIN','https://admin.tn.edu.vn').rstrip('/')
 HOST=re.compile(r'(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,63}')
-ACTIONS={'configure','check','update','backup','domain','accounts','provision','lifecycle','relocate','backup-list','restore'}
+ACTIONS={'configure','check','update','backup','domain','accounts','provision','lifecycle','relocate','backup-list','restore','purge'}
 
-STAGES={'queued':(0,'Đang chờ xử lý'),'release':(3,'Kiểm tra phiên bản đã qua kiểm thử'),'dns':(8,'Kiểm tra DNS'),'ssh':(15,'Xác thực SSH và fingerprint'),'system':(22,'Cài thư viện hệ điều hành'),'source':(30,'Tải mã nguồn'),'docker':(42,'Chuẩn bị Docker và dịch vụ'),'images':(55,'Dựng ứng dụng'),'database':(72,'Khởi tạo cơ sở dữ liệu'),'https':(84,'Kiểm tra HTTPS'),'agent':(92,'Liên kết quản trị'),'configure':(96,'Chờ VPS áp dụng cấu hình'),'verify':(98,'Xác minh kết quả'),'snapshot_download':(20,'Tải bản sao lưu mã hóa'),'snapshot_verify':(35,'Xác minh nội dung và đúng đơn vị'),'rollback_backup':(60,'Tạo và xác minh bản hoàn tác'),'restore_data':(75,'Phục hồi dữ liệu và cấu hình'),'restore_check':(94,'Kiểm tra sau phục hồi'),'done':(100,'Hoàn tất')}
+STAGES={'queued':(0,'Đang chờ xử lý'),'release':(3,'Kiểm tra phiên bản đã qua kiểm thử'),'dns':(8,'Kiểm tra DNS'),'ssh':(15,'Xác thực SSH và fingerprint'),'system':(22,'Cài thư viện hệ điều hành'),'source':(30,'Tải mã nguồn'),'docker':(42,'Chuẩn bị Docker và dịch vụ'),'images':(55,'Dựng ứng dụng'),'database':(72,'Khởi tạo cơ sở dữ liệu'),'https':(84,'Kiểm tra HTTPS'),'agent':(92,'Liên kết quản trị'),'configure':(96,'Chờ VPS áp dụng cấu hình'),'verify':(98,'Xác minh kết quả'),'snapshot_download':(20,'Tải bản sao lưu mã hóa'),'snapshot_verify':(35,'Xác minh nội dung và đúng đơn vị'),'rollback_backup':(60,'Tạo và xác minh bản hoàn tác'),'restore_data':(75,'Phục hồi dữ liệu và cấu hình'),'restore_check':(94,'Kiểm tra sau phục hồi'),'purge_verified':(20,'Đã đối chiếu đúng VPS và đơn vị'),'purge_storage':(50,'Gỡ dịch vụ và dữ liệu MySQL/Redis'),'purge_files':(75,'Xóa mã nguồn và cấu hình trên VPS'),'purge_complete':(95,'VPS đã gỡ xong; đang xóa đơn vị khỏi trung tâm'),'done':(100,'Hoàn tất')}
 BACKUP_KEY=re.compile(r'(?:backups/[a-zA-Z0-9/_-]+\.meet|local:[a-f0-9-]{36}\.meet)')
 def progress(db,job,stage):
     if stage not in STAGES:raise ValueError('Giai đoạn không hợp lệ')
@@ -42,6 +42,7 @@ def init():
         db.executescript('''
         CREATE TABLE IF NOT EXISTS admins(id TEXT PRIMARY KEY,email TEXT UNIQUE NOT NULL,hash TEXT NOT NULL,role TEXT NOT NULL,active INTEGER NOT NULL DEFAULT 1);
         CREATE TABLE IF NOT EXISTS job_events(id INTEGER PRIMARY KEY,job TEXT NOT NULL REFERENCES jobs(id),stage TEXT NOT NULL,percent INTEGER NOT NULL,at INTEGER NOT NULL);
+        CREATE TABLE IF NOT EXISTS purge_receipts(id TEXT PRIMARY KEY,school_id TEXT NOT NULL,domain TEXT NOT NULL,state TEXT NOT NULL,code TEXT NOT NULL DEFAULT '',progress TEXT NOT NULL DEFAULT '[]',created INTEGER NOT NULL,updated INTEGER NOT NULL);
         CREATE TABLE IF NOT EXISTS sessions(hash TEXT PRIMARY KEY,admin TEXT NOT NULL REFERENCES admins(id),expires INTEGER NOT NULL);
         CREATE TABLE IF NOT EXISTS attempts(key TEXT PRIMARY KEY,n INTEGER NOT NULL,until INTEGER NOT NULL);
         CREATE TABLE IF NOT EXISTS schools(id TEXT PRIMARY KEY,name TEXT NOT NULL,domain TEXT UNIQUE NOT NULL,ip TEXT NOT NULL,config TEXT NOT NULL,revision INTEGER NOT NULL DEFAULT 1,applied INTEGER NOT NULL DEFAULT 0,agent_hash TEXT UNIQUE,enroll_hash TEXT,enroll_expires INTEGER,seen INTEGER NOT NULL DEFAULT 0,status TEXT NOT NULL DEFAULT '{}');
@@ -251,7 +252,7 @@ class Handler(BaseHTTPRequestHandler):
         if self.path=='/agent/poll':
             if row['desired_state']=='deleted':return {'job':None}
             db.execute("UPDATE jobs SET state='failed',result=? WHERE school=? AND state='running' AND lease_until<? AND attempts>=5",(json.dumps({'error':'Agent không xác nhận sau 5 lượt'}),sid,now))
-            job=db.execute("SELECT * FROM jobs WHERE school=? AND action NOT IN ('provision','relocate') AND ((state='queued' AND COALESCE(lease_until,0)<?) OR (state='running' AND lease_until<? AND attempts<5)) ORDER BY created,rowid LIMIT 1",(sid,now,now)).fetchone()
+            job=db.execute("SELECT * FROM jobs WHERE school=? AND action NOT IN ('provision','relocate','purge') AND ((state='queued' AND COALESCE(lease_until,0)<?) OR (state='running' AND lease_until<? AND attempts<5)) ORDER BY created,rowid LIMIT 1",(sid,now,now)).fetchone()
             if not job:return {'job':None}
             lease=secrets.token_urlsafe(32);db.execute("UPDATE jobs SET state='running',lease=?,lease_until=?,attempts=attempts+1 WHERE id=?",(digest(lease),now+1800,job['id']))
             return {'job':{'id':job['id'],'lease':lease,'action':job['action'],'revision':job['revision'],'payload':decrypt(job['payload'],sid)}}
@@ -371,6 +372,22 @@ class Handler(BaseHTTPRequestHandler):
         if op=='relocations':return self.relocation_request(db,user,row,data)
         if db.execute("SELECT 1 FROM relocations WHERE school=? AND state IN ('backup_ready','preparing','prepared','cutting_over','cutover_failed')",(sid,)).fetchone():raise ValueError('Đang chuyển VPS; không đổi trạng thái lúc này')
         action=data.get('action');state=row['desired_state'];connected=bool(row['seen'] or row['agent_hash'])
+        if db.execute("SELECT 1 FROM jobs WHERE school=? AND action='purge' AND state IN ('queued','running')",(sid,)).fetchone():raise ValueError('Đang xóa vĩnh viễn; không đổi trạng thái lúc này')
+        if action=='purge':
+            if state!='deleted' or row['applied_state']!='suspended':raise ValueError('Chỉ xóa vĩnh viễn đơn vị đã tạm ngưng và nằm trong thùng rác')
+            if data.get('confirm')!=row['domain'] or data.get('phrase')!='XOA VINH VIEN' or data.get('erase_vps') is not True:raise ValueError('Nhập domain và XOA VINH VIEN, xác nhận gỡ dữ liệu VPS')
+            if not hmac.compare_digest(password_hash(str(data.get('admin_password','')),user['hash'].split(':')[0]),user['hash']):raise ValueError('Mật khẩu quản trị trung tâm không đúng')
+            if user['mfa'] and not verify_mfa(db,user,str(data.get('code',''))):raise ValueError('Mã 2FA hoặc mã khôi phục không đúng')
+            if db.execute("SELECT 1 FROM jobs WHERE school=? AND state IN ('queued','running')",(sid,)).fetchone():raise ValueError('Chờ tác vụ khác hoàn tất')
+            ssh=data.get('ssh',{})
+            if not isinstance(ssh,dict) or not re.fullmatch(r'SHA256:[A-Za-z0-9+/]{43}',str(ssh.get('fingerprint',''))):raise ValueError('Cần fingerprint SSH đã đối chiếu')
+            port=int(ssh.get('port',22))
+            if not 1<=port<=65535 or not (ssh.get('password') or ssh.get('private_key')):raise ValueError('Cần thông tin root / khóa SSH để gỡ nền tảng')
+            cfg=decrypt(row['config'],sid);credential={k:str(ssh.get(k,'')) for k in ('fingerprint','password','private_key')};credential['port']=port
+            payload={'school':sid,'domain':row['domain'],'origin':ORIGIN,'slug':cfg.get('school_slug') or 'school-'+sid[:8],'ip':row['ip'],'ssh':credential}
+            job=queue(db,sid,'purge',payload,row['revision']);progress(db,job,'queued')
+            db.execute("INSERT INTO purge_receipts(id,school_id,domain,state,created,updated) VALUES(?,?,?,'queued',?,?)",(job,sid,row['domain'],now,now));audit(db,actor,'school.purge.request',sid)
+            return {'id':job,'state':'queued'}
         if action=='archive':
             if data.get('confirm')!=row['domain']:raise ValueError('Nhập đúng domain để xác nhận xóa')
             if state!='suspended' or row['applied_state']!='suspended':raise ValueError('Tạm ngưng thành công trước khi xóa')
@@ -397,7 +414,15 @@ class Handler(BaseHTTPRequestHandler):
     def admin(self,db,user,data):
         path=self.path;actor=user['id']
         readonly=path in ('/api/me','/api/audit','/api/schools') or bool(re.fullmatch(r'/api/schools/[a-f0-9]{32}/(config|jobs|readiness|keys|relocations)',path))
+        if re.fullmatch(r'/api/purges/[a-f0-9]{32}',path):readonly=True
         if self.command=='GET' and not readonly and path!='/api/admins':raise ValueError('POST required')
+        purge_match=re.fullmatch(r'/api/purges/([a-f0-9]{32})',path)
+        if purge_match:
+            if user['role']!='owner' or self.command!='GET':raise ValueError('Chỉ chủ hệ thống được xem kết quả xóa')
+            receipt=db.execute('SELECT * FROM purge_receipts WHERE id=?',(purge_match[1],)).fetchone()
+            if not receipt:raise ValueError('Không tìm thấy tác vụ xóa')
+            job=db.execute('SELECT * FROM jobs WHERE id=?',(receipt['id'],)).fetchone()
+            return {'id':receipt['id'],'action':'purge','state':job['state'] if job else receipt['state'],'result':job['result'] if job else json.dumps({'code':receipt['code']}),'progress':job_progress(db,job['id']) if job else json.loads(receipt['progress'])}
         if path=='/api/logout':db.execute('DELETE FROM sessions WHERE admin=?',(actor,));return {'ok':True}
         if path=='/api/me':return {'id':user['id'],'email':user['email'],'role':user['role'],'mfa_enabled':bool(user['mfa'])}
         if path=='/api/profile':
@@ -504,7 +529,7 @@ class Handler(BaseHTTPRequestHandler):
                 return output
             if op=='action':
                 action=data['action'];payload=data.get('payload',{})
-                if action in ('lifecycle','relocate'):raise ValueError('Dùng chức năng quản lý riêng')
+                if action in ('lifecycle','relocate','purge'):raise ValueError('Dùng chức năng quản lý riêng')
                 if db.execute("SELECT 1 FROM relocations WHERE school=? AND state IN ('backup_ready','preparing','prepared','cutting_over','cutover_failed')",(sid,)).fetchone():raise ValueError('Đang chuyển VPS; chờ hoàn tất')
                 if not isinstance(payload,dict):raise ValueError('Nội dung tác vụ không hợp lệ')
                 if action=='academy':raise ValueError('Quản lý khóa học và học viên tại website của đơn vị')
