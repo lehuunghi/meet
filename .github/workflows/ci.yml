@@ -53,6 +53,7 @@ jobs:
       - run: sudo apt-get update && sudo apt-get install -y python3-cryptography python3-paramiko
       - run: /usr/bin/python3 control/test_control.py
       - run: /usr/bin/python3 control/test_agent.py
+      - run: /usr/bin/python3 deploy/managed_restore_test.py
       - run: /usr/bin/python3 deploy/relocate_test.py
       - run: /usr/bin/python3 -m py_compile control/server.py control/agent.py control/provision.py
       - run: bash -n control/install.sh control/install-agent.sh deploy/install.sh
@@ -117,6 +118,7 @@ jobs:
       - run: npx playwright test
       - run: sudo apt-get update && sudo apt-get install -y python3-cryptography
       - run: node ../../control/test_ui.cjs
+      - run: node ../../control/test_features_ui.cjs
         env:
           CONTROL_TEST_PYTHON: /usr/bin/python3
       - uses: actions/upload-artifact@v4
@@ -158,6 +160,10 @@ jobs:
           PY
       - run: sudo apt-get update && sudo apt-get install -y python3-cryptography
       - run: sudo --preserve-env=APP_ORIGIN,MEET_DISPOSABLE_BACKUP_TEST python3 deploy/academy_bootstrap_integration.py
+        env:
+          APP_ORIGIN: http://localhost:8080
+          MEET_DISPOSABLE_BACKUP_TEST: 'true'
+      - run: sudo --preserve-env=APP_ORIGIN,MEET_DISPOSABLE_BACKUP_TEST python3 deploy/managed_restore_integration.py
         env:
           APP_ORIGIN: http://localhost:8080
           MEET_DISPOSABLE_BACKUP_TEST: 'true'

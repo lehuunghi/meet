@@ -76,6 +76,37 @@ class ControlTests(unittest.TestCase):
         token=challenge();self.assertEqual(self.request('/api/login/2fa',{'challenge':token,'code':codes[0]})[0],401)
         self.assertEqual(self.request('/api/security',{'action':'disable','password':password,'code':codes[2]},second)[0],200)
         self.assertEqual(self.request('/api/login',{'email':email,'password':password})[0],200)
+    def test_own_credentials_change_requires_password_and_invalidates_session(self):
+        owner=self.login();email='profile-change@example.test';password='old-password-12345'
+        self.assertEqual(self.request('/api/admins',{'email':email,'password':password,'role':'viewer','active':True},owner)[0],200)
+        _,_,cookie=self.request('/api/login',{'email':email,'password':password})
+        self.assertEqual(self.request('/api/profile',{'current_password':'wrong','email':'new-profile@example.test'},cookie)[0],400)
+        self.assertEqual(self.request('/api/profile',{'current_password':password,'new_password':'short'},cookie)[0],400)
+        self.assertEqual(self.request('/api/profile',{'current_password':password,'email':'new-profile@example.test','new_password':'new-password-12345'},cookie)[0],200)
+        self.assertEqual(self.request('/api/me',cookie=cookie)[0],401)
+        self.assertEqual(self.request('/api/login',{'email':email,'password':password})[0],401)
+        status,_,new=self.request('/api/login',{'email':'new-profile@example.test','password':'new-password-12345'});self.assertEqual(status,200)
+        self.assertEqual(self.request('/api/me',cookie=new)[1]['role'],'viewer')
+    def test_progress_and_guarded_restore_queue_do_not_retain_credentials(self):
+        owner=self.login();_,unit,_=self.request('/api/schools/save',{'name':'Restore QA','domain':'restore-qa.example.test','ip':'8.8.8.8','config':{}},owner);sid=unit['id']
+        _,issued,_=self.request('/api/schools/'+sid+'/enroll',{},owner);_,issued,_=self.request('/agent/enroll',{'token':issued['token']});agent=issued['token']
+        _,out,_=self.request('/agent/poll',{'status':{'control_protocol':3,'live':0}},agent=agent);job=out['job']
+        self.assertEqual(self.request('/agent/progress',{'id':job['id'],'lease':'bad','stage':'ssh'},agent=agent)[0],400)
+        for stage in ('ssh','database','source'):
+            self.assertEqual(self.request('/agent/progress',{'id':job['id'],'lease':job['lease'],'stage':stage},agent=agent)[0],200)
+        self.assertEqual(self.request('/agent/progress',{'id':job['id'],'lease':job['lease'],'stage':'password=PRIVATE'},agent=agent)[0],400)
+        rows=self.request('/api/schools/'+sid+'/jobs',cookie=owner)[1];self.assertEqual(rows[0]['progress'][-1]['percent'],72)
+        self.request('/agent/ack',{'id':job['id'],'lease':job['lease'],'state':'success','code':'OK'},agent=agent)
+        _,out,_=self.request('/api/schools/'+sid+'/action',{'action':'backup-list'},owner)
+        _,out,_=self.request('/agent/poll',{'status':{'control_protocol':3,'live':0}},agent=agent);job=out['job'];key='backups/updates/'+'a'*36+'.meet'
+        self.assertEqual(self.request('/agent/ack',{'id':job['id'],'lease':job['lease'],'state':'success','code':'OK','backups':[{'object_key':key,'bytes':400,'modified':'2026-10-27T00:00:00Z'}]},agent=agent)[0],200)
+        action='/api/schools/'+sid+'/action';payload={'object_key':key,'confirm':'restore-qa.example.test','password':'integration-password-123'}
+        self.assertEqual(self.request(action,{'action':'restore','payload':payload},owner)[0],400)
+        with c.connect() as db:db.execute("UPDATE schools SET desired_state='suspended',applied_state='suspended' WHERE id=?",(sid,))
+        self.assertEqual(self.request(action,{'action':'restore','payload':{**payload,'object_key':'backups/foreign.meet'}},owner)[0],400)
+        status,out,_=self.request(action,{'action':'restore','payload':payload},owner);self.assertEqual(status,200)
+        with c.connect() as db:
+            saved=db.execute('SELECT payload FROM jobs WHERE id=?',(out['id'],)).fetchone();self.assertEqual(c.decrypt(saved['payload'],sid),{'object_key':key})
     def test_vault_scope_and_mask_merge(self):
         value=c.encrypt({'token':'private'},'school-a');self.assertEqual(c.decrypt(value,'school-a')['token'],'private')
         with self.assertRaises(Exception):c.decrypt(value,'school-b')

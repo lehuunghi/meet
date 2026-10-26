@@ -44,7 +44,7 @@ def unseal(raw, key):
     pos = len(MAGIC)
     return AESGCM(key).decrypt(raw[pos:pos+12], raw[pos+12:], MAGIC)
 
-def transfer(method, config, object_key, body=b''):
+def transfer(method, config, object_key, body=b'', query=''):
     # AWS Signature V4. Credentials are read from a private file, never command arguments.
     account = config['account_id']
     if len(account) != 32 or any(c not in '0123456789abcdefABCDEF' for c in account):
@@ -56,7 +56,7 @@ def transfer(method, config, object_key, body=b''):
     payload = hashlib.sha256(body).hexdigest()
     names = 'host;x-amz-content-sha256;x-amz-date'
     headers = 'host:' + host + '\nx-amz-content-sha256:' + payload + '\nx-amz-date:' + stamp + '\n'
-    canonical = '\n'.join([method, path, '', headers, names, payload])
+    canonical = '\n'.join([method, path, query, headers, names, payload])
     scope = day + '/auto/s3/aws4_request'
     to_sign = '\n'.join(['AWS4-HMAC-SHA256', stamp, scope, hashlib.sha256(canonical.encode()).hexdigest()])
     signing = ('AWS4' + config['secret_access_key']).encode()
@@ -64,7 +64,7 @@ def transfer(method, config, object_key, body=b''):
         signing = hmac.new(signing, value.encode(), hashlib.sha256).digest()
     signature = hmac.new(signing, to_sign.encode(), hashlib.sha256).hexdigest()
     auth = 'AWS4-HMAC-SHA256 Credential=' + config['access_key_id'] + '/' + scope + ', SignedHeaders=' + names + ', Signature=' + signature
-    req = urllib.request.Request('https://' + host + path, data=body if method == 'PUT' else None, method=method, headers={'Authorization': auth, 'x-amz-date': stamp, 'x-amz-content-sha256': payload})
+    req = urllib.request.Request('https://' + host + path + ('?' + query if query else ''), data=body if method == 'PUT' else None, method=method, headers={'Authorization': auth, 'x-amz-date': stamp, 'x-amz-content-sha256': payload})
     with urllib.request.urlopen(req, timeout=300) as response:
         result = response.read(MAX_BYTES + 1)
     if len(result) > MAX_BYTES:

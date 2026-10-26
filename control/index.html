@@ -516,6 +516,42 @@
         padding: 0;
       }
     }
+    .job-progress {
+      display: grid;
+      gap: 6px;
+      min-width: 160px;
+    }
+    .job-progress progress {
+      width: 100%;
+      height: 12px;
+      accent-color: #2563eb;
+    }
+    .job-console {
+      background: #101827;
+      color: #dce7fb;
+      border-radius: 10px;
+      padding: 16px;
+      max-height: 360px;
+      overflow: auto;
+      white-space: pre-wrap;
+      font:
+        12px/1.8 ui-monospace,
+        monospace;
+    }
+    .job-monitor {
+      width: min(780px, 92vw);
+      border: 1px solid #dbe3ef;
+      border-radius: 14px;
+      padding: 24px;
+    }
+    .job-monitor::backdrop {
+      background: #14213d66;
+    }
+    .backup-note {
+      border-left: 3px solid #d09a30;
+      padding: 12px;
+      background: #fff9e9;
+    }
   </style>
   <header>
     <h1>m·meet <small>Quản trị trung tâm</small></h1>
@@ -638,6 +674,7 @@
       };
     }
     async function security() {
+      me = await api("me");
       const d = $("#modal");
       d.innerHTML =
         "<h2>Bảo mật tài khoản</h2><p>2FA: " +
@@ -650,6 +687,44 @@
         "</button></form>";
       d.append(button("Đóng", () => d.close()));
       if (!d.open) d.showModal();
+      const profile = document.createElement("section");
+      profile.innerHTML =
+        '<h3>Email & mật khẩu đăng nhập trung tâm</h3><p>Thay đổi này chỉ áp dụng tài khoản trung tâm của bạn. Sau khi lưu, đăng nhập lại bằng thông tin mới.</p><form id="own-profile">' +
+        input("email", "Email quản trị", me.email, "email") +
+        input(
+          "current_password",
+          "Mật khẩu hiện tại để xác nhận",
+          "",
+          "password",
+        ) +
+        input(
+          "new_password",
+          "Mật khẩu mới (để trống nếu giữ nguyên)",
+          "",
+          "password",
+        ) +
+        (me.mfa_enabled
+          ? input("code", "Mã 2FA / khôi phục xác nhận thay đổi")
+          : "") +
+        '<button class="primary">Lưu email / mật khẩu</button></form>';
+      d.insertBefore(profile, d.querySelector("#security"));
+      $("#own-profile").onsubmit = async (e) => {
+        e.preventDefault();
+        const form = e.currentTarget,
+          submit = form.querySelector("button");
+        submit.disabled = true;
+        try {
+          await api("profile", Object.fromEntries(new FormData(form)));
+          form.reset();
+          d.close();
+          login();
+          msg("Đã cập nhật. Đăng nhập lại bằng email và mật khẩu mới.");
+        } catch (e) {
+          msg(e.message);
+        } finally {
+          submit.disabled = false;
+        }
+      };
       $("#security").onsubmit = async (e) => {
         e.preventDefault();
         const values = Object.fromEntries(new FormData(e.target));
@@ -774,13 +849,13 @@
             initial_admin: {},
             school_slug: "",
             platform_mode: mode,
-
           };
       tab = selected ? "overview" : "general";
       draw();
     }
     function syncLabel(s) {
-      if ((s.sync?.applied ?? s.applied) === (s.sync?.revision ?? s.revision)) return "Đã đồng bộ";
+      if ((s.sync?.applied ?? s.applied) === (s.sync?.revision ?? s.revision))
+        return "Đã đồng bộ";
       if (s.sync?.state === "failed") return "Đồng bộ thất bại";
       if (!s.sync?.linked) return "Chờ cài đặt / liên kết VPS";
       if (!s.sync?.online) return "VPS mất kết nối";
@@ -791,32 +866,47 @@
       const root = $("#sync-status");
       if (!root || !selected) return;
       const s = selected;
-      root.innerHTML = '<strong>' + esc(syncLabel(s)) + '</strong> · ' +
-        (s.sync?.applied ?? s.applied) + '/' + (s.sync?.revision ?? s.revision) + '<p class="muted">' +
-        (s.sync?.linked ? 'API quản trị đã liên kết tự động qua HTTPS. Lưu tại trung tâm sẽ tự gửi xuống website; không cần tạo API key thủ công.' : 'Liên kết API bảo mật được tạo tự động khi cài VPS.') + '</p>';
-      if (s.sync?.state === 'failed' && s.sync.applied !== s.sync.revision) {
-        const error = document.createElement('p');
-        error.textContent = jobMessage(s.sync.code || 'APPLY_FAILED');
+      root.innerHTML =
+        "<strong>" +
+        esc(syncLabel(s)) +
+        "</strong> · " +
+        (s.sync?.applied ?? s.applied) +
+        "/" +
+        (s.sync?.revision ?? s.revision) +
+        '<p class="muted">' +
+        (s.sync?.linked
+          ? "API quản trị đã liên kết tự động qua HTTPS. Lưu tại trung tâm sẽ tự gửi xuống website; không cần tạo API key thủ công."
+          : "Liên kết API bảo mật được tạo tự động khi cài VPS.") +
+        "</p>";
+      if (s.sync?.state === "failed" && s.sync.applied !== s.sync.revision) {
+        const error = document.createElement("p");
+        error.textContent = jobMessage(s.sync.code || "APPLY_FAILED");
         root.append(error);
-        if (me.role !== 'viewer') root.append(button('Thử đồng bộ lại', async () => {
-          if (dirty) throw Error('Lưu thay đổi đang sửa trước khi đồng bộ lại.');
-          await action('configure');
-          await monitorSync(s.id);
-        }));
+        if (me.role !== "viewer")
+          root.append(
+            button("Thử đồng bộ lại", async () => {
+              if (dirty)
+                throw Error("Lưu thay đổi đang sửa trước khi đồng bộ lại.");
+              await action("configure");
+              await monitorSync(s.id);
+            }),
+          );
       }
     }
     async function monitorSync(sid) {
       clearTimeout(syncTimer);
       if (!viewOpen() || selected?.id !== sid || !$("#sync-status")) return;
       try {
-        const units = await api('schools');
+        const units = await api("schools");
         if (!viewOpen() || selected?.id !== sid || !$("#sync-status")) return;
-        const latest = units.find(s => s.id === sid);
+        const latest = units.find((s) => s.id === sid);
         // Keep the draft revision: a concurrent edit must still conflict at save.
         if (latest) selected = { ...latest, revision: selected.revision };
         renderSync();
       } catch (_) {
-        if ($("#sync-status")) $("#sync-status").textContent = 'Chưa tải được trạng thái đồng bộ. Đang thử kết nối lại…';
+        if ($("#sync-status"))
+          $("#sync-status").textContent =
+            "Chưa tải được trạng thái đồng bộ. Đang thử kết nối lại…";
       }
       syncTimer = setTimeout(() => void monitorSync(sid), 5000);
     }
@@ -862,10 +952,15 @@
       const entries = [
         ["overview", "Bảng điều khiển"],
         ...(!selected ? [["general", "Thông tin cài đặt"]] : []),
-        ["sfu", "SFU"], ["r2", "R2 / Backup"],
-        ["ops", "Cài đặt / Nâng cấp"], ["accounts", "Quản trị & phân quyền"],
-        ["jobs", "Lịch sử"], ["lifecycle", "Hoạt động / Xóa"],
-        ["relocate", "Backup / Chuyển VPS"], ["api", "API tích hợp"],
+        ["sfu", "SFU"],
+        ["r2", "R2 / Backup"],
+        ["ops", "Cài đặt / Nâng cấp"],
+        ["backups", "Phục hồi sao lưu"],
+        ["accounts", "Quản trị & phân quyền"],
+        ["jobs", "Lịch sử"],
+        ["lifecycle", "Hoạt động / Xóa"],
+        ["relocate", "Backup / Chuyển VPS"],
+        ["api", "API tích hợp"],
       ];
       for (const [id, title] of entries.filter(
         ([id]) =>
@@ -886,11 +981,11 @@
         );
       if (!workspace && !d.open) d.showModal();
       if (selected) {
-        const status = document.createElement('section');
-        status.id = 'sync-status';
-        status.className = 'install-hint';
-        status.setAttribute('role', 'status');
-        $('#panel').before(status);
+        const status = document.createElement("section");
+        status.id = "sync-status";
+        status.className = "install-hint";
+        status.setAttribute("role", "status");
+        $("#panel").before(status);
         renderSync();
         syncTimer = setTimeout(() => void monitorSync(selected.id), 5000);
       }
@@ -1600,9 +1695,7 @@
           "</strong><small>" +
           esc(st.version || "Chưa nhận phiên bản") +
           "</small></article><article><small>Đồng bộ cấu hình</small><strong>" +
-          esc(
-            syncLabel(selected),
-          ) +
+          esc(syncLabel(selected)) +
           "</strong><small>Phiên bản cấu hình " +
           selected.applied +
           "/" +
@@ -1636,7 +1729,9 @@
           draw();
         };
         $("#nextsteps").append(
-          ...(!selected?.sync?.linked ? [button("Thông tin khởi tạo", () => jump("general"))] : []),
+          ...(!selected?.sync?.linked
+            ? [button("Thông tin khởi tạo", () => jump("general"))]
+            : []),
           button("SFU", () => jump("sfu")),
           button("R2 / Backup", () => jump("r2")),
         );
@@ -1701,6 +1796,10 @@
       }
       if (tab === "business") {
         business();
+        return;
+      }
+      if (tab === "backups") {
+        void backupsPanel();
         return;
       }
       if (tab === "jobs") {
@@ -1841,11 +1940,12 @@
           "Có thay đổi chưa lưu. Bấm Lưu thay đổi trước khi chạy tác vụ.",
         );
       if (!selected) throw Error("Lưu trường trước");
-      await api("schools/" + selected.id + "/action", {
+      const result = await api("schools/" + selected.id + "/action", {
         action: name,
         payload,
       });
       msg("Đã xếp hàng tác vụ. Xem Lịch sử để kiểm tra kết quả.");
+      return result;
     }
     async function operations() {
       const p = $("#panel");
@@ -1902,10 +2002,11 @@
         const submit = form.querySelector("button");
         submit.disabled = true;
         try {
-          await action("provision", values);
+          const job = await action("provision", values);
           form.reset();
           tab = "jobs";
           draw();
+          void openJobMonitor(job.id);
         } catch (e) {
           msg(e.message);
         } finally {
@@ -1928,6 +2029,10 @@
           action("update", { target: status.update?.available_sha || "" }),
         ),
         button("Backup ngay", () => action("backup")),
+        button("Chọn bản sao lưu để phục hồi", () => {
+          tab = "backups";
+          draw();
+        }),
         button("Đồng bộ lại", () => action("configure")),
       );
       $("#domain").onsubmit = async (e) => {
@@ -1945,13 +2050,34 @@
     function jobMessage(code) {
       return (
         {
-          CONFIG_R2_REJECTED: "R2 chưa được chấp nhận. Kiểm tra đúng Account ID/bucket và khóa S3 có quyền Admin Read & Write để đọc/ghi CORS và lifecycle. Cấu hình mới chưa áp dụng lên website; cấu hình cũ tiếp tục hoạt động.",
-          CONFIG_REJECTED: "VPS từ chối cấu hình. Kiểm tra định dạng SFU, email, thanh toán và các thông số rồi lưu lại.",
-          CONFIG_SCHOOL_MISMATCH: "Mã nội bộ khác với nền tảng đã cài. Giữ nguyên mã sau khi cài đặt.",
-          CONFIG_DATABASE_UNAVAILABLE: "VPS chưa kết nối được cơ sở dữ liệu. Kiểm tra dịch vụ trước khi đồng bộ lại.",
-          ACCOUNT_REJECTED: "Tài khoản chưa được cập nhật. Kiểm tra email, mật khẩu và quyền được chọn.",
-          ACCOUNT_CONFLICT: "Tài khoản đã thay đổi hoặc là quản trị gốc được bảo vệ. Tải lại thông tin trước khi sửa.",
-          APPLY_FAILED: "VPS chưa áp dụng được thay đổi. Kiểm tra cấu hình hoặc liên hệ người vận hành; website chưa xác nhận cấu hình mới.",
+          RESTORE_SCHOOL_MISMATCH:
+            "Bản sao lưu thuộc đơn vị khác; dữ liệu hiện tại được giữ nguyên.",
+          RESTORE_NEWER_SCHEMA:
+            "Bản sao lưu dùng phiên bản dữ liệu mới hơn. Nâng cấp trước khi phục hồi.",
+          RESTORE_KEY_MISSING:
+            "Bản sao lưu thiếu khóa tài khoản; dừng trước khi thay dữ liệu.",
+          RESTORE_REQUIRES_SUSPENDED: "Tạm ngưng VPS trước khi phục hồi.",
+          RESTORE_BUSY: "Có quy trình bảo trì đang chạy; chờ hoàn tất.",
+          BACKUP_INVALID: "Không xác minh được bản sao lưu.",
+          BACKUP_MISSING: "Không tìm thấy bản sao lưu trên VPS.",
+          BACKUP_LIST_INCOMPLETE:
+            "Danh sách R2 quá lớn hoặc chưa đầy đủ; cần kiểm tra lưu trữ.",
+          RESTORE_RECOVERY_REQUIRED:
+            "Phục hồi bị gián đoạn. Hệ thống giữ khóa ghi; cần kiểm tra bản hoàn tác trước khi mở lại.",
+          CONFIG_R2_REJECTED:
+            "R2 chưa được chấp nhận. Kiểm tra đúng Account ID/bucket và khóa S3 có quyền Admin Read & Write để đọc/ghi CORS và lifecycle. Cấu hình mới chưa áp dụng lên website; cấu hình cũ tiếp tục hoạt động.",
+          CONFIG_REJECTED:
+            "VPS từ chối cấu hình. Kiểm tra định dạng SFU, email, thanh toán và các thông số rồi lưu lại.",
+          CONFIG_SCHOOL_MISMATCH:
+            "Mã nội bộ khác với nền tảng đã cài. Giữ nguyên mã sau khi cài đặt.",
+          CONFIG_DATABASE_UNAVAILABLE:
+            "VPS chưa kết nối được cơ sở dữ liệu. Kiểm tra dịch vụ trước khi đồng bộ lại.",
+          ACCOUNT_REJECTED:
+            "Tài khoản chưa được cập nhật. Kiểm tra email, mật khẩu và quyền được chọn.",
+          ACCOUNT_CONFLICT:
+            "Tài khoản đã thay đổi hoặc là quản trị gốc được bảo vệ. Tải lại thông tin trước khi sửa.",
+          APPLY_FAILED:
+            "VPS chưa áp dụng được thay đổi. Kiểm tra cấu hình hoặc liên hệ người vận hành; website chưa xác nhận cấu hình mới.",
           SSH_AUTH_FAILED:
             "Không đăng nhập SSH được: kiểm tra mật khẩu root hoặc khóa SSH.",
           SSH_HOST_KEY_MISMATCH:
@@ -2004,6 +2130,197 @@
         ""
       );
     }
+    function jobBar(job) {
+      const last = job.progress?.at(-1),
+        percent =
+          last?.percent ??
+          (job.state === "success" &&
+          (!job.progress?.length || job.action !== "provision")
+            ? 100
+            : 0);
+      return (
+        '<div class="job-progress"><progress max="100" value="' +
+        percent +
+        '" aria-label="Tiến độ tác vụ"></progress><small>' +
+        esc(
+          last?.label ||
+            {
+              queued: "Đang chờ",
+              running: "Đang xử lý",
+              success: "Đã hoàn tất",
+              failed: "Không hoàn tất",
+            }[job.state] ||
+            job.state,
+        ) +
+        " · " +
+        percent +
+        "%</small></div>"
+      );
+    }
+    async function openJobMonitor(id) {
+      const sid = selected.id;
+      let dialog = $("#job-monitor");
+      if (dialog) dialog.close();
+      else {
+        dialog = document.createElement("dialog");
+        dialog.id = "job-monitor";
+        dialog.className = "job-monitor";
+        document.body.append(dialog);
+      }
+      let timer;
+      dialog.innerHTML =
+        '<h2>Màn hình theo dõi tác vụ</h2><p>Tiến độ theo giai đoạn thực tế, không phải ước lượng thời gian. Nhật ký chỉ chứa thông báo đã lọc; mật khẩu và token không hiển thị.</p><div id="job-state"></div><pre class="job-console" id="job-console" aria-label="Nhật ký cài đặt"></pre>';
+      dialog.append(button("Đóng màn hình", () => dialog.close()));
+      dialog.onclose = () => clearTimeout(timer);
+      dialog.showModal();
+      const load = async () => {
+        try {
+          const list = await api("schools/" + sid + "/jobs");
+          if (!dialog.open) return;
+          const job = list.find((j) => j.id === id);
+          if (!job) throw Error("Không tìm thấy tác vụ");
+          $("#job-state").innerHTML =
+            jobBar(job) +
+            "<p>" +
+            esc(jobMessage(JSON.parse(job.result).code)) +
+            "</p>";
+          $("#job-console").textContent =
+            (job.progress || [])
+              .map(
+                (e) =>
+                  new Date(e.at * 1000).toLocaleTimeString("vi-VN") +
+                  "  " +
+                  e.percent +
+                  "%  " +
+                  e.label,
+              )
+              .join("\n") || "Đang chờ tác vụ bắt đầu.";
+          if (job.state === "failed")
+            $("#job-console").textContent +=
+              "\nDừng an toàn: " + jobMessage(JSON.parse(job.result).code);
+          if (
+            ["queued", "running"].includes(job.state) ||
+            (job.action === "provision" &&
+              job.progress?.length &&
+              job.state === "success" &&
+              (job.progress?.at(-1)?.percent || 0) < 100)
+          )
+            timer = setTimeout(() => void load(), 2000);
+        } catch (e) {
+          if (dialog.open) $("#job-state").textContent = e.message;
+        }
+      };
+      await load();
+    }
+    async function backupsPanel() {
+      const sid = selected?.id,
+        root = $("#panel");
+      if (!sid) {
+        root.textContent = "Chọn đơn vị đã cài đặt trước.";
+        return;
+      }
+      root.innerHTML =
+        '<h3>Phục hồi từ sao lưu</h3><p>Danh sách gồm bản sao lưu R2 và bản hoàn tác cục bộ trên VPS. Khóa giải mã nằm trên VPS; không nhập khóa vào trình duyệt.</p><div id="backup-actions" class="toolbar"></div><div id="backup-content">Đang tải…</div>';
+      const render = async () => {
+        const jobs = await api("schools/" + sid + "/jobs");
+        if (selected?.id !== sid || tab !== "backups") return;
+        const latest = jobs.find(
+            (j) => j.action === "backup-list" && j.state === "success",
+          ),
+          items = latest ? JSON.parse(latest.result).backups || [] : [];
+        const content = $("#backup-content");
+        content.innerHTML = items.length
+          ? "<p>" +
+            items.length +
+            " bản gần nhất. Danh sách ghi nhận lúc " +
+            new Date(latest.created * 1000).toLocaleString("vi-VN") +
+            ".</p>"
+          : "<p>Chưa có danh sách. Bấm Đọc danh sách từ VPS. Nếu chưa có bản sao lưu, tạo Backup ngay trước.</p>";
+        if (!items.length) return;
+        content.insertAdjacentHTML(
+          "beforeend",
+          '<p class="backup-note">Phục hồi sẽ thay dữ liệu và cấu hình kinh doanh bằng bản đã chọn. Giữ phiên bản mã hiện tại, domain, SFU và R2 đang dùng. Hệ thống kiểm tra đúng đơn vị, tạo bản hoàn tác trước khi ghi dữ liệu và giữ VPS tạm ngưng sau phục hồi.</p><form id="restore-backup"><label>Bản sao lưu<select name="object_key" required><option value="">Chọn bản sao lưu</option>' +
+            items
+              .map(
+                (v) =>
+                  '<option value="' +
+                  esc(v.object_key) +
+                  '">' +
+                  esc(v.modified) +
+                  " · " +
+                  (v.bytes / 1024 / 1024).toFixed(2) +
+                  " MB · " +
+                  esc(v.object_key) +
+                  "</option>",
+              )
+              .join("") +
+            "</select></label>" +
+            input("confirm", "Nhập domain xác nhận: " + selected.domain) +
+            input(
+              "password",
+              "Mật khẩu quản trị trung tâm xác nhận",
+              "",
+              "password",
+            ) +
+            (me.mfa_enabled ? input("code", "Mã 2FA hoặc mã khôi phục") : "") +
+            '<label><input type="checkbox" required style="width:auto"> Tôi hiểu dữ liệu phát sinh sau bản sao lưu sẽ được thay thế.</label><button class="primary">Xác nhận phục hồi</button></form>',
+        );
+        const form = $("#restore-backup");
+        if (
+          me.role !== "owner" ||
+          selected.desired_state !== "suspended" ||
+          selected.applied_state !== "suspended"
+        ) {
+          form.querySelector("button").disabled = true;
+          content.insertAdjacentHTML(
+            "afterbegin",
+            "<p>Tạm ngưng tại Hoạt động / Xóa và chờ VPS xác nhận trước khi phục hồi. Chỉ chủ hệ thống được thực hiện.</p>",
+          );
+        }
+        form.onsubmit = async (e) => {
+          e.preventDefault();
+          const submit = form.querySelector("button");
+          submit.disabled = true;
+          try {
+            const payload = Object.fromEntries(new FormData(form));
+            if (
+              !confirm(
+                "Phục hồi dữ liệu của " + selected.domain + " từ bản đã chọn?",
+              )
+            )
+              return;
+            const job = await action("restore", payload);
+            form.reset();
+            await openJobMonitor(job.id);
+          } catch (e) {
+            msg(e.message);
+          } finally {
+            submit.disabled = false;
+          }
+        };
+      };
+      $("#backup-actions").append(
+        button("Đọc danh sách từ VPS", async () => {
+          const job = await action("backup-list");
+          for (let n = 0; n < 150; n++) {
+            if (tab !== "backups" || selected?.id !== sid) return;
+            const list = await api("schools/" + sid + "/jobs"),
+              current = list.find((j) => j.id === job.id);
+            if (current?.state === "success") {
+              await render();
+              return;
+            }
+            if (current?.state === "failed")
+              throw Error(jobMessage(JSON.parse(current.result).code));
+            await new Promise((r) => setTimeout(r, 2000));
+          }
+          throw Error("VPS đang xử lý. Xem Lịch sử rồi tải lại danh sách.");
+        }),
+        button("Backup ngay", () => action("backup")),
+        button("Tải danh sách đã nhận", render),
+      );
+      await render();
+    }
     async function jobs() {
       if (!selected) {
         $("#panel").textContent = "Lưu trường trước";
@@ -2013,17 +2330,35 @@
       const rows = await api("schools/" + sid + "/jobs");
       if (tab !== "jobs" || selected?.id !== sid || !viewOpen()) return;
       $("#panel").innerHTML =
-        '<div class="table"><table><tr><th>Thời gian</th><th>Tác vụ</th><th>Trạng thái</th><th>Kết quả</th></tr>' +
+        '<div class="table"><table><tr><th>Thời gian</th><th>Tác vụ</th><th>Trạng thái</th><th>Kết quả</th><th>Tiến độ</th></tr>' +
         rows
           .map(
             (j) =>
-              `<tr><td>${new Date(j.created * 1000).toLocaleString("vi-VN")}</td><td>${esc(j.action)}</td><td>${esc(j.state)}</td><td>${esc(jobMessage(JSON.parse(j.result).code))}</td></tr>`,
+              `<tr data-job="${esc(j.id)}"><td>${new Date(j.created * 1000).toLocaleString("vi-VN")}</td><td>${esc(j.action)}</td><td>${esc(j.state)}</td><td>${esc(jobMessage(JSON.parse(j.result).code))}</td><td>${jobBar(j)}</td></tr>`,
           )
           .join("") +
         "</table></div>";
+      for (const j of rows) {
+        const cell = $('#panel [data-job="' + j.id + '"] td:last-child');
+        cell.append(
+          button(
+            j.action === "provision" ? "Mở màn hình cài đặt" : "Xem tiến độ",
+            () => openJobMonitor(j.id),
+          ),
+        );
+      }
       $("#panel").append(button("Tải lại", jobs));
       clearTimeout(jobTimer);
-      if (rows.some((j) => ["queued", "running"].includes(j.state)))
+      if (
+        rows.some(
+          (j) =>
+            ["queued", "running"].includes(j.state) ||
+            (j.action === "provision" &&
+              j.progress?.length &&
+              j.state === "success" &&
+              (j.progress?.at(-1)?.percent || 0) < 100),
+        )
+      )
         jobTimer = setTimeout(() => {
           if (tab === "jobs" && selected?.id === sid && viewOpen())
             void jobs().catch((e) => msg(e.message));
@@ -2115,11 +2450,11 @@
       const rows = await api("admins");
       const d = $("#modal");
       d.innerHTML =
-        '<h2>Tài khoản quản trị trung tâm</h2><div class="table"><table><tr><th>ID</th><th>Email</th><th>Quyền</th><th>Hoạt động</th></tr>' +
+        '<h2>Tài khoản quản trị trung tâm</h2><div class="table"><table><tr><th>ID</th><th>Email</th><th>Quyền</th><th>Hoạt động</th><th></th></tr>' +
         rows
           .map(
             (r) =>
-              `<tr><td>${esc(r.id)}</td><td>${esc(r.email)}</td><td>${esc(r.role)}</td><td>${r.active ? "Có" : "Không"}</td></tr>`,
+              `<tr data-admin="${esc(r.id)}"><td>${esc(r.id)}</td><td>${esc(r.email)}</td><td>${esc(r.role)}</td><td>${r.active ? "Có" : "Không"}</td><td></td></tr>`,
           )
           .join("") +
         '</table></div><form id="admins">' +
@@ -2136,6 +2471,19 @@
         "<button>Lưu</button></form>";
       d.append(button("Đóng", () => d.close()));
       if (!d.open) d.showModal();
+      for (const row of rows) {
+        d.querySelector('[data-admin="' + row.id + '"] td:last-child').append(
+          button("Chỉnh sửa", () => {
+            const f = $("#admins");
+            f.elements.id.value = row.id;
+            f.elements.email.value = row.email;
+            f.elements.password.value = "";
+            f.elements.role.value = row.role;
+            f.elements.active.checked = !!row.active;
+            f.scrollIntoView({ block: "nearest" });
+          }),
+        );
+      }
       $("#admins").onsubmit = async (e) => {
         e.preventDefault();
         const f = new FormData(e.target);
@@ -2144,7 +2492,11 @@
             ...Object.fromEntries(f),
             active: f.has("active"),
           });
-          await admins();
+          if (f.get("id") === me.id) {
+            d.close();
+            login();
+            msg("Thông tin tài khoản đã thay đổi. Đăng nhập lại.");
+          } else await admins();
         } catch (e) {
           msg(e.message);
         }

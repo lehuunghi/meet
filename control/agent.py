@@ -29,6 +29,7 @@ def failure_code(error):
             return 'CONFIG_REJECTED'
         if 'account rejected (409)' in message:return 'ACCOUNT_CONFLICT'
         if 'account rejected (' in message:return 'ACCOUNT_REJECTED'
+    if isinstance(error,ValueError) and str(error) in ('RESTORE_SCHOOL_MISMATCH','RESTORE_NEWER_SCHEMA','RESTORE_KEY_MISSING','RESTORE_BUSY','RESTORE_REQUIRES_SUSPENDED','LIVE_MEETINGS','BACKUP_INVALID','BACKUP_MISSING','BACKUP_DISK_FULL','BACKUP_LIST_INCOMPLETE','RESTORE_RECOVERY_REQUIRED'):return str(error)
     return 'APPLY_FAILED'
 def request(config,path,data):
     if not config['url'].startswith('https://') or urlparse(config['url']).path not in ('','/'):raise ValueError('HTTPS control origin required')
@@ -41,6 +42,8 @@ def request(config,path,data):
 def updater():
     spec=importlib.util.spec_from_file_location('meet_update',ROOT/'deploy/update.py');module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module);module.ROOT=ROOT;return module
 
+def restore_module():
+    spec=importlib.util.spec_from_file_location('managed_restore',ROOT/'deploy/managed_restore.py');m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m);m.ROOT=ROOT;return m
 def configure(job):
     payload=job['payload'];cfg=payload['settings'];domain=payload['domain'];school=(cfg.get('school_slug') or 'school-'+config['school'][:8]);admin=cfg.get('initial_admin',{})
     if not HOST.fullmatch(domain):raise ValueError('invalid domain')
@@ -135,6 +138,13 @@ def execute(job,status):
         if checked['available_sha']!=target or not checked['can_update']:raise ValueError('UPDATE_NOT_READY')
         with open('/run/meet-backup.lock','w') as lock:
             fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB);u.apply(target,str(uuid.uuid4()))
+    elif action in ('backup-list','restore'):
+        m=restore_module();u=updater()
+        with open('/run/meet-backup.lock','w') as lock:
+            fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
+            if action=='backup-list':return 'success',{'backups':m.list_backups(u)}
+            def report(stage):request(config,'/agent/progress',{'id':job['id'],'lease':job['lease'],'stage':stage})
+            m.restore_backup(u,payload['object_key'],report)
     elif action=='backup':run('python3',str(ROOT/'deploy/backup.py'),'backup','--force')
     elif action=='domain':domain_change(payload)
     else:raise ValueError('unsupported action')
@@ -142,7 +152,7 @@ def execute(job,status):
 
 def tick():
     status=cli('managed-status')
-    status['control_protocol']=2
+    status['control_protocol']=3
     status['disk_free']=shutil.disk_usage(ROOT).free
     for name,path in [('update','update-status.json'),('backup','backup-status.json'),('config_revision','control-revision.json')]:
         p=ROOT/'runtime-config'/path
@@ -157,7 +167,9 @@ def tick():
         except Exception as error:state,code='failed',failure_code(error)
         if state=='success':
             prior[job['id']]=[state,code];atomic(JOURNAL,dict(list(prior.items())[-500:]))
-    request(config,'/agent/ack',{'status':{},'id':job['id'],'lease':job['lease'],'state':state,'code':code})
+    result={'status':{},'id':job['id'],'lease':job['lease'],'state':state,'code':code}
+    if isinstance(code,dict) and job['action']=='backup-list':result.update(code);result['code']='OK'
+    request(config,'/agent/ack',result)
     return True
 
 if __name__=='__main__':

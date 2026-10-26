@@ -16,6 +16,7 @@ printf '\nMEET · CÀI ĐẶT VÀ KHỞI TẠO\nDomain cần có DNS trỏ về 
 if [[ -z "${MEET_DOMAIN:-}" ]]; then read -r -p 'Domain quản lý (ví dụ meet.truong.edu.vn): ' MEET_DOMAIN </dev/tty; fi
 MEET_DOMAIN=${MEET_DOMAIN,,}
 [[ ${#MEET_DOMAIN} -le 253 && "$MEET_DOMAIN" =~ ^([a-z0-9]([a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,63}$ ]] || fail 'Chỉ nhập hostname hợp lệ, không có https:// hoặc đường dẫn.'
+printf 'MEET_STAGE:docker\n'
 apt-get update
 apt-get install -y ca-certificates curl gnupg git openssl python3 python3-cryptography
 if ! command -v docker >/dev/null || ! docker compose version >/dev/null 2>&1; then
@@ -75,8 +76,10 @@ EOF
 chmod 0755 /usr/local/bin/meet
 if ! grep -q '^MEET_COMMIT=' .env; then printf '\nMEET_COMMIT=%s\nMEET_VERSION=%s\n' "$(git rev-parse HEAD)" "$(python3 -c 'import json;print(json.load(open("deploy/release.json"))["version"])')" >> .env; fi
 meet config --quiet
+printf 'MEET_STAGE:images\n'
 meet build
 # Run migration explicitly even when a previous migration container already exited successfully.
+printf 'MEET_STAGE:database\n'
 meet up -d mysql redis
 meet run --rm migrate
 meet up -d api web
@@ -126,6 +129,7 @@ chmod 0644 /etc/caddy/Caddyfile
 caddy validate --config /etc/caddy/Caddyfile
 systemctl enable --now caddy
 systemctl reload caddy
+printf 'MEET_STAGE:https\n'
 MEET_HTTPS=false
 for _ in $(seq 1 30); do
   if curl -fsS --connect-timeout 5 --max-time 10 "https://$MEET_DOMAIN/api/health" >/dev/null; then MEET_HTTPS=true; break; fi

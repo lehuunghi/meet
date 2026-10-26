@@ -8,7 +8,19 @@ from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 ROOT=Path(os.environ.get('MEET_CONTROL_DATA','/var/lib/meet-control'))
 ORIGIN=os.environ.get('MEET_CONTROL_ORIGIN','https://admin.tn.edu.vn').rstrip('/')
 HOST=re.compile(r'(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,63}')
-ACTIONS={'configure','check','update','backup','domain','accounts','provision','lifecycle','relocate'}
+ACTIONS={'configure','check','update','backup','domain','accounts','provision','lifecycle','relocate','backup-list','restore'}
+
+STAGES={'queued':(0,'Đang chờ xử lý'),'release':(3,'Kiểm tra phiên bản đã qua kiểm thử'),'dns':(8,'Kiểm tra DNS'),'ssh':(15,'Xác thực SSH và fingerprint'),'system':(22,'Cài thư viện hệ điều hành'),'source':(30,'Tải mã nguồn'),'docker':(42,'Chuẩn bị Docker và dịch vụ'),'images':(55,'Dựng ứng dụng'),'database':(72,'Khởi tạo cơ sở dữ liệu'),'https':(84,'Kiểm tra HTTPS'),'agent':(92,'Liên kết quản trị'),'configure':(96,'Chờ VPS áp dụng cấu hình'),'verify':(98,'Xác minh kết quả'),'snapshot_download':(20,'Tải bản sao lưu mã hóa'),'snapshot_verify':(35,'Xác minh nội dung và đúng đơn vị'),'rollback_backup':(60,'Tạo và xác minh bản hoàn tác'),'restore_data':(75,'Phục hồi dữ liệu và cấu hình'),'restore_check':(94,'Kiểm tra sau phục hồi'),'done':(100,'Hoàn tất')}
+BACKUP_KEY=re.compile(r'(?:backups/[a-zA-Z0-9/_-]+\.meet|local:[a-f0-9-]{36}\.meet)')
+def progress(db,job,stage):
+    if stage not in STAGES:raise ValueError('Giai đoạn không hợp lệ')
+    prior=db.execute('SELECT percent,stage FROM job_events WHERE job=? ORDER BY id DESC LIMIT 1',(job,)).fetchone()
+    percent=STAGES[stage][0]
+    if prior and percent<=prior['percent']:return
+    db.execute('INSERT INTO job_events(job,stage,percent,at) VALUES(?,?,?,?)',(job,stage,percent,int(time.time())))
+def job_progress(db,job):
+    events=[dict(e) for e in db.execute('SELECT stage,percent,at FROM job_events WHERE job=? ORDER BY id LIMIT 100',(job,))]
+    return [{**e,'label':STAGES.get(e['stage'],(0,'Đang xử lý'))[1]} for e in events]
 
 class ClosingConnection(sqlite3.Connection):
     def __exit__(self,*args):
@@ -29,6 +41,7 @@ def init():
     with connect() as db:
         db.executescript('''
         CREATE TABLE IF NOT EXISTS admins(id TEXT PRIMARY KEY,email TEXT UNIQUE NOT NULL,hash TEXT NOT NULL,role TEXT NOT NULL,active INTEGER NOT NULL DEFAULT 1);
+        CREATE TABLE IF NOT EXISTS job_events(id INTEGER PRIMARY KEY,job TEXT NOT NULL REFERENCES jobs(id),stage TEXT NOT NULL,percent INTEGER NOT NULL,at INTEGER NOT NULL);
         CREATE TABLE IF NOT EXISTS sessions(hash TEXT PRIMARY KEY,admin TEXT NOT NULL REFERENCES admins(id),expires INTEGER NOT NULL);
         CREATE TABLE IF NOT EXISTS attempts(key TEXT PRIMARY KEY,n INTEGER NOT NULL,until INTEGER NOT NULL);
         CREATE TABLE IF NOT EXISTS schools(id TEXT PRIMARY KEY,name TEXT NOT NULL,domain TEXT UNIQUE NOT NULL,ip TEXT NOT NULL,config TEXT NOT NULL,revision INTEGER NOT NULL DEFAULT 1,applied INTEGER NOT NULL DEFAULT 0,agent_hash TEXT UNIQUE,enroll_hash TEXT,enroll_expires INTEGER,seen INTEGER NOT NULL DEFAULT 0,status TEXT NOT NULL DEFAULT '{}');
@@ -209,7 +222,7 @@ class Handler(BaseHTTPRequestHandler):
                     cookies=SimpleCookie();cookies.load(self.headers.get('Cookie',''));token=cookies.get('control_session');token=token.value if token else ''
                     admin=db.execute('SELECT a.* FROM sessions s JOIN admins a ON a.id=s.admin WHERE s.hash=? AND s.expires>? AND a.active=1',(digest(token),int(time.time()))).fetchone()
                     if not admin:self.reply(401,{'error':'Đăng nhập quản trị trung tâm'});return
-                    if self.command=='POST' and admin['role']=='viewer' and self.path not in ('/api/logout','/api/security'):self.reply(403,{'error':'Chỉ có quyền xem'});return
+                    if self.command=='POST' and admin['role']=='viewer' and self.path not in ('/api/logout','/api/security','/api/profile'):self.reply(403,{'error':'Chỉ có quyền xem'});return
                     result=self.admin(db,admin,data)
                 db.commit()
             self.reply(200,result)
@@ -242,6 +255,10 @@ class Handler(BaseHTTPRequestHandler):
             if not job:return {'job':None}
             lease=secrets.token_urlsafe(32);db.execute("UPDATE jobs SET state='running',lease=?,lease_until=?,attempts=attempts+1 WHERE id=?",(digest(lease),now+1800,job['id']))
             return {'job':{'id':job['id'],'lease':lease,'action':job['action'],'revision':job['revision'],'payload':decrypt(job['payload'],sid)}}
+        if self.path=='/agent/progress':
+            job=db.execute("SELECT id FROM jobs WHERE id=? AND school=? AND state='running' AND lease=? AND lease_until>=?",(data.get('id'),sid,digest(str(data.get('lease',''))),now)).fetchone()
+            if not job:raise ValueError('Tác vụ không còn hiệu lực')
+            progress(db,job['id'],str(data.get('stage','')));db.execute('UPDATE jobs SET lease_until=? WHERE id=?',(now+1800,job['id']));return {'ok':True}
         if self.path=='/agent/ack':
             job=db.execute("SELECT * FROM jobs WHERE id=? AND school=? AND state='running' AND lease=? AND lease_until>=?",(data.get('id'),sid,digest(str(data.get('lease',''))),now)).fetchone()
             if not job:raise ValueError('Tác vụ không còn hiệu lực')
@@ -252,6 +269,18 @@ class Handler(BaseHTTPRequestHandler):
             if job['action']=='academy' and state=='success':
                 if not isinstance(data.get('code'),dict) or len(json.dumps(data['code']))>524288:raise ValueError('Kết quả quá lớn')
                 result={'code':'OK','payload':encrypt(data['code'],sid)}
+            if job['action']=='backup-list' and state=='success':
+                entries=data.get('backups',[])
+                if not isinstance(entries,list) or len(entries)>100:raise ValueError('Danh sách sao lưu không hợp lệ')
+                clean=[]
+                for item in entries:
+                    if not isinstance(item,dict) or not BACKUP_KEY.fullmatch(str(item.get('object_key',''))) or type(item.get('bytes')) is not int or not 0<item['bytes']<=512*1024*1024:raise ValueError('Bản sao lưu không hợp lệ')
+                    clean.append({'object_key':item['object_key'],'bytes':item['bytes'],'modified':str(item.get('modified',''))[:40]})
+                result['backups']=clean
+            if state=='success':progress(db,job['id'],'done')
+            if state=='success' and job['action']=='restore':db.execute("UPDATE schools SET desired_state='suspended',applied_state='suspended' WHERE id=?",(sid,))
+            if state=='success' and job['action']=='configure':
+                for pending in db.execute("SELECT id FROM jobs WHERE school=? AND action='provision' AND state IN ('running','success')",(sid,)).fetchall():progress(db,pending['id'],'done')
             db.execute('UPDATE jobs SET state=?,result=?,lease=NULL,lease_until=? WHERE id=?',('queued' if state=='waiting' else state,json.dumps(result),now+60,job['id']))
             if state=='success' and job['action']=='configure':db.execute('UPDATE schools SET applied=MAX(applied,?) WHERE id=?',(job['revision'],sid))
             if state=='success' and job['action']=='lifecycle':db.execute('UPDATE schools SET applied_state=? WHERE id=?',(decrypt(job['payload'],sid)['state'],sid))
@@ -368,7 +397,16 @@ class Handler(BaseHTTPRequestHandler):
         readonly=path in ('/api/me','/api/audit','/api/schools') or bool(re.fullmatch(r'/api/schools/[a-f0-9]{32}/(config|jobs|readiness|keys|relocations)',path))
         if self.command=='GET' and not readonly and path!='/api/admins':raise ValueError('POST required')
         if path=='/api/logout':db.execute('DELETE FROM sessions WHERE admin=?',(actor,));return {'ok':True}
-        if path=='/api/me':return {'email':user['email'],'role':user['role'],'mfa_enabled':bool(user['mfa'])}
+        if path=='/api/me':return {'id':user['id'],'email':user['email'],'role':user['role'],'mfa_enabled':bool(user['mfa'])}
+        if path=='/api/profile':
+            if not hmac.compare_digest(password_hash(str(data.get('current_password','')),user['hash'].split(':')[0]),user['hash']):raise ValueError('Mật khẩu hiện tại không đúng')
+            email=str(data.get('email',user['email'])).strip().lower();password=str(data.get('new_password',''))
+            if not re.fullmatch(r'[^\s@]+@[^\s@]+\.[^\s@]+',email) or len(email)>254:raise ValueError('Email không hợp lệ')
+            if password and not 12<=len(password.encode())<=72:raise ValueError('Mật khẩu mới từ 12–72 byte')
+            if user['mfa'] and not verify_mfa(db,user,str(data.get('code',''))):raise ValueError('Cần mã 2FA hoặc mã khôi phục chưa sử dụng')
+            db.execute('UPDATE admins SET email=?,hash=? WHERE id=?',(email,password_hash(password) if password else user['hash'],actor))
+            db.execute('DELETE FROM sessions WHERE admin=?',(actor,));db.execute('DELETE FROM mfa_challenges WHERE admin=?',(actor,));db.execute('DELETE FROM mfa_pending WHERE admin=?',(actor,));audit(db,actor,'profile.credentials',actor)
+            return {'ok':True,'reauthenticate':True}
         if path=='/api/security':
             if not hmac.compare_digest(password_hash(str(data.get('password','')),user['hash'].split(':')[0]),user['hash']):raise ValueError('Mật khẩu hiện tại không đúng')
             action=data.get('action')
@@ -460,7 +498,7 @@ class Handler(BaseHTTPRequestHandler):
                     if 'payload' in result:
                         result.pop('payload');result['expired']=True
                         item['result']=json.dumps(result)
-                    output.append(item)
+                    item['progress']=job_progress(db,item['id']);output.append(item)
                 return output
             if op=='action':
                 action=data['action'];payload=data.get('payload',{})
@@ -468,6 +506,23 @@ class Handler(BaseHTTPRequestHandler):
                 if db.execute("SELECT 1 FROM relocations WHERE school=? AND state IN ('backup_ready','preparing','prepared','cutting_over','cutover_failed')",(sid,)).fetchone():raise ValueError('Đang chuyển VPS; chờ hoàn tất')
                 if not isinstance(payload,dict):raise ValueError('Nội dung tác vụ không hợp lệ')
                 if action=='academy':raise ValueError('Quản lý khóa học và học viên tại website của đơn vị')
+                if action in ('backup-list','restore'):
+                    if user['role']!='owner':raise ValueError('Cần quyền chủ hệ thống')
+                    if not row['agent_hash']:raise ValueError('VPS chưa liên kết')
+                    status=json.loads(row['status'])
+                    if status.get('control_protocol',0)<3:raise ValueError('Nâng cấp client để dùng phục hồi và danh sách sao lưu')
+                    if action=='backup-list':payload={}
+                    else:
+                        if row['desired_state']!='suspended' or row['applied_state']!='suspended':raise ValueError('Tạm ngưng VPS và chờ xác nhận trước khi phục hồi')
+                        if payload.get('confirm')!=row['domain']:raise ValueError('Nhập đúng domain để xác nhận phục hồi')
+                        if not hmac.compare_digest(password_hash(str(payload.get('password','')),user['hash'].split(':')[0]),user['hash']):raise ValueError('Mật khẩu quản trị không đúng')
+                        if user['mfa'] and not verify_mfa(db,user,str(payload.get('code',''))):raise ValueError('Mã 2FA không đúng')
+                        if db.execute("SELECT 1 FROM jobs WHERE school=? AND state IN ('queued','running')",(sid,)).fetchone():raise ValueError('Chờ tác vụ khác hoàn tất')
+                        key=str(payload.get('object_key',''));found=False
+                        for prior in db.execute("SELECT result FROM jobs WHERE school=? AND action='backup-list' AND state='success' ORDER BY created DESC LIMIT 5",(sid,)):
+                            found=found or any(v.get('object_key')==key for v in json.loads(prior['result']).get('backups',[]))
+                        if not BACKUP_KEY.fullmatch(key) or not found:raise ValueError('Tải lại và chọn bản sao lưu trong danh sách của VPS')
+                        payload={'object_key':key}
                 if action=='provision':
                     if row['desired_state']!='active':raise ValueError('Kích hoạt đơn vị trước khi cài mới')
                     if user['role']!='owner':raise ValueError('Cần quyền chủ hệ thống')
@@ -488,7 +543,7 @@ class Handler(BaseHTTPRequestHandler):
                     if not HOST.fullmatch(domain):raise ValueError('Domain không hợp lệ')
                     if db.execute('SELECT 1 FROM schools WHERE domain=? AND id<>?',(domain,sid)).fetchone():raise ValueError('Domain đã được dùng')
                 if action=='update' and not re.fullmatch('[a-f0-9]{40}',payload.get('target','')):raise ValueError('Cần commit SHA đã kiểm tra')
-                job=queue(db,sid,action,payload,row['revision']);audit(db,actor,'job.'+action,sid);return {'id':job}
+                job=queue(db,sid,action,payload,row['revision']);progress(db,job,'queued');audit(db,actor,'job.'+action,sid);return {'id':job}
         raise ValueError('Không có chức năng này')
 
 if __name__=='__main__':

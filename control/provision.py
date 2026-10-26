@@ -28,8 +28,10 @@ def failure_code(error):
     if isinstance(error,urllib.error.URLError):return 'RELEASE_CHECK_UNAVAILABLE'
     return 'PROVISION_FAILED_REVIEW_VPS'
 
+def mark(c,job,stage):
+    with c.connect() as db:c.progress(db,job['id'],stage)
 def provision(c,job,payload):
-    target=approved_revision()
+    mark(c,job,'release');target=approved_revision();mark(c,job,'dns')
     try:addresses={str(ipaddress.ip_address(x[4][0])) for x in socket.getaddrinfo(payload['domain'],443)}
     except socket.gaierror:raise ValueError('DNS_NOT_READY') from None
     if str(ipaddress.ip_address(payload['ip'])) not in addresses:raise ValueError('DNS_NOT_READY')
@@ -44,6 +46,7 @@ def provision(c,job,payload):
             try:key=kind.from_private_key(io.StringIO(payload['private_key']));break
             except Exception:pass
         if key is None:raise ValueError('INVALID_SSH_KEY')
+    mark(c,job,'ssh')
     client.connect(payload['ip'],port=payload.get('port',22),username='root',password=payload.get('password') or None,pkey=key,look_for_keys=False,allow_agent=False,timeout=15,auth_timeout=20,banner_timeout=20)
     try:
         token=secrets.token_urlsafe(48)
@@ -53,32 +56,45 @@ def provision(c,job,payload):
         script='''set -eu
 export DEBIAN_FRONTEND=noninteractive
 if [ -e /opt/meet ]; then echo EXISTING_INSTALLATION; exit 20; fi
+echo MEET_STAGE:system
 apt-get update >/dev/null
 apt-get install -y git ca-certificates >/dev/null
 stage=$(mktemp -d)
 trap 'rm -rf "$stage"' EXIT
+echo MEET_STAGE:source
 git clone --branch codex/multi-school-platform https://github.com/lehuunghi/meet.git "$stage/source" >/dev/null 2>&1
 git -C "$stage/source" checkout --detach '''+shlex.quote(target)+''' >/dev/null 2>&1
-MEET_TARGET_SHA='''+shlex.quote(target)+''' MEET_DOMAIN='''+shlex.quote(payload['domain'])+''' MEET_MANAGED=true MEET_CONTROL_ORIGIN='''+shlex.quote(c.ORIGIN)+''' MEET_CONTROL_ID='''+shlex.quote(job['school'])+''' bash "$stage/source/deploy/install.sh" >/root/meet-client-install.log 2>&1
+MEET_TARGET_SHA='''+shlex.quote(target)+''' MEET_DOMAIN='''+shlex.quote(payload['domain'])+''' MEET_MANAGED=true MEET_CONTROL_ORIGIN='''+shlex.quote(c.ORIGIN)+''' MEET_CONTROL_ID='''+shlex.quote(job['school'])+''' bash "$stage/source/deploy/install.sh" >/root/meet-client-install.log 2>&1 &
+installer=$!
+while kill -0 "$installer" 2>/dev/null; do grep '^MEET_STAGE:[a-z_]*$' /root/meet-client-install.log | tail -1 || true; sleep 2; done
+wait "$installer"
 install -d -m 0700 /etc/meet
 '''
         # No host-supplied command strings; only a validated hostname is shell-quoted above.
         stdin,stdout,stderr=client.exec_command('bash -s',timeout=1800);stdin.write(script);stdin.channel.shutdown_write()
         # Drain both streams to prevent remote command deadlock, without retaining sensitive output.
         channel=stdout.channel;deadline=time.monotonic()+1800
-        while not channel.exit_status_ready():
-            if channel.recv_ready():channel.recv(65536)
+        pending=b''
+        while not channel.exit_status_ready() or channel.recv_ready() or channel.recv_stderr_ready():
+            if channel.recv_ready():
+                pending=(pending+channel.recv(65536))[-131072:]
+                lines=pending.split(b'\n');pending=lines.pop()
+                for line in lines:
+                    match=re.fullmatch(rb'MEET_STAGE:(system|source|docker|images|database|https)',line.strip())
+                    if match:mark(c,job,match[1].decode())
             if channel.recv_stderr_ready():channel.recv_stderr(65536)
             if time.monotonic()>deadline:raise TimeoutError('PROVISION_TIMEOUT')
             time.sleep(.1)
         exit_code=channel.recv_exit_status()
         if exit_code==20:raise ValueError('EXISTING_INSTALLATION')
         if exit_code!=0:raise ValueError('PROVISION_FAILED')
+        mark(c,job,'agent')
         with client.open_sftp() as sftp:
             with sftp.file('/etc/meet/agent.json','w') as f:f.write(json.dumps(agent_config))
             sftp.chmod('/etc/meet/agent.json',0o600)
         _,out,_=client.exec_command('bash /opt/meet/control/install-agent.sh',timeout=60)
         if out.channel.recv_exit_status()!=0:raise ValueError('AGENT_INSTALL_FAILED')
+        mark(c,job,'configure')
     finally:client.close()
 
 def start_worker(c):
