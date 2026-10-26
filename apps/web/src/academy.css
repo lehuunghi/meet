@@ -1,187 +1,339 @@
+/* Academy theme is scoped to avoid changing existing school and meeting pages. */
 .academy-shell,
 .academy-auth,
 .academy-loading {
-  font-family: Arial, sans-serif;
-  color: #183145;
-  background: #f5f8fc;
+  --ac-text: #172b4d;
+  --ac-muted: #64748b;
+  --ac-line: #e2e8f0;
+  --ac-blue: #245de5;
+  font-family:
+    "Segoe UI",
+    -apple-system,
+    BlinkMacSystemFont,
+    Arial,
+    sans-serif;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--ac-text);
+  background: #f6f8fc;
   min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+}
+.academy-shell *,
+.academy-auth * {
+  box-sizing: border-box;
 }
 .academy-shell {
   display: grid;
-  grid-template-columns: 240px minmax(0, 1fr);
+  grid-template-columns: 232px minmax(0, 1fr);
 }
 .academy-shell > aside {
   position: sticky;
+  inset: auto;
   top: 0;
+  width: auto;
   height: 100dvh;
-  padding: 30px 20px;
+  overflow-y: auto;
+  padding: 28px 16px 20px;
   background: #fff;
-  border-right: 1px solid #dfe7ef;
+  border-right: 1px solid var(--ac-line);
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px;
 }
-.academy-brand {
+.academy-shell .academy-brand,
+.academy-auth .academy-brand {
+  display: block;
+  width: fit-content;
+  font-size: 23px;
   font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.5px;
+  color: #183b70;
   text-decoration: none;
-  font-size: 25px;
-  color: #123d62;
-  letter-spacing: 2px;
 }
 .academy-brand span {
   display: block;
+  margin-top: 6px;
   font-size: 10px;
-  letter-spacing: 5px;
-  margin-top: 5px;
-  color: #637f94;
+  font-weight: 600;
+  letter-spacing: 3px;
+  color: #71829c;
+}
+.academy-shell > aside > .academy-brand {
+  margin-left: 12px;
+}
+.academy-shell > aside > p {
+  padding: 12px;
+  margin: 0;
+  color: #465875;
+  background: #f7f9fc;
+  border: 1px solid #edf1f6;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
 }
 .academy-shell nav {
   display: grid;
-  gap: 6px;
+  gap: 4px;
   flex: 1;
   align-content: start;
 }
 .academy-shell nav button {
+  position: relative;
   text-align: left;
+  justify-content: flex-start;
   background: transparent;
-  color: #51667a;
-  padding: 13px;
-  border: 0;
-  border-radius: 9px;
+  color: #52637b;
+  padding: 11px 14px;
+  min-height: 42px;
+  border: 1px solid transparent;
+  border-radius: 8px;
   font-size: 13px;
+  font-weight: 500;
+}
+.academy-shell nav button:hover {
+  background: #f2f5fa;
+  color: #234c86;
 }
 .academy-shell nav button.active {
-  background: #e9f2ff;
-  color: #124c86;
-  font-weight: 700;
+  background: #edf3ff;
+  color: #1d50cb;
+  font-weight: 650;
+}
+.academy-shell nav button.active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 12px;
+  bottom: 12px;
+  width: 3px;
+  background: var(--ac-blue);
+  border-radius: 3px;
+}
+.academy-shell > aside > button {
+  background: #fff;
+  color: #64748b;
 }
 .academy-shell > main {
-  padding: 32px clamp(18px, 4vw, 60px);
+  width: 100%;
+  max-width: 1536px;
   min-width: 0;
+  margin: 0 auto;
+  padding: 32px clamp(20px, 3vw, 48px);
 }
 .academy-shell main > header {
-  height: auto;
-  min-height: 100px;
-  padding: 0;
-  border: 0;
   display: flex;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 20px;
+  height: auto;
+  min-height: 0;
+  margin: 0 0 26px;
+  padding: 0 0 22px;
+  color: var(--ac-text);
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--ac-line);
 }
 .academy-shell h1 {
-  font-size: clamp(23px, 3vw, 34px);
-  line-height: 1.3;
+  margin: 7px 0 0;
+  font-size: clamp(23px, 2.3vw, 30px);
+  font-weight: 650;
   letter-spacing: -0.7px;
-  margin: 10px 0 24px;
+  line-height: 1.35;
+}
+.academy-shell h2 {
+  color: var(--ac-text);
+  font-weight: 650;
+  letter-spacing: -0.3px;
+}
+.academy-shell p {
+  color: var(--ac-muted);
+  line-height: 1.65;
 }
 .academy-shell small {
-  color: #6b7f92;
-  font-size: 11px;
+  font-size: 12px;
+  color: var(--ac-muted);
+}
+.academy-shell main > header small {
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: 1.2px;
 }
 .academy-badge {
-  background: #e8f6ee;
-  color: #276144;
-  border-radius: 30px;
-  padding: 10px 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   align-self: flex-start;
-  font-size: 12px;
+  margin-top: 8px;
+  padding: 6px 10px;
+  border: 1px solid #cdeadd;
+  background: #edf9f2;
+  color: #18764f;
+  border-radius: 6px;
   white-space: nowrap;
+  font-size: 11px;
+  font-weight: 600;
+}
+.academy-badge::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #269769;
 }
 .academy-stats {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16px;
-  margin: 20px 0 28px;
+  margin: 0 0 26px;
 }
 .academy-stats article,
 .academy-section,
 .academy-course,
 .academy-plan {
-  background: white;
-  border: 1px solid #dde7ee;
-  border-radius: 15px;
+  min-width: 0;
+  background: #fff;
+  border: 1px solid var(--ac-line);
+  border-radius: 12px;
+  box-shadow: 0 2px 4px #172b4d03;
 }
 .academy-stats article {
-  padding: 22px;
+  padding: 18px 20px;
 }
 .academy-stats strong {
   display: block;
+  margin-top: 8px;
   font-size: 24px;
-  margin-top: 10px;
-  color: #153f60;
+  font-weight: 650;
+  color: #203b63;
+  letter-spacing: -0.5px;
 }
 .academy-course-grid,
 .academy-admin-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
-  gap: 22px;
+  gap: 20px;
+  align-items: start;
 }
 .academy-course {
   overflow: hidden;
-  align-self: start;
+}
+.academy-course-grid > .academy-course {
+  max-width: 560px;
+}
+.academy-course-grid + .academy-section {
+  margin-top: 20px;
 }
 .academy-course-art {
-  height: 150px;
-  background: linear-gradient(120deg, #113f65, #447e94);
-  color: #fff;
-  padding: 25px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  height: 128px;
+  padding: 20px 24px;
+  background: linear-gradient(115deg, #1c3f76, #336bb5);
+  color: #fff;
 }
 .academy-course-art span {
-  font-size: 70px;
-  color: #b1d4df;
+  font-size: 66px;
+  line-height: 1;
+  color: #a6c6ff;
 }
 .academy-course-art small {
-  color: #cce3ef;
+  font-size: 10px;
+  font-weight: 600;
+  color: #dceaff;
   letter-spacing: 2px;
 }
 .academy-course-body,
 .academy-plan,
 .academy-section {
-  padding: 24px;
+  padding: 22px;
 }
 .academy-course h2,
 .academy-section h2,
 .academy-plan h2 {
-  font-size: 20px;
+  font-size: 18px;
   line-height: 1.4;
   margin: 0 0 12px;
 }
 .academy-course p,
 .academy-plan p {
-  color: #5f7384;
-  line-height: 1.7;
-  font-size: 14px;
+  font-size: 13px;
 }
 .academy-plan > strong {
   font-size: 32px;
-  color: #154c78;
+  font-weight: 650;
+  letter-spacing: -1px;
+  color: #1b4894;
+}
+.academy-plan ul {
+  padding-left: 18px;
+  margin: 18px 0;
+  color: #52637b;
+  font-size: 13px;
+  line-height: 1.9;
 }
 .academy-shell button,
-.academy-auth button {
-  border-radius: 8px;
-  border: 1px solid #d6e2ec;
-  background: #f2f6fa;
-  color: #234c6d;
-  padding: 10px 14px;
-  min-height: 42px;
-  font-size: 13px;
+.academy-auth button,
+.academy-shell .academy-actions > a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 8px 13px;
+  border: 1px solid #d8e0ec;
+  border-radius: 7px;
+  background: #fff;
+  color: #334966;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  text-decoration: none;
   cursor: pointer;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+.academy-shell button:hover,
+.academy-auth button:hover,
+.academy-shell .academy-actions > a:hover {
+  background: #f4f7fc;
+  border-color: #bacbe3;
 }
 .academy-shell .academy-primary,
 .academy-auth .academy-primary {
-  background: #174d78;
+  background: var(--ac-blue);
+  border-color: var(--ac-blue);
   color: #fff;
-  border-color: #174d78;
+  box-shadow: 0 2px 3px #245de51a;
+}
+.academy-shell .academy-primary:hover,
+.academy-auth .academy-primary:hover {
+  background: #1d4fc9;
+  border-color: #1d4fc9;
+}
+.academy-shell button:disabled,
+.academy-auth button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
 }
 .academy-actions,
 .academy-tabs {
   display: flex;
+  align-items: center;
   gap: 8px;
   flex-wrap: wrap;
-  margin: 16px 0;
+  margin: 18px 0 0;
+}
+.academy-section > .academy-actions:first-child {
+  margin: 0 0 18px;
 }
 .academy-shell form,
 .academy-auth form {
@@ -192,108 +344,201 @@
 .academy-auth label {
   display: grid;
   gap: 7px;
+  color: #52637b;
   font-size: 12px;
-  color: #526c80;
+  font-weight: 500;
 }
 .academy-shell input,
 .academy-shell textarea,
 .academy-shell select,
 .academy-auth input {
-  border: 1px solid #cddbe6;
-  border-radius: 7px;
-  padding: 11px;
-  background: #fff;
-  min-width: 0;
   width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 10px 11px;
+  border: 1px solid #d5deeb;
+  border-radius: 7px;
+  background: #fff;
+  color: #203654;
   font: inherit;
-  color: #173f5b;
+  font-size: 13px;
+  line-height: 1.5;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+.academy-shell input::placeholder,
+.academy-shell textarea::placeholder,
+.academy-auth input::placeholder {
+  color: #94a3b8;
+}
+.academy-shell input:focus,
+.academy-shell textarea:focus,
+.academy-shell select:focus,
+.academy-auth input:focus {
+  outline: none;
+  border-color: #4c7bed;
+  box-shadow: 0 0 0 3px #245de514;
 }
 .academy-shell textarea {
-  min-height: 90px;
+  min-height: 100px;
+  resize: vertical;
+}
+.academy-shell input[type="file"] {
+  font-size: 12px;
+  background: #f8faff;
+}
+.academy-shell input::file-selector-button {
+  margin-right: 10px;
+  padding: 5px 8px;
+  color: #365681;
+  background: #edf3ff;
+  border: 0;
+  border-radius: 4px;
+  font: inherit;
+  cursor: pointer;
 }
 .academy-form-grid {
   display: grid !important;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
 }
+.academy-form-grid > button {
+  align-self: end;
+  justify-self: start;
+}
 .academy-check {
   display: flex !important;
   align-items: center;
-  gap: 8px !important;
+  gap: 9px !important;
 }
 .academy-check input {
-  width: auto;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--ac-blue);
 }
 .academy-table-scroll {
+  width: 100%;
   max-width: 100%;
-  overflow: auto;
+  overflow-x: auto;
+  border: 1px solid var(--ac-line);
+  border-radius: 8px;
+  margin-top: 16px;
+  overscroll-behavior-x: contain;
 }
 .academy-shell table {
   width: 100%;
   border-collapse: collapse;
   font-size: 12px;
-  margin: 14px 0;
+  line-height: 1.55;
+  margin: 0;
+  color: #425570;
 }
 .academy-shell th,
 .academy-shell td {
-  padding: 12px;
+  padding: 12px 14px;
   text-align: left;
-  border-bottom: 1px solid #e4ebf1;
-  vertical-align: top;
+  border-bottom: 1px solid #edf1f6;
+  vertical-align: middle;
+  overflow-wrap: anywhere;
 }
 .academy-shell th {
-  color: #647c91;
-  background: #f7fafc;
+  padding-block: 11px;
+  color: #52637b;
+  background: #f8fafd;
   white-space: nowrap;
+  font-size: 11px;
+  font-weight: 650;
 }
-.academy-notice {
-  background: #e8f4ec;
-  color: #28603e;
-  padding: 14px;
+.academy-shell tbody tr:last-child td {
+  border-bottom: 0;
+}
+.academy-shell tbody tr:hover {
+  background: #f9fbff;
+}
+.academy-shell td .academy-actions {
+  margin: 0;
+  flex-wrap: nowrap;
+}
+.academy-shell td button {
+  min-height: 32px;
+  padding: 6px 9px;
+  white-space: nowrap;
+  font-size: 11px;
+}
+.academy-table-scroll > p {
+  margin: 0;
+  padding: 28px 16px;
+  text-align: center;
+  font-size: 13px;
+}
+.academy-shell .academy-notice,
+.academy-shell .error,
+.academy-auth .error {
+  padding: 12px 15px;
+  border: 1px solid #cdeadd;
   border-radius: 8px;
+  background: #effaf4;
+  color: #226649;
+  margin-bottom: 20px;
+  font-size: 13px;
 }
 .academy-shell .error,
 .academy-auth .error {
-  background: #fff0f0;
-  color: #a32121;
-  padding: 14px;
-  border-radius: 8px;
+  background: #fff4f3;
+  border-color: #f6d8d5;
+  color: #b13b35;
 }
 .academy-section {
-  margin-bottom: 22px;
+  margin-bottom: 20px;
+}
+.academy-admin-grid .academy-section {
+  margin-bottom: 0;
 }
 .academy-player video {
   display: block;
   width: 100%;
   max-height: 60dvh;
-  background: #18232c;
+  border-radius: 8px;
+  background: #111c2e;
   margin-top: 20px;
 }
 .academy-qr {
-  max-width: 280px;
+  display: block;
+  max-width: 260px;
   width: 100%;
-  margin: 12px 0;
+  margin: 16px auto;
 }
 .academy-receipt {
   margin-top: 20px;
-  background: #f2f5f8;
-  padding: 15px;
+  padding: 16px;
+  border: 1px solid var(--ac-line);
+  border-radius: 8px;
+  background: #f8fafd;
 }
 .academy-receipt img {
   display: block;
   max-width: 100%;
   max-height: 70dvh;
-  margin-top: 10px;
+  margin: 12px auto 0;
+  border-radius: 6px;
 }
 .academy-assignments {
-  margin-top: 25px;
-  border-top: 1px solid #dfe7ef;
-  padding-top: 16px;
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--ac-line);
 }
 .academy-assignments fieldset {
-  border: 1px solid #dfe7ef;
-  padding: 12px;
+  min-width: 0;
+  border: 1px solid var(--ac-line);
+  padding: 16px;
   border-radius: 8px;
+}
+.academy-assignments legend {
+  padding: 0 6px;
+  font-size: 12px;
+  font-weight: 600;
 }
 .academy-assignments article,
 .academy-assignments form {
@@ -302,39 +547,67 @@
 .academy-assignments pre {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
+  font: inherit;
   font-size: 12px;
 }
 .academy-shell progress {
-  max-width: 100px;
-  height: 7px;
-  accent-color: #1e6d8a;
+  width: 90px;
+  max-width: 100%;
+  height: 6px;
+  border-radius: 4px;
+  accent-color: var(--ac-blue);
 }
 .academy-shell footer {
+  padding: 24px 0 0;
+  margin: 32px 0 0;
+  border-top: 1px solid var(--ac-line);
+  color: #8491a5;
+  text-align: left;
   font-size: 11px;
-  color: #718799;
-  margin: 35px 0;
 }
 .academy-auth {
-  max-width: 700px;
-  margin: 0 auto;
-  padding: 40px 26px;
+  width: min(100% - 32px, 640px);
+  min-height: auto;
+  margin: 48px auto;
+  padding: 32px;
+  border: 1px solid var(--ac-line);
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 10px 40px #172b4d08;
 }
 .academy-auth h1 {
-  margin: 25px 0;
-  font-size: 30px;
+  margin: 26px 0 20px;
+  font-size: 26px;
+  letter-spacing: -0.7px;
+  font-weight: 650;
 }
 .academy-auth > a {
-  color: #1b587f;
+  color: #365e9e;
   font-size: 13px;
+}
+.academy-auth .academy-tabs {
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--ac-line);
 }
 .academy-loading {
   display: grid;
   place-items: center;
 }
 .academy-shell button:focus-visible,
-.academy-auth button:focus-visible {
-  outline: 3px solid #78aeda;
+.academy-shell a:focus-visible,
+.academy-auth button:focus-visible,
+.academy-auth a:focus-visible {
+  outline: 3px solid #8cafff;
   outline-offset: 3px;
+}
+@media (max-width: 900px) {
+  .academy-shell {
+    grid-template-columns: 210px minmax(0, 1fr);
+  }
+  .academy-shell > main {
+    padding: 26px 22px;
+  }
 }
 @media (max-width: 800px) {
   .academy-shell {
@@ -342,71 +615,137 @@
   }
   .academy-shell > aside {
     position: static;
+    width: 100%;
     height: auto;
-    padding: 16px;
+    overflow: visible;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 7px 12px;
+    padding: 16px 16px 0;
     border-right: 0;
-    border-bottom: 1px solid #dfe7ef;
-    gap: 12px;
+    border-bottom: 1px solid var(--ac-line);
   }
-  .academy-shell > aside > p {
+  .academy-shell > aside > .academy-brand {
+    grid-column: 1;
     margin: 0;
-  }
-  .academy-shell nav {
-    display: flex;
-    overflow: auto;
-    gap: 6px;
-  }
-  .academy-shell nav button {
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-  .academy-brand {
-    font-size: 20px;
+    font-size: 21px;
   }
   .academy-brand span {
     display: inline;
-    margin-left: 12px;
+    margin-left: 8px;
+    font-size: 9px;
     letter-spacing: 2px;
   }
+  .academy-shell > aside > p {
+    grid-column: 1;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    font-size: 11px;
+    font-weight: 400;
+  }
+  .academy-shell > aside > button {
+    grid-column: 2;
+    grid-row: 1 / 3;
+    align-self: center;
+    min-height: 36px;
+    padding: 7px 11px;
+    font-size: 11px;
+  }
+  .academy-shell nav {
+    grid-column: 1 / -1;
+    display: flex;
+    overflow-x: auto;
+    min-width: 0;
+    gap: 4px;
+    margin: 5px -4px 0;
+    padding: 0 4px 9px;
+    scrollbar-width: thin;
+    scrollbar-color: #d5dfed transparent;
+  }
+  .academy-shell nav button {
+    flex-shrink: 0;
+    white-space: nowrap;
+    padding: 9px 12px;
+    min-height: 40px;
+    font-size: 12px;
+  }
+  .academy-shell nav button.active::before {
+    display: none;
+  }
   .academy-shell > main {
-    padding: 22px 14px;
+    padding: 22px 16px;
   }
   .academy-shell main > header {
-    display: block;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding-bottom: 18px;
+  }
+  .academy-shell h1 {
+    font-size: 23px;
+    line-height: 1.4;
   }
   .academy-badge {
-    display: inline-block;
-    margin-bottom: 15px;
+    margin-top: 0;
+    font-size: 10px;
   }
   .academy-stats {
     gap: 8px;
-    margin-top: 10px;
+    margin-bottom: 20px;
   }
   .academy-stats article {
     padding: 14px 10px;
+    border-radius: 9px;
   }
   .academy-stats strong {
     font-size: 16px;
+    letter-spacing: -0.3px;
   }
   .academy-stats small {
+    display: block;
     font-size: 10px;
+    line-height: 1.5;
   }
-  .academy-form-grid {
+  .academy-course-grid,
+  .academy-admin-grid {
     grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .academy-course-grid > .academy-course {
+    max-width: none;
   }
   .academy-course-body,
   .academy-plan,
   .academy-section {
     padding: 18px;
   }
-  .academy-shell > aside > button {
-    align-self: flex-end;
+  .academy-form-grid {
+    grid-template-columns: 1fr;
   }
-  .academy-admin-grid {
-    display: block;
+  .academy-shell input,
+  .academy-shell select,
+  .academy-shell textarea,
+  .academy-auth input {
+    font-size: 16px;
+  }
+  .academy-shell button,
+  .academy-auth button {
+    min-height: 42px;
   }
   .academy-shell td,
   .academy-shell th {
-    padding: 10px;
+    padding: 11px 12px;
+  }
+  .academy-auth {
+    margin: 20px auto;
+    padding: 24px 20px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .academy-shell *,
+  .academy-auth * {
+    transition: none !important;
+    scroll-behavior: auto !important;
   }
 }
