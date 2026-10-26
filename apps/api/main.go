@@ -185,6 +185,8 @@ func (a *app) routes() http.Handler {
 	m.HandleFunc("GET /api/catalog", a.auth(a.catalog))
 	m.HandleFunc("POST /api/classes", a.auth(a.createClass))
 	m.HandleFunc("POST /api/courses", a.auth(a.createCourse))
+	m.HandleFunc("GET /api/courses/{id}/classroom", a.auth(a.courseCommunity))
+	m.HandleFunc("POST /api/courses/{id}/classroom", a.auth(a.courseCommunity))
 	m.HandleFunc("POST /api/classes/{id}/courses/batch", a.auth(a.courseBatch))
 	m.HandleFunc("POST /api/classes/{id}/courses/{course}/delete", a.auth(a.deleteCourse))
 	m.HandleFunc("GET /api/classes/{id}/students", a.auth(a.classStudents))
@@ -307,7 +309,7 @@ func migrate(db *sql.DB) error {
 	if e = migrateV4(c); e != nil {
 		return e
 	}
-	_, e = c.ExecContext(context.Background(), "INSERT IGNORE INTO schema_migrations VALUES(6),(7)")
+	_, e = c.ExecContext(context.Background(), "INSERT IGNORE INTO schema_migrations VALUES(6),(7),(8)")
 	return e
 }
 func main() {

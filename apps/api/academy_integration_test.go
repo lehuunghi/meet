@@ -171,6 +171,92 @@ func TestAcademyIntegration(t *testing.T) {
 	if !strings.Contains(web.Body.String(), "Học tốt") || strings.Contains(web.Body.String(), "test-secret") {
 		t.Fatal("SSR content/secret failure")
 	}
+	// Marketing pages escape CMS text, retain course intent and never expose storage keys.
+	siteBody := `{"content":{"headline":"VA thử","published":true,"about":"Giới thiệu thật","contact_email":"support@example.test","privacy":"Chính sách <script>không thực thi</script>","course_pages":{"ac-course":{"audience":"Học sinh lớp 10","objectives":"Hiểu hàm số\nVận dụng đồ thị","outline":"Chương 1\nChương 2","schedule":"Thứ hai","preview_lesson":"lesson-0"}}}}`
+	saved := request("POST", "/api/academy/site", siteBody, admin)
+	must(saved, 200)
+	var revision map[string]any
+	_ = json.Unmarshal(saved.Body.Bytes(), &revision)
+	must(request("POST", "/api/academy/site", `{"revision":"stale","content":{"headline":"không ghi đè","published":true}}`, admin), 409)
+	coursePage := request("GET", "/khoa-hoc/ac-course", "", nil)
+	must(coursePage, 200)
+	for _, needle := range []string{"Học sinh lớp 10", "Chương 1", "course=ac-course", "lesson=lesson-0"} {
+		if !strings.Contains(coursePage.Body.String(), needle) {
+			t.Fatalf("missing course detail %s", needle)
+		}
+	}
+	if strings.Contains(coursePage.Body.String(), "academy/vod/test/") {
+		t.Fatal("public object key leaked")
+	}
+	policy := request("GET", "/chinh-sach/bao-mat", "", nil)
+	must(policy, 200)
+	if strings.Contains(policy.Body.String(), "<script>") {
+		t.Fatal("policy HTML unescaped")
+	}
+	must(request("GET", "/chinh-sach/thanh-toan-hoan-phi", "", nil), 404)
+	exec("INSERT INTO academy_courses(id,school_id,title,description,teacher_name,published) VALUES('private-course','academy-school','PRIVATE COURSE','PRIVATE BODY','',FALSE),('foreign-course','academy-other','FOREIGN COURSE','FOREIGN BODY','',TRUE)")
+	must(request("GET", "/khoa-hoc/private-course", "", nil), 404)
+	must(request("GET", "/khoa-hoc/foreign-course", "", nil), 404)
+	sitemap := request("GET", "/sitemap.xml", "", nil)
+	must(sitemap, 200)
+	if !strings.Contains(sitemap.Body.String(), "/khoa-hoc/ac-course") || strings.Contains(sitemap.Body.String(), "private-course") || strings.Contains(sitemap.Body.String(), "foreign-course") {
+		t.Fatal("sitemap course scope")
+	}
+
+	// Teacher-only announcements, and students never receive classmates' personal records.
+	teacher := cookie("ac-teacher", "academy-school", "teacher")
+	exec("INSERT INTO users(id,school_id,email,name,password_hash,role) VALUES('ac-unassigned','academy-school','unassigned@example.test','Không phân công','test','teacher'),('ac-second','academy-school','second@example.test','Học sinh thứ hai','test','student')")
+	unassigned := cookie("ac-unassigned", "academy-school", "teacher")
+	exec("INSERT INTO enrollments VALUES('academy-school','ac-class','ac-second')")
+	exec("INSERT INTO academy_memberships VALUES('academy-school','ac-second',UTC_TIMESTAMP()+INTERVAL 30 DAY,TRUE)")
+	must(request("POST", "/api/courses/ac-math/classroom", `{"title":"Thông báo học tập","body":"Ôn tập chương 1"}`, teacher), 201)
+	must(request("POST", "/api/courses/ac-math/classroom", `{"title":"Không được","body":"Không được"}`, student), 403)
+	must(request("GET", "/api/courses/ac-math/classroom", "", unassigned), 404)
+	must(request("GET", "/api/courses/ac-math/classroom", "", other), 404)
+	must(request("GET", "/api/courses/ac-math/classroom", "", limited), 403)
+	community := request("GET", "/api/courses/ac-math/classroom", "", student)
+	must(community, 200)
+	var communityData map[string]any
+	_ = json.Unmarshal(community.Body.Bytes(), &communityData)
+	if len(communityData["students"].([]any)) != 0 || len(communityData["announcements"].([]any)) != 1 || communityData["can_manage"] != false {
+		t.Fatal("student roster/privacy failure")
+	}
+	staffCommunity := request("GET", "/api/courses/ac-math/classroom", "", teacher)
+	must(staffCommunity, 200)
+	if !strings.Contains(staffCommunity.Body.String(), "Học sinh thứ hai") {
+		t.Fatal("assigned teacher cannot see class roster")
+	}
+
+	// Work summaries use own progress and assigned courses only, with no question/answer payloads.
+	exec("INSERT INTO academy_progress(school_id,user_id,lesson_id,seconds,completed) VALUES('academy-school','ac-student','lesson-0',120,FALSE),('academy-school','ac-second','lesson-1',240,FALSE)")
+	exec("INSERT INTO academy_assignments(id,school_id,course_id,teacher_id,title,questions,due_at) VALUES('ac-task','academy-school','ac-course','ac-teacher','Bài cần nộp','[{\"id\":\"q\",\"prompt\":\"Question\",\"answer\":\"ANSWER-SECRET\"}]',UTC_TIMESTAMP()+INTERVAL 1 DAY)")
+	summary := request("GET", "/api/academy/workspace", "", student)
+	must(summary, 200)
+	if !strings.Contains(summary.Body.String(), "lesson-0") || strings.Contains(summary.Body.String(), "lesson-1") || !strings.Contains(summary.Body.String(), "ac-task") || strings.Contains(summary.Body.String(), "ANSWER-SECRET") {
+		t.Fatal("workspace personal-data scope")
+	}
+	exec("INSERT INTO academy_submissions(school_id,assignment_id,user_id,answers) VALUES('academy-school','ac-task','ac-student','{}')")
+	teacherSummary := request("GET", "/api/academy/workspace", "", teacher)
+	must(teacherSummary, 200)
+	var work map[string]any
+	_ = json.Unmarshal(teacherSummary.Body.Bytes(), &work)
+	task := work["tasks"].([]any)[0].(map[string]any)
+	if fmt.Sprint(task["ungraded"]) != "1" || fmt.Sprint(task["missing"]) != "1" {
+		t.Fatalf("task counts %v", task)
+	}
+	unassignedSummary := request("GET", "/api/academy/workspace", "", unassigned)
+	must(unassignedSummary, 200)
+	if strings.Contains(unassignedSummary.Body.String(), "ac-task") || strings.Contains(unassignedSummary.Body.String(), "ac-meeting") {
+		t.Fatal("unassigned teacher workspace leak")
+	}
+	exec("DELETE FROM academy_memberships WHERE school_id='academy-school' AND user_id='ac-student'")
+	freeSummary := request("GET", "/api/academy/workspace", "", student)
+	must(freeSummary, 200)
+	_ = json.Unmarshal(freeSummary.Body.Bytes(), &work)
+	if len(work["tasks"].([]any)) != 0 || len(work["meetings"].([]any)) != 0 {
+		t.Fatal("free workspace exposed VIP actions")
+	}
+
 	bad := request("POST", "/api/academy/webhooks/payos", `{"success":true,"data":{"amount":1000},"signature":"00"}`, nil)
 	must(bad, 403)
 }

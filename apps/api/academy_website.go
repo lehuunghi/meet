@@ -11,7 +11,22 @@ import (
 	"strings"
 )
 
+type academyCoursePage struct {
+	Audience      string `json:"audience"`
+	Objectives    string `json:"objectives"`
+	Outline       string `json:"outline"`
+	Schedule      string `json:"schedule"`
+	PreviewLesson string `json:"preview_lesson"`
+}
 type academySite struct {
+	About        string                                `json:"about"`
+	ContactEmail string                                `json:"contact_email"`
+	ContactPhone string                                `json:"contact_phone"`
+	Address      string                                `json:"address"`
+	Terms        string                                `json:"terms"`
+	Privacy      string                                `json:"privacy"`
+	Refund       string                                `json:"refund"`
+	CoursePages  map[string]academyCoursePage          `json:"course_pages"`
 	Headline     string                                `json:"headline"`
 	Description  string                                `json:"description"`
 	Published    bool                                  `json:"published"`
@@ -26,8 +41,12 @@ type academyPost struct {
 	Slug, Title, Summary, Body string
 	Published                  bool
 }
-type webCourse struct{ ID, Title, Description, Teacher string }
+type webCourse struct {
+	ID, Title, Description, Teacher string
+	Page                            academyCoursePage
+}
 type webPlan struct {
+	ID    string
 	Name  string
 	Price int64
 	Days  int
@@ -37,7 +56,15 @@ type webPlan struct {
 //go:embed academy_site.html
 var academySiteHTML string
 
-var academyWeb = template.Must(template.New("site").Funcs(template.FuncMap{"price": func(v int64) string {
+var academyWeb = template.Must(template.New("site").Funcs(template.FuncMap{"lines": func(s string) []string {
+	out := []string{}
+	for _, v := range strings.Split(s, "\n") {
+		if v = strings.TrimSpace(v); v != "" {
+			out = append(out, v)
+		}
+	}
+	return out
+}, "price": func(v int64) string {
 	text := fmt.Sprintf("%d", v)
 	for i := len(text) - 3; i > 0; i -= 3 {
 		text = text[:i] + "." + text[i:]
@@ -108,32 +135,77 @@ func (a *app) academyWebsite(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		rows.Close()
-		prices, e := a.db.QueryContext(r.Context(), "SELECT name,price_vnd,days,live_enabled FROM academy_plans WHERE school_id=? AND active=TRUE ORDER BY price_vnd LIMIT 12", school)
+		prices, e := a.db.QueryContext(r.Context(), "SELECT id,name,price_vnd,days,live_enabled FROM academy_plans WHERE school_id=? AND active=TRUE ORDER BY price_vnd LIMIT 12", school)
 		if e == nil {
 			for prices.Next() {
 				var p webPlan
-				if prices.Scan(&p.Name, &p.Price, &p.Days, &p.Live) == nil {
+				if prices.Scan(&p.ID, &p.Name, &p.Price, &p.Days, &p.Live) == nil {
 					plans = append(plans, p)
 				}
 			}
 			prices.Close()
 		}
 	}
+	var course *webCourse
+	if id := r.PathValue("course"); id != "" {
+		if !site.Published {
+			http.NotFound(w, r)
+			return
+		}
+		var c webCourse
+		if a.db.QueryRowContext(r.Context(), "SELECT id,title,description,teacher_name FROM academy_courses WHERE school_id=? AND id=? AND published=TRUE", school, id).Scan(&c.ID, &c.Title, &c.Description, &c.Teacher) != nil {
+			http.NotFound(w, r)
+			return
+		}
+		c.Page = site.CoursePages[c.ID]
+		if c.Page.PreviewLesson != "" {
+			var n int
+			if a.db.QueryRowContext(r.Context(), "SELECT COUNT(*) FROM academy_lessons WHERE school_id=? AND course_id=? AND id=? AND status='ready'", school, c.ID, c.Page.PreviewLesson).Scan(&n) != nil || n != 1 {
+				c.Page.PreviewLesson = ""
+			}
+		}
+		course = &c
+		canonical = a.origin + "/khoa-hoc/" + c.ID
+	}
+	var policy map[string]string
+	if kind := r.PathValue("policy"); kind != "" {
+		body, title := "", ""
+		switch kind {
+		case "dieu-khoan":
+			body, title = site.Terms, "Điều khoản sử dụng"
+		case "bao-mat":
+			body, title = site.Privacy, "Chính sách bảo mật"
+		case "thanh-toan-hoan-phi":
+			body, title = site.Refund, "Thanh toán và hoàn phí"
+		}
+		if !site.Published || strings.TrimSpace(body) == "" {
+			http.NotFound(w, r)
+			return
+		}
+		policy = map[string]string{"Title": title, "Body": body}
+		canonical = a.origin + "/chinh-sach/" + kind
+	}
 	cfg, _ := loadSettings()
 	free := cfg.Commerce.FreeVideos
 	if free == 0 {
 		free = 4
 	}
+	hasPosts := false
+	for _, v := range site.Posts {
+		if v.Published {
+			hasPosts = true
+		}
+	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.Header().Set("Cache-Control", "public, max-age=60")
-	_ = academyWeb.Execute(w, map[string]any{"Site": site, "Courses": courses, "Plans": plans, "Free": free, "Canonical": canonical, "Post": post})
+	_ = academyWeb.Execute(w, map[string]any{"Site": site, "Courses": courses, "Plans": plans, "Free": free, "Canonical": canonical, "Post": post, "Course": course, "Policy": policy, "HasPosts": hasPosts})
 }
 func (a *app) academySitemap(w http.ResponseWriter, r *http.Request) {
 	if !academyEnabled() {
 		http.NotFound(w, r)
 		return
 	}
-	_, site, e := a.websiteData(r)
+	school, site, e := a.websiteData(r)
 	if e != nil {
 		http.NotFound(w, r)
 		return
@@ -142,6 +214,21 @@ func (a *app) academySitemap(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">`))
 	locations := []string{a.origin + "/"}
 	if site.Published {
+		rows, err := a.db.QueryContext(r.Context(), "SELECT id FROM academy_courses WHERE school_id=? AND published=TRUE ORDER BY created_at DESC LIMIT 1000", school)
+		if err == nil {
+			for rows.Next() {
+				var id string
+				if rows.Scan(&id) == nil {
+					locations = append(locations, a.origin+"/khoa-hoc/"+id)
+				}
+			}
+			rows.Close()
+		}
+		for _, p := range []struct{ key, body string }{{"dieu-khoan", site.Terms}, {"bao-mat", site.Privacy}, {"thanh-toan-hoan-phi", site.Refund}} {
+			if strings.TrimSpace(p.body) != "" {
+				locations = append(locations, a.origin+"/chinh-sach/"+p.key)
+			}
+		}
 		for _, post := range site.Posts {
 			if post.Published && regexp.MustCompile(`^[a-z0-9-]{1,100}$`).MatchString(post.Slug) {
 				locations = append(locations, a.origin+"/bai-viet/"+post.Slug)

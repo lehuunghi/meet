@@ -1,8 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
 import { api } from "./api";
-import {PreviewRoom} from "./preview";
+import { PreviewRoom } from "./preview";
 import { LearningWorkspace } from "./learning";
 import { AcademicAdmin } from "./academic";
+import { AcademySiteEditor, AcademyCourseEditor } from "./academy-site-editor";
+import { AcademyToday } from "./academy-today";
 import { Accounts } from "./accounts";
 import { AcademySettings } from "./academy-settings";
 import { AcademyIcon, AcademyAuthFrame } from "./academy-ui";
@@ -24,13 +26,52 @@ const demoCourses = [
   },
 ];
 const demoClassrooms = [
- {id:'demo-academic-math',name:'Toán nền tảng',class_id:'demo-class-10a1',class_name:'10A1',teacher:'Nguyễn Minh Anh',lesson_count:12},
- {id:'demo-academic-physics',name:'Vật lý',class_id:'demo-class-10a1',class_name:'10A1',teacher:'Trần Quốc Huy',lesson_count:8},
- {id:'demo-academic-literature',name:'Ngữ văn',class_id:'demo-class-11a2',class_name:'11A2',teacher:'Lê Thu Hà',lesson_count:6},
+  {
+    id: "demo-academic-math",
+    name: "Toán nền tảng",
+    class_id: "demo-class-10a1",
+    class_name: "10A1",
+    teacher: "Nguyễn Minh Anh",
+    lesson_count: 12,
+  },
+  {
+    id: "demo-academic-physics",
+    name: "Vật lý",
+    class_id: "demo-class-10a1",
+    class_name: "10A1",
+    teacher: "Trần Quốc Huy",
+    lesson_count: 8,
+  },
+  {
+    id: "demo-academic-literature",
+    name: "Ngữ văn",
+    class_id: "demo-class-11a2",
+    class_name: "11A2",
+    teacher: "Lê Thu Hà",
+    lesson_count: 6,
+  },
 ];
 const demoMeetings = [
- {id:'demo-live-math',course_id:'demo-academic-math',title:'Hàm số và đồ thị',course:'Toán nền tảng',class_name:'10A1',status:'live',starts_at:'2026-10-26T01:00:00Z',recording_allowed:false},
- {id:'demo-ended-math',course_id:'demo-academic-math',title:'Ôn tập phương trình',course:'Toán nền tảng',class_name:'10A1',status:'ended',starts_at:'2026-10-24T01:00:00Z',recording_allowed:true},
+  {
+    id: "demo-live-math",
+    course_id: "demo-academic-math",
+    title: "Hàm số và đồ thị",
+    course: "Toán nền tảng",
+    class_name: "10A1",
+    status: "live",
+    starts_at: "2026-10-26T01:00:00Z",
+    recording_allowed: false,
+  },
+  {
+    id: "demo-ended-math",
+    course_id: "demo-academic-math",
+    title: "Ôn tập phương trình",
+    course: "Toán nền tảng",
+    class_name: "10A1",
+    status: "ended",
+    starts_at: "2026-10-24T01:00:00Z",
+    recording_allowed: true,
+  },
 ];
 const demoPlans = [
   {
@@ -65,7 +106,7 @@ export function AcademyApp({
         : null,
     ),
     [loading, setLoading] = useState(!demo),
-    [tab, setTab] = useState(demo&&role!=="admin"?"live":"courses"),
+    [tab, setTab] = useState(demo && role !== "admin" ? "live" : "courses"),
     [error, setError] = useState(""),
     [notice, setNotice] = useState(""),
     [courses, setCourses] = useState<any[]>(demo ? demoCourses : []),
@@ -82,10 +123,40 @@ export function AcademyApp({
     [room, setRoom] = useState<any>(null),
     [classrooms, setClassrooms] = useState<any[]>([]),
     [meetings, setMeetings] = useState<any[]>([]),
-    [authTab, setAuthTab] = useState(new URLSearchParams(location.search).has("register") ? "register" : "login"),
+    [authTab, setAuthTab] = useState(
+      new URLSearchParams(location.search).has("register")
+        ? "register"
+        : "login",
+    ),
     [challenge, setChallenge] = useState("");
-  const [brand,setBrand]=useState("VA Academy"),[freeQuota,setFreeQuota]=useState(4),[menuOpen,setMenuOpen]=useState(false);
-  useEffect(()=>{if(!demo){void api('/public-config').then(v=>setBrand(v.school_name||'VA Academy')).catch(()=>{});void api('/academy/public').then(v=>setFreeQuota(v.free_videos||4)).catch(()=>{});}},[]);
+  const safeIntent = (key: string) => {
+    const v = new URLSearchParams(location.search).get(key) || "";
+    return /^[a-zA-Z0-9-]{1,36}$/.test(v) ? v : "";
+  };
+  const [intentCourse, setIntentCourse] = useState(safeIntent("course")),
+    [intentLesson, setIntentLesson] = useState(safeIntent("lesson")),
+    [intentTasks, setIntentTasks] = useState(false),
+    [signupStep, setSignupStep] = useState(0);
+  const intentPlan = safeIntent("plan");
+  const showCourse = (id: string, lesson = "", tasks = false) => {
+    setIntentCourse(id);
+    setIntentLesson(lesson);
+    setIntentTasks(tasks);
+    setTab("courses");
+  };
+  const [brand, setBrand] = useState("VA Academy"),
+    [freeQuota, setFreeQuota] = useState(4),
+    [menuOpen, setMenuOpen] = useState(false);
+  useEffect(() => {
+    if (!demo) {
+      void api("/public-config")
+        .then((v) => setBrand(v.school_name || "VA Academy"))
+        .catch(() => {});
+      void api("/academy/public")
+        .then((v) => setFreeQuota(v.free_videos || 4))
+        .catch(() => {});
+    }
+  }, []);
   const perform = async (fn: () => Promise<void>) => {
     setError("");
     setNotice("");
@@ -95,7 +166,10 @@ export function AcademyApp({
       setError((e as Error).message);
     }
   };
-  useEffect(()=>{if(user&&user.role!=='admin')setTab('live');},[user?.id]);
+  useEffect(() => {
+    if (user && user.role !== "admin")
+      setTab(intentPlan ? "vip" : intentCourse ? "courses" : "live");
+  }, [user?.id]);
   async function refresh() {
     if (demo) return;
     const [c, p] = await Promise.all([
@@ -159,7 +233,14 @@ export function AcademyApp({
   const vip = profile.expires_at && Date.parse(profile.expires_at) > Date.now();
   if (loading)
     return <main className="academy-loading">Đang mở cổng học tập…</main>;
-  if(room&&user&&demo)return <PreviewRoom role={user.role} title={room.title} onExit={()=>setRoom(null)}/>;
+  if (room && user && demo)
+    return (
+      <PreviewRoom
+        role={user.role}
+        title={room.title}
+        onExit={() => setRoom(null)}
+      />
+    );
   if (room && user)
     return (
       <RoomComponent
@@ -176,175 +257,248 @@ export function AcademyApp({
   if (!user)
     return (
       <AcademyAuthFrame brand={brand}>
-      <main className="academy-auth">
-        <a href="/">← Trang giới thiệu</a>
-        <h1>
-          {authTab === "register"
-            ? "Tạo tài khoản học tập"
-            : "Chào mừng trở lại"}
-        </h1>
-        <div className="academy-tabs">
-          <button
-            onClick={() => {
-              setAuthTab("login");
-              setChallenge("");
+        <main className="academy-auth">
+          <a href="/">← Trang giới thiệu</a>
+          <h1>
+            {authTab === "register"
+              ? "Tạo tài khoản học tập"
+              : "Chào mừng trở lại"}
+          </h1>
+          <div className="academy-tabs">
+            <button
+              onClick={() => {
+                setAuthTab("login");
+                setChallenge("");
+              }}
+            >
+              Đăng nhập
+            </button>
+            <button onClick={() => setAuthTab("register")}>
+              Đăng ký học thử
+            </button>
+          </div>
+          {error && (
+            <p role="alert" className="error">
+              {error}
+            </p>
+          )}
+          {notice && <p role="status">{notice}</p>}
+          {authTab === "register" && (
+            <p className="academy-signup-steps" role="status">
+              {signupStep === 0
+                ? "Bước 1/2 · Tài khoản"
+                : "Bước 2/2 · Hồ sơ và xác thực email"}
+            </p>
+          )}
+          {(intentCourse || intentPlan) && (
+            <p className="academy-intent-notice">
+              Đăng nhập hoặc tạo tài khoản để tiếp tục{" "}
+              {intentCourse ? "khóa học đã chọn" : "gói học đã chọn"}. Thông tin
+              lựa chọn được giữ trong quá trình đăng ký.
+            </p>
+          )}
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (authTab === "register" && signupStep === 0) {
+                setSignupStep(1);
+                return;
+              }
+              const v = Object.fromEntries(new FormData(e.currentTarget));
+              void perform(async () => {
+                if (authTab === "login") {
+                  const result = await api(
+                    challenge ? "/login/2fa" : "/login",
+                    challenge
+                      ? { challenge, code: v.code }
+                      : { email: v.email, password: v.password },
+                  );
+                  if (result.requires_2fa) {
+                    setChallenge(result.challenge);
+                    return;
+                  }
+                  setUser(result);
+                } else {
+                  await api("/academy/register", {
+                    email: v.email,
+                    password: v.password,
+                    code: v.code,
+                    profile: {
+                      name: v.name,
+                      dob: v.dob,
+                      address: v.address,
+                      school_name: v.school_name,
+                      phone: v.phone,
+                      parent_phone: v.parent_phone,
+                      marketing_consent: v.marketing_consent === "on",
+                    },
+                  });
+                  setAuthTab("login");
+                  setSignupStep(0);
+                  setNotice("Đăng ký thành công. Anh/chị có thể đăng nhập.");
+                }
+              });
             }}
           >
-            Đăng nhập
-          </button>
-          <button onClick={() => setAuthTab("register")}>
-            Đăng ký học thử
-          </button>
-        </div>
-        {error && (
-          <p role="alert" className="error">
-            {error}
-          </p>
-        )}
-        {notice && <p role="status">{notice}</p>}
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            const v = Object.fromEntries(new FormData(e.currentTarget));
-            void perform(async () => {
-              if (authTab === "login") {
-                const result = await api(
-                  challenge ? "/login/2fa" : "/login",
-                  challenge
-                    ? { challenge, code: v.code }
-                    : { email: v.email, password: v.password },
-                );
-                if (result.requires_2fa) {
-                  setChallenge(result.challenge);
-                  return;
-                }
-                setUser(result);
-              } else {
-                await api("/academy/register", {
-                  email: v.email,
-                  password: v.password,
-                  code: v.code,
-                  profile: {
-                    name: v.name,
-                    dob: v.dob,
-                    address: v.address,
-                    school_name: v.school_name,
-                    phone: v.phone,
-                    parent_phone: v.parent_phone,
-                    marketing_consent: v.marketing_consent === "on",
-                  },
-                });
-                setAuthTab("login");
-                setNotice("Đăng ký thành công. Anh/chị có thể đăng nhập.");
-              }
-            });
-          }}
-        >
-          {!challenge && (
-            <>
-              <label>
-                Email
-                <input
-                  name="email"
-                  type="email"
-                  required
-                  autoComplete="email"
-                />
-              </label>
-              <label>
-                Mật khẩu
-                <input
-                  name="password"
-                  type="password"
-                  minLength={6}
-                  required
-                  autoComplete={
-                    authTab === "register" ? "new-password" : "current-password"
-                  }
-                />
-              </label>
-            </>
-          )}
-          {authTab === "register" && (
-            <>
-              <div className="academy-form-grid">
-                {[
-                  ["name", "Họ tên", "text"],
-                  ["dob", "Ngày sinh", "date"],
-                  ["address", "Địa chỉ", "text"],
-                  ["school_name", "Trường đang học", "text"],
-                  ["phone", "Số điện thoại", "tel"],
-                  ["parent_phone", "Số điện thoại phụ huynh", "tel"],
-                ].map(([key, label, type]) => (
-                  <label key={key}>
-                    {label}
-                    <input name={key} type={type} required />
-                  </label>
-                ))}
+            {!challenge && (
+              <div hidden={authTab === "register" && signupStep === 1}>
+                <label>
+                  Email
+                  <input
+                    name="email"
+                    type="email"
+                    required={authTab !== "register" || signupStep === 0}
+                    autoComplete="email"
+                  />
+                </label>
+                <label>
+                  Mật khẩu
+                  <input
+                    name="password"
+                    type="password"
+                    minLength={6}
+                    required={authTab !== "register" || signupStep === 0}
+                    autoComplete={
+                      authTab === "register"
+                        ? "new-password"
+                        : "current-password"
+                    }
+                  />
+                </label>
               </div>
-              <button
-                type="button"
-                onClick={(e) => {
-                  const f = e.currentTarget.form!;
-                  void perform(async () => {
-                    await api("/academy/email-code", {
-                      email: (f.elements.namedItem("email") as HTMLInputElement)
-                        .value,
+            )}
+            {authTab === "register" && (
+              <div hidden={signupStep === 0}>
+                <div className="academy-form-grid">
+                  {[
+                    ["name", "Họ tên", "text"],
+                    ["dob", "Ngày sinh", "date"],
+                    ["address", "Địa chỉ", "text"],
+                    ["school_name", "Trường đang học", "text"],
+                    ["phone", "Số điện thoại", "tel"],
+                    ["parent_phone", "Số điện thoại phụ huynh", "tel"],
+                  ].map(([key, label, type]) => (
+                    <label key={key}>
+                      {label}
+                      <input
+                        name={key}
+                        type={type}
+                        required={signupStep === 1}
+                      />
+                    </label>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    const f = e.currentTarget.form!;
+                    void perform(async () => {
+                      await api("/academy/email-code", {
+                        email: (
+                          f.elements.namedItem("email") as HTMLInputElement
+                        ).value,
+                      });
+                      setNotice("Đã gửi mã email. Mã có hiệu lực 10 phút.");
                     });
-                    setNotice("Đã gửi mã email. Mã có hiệu lực 10 phút.");
-                  });
-                }}
-              >
-                Gửi mã xác thực email
-              </button>
+                  }}
+                >
+                  Gửi mã xác thực email
+                </button>
+                <label>
+                  Mã xác thực email
+                  <input
+                    name="code"
+                    inputMode="numeric"
+                    pattern="[0-9]{6}"
+                    required={signupStep === 1}
+                  />
+                </label>
+                <label className="academy-check">
+                  <input type="checkbox" name="marketing_consent" />
+                  Tôi muốn nhận lịch khai giảng và ưu đãi.
+                </label>
+                <small>
+                  Thêm ảnh đại diện trong hồ sơ sau khi đăng nhập. Email OTP xác
+                  thực email; số điện thoại chưa được xác thực qua SMS/Zalo.
+                </small>
+              </div>
+            )}
+            {challenge && (
               <label>
-                Mã xác thực email
+                Mã xác thực hai bước
                 <input
                   name="code"
-                  inputMode="numeric"
-                  pattern="[0-9]{6}"
                   required
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
                 />
               </label>
-              <label className="academy-check">
-                <input type="checkbox" name="marketing_consent" />
-                Tôi muốn nhận lịch khai giảng và ưu đãi.
-              </label>
-              <small>
-                Thêm ảnh đại diện trong hồ sơ sau khi đăng nhập. Email OTP xác
-                thực email; số điện thoại chưa được xác thực qua SMS/Zalo.
-              </small>
-            </>
-          )}
-          {challenge && (
-            <label>
-              Mã xác thực hai bước
-              <input
-                name="code"
-                required
-                inputMode="numeric"
-                autoComplete="one-time-code"
-              />
-            </label>
-          )}
-          <button className="academy-primary">
-            {authTab === "register" ? "Tạo tài khoản" : "Đăng nhập"}
-          </button>
-        </form>
-      </main>
+            )}
+            {authTab === "register" && signupStep === 1 && (
+              <button
+                type="button"
+                className="secondary"
+                onClick={() => setSignupStep(0)}
+              >
+                ← Quay lại tài khoản
+              </button>
+            )}
+            <button className="academy-primary">
+              {authTab === "register"
+                ? signupStep === 0
+                  ? "Tiếp tục"
+                  : "Tạo tài khoản"
+                : "Đăng nhập"}
+            </button>
+          </form>
+        </main>
       </AcademyAuthFrame>
     );
   const admin = user.role === "admin",
     staff = user.role !== "student";
   return (
-    <div className={"academy-shell"+(!admin?" classroom-shell":"")}>
+    <div className={"academy-shell" + (!admin ? " classroom-shell" : "")}>
       <aside data-menu-open={menuOpen}>
-        <a className="academy-brand" href="/hoc"><span className="academy-logo-mark"><AcademyIcon name="courses"/></span><span className="academy-brand-name">{brand}<small>KHÔNG GIAN HỌC TẬP</small></span></a>
-        <button className="academy-menu-toggle" aria-expanded={menuOpen} aria-controls="academy-navigation" onClick={()=>setMenuOpen(!menuOpen)}><AcademyIcon name="menu"/>Danh mục</button>
-        <div className="academy-user-card"><span className="academy-user-avatar">{user.name?.trim().charAt(0)||'V'}</span><div><strong>{user.name}</strong><small>{admin?'Quản trị nền tảng':staff?'Giáo viên':'Học viên'}</small></div></div>
+        <a className="academy-brand" href="/hoc">
+          <span className="academy-logo-mark">
+            <AcademyIcon name="courses" />
+          </span>
+          <span className="academy-brand-name">
+            {brand}
+            <small>KHÔNG GIAN HỌC TẬP</small>
+          </span>
+        </a>
+        <button
+          className="academy-menu-toggle"
+          aria-expanded={menuOpen}
+          aria-controls="academy-navigation"
+          onClick={() => setMenuOpen(!menuOpen)}
+        >
+          <AcademyIcon name="menu" />
+          Danh mục
+        </button>
+        <div className="academy-user-card">
+          <span className="academy-user-avatar">
+            {user.name?.trim().charAt(0) || "V"}
+          </span>
+          <div>
+            <strong>{user.name}</strong>
+            <small>
+              {admin ? "Quản trị nền tảng" : staff ? "Giáo viên" : "Học viên"}
+            </small>
+          </div>
+        </div>
         <nav id="academy-navigation" aria-label="Danh mục học tập">
           {[
-            ...(admin?[["courses", "Khóa học"],["live", "Lớp học trực tiếp"]]:[["live", "Lớp học"],["courses", "Kho bài giảng"]]),
+            ...(admin
+              ? [
+                  ["courses", "Khóa học"],
+                  ["live", "Lớp học trực tiếp"],
+                ]
+              : [
+                  ["live", "Lớp học"],
+                  ["courses", "Kho bài giảng"],
+                ]),
             ["reports", "Điểm danh & bản ghi"],
             ...(!staff ? [["vip", "Gói học & thanh toán"]] : []),
             ["profile", staff ? "Tài khoản của bạn" : "Hồ sơ học viên"],
@@ -363,13 +517,18 @@ export function AcademyApp({
             <button
               key={id}
               className={tab === id ? "active" : ""}
-              onClick={() => {setTab(id);setMenuOpen(false);}}
+              onClick={() => {
+                setTab(id);
+                setMenuOpen(false);
+              }}
             >
-              <AcademyIcon name={id}/><span>{label}</span>
+              <AcademyIcon name={id} />
+              <span>{label}</span>
             </button>
           ))}
         </nav>
-        <button className="academy-logout"
+        <button
+          className="academy-logout"
           onClick={() =>
             void perform(async () => {
               if (!demo) await api("/logout", {});
@@ -377,18 +536,29 @@ export function AcademyApp({
             })
           }
         >
-          <AcademyIcon name="logout"/>Đăng xuất
+          <AcademyIcon name="logout" />
+          Đăng xuất
         </button>
       </aside>
       <main>
         <header>
           <div>
             <small>
-              {demo ? "BẢN DEMO · DỮ LIỆU MINH HỌA" : admin ? "QUẢN TRỊ NỀN TẢNG" : staff ? "KHÔNG GIAN GIẢNG DẠY" : "KHÔNG GIAN HỌC TẬP"}
+              {demo
+                ? "BẢN DEMO · DỮ LIỆU MINH HỌA"
+                : admin
+                  ? "QUẢN TRỊ NỀN TẢNG"
+                  : staff
+                    ? "KHÔNG GIAN GIẢNG DẠY"
+                    : "KHÔNG GIAN HỌC TẬP"}
             </small>
             <h1>
               {tab === "courses"
-                ? (admin ? "Tổng quan khóa học" : staff ? "Không gian giảng dạy" : "Học từng bước. Tiến bộ mỗi ngày.")
+                ? admin
+                  ? "Tổng quan khóa học"
+                  : staff
+                    ? "Không gian giảng dạy"
+                    : "Học từng bước. Tiến bộ mỗi ngày."
                 : tab === "vip"
                   ? "Chọn gói học phù hợp"
                   : tab === "orders"
@@ -400,17 +570,25 @@ export function AcademyApp({
                         : tab === "students"
                           ? "Học viên"
                           : tab === "live"
-                            ? (admin?"Lớp học trực tiếp":"Lớp học của tôi")
-                            : tab === "reports" ? "Điểm danh & bản ghi"
-                            : tab === "academic" ? "Lớp học và giáo viên"
-                            : tab === "accounts" ? "Tài khoản và phân quyền"
-                            : tab === "settings" ? "Cài đặt kinh doanh"
-                            : "Tài khoản của bạn"}
+                            ? admin
+                              ? "Lớp học trực tiếp"
+                              : "Lớp học của tôi"
+                            : tab === "reports"
+                              ? "Điểm danh & bản ghi"
+                              : tab === "academic"
+                                ? "Lớp học và giáo viên"
+                                : tab === "accounts"
+                                  ? "Tài khoản và phân quyền"
+                                  : tab === "settings"
+                                    ? "Cài đặt kinh doanh"
+                                    : "Tài khoản của bạn"}
             </h1>
           </div>
           <span className="academy-badge">
             {staff
-              ? (admin ? "Quản trị viên" : "Giáo viên")
+              ? admin
+                ? "Quản trị viên"
+                : "Giáo viên"
               : vip
                 ? "VIP đang hoạt động"
                 : "Học thử miễn phí"}
@@ -426,6 +604,20 @@ export function AcademyApp({
             {notice}
           </p>
         )}
+        {!admin && tab === "live" && (
+          <AcademyToday
+            demo={demo}
+            role={user.role}
+            onMeeting={(m: any) =>
+              demo
+                ? setRoom(m)
+                : void perform(async () =>
+                    setRoom(await api(`/meetings/${m.id}`)),
+                  )
+            }
+            onCourse={showCourse}
+          />
+        )}
         {tab === "courses" && (
           <>
             <div className="academy-stats">
@@ -434,15 +626,27 @@ export function AcademyApp({
                 <strong>{courses.length}</strong>
               </article>
               <article>
-                <small>{staff ? "Không gian làm việc" : "Quyền xem video"}</small>
-                <strong>{staff ? (admin ? "Quản trị" : "Giảng dạy") : vip ? "VIP" : `${freeQuota} bài/tháng`}</strong>
+                <small>
+                  {staff ? "Không gian làm việc" : "Quyền xem video"}
+                </small>
+                <strong>
+                  {staff
+                    ? admin
+                      ? "Quản trị"
+                      : "Giảng dạy"
+                    : vip
+                      ? "VIP"
+                      : `${freeQuota} bài/tháng`}
+                </strong>
               </article>
               <article>
                 <small>{staff ? "Truy cập lớp học" : "Hạn gói học"}</small>
                 <strong>
-                  {staff ? "Theo phân công" : vip
-                    ? new Date(profile.expires_at).toLocaleDateString("vi-VN")
-                    : "Chưa đăng ký"}
+                  {staff
+                    ? "Theo phân công"
+                    : vip
+                      ? new Date(profile.expires_at).toLocaleDateString("vi-VN")
+                      : "Chưa đăng ký"}
                 </strong>
               </article>
             </div>
@@ -455,6 +659,9 @@ export function AcademyApp({
                   staff={staff}
                   perform={perform}
                   onNotice={setNotice}
+                  focus={intentCourse === c.id}
+                  focusLesson={intentCourse === c.id ? intentLesson : ""}
+                  focusTasks={intentCourse === c.id && intentTasks}
                 />
               ))}
             </div>
@@ -464,25 +671,42 @@ export function AcademyApp({
           </>
         )}
         {["live", "reports"].includes(tab) && (
-            <LearningWorkspace
-              role={user.role}
-              courses={demo?demoClassrooms:classrooms}
-              meetings={demo?demoMeetings:meetings}
-              demo={demo}
-              reports={tab === "reports"}
-              renderClasswork={id=>{const c=courses.find(v=>v.academic_course_id===id);return c?<Assignments course={c.id} demo={demo} staff={staff} perform={perform}/>:null;}}
-              canTeach={staff}
-              canVideo={true}
-              onRefresh={async () => {
-                if(demo)return;
-                setClassrooms(await api("/catalog"));
-                setMeetings(await api("/meetings"));
-              }}
-              onOpen={(m) => demo?setRoom(m):void perform(async () =>setRoom(await api(`/meetings/${m.id}`)))}
-            />
-          )}
+          <LearningWorkspace
+            role={user.role}
+            courses={demo ? demoClassrooms : classrooms}
+            meetings={demo ? demoMeetings : meetings}
+            demo={demo}
+            reports={tab === "reports"}
+            renderClasswork={(id) => {
+              const c = courses.find((v) => v.academic_course_id === id);
+              return c ? (
+                <Assignments
+                  course={c.id}
+                  demo={demo}
+                  staff={staff}
+                  perform={perform}
+                />
+              ) : null;
+            }}
+            canTeach={staff}
+            canVideo={true}
+            onRefresh={async () => {
+              if (demo) return;
+              setClassrooms(await api("/catalog"));
+              setMeetings(await api("/meetings"));
+            }}
+            onOpen={(m) =>
+              demo
+                ? setRoom(m)
+                : void perform(async () =>
+                    setRoom(await api(`/meetings/${m.id}`)),
+                  )
+            }
+          />
+        )}
         {tab === "vip" && (
           <VipPanel
+            intentPlan={intentPlan}
             demo={demo}
             plans={plans}
             perform={perform}
@@ -529,11 +753,21 @@ export function AcademyApp({
     </div>
   );
 }
-function CourseCard({ course, demo, staff, perform, onNotice }: any) {
+function CourseCard({
+  course,
+  demo,
+  staff,
+  perform,
+  onNotice,
+  focus = false,
+  focusLesson = "",
+  focusTasks = false,
+}: any) {
   const [open, setOpen] = useState(false),
     [lessons, setLessons] = useState<any[]>([]),
     [video, setVideo] = useState<any>(null),
     [tasks, setTasks] = useState(false);
+  const cardRef = useRef<HTMLElement>(null);
   const ref = useRef<HTMLVideoElement>(null),
     saved = useRef(0);
   async function load() {
@@ -553,6 +787,32 @@ function CourseCard({ course, demo, staff, perform, onNotice }: any) {
           : await api(`/academy/courses/${course.id}/lessons`),
       );
   }
+  useEffect(() => {
+    if (!focus) return;
+    let active = true;
+    setOpen(true);
+    setTasks(focusTasks);
+    void perform(async () => {
+      const rows = demo
+        ? [
+            {
+              id: "demo-lesson",
+              title: "Bài 1 · Bắt đầu từ kiến thức cốt lõi",
+              duration_seconds: 1800,
+              progress_seconds: 420,
+              status: "ready",
+            },
+          ]
+        : await api(`/academy/courses/${course.id}/lessons`);
+      if (active) {
+        setLessons(rows);
+        cardRef.current?.scrollIntoView({ block: "start", behavior: "smooth" });
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, [focus, focusLesson, focusTasks, course.id]);
   async function play(l: any) {
     if (demo) {
       onNotice("Video minh họa: chưa có file thật.");
@@ -585,7 +845,11 @@ function CourseCard({ course, demo, staff, perform, onNotice }: any) {
     return () => clearInterval(timer);
   }, [video?.id]);
   return (
-    <article className="academy-course">
+    <article
+      ref={cardRef}
+      className={"academy-course" + (focus ? " academy-course-selected" : "")}
+      id={"course-" + course.id}
+    >
       <div className="academy-course-art">
         <span>◈</span>
         <small>KHÓA HỌC</small>
@@ -593,6 +857,12 @@ function CourseCard({ course, demo, staff, perform, onNotice }: any) {
       <div className="academy-course-body">
         <h2>{course.title}</h2>
         <p>{course.description}</p>
+        <a
+          className="academy-course-public-link"
+          href={"/khoa-hoc/" + course.id}
+        >
+          Thông tin khóa học ↗
+        </a>
         <small>{course.teacher_name || "Đội ngũ giáo viên"}</small>
         <div className="academy-actions">
           <button
@@ -631,8 +901,18 @@ function CourseCard({ course, demo, staff, perform, onNotice }: any) {
                 </thead>
                 <tbody>
                   {lessons.map((l) => (
-                    <tr key={l.id}>
-                      <td>{l.title}</td>
+                    <tr
+                      key={l.id}
+                      className={
+                        l.id === focusLesson ? "academy-selected-lesson" : ""
+                      }
+                    >
+                      <td>
+                        {l.title}
+                        {l.id === focusLesson && (
+                          <small> · Bài bạn đã chọn</small>
+                        )}
+                      </td>
                       <td>
                         <progress
                           max={l.duration_seconds || 1}
@@ -695,7 +975,7 @@ function CourseCard({ course, demo, staff, perform, onNotice }: any) {
     </article>
   );
 }
-function VipPanel({ demo, plans, perform, notice }: any) {
+function VipPanel({ demo, plans, perform, notice, intentPlan = "" }: any) {
   const [order, setOrder] = useState<any>(null),
     [history, setHistory] = useState<any[]>([]);
   useEffect(() => {
@@ -708,7 +988,13 @@ function VipPanel({ demo, plans, perform, notice }: any) {
     <>
       <div className="academy-course-grid">
         {plans.map((p: any) => (
-          <article className="academy-plan" key={p.id}>
+          <article
+            className={
+              "academy-plan" +
+              (p.id === intentPlan ? " academy-course-selected" : "")
+            }
+            key={p.id}
+          >
             <small>GÓI HỌC</small>
             <h2>{p.name}</h2>
             <strong>{money(p.price_vnd)}</strong>
@@ -1156,50 +1442,13 @@ function BusinessTable({ kind, demo, perform, notice }: any) {
 function ManagePanel({ demo, courses, perform, refresh, notice }: any) {
   return (
     <div className="academy-admin-grid">
-      <section className="academy-section">
-        <h2>Tạo khóa học</h2>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            const v = Object.fromEntries(new FormData(e.currentTarget));
-            void perform(async () => {
-              if (!demo)
-                await api("/academy/courses", {
-                  ...v,
-                  published: v.published === "on",
-                });
-              await refresh();
-              notice(
-                demo
-                  ? "Khóa học minh họa chưa lưu máy chủ."
-                  : "Đã lưu khóa học.",
-              );
-            });
-          }}
-        >
-          <label>
-            Tên khóa học
-            <input name="title" required />
-          </label>
-          <label>
-            Giới thiệu
-            <textarea name="description" required />
-          </label>
-          <label>
-            Giáo viên hiển thị
-            <input name="teacher" />
-          </label>
-          <label>
-            ID môn học Live (nếu có)
-            <input name="academic_course_id" />
-          </label>
-          <label className="academy-check">
-            <input name="published" type="checkbox" />
-            Xuất bản
-          </label>
-          <button>Lưu khóa học</button>
-        </form>
-      </section>
+      <AcademyCourseEditor
+        demo={demo}
+        courses={courses}
+        perform={perform}
+        refresh={refresh}
+        notice={notice}
+      />
       <section className="academy-section">
         <h2>Tạo gói VIP</h2>
         <form
@@ -1305,66 +1554,13 @@ function ManagePanel({ demo, courses, perform, refresh, notice }: any) {
           <button>Tải và xuất bản</button>
         </form>
       </section>
-      <SiteEditor demo={demo} perform={perform} notice={notice} />
+      <AcademySiteEditor
+        demo={demo}
+        courses={courses}
+        perform={perform}
+        notice={notice}
+      />
     </div>
-  );
-}
-function SiteEditor({ demo, perform, notice }: any) {
-  const [value, setValue] = useState<any>({
-    headline: "Học trực tuyến, tiến bộ mỗi ngày",
-    description: "Khóa học có giáo viên đồng hành và bài giảng xem lại.",
-    published: false,
-  });
-  useEffect(() => {
-    if (!demo)
-      void api<any[]>("/academy/site")
-        .then((v) => {
-          if (v[0]) setValue(parse(v[0].content));
-        })
-        .catch(() => {});
-  }, []);
-  return (
-    <section className="academy-section">
-      <h2>Website giới thiệu</h2>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          void perform(async () => {
-            if (!demo) await api("/academy/site", { content: value });
-            notice(demo ? "Website minh họa." : "Đã lưu nội dung website.");
-          });
-        }}
-      >
-        <label>
-          Tiêu đề chính
-          <input
-            value={value.headline || ""}
-            onChange={(e) => setValue({ ...value, headline: e.target.value })}
-            required
-          />
-        </label>
-        <label>
-          Giới thiệu
-          <textarea
-            value={value.description || ""}
-            onChange={(e) =>
-              setValue({ ...value, description: e.target.value })
-            }
-          />
-        </label>
-        <label className="academy-check">
-          <input
-            type="checkbox"
-            checked={!!value.published}
-            onChange={(e) =>
-              setValue({ ...value, published: e.target.checked })
-            }
-          />
-          Xuất bản website
-        </label>
-        <button>Lưu website</button>
-      </form>
-    </section>
   );
 }
 function Assignments({ course, demo, staff, perform }: any) {

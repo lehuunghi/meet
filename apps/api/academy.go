@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"net/mail"
+	"regexp"
 	"strings"
 	"time"
 )
@@ -101,26 +103,90 @@ func (a *app) academyAdmin(w http.ResponseWriter, r *http.Request) {
 	}
 	u := who(r)
 	if r.Method == "GET" {
-		a.query(w, r, "SELECT content FROM academy_site WHERE school_id=?", u.School)
+		var raw string
+		err := a.db.QueryRowContext(r.Context(), "SELECT content FROM academy_site WHERE school_id=?", u.School).Scan(&raw)
+		if err == sql.ErrNoRows {
+			send(w, 200, []any{})
+			return
+		}
+		if err != nil {
+			problem(w, 503, "Chưa tải được website")
+			return
+		}
+		send(w, 200, []map[string]string{{"content": raw, "revision": digest(raw)}})
 		return
 	}
 	var in struct {
-		Content json.RawMessage `json:"content"`
+		Content  json.RawMessage `json:"content"`
+		Revision *string         `json:"revision"`
 	}
 	if !decode(w, r, &in) {
 		return
 	}
-	if len(in.Content) > 100000 || !json.Valid(in.Content) {
+	var site academySite
+	if len(in.Content) > 100000 || json.Unmarshal(in.Content, &site) != nil {
 		problem(w, 400, "Nội dung không hợp lệ")
 		return
 	}
-	if _, e := a.db.ExecContext(r.Context(), "INSERT INTO academy_site(school_id,content) VALUES(?,?) ON DUPLICATE KEY UPDATE content=VALUES(content)", u.School, string(in.Content)); e != nil {
-		problem(w, 500, "Không lưu được website")
+	if site.ContactEmail != "" {
+		parsed, err := mail.ParseAddress(site.ContactEmail)
+		if err != nil || parsed.Address != site.ContactEmail {
+			problem(w, 400, "Email liên hệ không hợp lệ")
+			return
+		}
+	}
+	seenPosts := map[string]bool{}
+	for _, post := range site.Posts {
+		if post.Published {
+			if !regexp.MustCompile(`^[a-z0-9-]{1,100}$`).MatchString(post.Slug) || strings.TrimSpace(post.Title) == "" || seenPosts[post.Slug] {
+				problem(w, 400, "Bài viết xuất bản cần tiêu đề và đường dẫn duy nhất (chữ thường, số, gạch ngang)")
+				return
+			}
+			seenPosts[post.Slug] = true
+		}
+	}
+	for _, teacher := range site.Teachers {
+		if site.Published && strings.TrimSpace(teacher.Name) == "" {
+			problem(w, 400, "Nhập tên giáo viên giới thiệu trước khi xuất bản")
+			return
+		}
+	}
+	if len(site.CoursePages) > 500 {
+		problem(w, 400, "Tối đa 500 trang khóa học")
+		return
+	}
+	tx, err := a.db.BeginTx(r.Context(), nil)
+	if err != nil {
+		problem(w, 503, "Chưa lưu được website")
+		return
+	}
+	defer tx.Rollback()
+	var old string
+	err = tx.QueryRowContext(r.Context(), "SELECT content FROM academy_site WHERE school_id=? FOR UPDATE", u.School).Scan(&old)
+	if err != nil && err != sql.ErrNoRows {
+		problem(w, 503, "Chưa tải được website")
+		return
+	}
+	expected := ""
+	if err == nil {
+		expected = digest(old)
+	}
+	if in.Revision != nil && *in.Revision != expected {
+		problem(w, 409, "Website đã được thay đổi. Tải lại nội dung trước khi lưu.")
+		return
+	}
+	if _, err = tx.ExecContext(r.Context(), "INSERT INTO academy_site(school_id,content) VALUES(?,?) ON DUPLICATE KEY UPDATE content=VALUES(content)", u.School, string(in.Content)); err != nil {
+		problem(w, 503, "Không lưu được website")
+		return
+	}
+	if tx.QueryRowContext(r.Context(), "SELECT content FROM academy_site WHERE school_id=?", u.School).Scan(&old) != nil || tx.Commit() != nil {
+		problem(w, 503, "Không hoàn tất lưu website")
 		return
 	}
 	a.audit(r, "academy.site.save", u.School)
-	send(w, 200, map[string]bool{"ok": true})
+	send(w, 200, map[string]any{"ok": true, "revision": digest(old)})
 }
+
 func (a *app) academyCourseSave(w http.ResponseWriter, r *http.Request) {
 	if !a.businessAdmin(w, r, "content") {
 		return

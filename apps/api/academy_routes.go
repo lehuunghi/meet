@@ -25,6 +25,8 @@ func academyManagedPath(method, path string) bool {
 
 func (a *app) academyRoutes(m *http.ServeMux) {
 	m.HandleFunc("GET /website", a.academyWebsite)
+	m.HandleFunc("GET /khoa-hoc/{course}", a.academyWebsite)
+	m.HandleFunc("GET /chinh-sach/{policy}", a.academyWebsite)
 	m.HandleFunc("GET /bai-viet/{slug}", a.academyWebsite)
 	m.HandleFunc("GET /sitemap.xml", a.academySitemap)
 	m.HandleFunc("GET /robots.txt", a.academyRobots)
@@ -52,6 +54,7 @@ func (a *app) academyRoutes(m *http.ServeMux) {
 		})
 	}
 	member("GET /api/academy/me", a.academyMe)
+	member("GET /api/academy/workspace", a.academyWorkspace)
 	member("GET /api/academy/settings", a.academySettings)
 	member("POST /api/academy/settings", a.academySettings)
 	control("GET /api/academy/control/people", "accounts", a.accounts)

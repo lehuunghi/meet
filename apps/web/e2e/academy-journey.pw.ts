@@ -1,0 +1,143 @@
+import { test, expect } from "@playwright/test";
+test("registration keeps the selected course across two steps and requires a deliberate final submission", async ({
+  page,
+}) => {
+  let registered: any = null;
+  await page.route("**/api/**", async (r) => {
+    const path = new URL(r.request().url()).pathname;
+    let data: any = [];
+    if (path === "/api/me")
+      return r.fulfill({ status: 401, json: { error: "Login" } });
+    if (path === "/api/public-config")
+      data = { platform_mode: "academy", school_name: "VA Academy" };
+    if (path === "/api/academy/register") {
+      registered = r.request().postDataJSON();
+      data = { ok: true };
+    }
+    await r.fulfill({ json: data });
+  });
+  await page.goto("/hoc?register=1&course=course-one");
+  await page.getByLabel("Email", { exact: true }).fill("learner@example.test");
+  await page.getByLabel("Mật khẩu", { exact: true }).fill("password123");
+  await page.getByRole("button", { name: "Tiếp tục", exact: true }).click();
+  expect(registered).toBeNull();
+  await expect(page.getByRole("status")).toContainText("Bước 2/2");
+  for (const [name, value] of [
+    ["Họ tên", "Nguyễn An"],
+    ["Ngày sinh", "2010-01-01"],
+    ["Địa chỉ", "Hà Nội"],
+    ["Trường đang học", "Trường thử"],
+    ["Số điện thoại", "0901234567"],
+    ["Số điện thoại phụ huynh", "0912345678"],
+    ["Mã xác thực email", "123456"],
+  ])
+    await page.getByLabel(name, { exact: true }).fill(value);
+  await page.getByRole("button", { name: "← Quay lại tài khoản" }).click();
+  await expect(page.getByLabel("Email", { exact: true })).toHaveValue(
+    "learner@example.test",
+  );
+  await page.getByRole("button", { name: "Tiếp tục", exact: true }).click();
+  await expect(page.getByLabel("Họ tên", { exact: true })).toHaveValue(
+    "Nguyễn An",
+  );
+  await page
+    .getByRole("button", { name: "Tạo tài khoản", exact: true })
+    .click();
+  await expect.poll(() => registered?.profile.name).toBe("Nguyễn An");
+  expect(registered.email).toBe("learner@example.test");
+  expect(page.url()).toContain("course=course-one");
+});
+test("workspace actions open the intended lesson and teacher cannot post through a student view", async ({
+  page,
+}) => {
+  const writes: string[] = [];
+  page.on("request", (r) => {
+    if (r.method() === "POST" && r.url().includes("/api/"))
+      writes.push(r.url());
+  });
+  await page.route("**/api/**", async (r) => {
+    const path = new URL(r.request().url()).pathname;
+    let data: any = [];
+    if (path === "/api/me")
+      data = {
+        id: "learner",
+        role: "student",
+        name: "Học sinh thử",
+        school_id: "school",
+      };
+    if (path === "/api/public-config")
+      data = { platform_mode: "academy", school_name: "VA" };
+    if (path === "/api/academy/courses")
+      data = [
+        {
+          id: "course-one",
+          title: "Toán",
+          description: "Giới thiệu",
+          academic_course_id: "subject",
+        },
+      ];
+    if (path === "/api/academy/workspace")
+      data = {
+        meetings: [],
+        tasks: [],
+        resume: [
+          {
+            course_id: "course-one",
+            lesson_id: "lesson-one",
+            title: "Xem dở",
+            course: "Toán",
+            seconds: 100,
+            duration_seconds: 1000,
+          },
+        ],
+      };
+    if (path === "/api/academy/courses/course-one/lessons")
+      data = [
+        {
+          id: "lesson-one",
+          title: "Bài đang xem",
+          progress_seconds: 100,
+          duration_seconds: 1000,
+          status: "ready",
+        },
+      ];
+    await r.fulfill({ json: data });
+  });
+  await page.goto("/hoc");
+  await page
+    .getByRole("button", { name: "Tiếp tục bài học", exact: true })
+    .click();
+  await expect(page.locator(".academy-selected-lesson")).toContainText(
+    "Bài đang xem",
+  );
+  expect(writes).toEqual([]);
+  await page.goto("/hoc?academy_demo=1&role=teacher");
+  await page
+    .getByRole("button", { name: "Xem môn học", exact: true })
+    .first()
+    .click();
+  await page.locator(".classroom-card-cover h3 button").first().click();
+  await page.getByText("Đăng thông báo cho môn học", { exact: true }).click();
+  await page
+    .getByLabel("Tiêu đề thông báo", { exact: true })
+    .fill("Lịch ôn tập");
+  await page
+    .getByLabel("Nội dung thông báo", { exact: true })
+    .fill("Ôn tập chương một");
+  await page
+    .getByRole("button", { name: "Đăng thông báo", exact: true })
+    .click();
+  await expect(page.locator(".classroom-announcement")).toContainText(
+    "Ôn tập chương một",
+  );
+  expect(writes).toEqual([]);
+  await page.goto("/hoc?academy_demo=1&role=student");
+  await page.locator(".classroom-card-cover h3 button").first().click();
+  await expect(
+    page.getByText("Đăng thông báo cho môn học", { exact: true }),
+  ).toHaveCount(0);
+  await page.getByRole("tab", { name: "Thành viên", exact: true }).click();
+  await expect(page.getByRole("tabpanel")).toContainText(
+    "Danh sách chi tiết học sinh do giáo viên",
+  );
+});

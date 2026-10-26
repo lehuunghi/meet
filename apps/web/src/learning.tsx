@@ -113,7 +113,7 @@ export function LearningWorkspace({
     }
   }
   const selected = courses.find((c) => c.id === expanded);
-  if(!reports && role!=='admin')return <ClassroomCourses role={role} courses={courses} meetings={meetings} busy={busy} error={error} canTeach={canTeach} onPrepare={c=>void prepare(c)} onOpen={onOpen} renderClasswork={renderClasswork} renderLessons={c=><CourseLessons key={c.id} course={c} role={role} demo={demo} reports={false} canVideo={canVideo} samples={meetings.filter(m=>m.course_id===c.id)} onOpen={onOpen}/>}/>;
+  if(!reports && role!=='admin')return <ClassroomCourses demo={demo} role={role} courses={courses} meetings={meetings} busy={busy} error={error} canTeach={canTeach} onPrepare={c=>void prepare(c)} onOpen={onOpen} renderClasswork={renderClasswork} renderLessons={c=><CourseLessons key={c.id} course={c} role={role} demo={demo} reports={false} canVideo={canVideo} samples={meetings.filter(m=>m.course_id===c.id)} onOpen={onOpen}/>}/>;
   return (
     <section className="section learning-workspace">
       <div className="section-title">

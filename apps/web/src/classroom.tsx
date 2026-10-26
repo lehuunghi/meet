@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from "react";
 import "./classroom.css";
+import { ClassroomCommunity } from "./classroom-community";
 type Subject = {
   id: string;
   name: string;
@@ -18,6 +19,7 @@ type Lesson = {
   starts_at: string;
 };
 type Props = {
+  demo?: boolean;
   role: string;
   courses: Subject[];
   meetings: Lesson[];
@@ -292,6 +294,7 @@ export function ClassroomCourses(p: Props) {
               ["stream", "Bảng tin"],
               ["lessons", "Buổi học & video"],
               ...(classwork ? [["classwork", "Bài tập"]] : []),
+              ["people", "Thành viên"],
               ["info", "Thông tin lớp"],
             ].map(([id, label]) => (
               <button
@@ -340,6 +343,13 @@ export function ClassroomCourses(p: Props) {
               p.renderLessons(current)
             ) : tab === "classwork" ? (
               classwork
+            ) : tab === "people" ? (
+              <ClassroomCommunity
+                course={current}
+                role={p.role}
+                demo={p.demo}
+                people
+              />
             ) : tab === "info" ? (
               <section className="classroom-info">
                 <h3>Thông tin môn học</h3>
@@ -384,6 +394,11 @@ export function ClassroomCourses(p: Props) {
                   )}
                 </aside>
                 <section aria-label="Hoạt động của môn học">
+                  <ClassroomCommunity
+                    course={current}
+                    role={p.role}
+                    demo={p.demo}
+                  />
                   <h3>Hoạt động lớp học</h3>
                   {p.meetings
                     .filter((m) => m.course_id === current.id)

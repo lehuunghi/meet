@@ -205,3 +205,8 @@ CREATE TABLE IF NOT EXISTS academy_expenses (
  id CHAR(36) PRIMARY KEY,school_id CHAR(36) NOT NULL,title VARCHAR(200) NOT NULL,amount_vnd BIGINT NOT NULL,paid_on DATE NOT NULL,actor_id CHAR(36) NOT NULL,
  FOREIGN KEY(school_id,actor_id) REFERENCES users(school_id,id)
 );
+CREATE TABLE IF NOT EXISTS course_announcements (
+ id CHAR(36) PRIMARY KEY,school_id CHAR(36) NOT NULL,course_id CHAR(36) NOT NULL,author_id CHAR(36) NOT NULL,
+ title VARCHAR(200) NOT NULL,body TEXT NOT NULL,created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+ KEY ca_feed(school_id,course_id,created_at),FOREIGN KEY(school_id,course_id) REFERENCES courses(school_id,id),FOREIGN KEY(school_id,author_id) REFERENCES users(school_id,id)
+);
