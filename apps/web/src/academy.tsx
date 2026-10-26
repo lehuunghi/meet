@@ -493,6 +493,10 @@ export function AcademyApp({
             notice={setNotice}
           />
         )}
+        {admin && tab === "academic" && (
+          <AcademicAdmin demo={demo} onChange={refresh} />
+        )}
+        {admin && tab === "accounts" && <Accounts demo={demo} />}
         {admin && ["orders", "students", "finance"].includes(tab) && (
           <BusinessTable
             key={tab}
@@ -595,10 +599,6 @@ function CourseCard({ course, demo, staff, perform, onNotice }: any) {
               Đăng ký lớp Live
             </button>
           )}
-          {admin && tab === "academic" && (
-            <AcademicAdmin demo={demo} onChange={refresh} />
-          )}
-          {admin && tab === "accounts" && <Accounts demo={demo} />}
         </div>
         {open && (
           <div>
@@ -878,9 +878,12 @@ function ProfilePanel({ demo, profile, user, perform, refresh, notice }: any) {
                 });
                 if (!r.ok) throw Error("Tải ảnh thất bại");
                 await api("/academy/profile", {
-                  ...profile,
                   name: user.name,
                   dob: String(profile.dob).slice(0, 10),
+                  address: profile.address,
+                  school_name: profile.school_name,
+                  phone: profile.phone,
+                  parent_phone: profile.parent_phone,
                   avatar_key: v.key,
                   marketing_consent: !!profile.marketing_consent,
                 });

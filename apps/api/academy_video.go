@@ -114,7 +114,9 @@ func (a *app) academyPlay(w http.ResponseWriter, r *http.Request) {
 		}
 		defer tx.Rollback()
 		period := monthlyPeriod(time.Now())
-		if _, e = tx.ExecContext(r.Context(), "INSERT IGNORE INTO academy_monthly_usage(school_id,user_id,period) VALUES(?,?,?)", u.School, u.ID, period); e != nil {
+		// Acquire an exclusive row lock before reading quota. INSERT IGNORE can
+		// leave concurrent readers holding shared locks and deadlock on upgrade.
+		if _, e = tx.ExecContext(r.Context(), "INSERT INTO academy_monthly_usage(school_id,user_id,period) VALUES(?,?,?) ON DUPLICATE KEY UPDATE used=used", u.School, u.ID, period); e != nil {
 			problem(w, 503, "Không cập nhật được hạn mức")
 			return
 		}

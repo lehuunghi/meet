@@ -5,8 +5,9 @@ import (
 	"crypto/rand"
 	"crypto/tls"
 	"encoding/base64"
-	"encoding/json"
 	"fmt"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"golang.org/x/crypto/bcrypt"
 	"math/big"
 	"net"
@@ -102,6 +103,11 @@ func (a *app) academyEmailCode(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	ip, _, _ := net.SplitHostPort(r.RemoteAddr)
+	global, err := a.cache.Eval(r.Context(), `local n=redis.call('INCR',KEYS[1]);if n==1 then redis.call('EXPIRE',KEYS[1],900) end;return n`, []string{"academy-otp-ip:" + digest(school+ip)}).Int()
+	if err != nil || global > 20 {
+		problem(w, 429, "Thử lại sau 15 phút")
+		return
+	}
 	key := "academy-otp-send:" + digest(school+in.Email+ip)
 	n, e := a.cache.Eval(r.Context(), `local n=redis.call('INCR',KEYS[1]);if n==1 then redis.call('EXPIRE',KEYS[1],900) end;return n`, []string{key}).Int()
 	if e != nil || n > 5 {
@@ -191,6 +197,17 @@ func (a *app) academyProfile(w http.ResponseWriter, r *http.Request) {
 		problem(w, 400, "Ảnh không thuộc tài khoản")
 		return
 	}
+	if in.Avatar != "" {
+		store, ok := r2ready(w)
+		if !ok {
+			return
+		}
+		head, err := a.s3Client(store).HeadObject(r.Context(), &s3.HeadObjectInput{Bucket: &store.Bucket, Key: &in.Avatar})
+		if err != nil || head == nil || aws.ToInt64(head.ContentLength) < 1 || aws.ToInt64(head.ContentLength) > 2<<20 || (aws.ToString(head.ContentType) != "image/png" && aws.ToString(head.ContentType) != "image/jpeg") {
+			problem(w, 409, "Ảnh đại diện chưa tải hoàn tất")
+			return
+		}
+	}
 	_, e := a.db.ExecContext(r.Context(), "INSERT INTO academy_profiles(school_id,user_id,dob,address,school_name,phone,parent_phone,avatar_key,marketing_consent) VALUES(?,?,?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE dob=VALUES(dob),address=VALUES(address),school_name=VALUES(school_name),phone=VALUES(phone),parent_phone=VALUES(parent_phone),avatar_key=VALUES(avatar_key),marketing_consent=VALUES(marketing_consent)", u.School, u.ID, in.DOB, in.Address, in.School, in.Phone, in.Parent, in.Avatar, in.Marketing)
 	if e != nil {
 		problem(w, 400, "Không lưu được hồ sơ")
@@ -198,5 +215,3 @@ func (a *app) academyProfile(w http.ResponseWriter, r *http.Request) {
 	}
 	send(w, 200, map[string]bool{"ok": true})
 }
-
-var _ = json.Valid

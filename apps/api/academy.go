@@ -67,6 +67,14 @@ func (a *app) academyPublic(w http.ResponseWriter, r *http.Request) {
 	}
 	if site["published"] != true {
 		site = map[string]any{"headline": "Trung tâm đang chuẩn bị nội dung", "published": false}
+	} else if posts, ok := site["posts"].([]any); ok {
+		visible := []any{}
+		for _, item := range posts {
+			if post, ok := item.(map[string]any); ok && (post["Published"] == true || post["published"] == true) {
+				visible = append(visible, post)
+			}
+		}
+		site["posts"] = visible
 	}
 	cfg, _ := loadSettings()
 	send(w, 200, map[string]any{"site": site, "free_videos": cfg.Commerce.FreeVideos, "bank_configured": cfg.Commerce.BankBIN != "" && cfg.Commerce.BankAccount != ""})
