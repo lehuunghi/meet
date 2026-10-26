@@ -1,4 +1,10 @@
 import { test, expect } from "@playwright/test";
+test('academy sign-in uses a balanced split layout and fits mobile',async({page})=>{
+ await page.route('**/api/**',r=>{const path=new URL(r.request().url()).pathname;return r.fulfill({status:path==='/api/me'?401:200,json:path==='/api/public-config'?{platform_mode:'academy',managed:true,school_name:'VA Academy'}:path==='/api/academy/public'?{free_videos:4}:[]});});
+ await page.setViewportSize({width:1440,height:900});await page.goto('/hoc');await expect(page.getByRole('heading',{name:'Chào mừng trở lại',exact:true})).toBeVisible();
+ const story=await page.locator('.academy-auth-story').boundingBox();expect(story?.width).toBe(720);
+ await page.setViewportSize({width:390,height:844});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await expect(page.locator('.academy-auth-story h2')).toBeHidden();
+});
 test('managed academy administrators stay on the website and edit business settings locally', async ({page})=>{
  let posted:any=null;
  await page.route('**/api/**',async route=>{
