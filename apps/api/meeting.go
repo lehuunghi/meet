@@ -32,6 +32,9 @@ func (a *app) access(w http.ResponseWriter, r *http.Request, manage bool) (meeti
 		problem(w, 403, "Teacher required")
 		return m, false
 	}
+	if !a.academyLiveGate(w, r) {
+		return m, false
+	}
 	return m, true
 }
 func (a *app) meetings(w http.ResponseWriter, r *http.Request) {

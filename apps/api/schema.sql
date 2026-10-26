@@ -143,3 +143,65 @@ CREATE TABLE IF NOT EXISTS meeting_links (
  UNIQUE KEY one_link(school_id,meeting_id),
  FOREIGN KEY(school_id,meeting_id) REFERENCES meetings(school_id,id)
 );
+CREATE TABLE IF NOT EXISTS academy_site (
+ school_id CHAR(36) PRIMARY KEY,content JSON NOT NULL,FOREIGN KEY(school_id) REFERENCES schools(id)
+);
+CREATE TABLE IF NOT EXISTS academy_profiles (
+ school_id CHAR(36) NOT NULL,user_id CHAR(36) NOT NULL,dob DATE NOT NULL,address VARCHAR(500) NOT NULL,
+ school_name VARCHAR(200) NOT NULL,phone VARCHAR(30) NOT NULL,parent_phone VARCHAR(30) NOT NULL,
+ avatar_key VARCHAR(500) NOT NULL DEFAULT '',marketing_consent BOOLEAN NOT NULL DEFAULT FALSE,email_verified BOOLEAN NOT NULL DEFAULT FALSE,
+ PRIMARY KEY(school_id,user_id),FOREIGN KEY(school_id,user_id) REFERENCES users(school_id,id)
+);
+CREATE TABLE IF NOT EXISTS academy_courses (
+ id CHAR(36) PRIMARY KEY,school_id CHAR(36) NOT NULL,title VARCHAR(200) NOT NULL,description TEXT NOT NULL,
+ teacher_name VARCHAR(200) NOT NULL DEFAULT '',academic_course_id CHAR(36) NULL,published BOOLEAN NOT NULL DEFAULT FALSE,
+ created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),UNIQUE KEY ac_tenant(school_id,id),
+ FOREIGN KEY(school_id) REFERENCES schools(id),FOREIGN KEY(school_id,academic_course_id) REFERENCES courses(school_id,id)
+);
+CREATE TABLE IF NOT EXISTS academy_plans (
+ id CHAR(36) PRIMARY KEY,school_id CHAR(36) NOT NULL,name VARCHAR(160) NOT NULL,price_vnd BIGINT NOT NULL,
+ days INT NOT NULL,live_enabled BOOLEAN NOT NULL,active BOOLEAN NOT NULL DEFAULT TRUE,UNIQUE KEY ap_tenant(school_id,id),FOREIGN KEY(school_id) REFERENCES schools(id)
+);
+CREATE TABLE IF NOT EXISTS academy_orders (
+ id CHAR(36) PRIMARY KEY,code BIGINT AUTO_INCREMENT UNIQUE,school_id CHAR(36) NOT NULL,user_id CHAR(36) NOT NULL,plan_id CHAR(36) NOT NULL,
+ price_vnd BIGINT NOT NULL,days INT NOT NULL,live_enabled BOOLEAN NOT NULL,status ENUM('pending','paid','rejected','refunded') NOT NULL DEFAULT 'pending',
+ receipt_key VARCHAR(500) NOT NULL DEFAULT '',provider_ref VARCHAR(150) NULL UNIQUE,reviewer CHAR(36) NULL,review_note VARCHAR(500) NOT NULL DEFAULT '',
+ created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),paid_at DATETIME(6) NULL,UNIQUE KEY ao_tenant(school_id,id),
+ FOREIGN KEY(school_id,user_id) REFERENCES users(school_id,id),FOREIGN KEY(school_id,plan_id) REFERENCES academy_plans(school_id,id)
+);
+CREATE TABLE IF NOT EXISTS academy_memberships (
+ school_id CHAR(36) NOT NULL,user_id CHAR(36) NOT NULL,expires_at DATETIME(6) NOT NULL,live_enabled BOOLEAN NOT NULL,
+ PRIMARY KEY(school_id,user_id),FOREIGN KEY(school_id,user_id) REFERENCES users(school_id,id)
+);
+CREATE TABLE IF NOT EXISTS academy_lessons (
+ id CHAR(36) PRIMARY KEY,school_id CHAR(36) NOT NULL,course_id CHAR(36) NOT NULL,title VARCHAR(200) NOT NULL,
+ object_key VARCHAR(500) NOT NULL,bucket VARCHAR(100) NOT NULL,status ENUM('draft','ready') NOT NULL DEFAULT 'draft',size_bytes BIGINT NOT NULL DEFAULT 0,
+ duration_seconds INT NOT NULL DEFAULT 0,position INT NOT NULL DEFAULT 0,created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+ UNIQUE KEY al_tenant(school_id,id),FOREIGN KEY(school_id,course_id) REFERENCES academy_courses(school_id,id)
+);
+CREATE TABLE IF NOT EXISTS academy_monthly_usage (
+ school_id CHAR(36) NOT NULL,user_id CHAR(36) NOT NULL,period CHAR(7) NOT NULL,used INT NOT NULL DEFAULT 0,
+ PRIMARY KEY(school_id,user_id,period),FOREIGN KEY(school_id,user_id) REFERENCES users(school_id,id)
+);
+CREATE TABLE IF NOT EXISTS academy_views (
+ school_id CHAR(36) NOT NULL,user_id CHAR(36) NOT NULL,period CHAR(7) NOT NULL,lesson_id CHAR(36) NOT NULL,
+ PRIMARY KEY(school_id,user_id,period,lesson_id),FOREIGN KEY(school_id,user_id) REFERENCES users(school_id,id),FOREIGN KEY(school_id,lesson_id) REFERENCES academy_lessons(school_id,id)
+);
+CREATE TABLE IF NOT EXISTS academy_progress (
+ school_id CHAR(36) NOT NULL,user_id CHAR(36) NOT NULL,lesson_id CHAR(36) NOT NULL,seconds INT NOT NULL DEFAULT 0,completed BOOLEAN NOT NULL DEFAULT FALSE,updated_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+ PRIMARY KEY(school_id,user_id,lesson_id),FOREIGN KEY(school_id,user_id) REFERENCES users(school_id,id),FOREIGN KEY(school_id,lesson_id) REFERENCES academy_lessons(school_id,id)
+);
+CREATE TABLE IF NOT EXISTS academy_assignments (
+ id CHAR(36) PRIMARY KEY,school_id CHAR(36) NOT NULL,course_id CHAR(36) NOT NULL,teacher_id CHAR(36) NOT NULL,title VARCHAR(200) NOT NULL,
+ questions JSON NOT NULL,due_at DATETIME(6) NOT NULL,created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),UNIQUE KEY aa_tenant(school_id,id),
+ FOREIGN KEY(school_id,course_id) REFERENCES academy_courses(school_id,id),FOREIGN KEY(school_id,teacher_id) REFERENCES users(school_id,id)
+);
+CREATE TABLE IF NOT EXISTS academy_submissions (
+ school_id CHAR(36) NOT NULL,assignment_id CHAR(36) NOT NULL,user_id CHAR(36) NOT NULL,answers JSON NOT NULL,score DECIMAL(5,2) NULL,feedback TEXT NULL,
+ submitted_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),graded_by CHAR(36) NULL,
+ PRIMARY KEY(school_id,assignment_id,user_id),FOREIGN KEY(school_id,assignment_id) REFERENCES academy_assignments(school_id,id),FOREIGN KEY(school_id,user_id) REFERENCES users(school_id,id)
+);
+CREATE TABLE IF NOT EXISTS academy_expenses (
+ id CHAR(36) PRIMARY KEY,school_id CHAR(36) NOT NULL,title VARCHAR(200) NOT NULL,amount_vnd BIGINT NOT NULL,paid_on DATE NOT NULL,actor_id CHAR(36) NOT NULL,
+ FOREIGN KEY(school_id,actor_id) REFERENCES users(school_id,id)
+);

@@ -34,11 +34,13 @@ type backupSettings struct {
 	Interval int  `json:"interval_hours"`
 }
 type systemSettings struct {
-	Backup    backupSettings `json:"backup"`
-	SFU       []sfuProvider  `json:"sfu"`
-	TURN      []turnKey      `json:"turn"`
-	R2        r2Settings     `json:"r2"`
-	Retention int            `json:"retention_days"`
+	Platform  string           `json:"platform_mode"`
+	Commerce  commerceSettings `json:"commerce"`
+	Backup    backupSettings   `json:"backup"`
+	SFU       []sfuProvider    `json:"sfu"`
+	TURN      []turnKey        `json:"turn"`
+	R2        r2Settings       `json:"r2"`
+	Retention int              `json:"retention_days"`
 }
 
 func configPath(name string) string {
@@ -106,6 +108,9 @@ func saveSettings(c systemSettings) error {
 	return os.Rename(name, p)
 }
 func redactSettings(c systemSettings) systemSettings {
+	c.Commerce.ChecksumKey = ""
+	c.Commerce.APIKey = ""
+	c.Commerce.SMTPPassword = ""
 	c.SFU = append([]sfuProvider{}, c.SFU...)
 	for i := range c.SFU {
 		c.SFU[i].SecretSet = c.SFU[i].Secret != ""
@@ -127,6 +132,27 @@ var configID = regexp.MustCompile(`^[a-zA-Z0-9_-]{1,80}$`)
 var cfID = regexp.MustCompile(`^[a-zA-Z0-9_-]{1,100}$`)
 
 func validateSettings(next *systemSettings, old systemSettings) error {
+	if next.Platform == "" {
+		next.Platform = "school"
+	}
+	if next.Platform != "school" && next.Platform != "academy" {
+		return errors.New("Loại nền tảng không hợp lệ")
+	}
+	if next.Commerce.FreeVideos == 0 {
+		next.Commerce.FreeVideos = 4
+	}
+	if next.Commerce.FreeVideos < 1 || next.Commerce.FreeVideos > 100 {
+		return errors.New("Hạn mức video từ 1 đến 100")
+	}
+	if next.Commerce.ChecksumKey == "" {
+		next.Commerce.ChecksumKey = old.Commerce.ChecksumKey
+	}
+	if next.Commerce.APIKey == "" {
+		next.Commerce.APIKey = old.Commerce.APIKey
+	}
+	if next.Commerce.SMTPPassword == "" {
+		next.Commerce.SMTPPassword = old.Commerce.SMTPPassword
+	}
 	if next.Retention == 0 {
 		next.Retention = 30
 	}

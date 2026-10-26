@@ -8,7 +8,7 @@ from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 ROOT=Path(os.environ.get('MEET_CONTROL_DATA','/var/lib/meet-control'))
 ORIGIN=os.environ.get('MEET_CONTROL_ORIGIN','https://admin.tn.edu.vn').rstrip('/')
 HOST=re.compile(r'(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,63}')
-ACTIONS={'configure','check','update','backup','domain','accounts','provision'}
+ACTIONS={'configure','check','update','backup','domain','accounts','provision','academy'}
 
 class ClosingConnection(sqlite3.Connection):
     def __exit__(self,*args):
@@ -65,6 +65,7 @@ def limited(db,key,maximum,seconds):
 
 def validate_config(value):
     if not isinstance(value,dict):raise ValueError('Cấu hình không hợp lệ')
+    if value.get('platform_mode','school') not in ('school','academy'):raise ValueError('Loại nền tảng không hợp lệ')
     if not 1<=int(value.get('retention_days',30))<=3650:raise ValueError('Thời hạn video phải từ 1 đến 3650 ngày')
     for name in ('sfu','turn'):
         if not isinstance(value.get(name,[]),list) or len(value.get(name,[]))>50:raise ValueError('Danh sách credential không hợp lệ')
@@ -72,7 +73,7 @@ def validate_config(value):
 
 def redact(value):
     if isinstance(value,list):return [redact(v) for v in value]
-    if isinstance(value,dict):return {k:('••••••••' if k in ('secret','secret_access_key','access_key_id','password','private_key','token') and v else redact(v)) for k,v in value.items()}
+    if isinstance(value,dict):return {k:('••••••••' if k in ('secret','secret_access_key','access_key_id','password','private_key','token','api_key','checksum_key','smtp_password') and v else redact(v)) for k,v in value.items()}
     return value
 
 def merge_secrets(new,old):
@@ -86,6 +87,7 @@ def merge_secrets(new,old):
 def queue(db,school,action,payload,revision):
     if action not in ACTIONS:raise ValueError('Thao tác không được hỗ trợ')
     key=secrets.token_hex(16)
+    if action=='academy':payload={**payload,'request_id':key}
     db.execute('INSERT INTO jobs(id,school,action,payload,revision,created) VALUES(?,?,?,?,?,?)',(key,school,action,encrypt(payload,school),revision,int(time.time())))
     return key
 
@@ -191,6 +193,9 @@ class Handler(BaseHTTPRequestHandler):
             if state not in ('success','failed','waiting'):raise ValueError('Trạng thái không hợp lệ')
             # Error codes only: never accept raw stdout or credential-bearing payloads.
             result={'code':str(data.get('code',''))[:80]}
+            if job['action']=='academy' and state=='success':
+                if not isinstance(data.get('code'),dict) or len(json.dumps(data['code']))>524288:raise ValueError('Kết quả quá lớn')
+                result={'code':'OK','payload':encrypt(data['code'],sid)}
             db.execute('UPDATE jobs SET state=?,result=?,lease=NULL,lease_until=? WHERE id=?',('queued' if state=='waiting' else state,json.dumps(result),now+60,job['id']))
             if state=='success' and job['action']=='configure':db.execute('UPDATE schools SET applied=MAX(applied,?) WHERE id=?',(job['revision'],sid))
             if state=='success' and job['action']=='domain':
@@ -246,6 +251,8 @@ class Handler(BaseHTTPRequestHandler):
             if old and db.execute("SELECT 1 FROM jobs WHERE school=? AND action='domain' AND state IN ('queued','running')",(sid,)).fetchone():raise ValueError('Đang đổi domain, chờ hoàn tất trước khi lưu')
             if old and data.get('revision')!=old['revision']:raise ValueError('Cấu hình đã thay đổi. Tải lại trước khi lưu')
             cfg=validate_config(merge_secrets(data.get('config',{}),decrypt(old['config'],sid) if old else {}));revision=old['revision']+1 if old else 1
+            if old and old['seen'] and decrypt(old['config'],sid).get('platform_mode','school')!=cfg.get('platform_mode','school'):raise ValueError('Tạo nền tảng mới để đổi loại triển khai')
+            if user['role']!='owner' and cfg.get('commerce',{})!=(decrypt(old['config'],sid).get('commerce',{}) if old else {}):raise ValueError('Cấu hình kinh doanh cần quyền chủ hệ thống')
             if old and old['domain']!=domain:raise ValueError('Dùng tác vụ Đổi domain để chuyển có kiểm tra')
             db.execute('INSERT INTO schools(id,name,domain,ip,config,revision) VALUES(?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET name=excluded.name,ip=excluded.ip,config=excluded.config,revision=excluded.revision',(sid,name,domain,ip,encrypt(cfg,sid),revision))
             queue(db,sid,'configure',{'settings':cfg,'name':name,'domain':domain},revision);audit(db,actor,'school.save',sid);return {'id':sid,'revision':revision}
@@ -257,9 +264,22 @@ class Handler(BaseHTTPRequestHandler):
             if op=='enroll':
                 if user['role']!='owner':raise ValueError('Cần quyền chủ hệ thống')
                 token=secrets.token_urlsafe(48);db.execute('UPDATE schools SET enroll_hash=?,enroll_expires=? WHERE id=?',(digest(token),int(time.time())+900,sid));audit(db,actor,'agent.enroll-issued',sid);return {'token':token,'expires_seconds':900}
-            if op=='jobs':return [dict(x) for x in db.execute('SELECT id,action,revision,state,created,result FROM jobs WHERE school=? ORDER BY created DESC LIMIT 100',(sid,))]
+            if op=='jobs':
+                output=[]
+                for x in db.execute('SELECT id,action,revision,state,created,result FROM jobs WHERE school=? ORDER BY created DESC LIMIT 100',(sid,)):
+                    item=dict(x);result=json.loads(item['result'])
+                    if 'payload' in result:
+                        encrypted=result.pop('payload')
+                        if user['role']=='owner' and int(time.time())-item['created']<900:result['data']=decrypt(encrypted,sid)
+                        else:result['expired']=True
+                        item['result']=json.dumps(result,ensure_ascii=False)
+                    output.append(item)
+                return output
             if op=='action':
                 action=data['action'];payload=data.get('payload',{})
+                if action=='academy':
+                    if user['role']!='owner':raise ValueError('Chỉ chủ hệ thống được quản trị kinh doanh')
+                    if decrypt(row['config'],sid).get('platform_mode','school')!='academy':raise ValueError('Đơn vị này đang ở chế độ trường học')
                 if action=='provision':
                     if user['role']!='owner':raise ValueError('Cần quyền chủ hệ thống')
                     payload['ip']=row['ip'];payload['domain']=row['domain']

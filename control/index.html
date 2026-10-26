@@ -403,6 +403,8 @@
       $("#dialogtop").append(button("Đóng", () => d.close()));
       for (const [id, title] of [
         ["general", "Thông tin"],
+        ["academy", "Nền tảng / VIP"],
+        ["business", "Quản trị kinh doanh"],
         ["sfu", "SFU / TURN"],
         ["r2", "R2 / Backup"],
         ["ops", "Cài đặt / Nâng cấp"],
@@ -433,6 +435,24 @@
         cfg._name = get("name");
         cfg._domain = get("domain");
         cfg._ip = get("ip");
+      }
+      if (tab === "academy") {
+        cfg.platform_mode = get("platform_mode");
+        cfg.commerce = { ...cfg.commerce };
+        for (const key of [
+          "bank_bin",
+          "bank_account",
+          "bank_name",
+          "client_id",
+          "api_key",
+          "checksum_key",
+          "smtp_address",
+          "smtp_from",
+          "smtp_user",
+          "smtp_password",
+        ])
+          cfg.commerce[key] = get(key);
+        cfg.commerce.free_videos = Number(get("free_videos"));
       }
       if (tab === "sfu") {
         cfg.sfu = [...f.querySelectorAll("[data-sfu]")].map((row) =>
@@ -488,8 +508,221 @@
       msg("Đã lưu cấu hình. VPS sẽ xác nhận sau khi áp dụng.");
       await edit(schools.find((s) => s.id === result.id));
     }
+    async function academyRequest(method, path, body = {}) {
+      if (!selected || me.role !== "owner")
+        throw Error("Chọn trung tâm và dùng tài khoản chủ hệ thống.");
+      const out = await api("schools/" + selected.id + "/action", {
+        action: "academy",
+        payload: { method, path, body },
+      });
+      for (let i = 0; i < 50; i++) {
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+        const list = await api("schools/" + selected.id + "/jobs");
+        const job = list.find((j) => j.id === out.id);
+        if (job?.state === "failed")
+          throw Error(
+            "VPS chưa xử lý được. Kiểm tra phiên bản và chế độ nền tảng.",
+          );
+        if (job?.state === "success") {
+          const r =
+            typeof job.result === "string"
+              ? JSON.parse(job.result)
+              : job.result;
+          if (!r.data) throw Error("Kết quả đã hết hạn; tải lại dữ liệu.");
+          return r.data.data;
+        }
+      }
+      throw Error("Đang chờ agent; xem tab Tác vụ trước khi gửi lại thao tác.");
+    }
+    function business() {
+      const root = $("#panel");
+      root.innerHTML = "";
+      if (!selected || cfg.platform_mode !== "academy" || me.role !== "owner") {
+        root.textContent =
+          "Phân hệ dành cho chủ hệ thống của trung tâm khóa học/VIP. Tạo đơn vị mới và chọn đúng loại nền tảng trước.";
+        return;
+      }
+      root.innerHTML =
+        '<p>Dữ liệu được lấy từ VPS theo yêu cầu. Không lưu bản rõ thông tin học viên/thanh toán tại trung tâm quản trị.</p><label>Nội dung<select id="business-kind"><option value="courses">Khóa học</option><option value="plans">Gói VIP</option><option value="orders">Đơn hàng</option><option value="students">Học viên</option><option value="finance">Thu chi</option><option value="site">Website giới thiệu</option></select></label><button id="business-load">Tải dữ liệu từ VPS</button><p role="status" id="business-status"></p><div id="business-content"></div>';
+      $("#business-load").onclick = async () => {
+        const btn = $("#business-load"),
+          target = $("#business-content"),
+          status = $("#business-status"),
+          kind = $("#business-kind").value;
+        btn.disabled = true;
+        status.textContent = "Đang chờ agent lấy dữ liệu…";
+        try {
+          const path =
+            kind === "site"
+              ? "/api/academy/site"
+              : kind === "finance"
+                ? "/api/academy/finance"
+                : "/api/academy/admin/" + kind;
+          const rows = await academyRequest("GET", path);
+          target.innerHTML = "";
+          status.textContent = "Đã lấy dữ liệu từ VPS.";
+          const table = document.createElement("table"),
+            keys = Object.keys(rows[0] || {}).filter(
+              (k) => !["content", "receipt_key", "provider_ref"].includes(k),
+            );
+          const head = document.createElement("tr");
+          keys.forEach((k) => {
+            const th = document.createElement("th");
+            th.textContent =
+              {
+                title: "Khóa học",
+                name: "Tên",
+                price_vnd: "Số tiền VND",
+                days: "Số ngày",
+                status: "Trạng thái",
+                code: "Mã đơn",
+                expires_at: "Hết hạn VIP",
+                parent_phone: "Điện thoại phụ huynh",
+                teacher_name: "Giáo viên",
+                description: "Giới thiệu",
+                published: "Xuất bản",
+              }[k] || k;
+            head.append(th);
+          });
+          if (kind === "orders") {
+            const th = document.createElement("th");
+            th.textContent = "Duyệt thanh toán";
+            head.append(th);
+          }
+          table.append(head);
+          rows.forEach((row) => {
+            const tr = document.createElement("tr");
+            keys.forEach((k) => {
+              const td = document.createElement("td");
+              td.textContent = String(row[k] ?? "—");
+              tr.append(td);
+            });
+            if (kind === "orders") {
+              const td = document.createElement("td");
+              td.append(
+                button("Xem biên lai", async () => {
+                  try {
+                    const r = await academyRequest(
+                      "GET",
+                      "/api/academy/orders/" + row.id + "/receipt",
+                    );
+                    const a = document.createElement("a");
+                    a.href = r.url;
+                    a.target = "_blank";
+                    a.rel = "noopener";
+                    a.textContent = "Mở ảnh biên lai (link tạm thời)";
+                    td.append(a);
+                  } catch (e) {
+                    msg(e.message);
+                  }
+                }),
+              );
+              if (row.status === "pending")
+                for (const [action, label] of [
+                  ["approve", "Kích hoạt VIP"],
+                  ["reject", "Từ chối"],
+                ])
+                  td.append(
+                    button(label, async () => {
+                      try {
+                        await academyRequest(
+                          "POST",
+                          "/api/academy/orders/" + row.id + "/review",
+                          { action, note: "" },
+                        );
+                        $("#business-load").click();
+                      } catch (e) {
+                        msg(e.message);
+                      }
+                    }),
+                  );
+              tr.append(td);
+            }
+            table.append(tr);
+          });
+          const wrap = document.createElement("div");
+          wrap.style.overflow = "auto";
+          wrap.append(table);
+          target.append(wrap);
+          if (["courses", "plans", "site", "finance"].includes(kind)) {
+            const f = document.createElement("form");
+            f.className = "grid";
+            if (kind === "courses")
+              f.innerHTML =
+                input("id", "ID (để trống tạo mới)") +
+                input("title", "Tên khóa học") +
+                input("description", "Giới thiệu") +
+                input("teacher", "Giáo viên hiển thị") +
+                input("academic_course_id", "ID môn học Live (nếu có)") +
+                check("published", "Xuất bản", true);
+            if (kind === "plans")
+              f.innerHTML =
+                input("id", "ID (để trống tạo mới)") +
+                input("name", "Tên gói") +
+                input("price_vnd", "Giá VND", "", "number") +
+                input("days", "Số ngày", 30, "number") +
+                check("live_enabled", "Có lớp Live", true) +
+                check("active", "Đang bán", true);
+            if (kind === "finance")
+              f.innerHTML =
+                input("title", "Nội dung chi") +
+                input("amount_vnd", "Số tiền VND", "", "number") +
+                input("paid_on", "Ngày chi", "", "date");
+            if (kind === "site") {
+              const site = rows[0] ? JSON.parse(rows[0].content) : {};
+              f.innerHTML =
+                input("headline", "Tiêu đề website", site.headline) +
+                input("description", "Giới thiệu", site.description) +
+                check("published", "Xuất bản website", site.published);
+              f._site = site;
+            }
+            const submit = document.createElement("button");
+            submit.textContent = "Lưu trên VPS";
+            f.append(submit);
+            f.onsubmit = async (e) => {
+              e.preventDefault();
+              submit.disabled = true;
+              try {
+                const fd = new FormData(f),
+                  v = Object.fromEntries(fd);
+                for (const key of ["price_vnd", "days", "amount_vnd"])
+                  if (key in v) v[key] = Number(v[key]);
+                for (const key of ["published", "live_enabled", "active"])
+                  if (f.elements.namedItem(key)) v[key] = fd.has(key);
+                if (kind === "site")
+                  await academyRequest("POST", path, {
+                    content: { ...f._site, ...v },
+                  });
+                else
+                  await academyRequest(
+                    "POST",
+                    kind === "finance"
+                      ? "/api/academy/finance"
+                      : "/api/academy/" + kind,
+                    v,
+                  );
+                status.textContent = "Đã lưu. Tải dữ liệu để đối chiếu.";
+              } catch (e) {
+                msg(e.message);
+              } finally {
+                submit.disabled = false;
+              }
+            };
+            target.append(f);
+          }
+        } catch (e) {
+          status.textContent = e.message;
+        } finally {
+          btn.disabled = false;
+        }
+      };
+    }
     function panel() {
       const p = $("#panel");
+      if (tab === "business") {
+        business();
+        return;
+      }
       if (tab === "jobs") {
         jobs();
         return;
@@ -529,6 +762,42 @@
             "password",
           ) +
           "</div><p>Thông tin admin đầu tiên chỉ dùng khi trường chưa được khởi tạo. Đổi domain ở tab Cài đặt / Nâng cấp.</p>";
+      if (tab === "academy") {
+        const c = cfg.commerce || {};
+        f.innerHTML =
+          '<label>Loại nền tảng<select name="platform_mode"><option value="school">Trường học nội bộ</option><option value="academy">Trung tâm khóa học / VIP</option></select></label><p>Chỉ bật chế độ VIP cho đơn vị kinh doanh mới. Trường nội bộ giữ nguyên quyền học.</p><div class="grid">' +
+          input(
+            "free_videos",
+            "Số bài học miễn phí mỗi tháng",
+            c.free_videos || 4,
+            "number",
+          ) +
+          input("bank_bin", "Mã BIN ngân hàng", c.bank_bin) +
+          input("bank_account", "Số tài khoản", c.bank_account) +
+          input("bank_name", "Tên người nhận", c.bank_name) +
+          input("client_id", "payOS Client ID", c.client_id) +
+          input("api_key", "payOS API key", c.api_key, "password") +
+          input(
+            "checksum_key",
+            "payOS checksum key",
+            c.checksum_key,
+            "password",
+          ) +
+          input("smtp_address", "SMTP server:port (STARTTLS)", c.smtp_address) +
+          input("smtp_from", "Email gửi", c.smtp_from, "email") +
+          input("smtp_user", "SMTP user", c.smtp_user) +
+          input("smtp_password", "SMTP password", c.smtp_password, "password") +
+          "</div><p>Đơn vị kinh doanh quản lý website, khóa học, đơn hàng và báo cáo tại cổng quản trị riêng. R2/SFU/VPS tiếp tục quản lý ở các tab tương ứng.</p>";
+        f.platform_mode.value = cfg.platform_mode || "school";
+        if (selected) {
+          const a = document.createElement("a");
+          a.textContent = "Mở quản trị khóa học/VIP";
+          a.href = "https://" + selected.domain + "/hoc";
+          a.target = "_blank";
+          a.rel = "noopener";
+          f.append(a);
+        }
+      }
       if (tab === "sfu") {
         f.innerHTML =
           '<h3>SFU Apps · cân bằng có trọng số theo lớp</h3><div id="sfus"></div><div id="addsf"></div><h3>TURN</h3><div id="turns"></div><div id="addturn"></div>';

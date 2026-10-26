@@ -7,6 +7,8 @@ const permissions = [
   ["meetings", "Buổi học"],
   ["recordings", "Ghi hình"],
   ["audit", "Nhật ký"],
+  ["content", "Nội dung khóa học"],
+  ["finance", "Tài chính / VIP"],
 ];
 export function Accounts({ demo }: { demo: boolean }) {
   const [rows, setRows] = useState<any[]>([]),

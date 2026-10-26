@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-var permissionNames = []string{"academic", "accounts", "attendance", "meetings", "recordings", "audit"}
+var permissionNames = []string{"academic", "accounts", "attendance", "meetings", "recordings", "audit", "content", "finance"}
 
 func permitted(u identity, p string) bool {
 	if u.Role != "admin" {
@@ -26,6 +26,8 @@ func permitted(u identity, p string) bool {
 }
 func permissionFor(path string) string {
 	switch {
+	case strings.HasPrefix(path, "/api/academy/"):
+		return ""
 	case strings.HasPrefix(path, "/api/accounts"):
 		return "accounts"
 	case strings.HasPrefix(path, "/api/attendance"):

@@ -1,3 +1,4 @@
+import { AcademyApp } from "./academy";
 import { Accounts } from "./accounts";
 import { AccountSecurity } from "./account";
 import { AcademicAdmin } from "./academic";
@@ -1463,12 +1464,37 @@ function Room({
     </main>
   );
 }
+function PlatformEntry() {
+  const forced =
+    location.pathname === "/hoc" ||
+    new URLSearchParams(location.search).has("academy_demo");
+  const [mode, setMode] = useState(forced ? "academy" : "");
+  useEffect(() => {
+    if (forced) return;
+    if (demo) {
+      setMode("school");
+      return;
+    }
+    api("/public-config")
+      .then((c) =>
+        setMode(c.platform_mode === "academy" ? "academy" : "school"),
+      )
+      .catch(() => setMode("school"));
+  }, []);
+  if (!mode)
+    return (
+      <main className="login">
+        <p>Đang kết nối…</p>
+      </main>
+    );
+  return mode === "academy" ? <AcademyApp RoomComponent={Room} /> : <App />;
+}
 createRoot(document.getElementById("root")!).render(
   location.pathname === "/setup" ? (
     <Setup />
   ) : location.pathname === "/reset-password" ? (
     <PasswordRecovery />
   ) : (
-    <App />
+    <PlatformEntry />
   ),
 );

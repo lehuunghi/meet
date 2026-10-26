@@ -80,6 +80,9 @@ func decode(w http.ResponseWriter, r *http.Request, v any) bool {
 }
 func who(r *http.Request) identity { return r.Context().Value(authKey{}).(identity) }
 func (a *app) audit(r *http.Request, action, target string) {
+	if r.Context().Value(managedAcademyKey{}) == true {
+		action = "control." + action
+	}
 	u := who(r)
 	if _, e := a.db.ExecContext(r.Context(), "INSERT INTO audit_log(school_id,actor_id,action,target) VALUES(?,?,?,?)", u.School, u.ID, action, target); e != nil {
 		slog.Error("audit failed", "error", e)
@@ -136,6 +139,7 @@ func (a *app) auth(next http.HandlerFunc) http.HandlerFunc {
 }
 func (a *app) routes() http.Handler {
 	m := http.NewServeMux()
+	a.academyRoutes(m)
 	m.HandleFunc("GET /api/health", func(w http.ResponseWriter, r *http.Request) {
 		ctx, c := context.WithTimeout(r.Context(), 2*time.Second)
 		defer c()
@@ -154,7 +158,8 @@ func (a *app) routes() http.Handler {
 				name = ""
 			}
 		}
-		send(w, 200, map[string]any{"managed": e == nil, "school_name": name})
+		cfg, _ := loadSettings()
+		send(w, 200, map[string]any{"managed": e == nil, "school_name": name, "platform_mode": cfg.Platform})
 	})
 	m.HandleFunc("POST /api/login", a.login)
 	m.HandleFunc("POST /api/login/2fa", a.loginOTP)
@@ -245,7 +250,7 @@ func (a *app) routes() http.Handler {
 			return
 		}
 		if r.Method != "GET" && r.Method != "HEAD" {
-			if r.Header.Get("Origin") != a.origin {
+			if r.Header.Get("Origin") != a.origin && r.URL.Path != "/api/academy/webhooks/payos" {
 				problem(w, 403, "Origin rejected")
 				return
 			}
@@ -296,7 +301,7 @@ func migrate(db *sql.DB) error {
 	if e = migrateV4(c); e != nil {
 		return e
 	}
-	_, e = c.ExecContext(context.Background(), "INSERT IGNORE INTO schema_migrations VALUES(6)")
+	_, e = c.ExecContext(context.Background(), "INSERT IGNORE INTO schema_migrations VALUES(6),(7)")
 	return e
 }
 func main() {
@@ -321,7 +326,7 @@ func main() {
 				a := &app{client: &http.Client{Timeout: 40 * time.Second}, origin: os.Getenv("APP_ORIGIN")}
 				e = a.configureBucket(context.Background(), cfg.R2, cfg.Retention)
 			}
-		case "managed-config", "managed-account", "managed-status":
+		case "managed-config", "managed-account", "managed-status", "managed-academy":
 			e = managedCommand(db, os.Args[1])
 		case "bootstrap":
 			e = bootstrap(db)

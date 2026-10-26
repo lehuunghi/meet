@@ -29,7 +29,7 @@ def updater():
 def configure(job):
     payload=job['payload'];cfg=payload['settings'];domain=payload['domain'];school=(cfg.get('school_slug') or 'school-'+config['school'][:8]);admin=cfg.get('initial_admin',{})
     if not HOST.fullmatch(domain):raise ValueError('invalid domain')
-    settings={k:cfg[k] for k in ('sfu','turn','r2','retention_days','backup') if k in cfg}
+    settings={k:cfg[k] for k in ('sfu','turn','r2','retention_days','backup','platform_mode','commerce') if k in cfg}
     cli('managed-config',{'settings':settings,'school':{'slug':school,'name':payload['name'],'email':admin.get('email',''),'password':admin.get('password','')},'domain':domain})
     atomic(ROOT/'runtime-config/control-revision.json',{'revision':job['revision']},(10001,10001))
 
@@ -99,6 +99,7 @@ def execute(job,status):
         revision=ROOT/'runtime-config/control-revision.json'
         if not revision.exists() or json.loads(revision.read_text()).get('revision',0)<job['revision']:configure(job)
     elif action=='accounts':cli('managed-account',payload)
+    elif action=='academy':return 'success',cli('managed-academy',payload)
     elif action=='check':run('python3',str(ROOT/'deploy/update.py'),'check')
     elif action=='update':
         target=payload.get('target','')
