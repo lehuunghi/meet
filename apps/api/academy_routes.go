@@ -52,6 +52,8 @@ func (a *app) academyRoutes(m *http.ServeMux) {
 		})
 	}
 	member("GET /api/academy/me", a.academyMe)
+	member("GET /api/academy/settings", a.academySettings)
+	member("POST /api/academy/settings", a.academySettings)
 	control("GET /api/academy/control/people", "accounts", a.accounts)
 	control("POST /api/academy/control/people", "accounts", a.accountSave)
 	control("POST /api/academy/control/teachers", "academic", a.teacherBatch)

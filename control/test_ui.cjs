@@ -55,19 +55,6 @@ const origin = `http://127.0.0.1:${port}`;
       .locator("[name=admin_password]")
       .fill("academy-initial-password");
     await page
-      .getByRole("button", {
-        name: /^(Nền tảng \/ VIP|Email & thanh toán)$/,
-        exact: true,
-      })
-      .click();
-    assert.equal(
-      await page.locator("[name=platform_mode]").inputValue(),
-      "academy",
-    );
-    assert.equal(await page.locator("[name=platform_mode]").isDisabled(), true);
-    await page.locator("[name=smtp_address]").fill("smtp.example.test:587");
-    await page.locator("[name=smtp_from]").fill("academy@example.test");
-    await page
       .getByRole("button", { name: "Lưu & đồng bộ", exact: true })
       .click();
     await page
@@ -111,21 +98,11 @@ const origin = `http://127.0.0.1:${port}`;
     });
     await install.waitFor();
     assert.equal(await install.isEnabled(), true);
-    await page
-      .getByRole("button", {
-        name: /^(Nền tảng \/ VIP|Email & thanh toán)$/,
-        exact: true,
-      })
-      .click();
-    assert.equal(
-      await page.locator("[name=smtp_address]").inputValue(),
-      "smtp.example.test:587",
-    );
-    await page.locator("[name=bank_name]").fill("Chủ tài khoản thử");
-    // Background acknowledgement polling must not replace a partially edited form.
-    const poll = page.waitForResponse(r => r.url() === origin + '/api/schools' && r.request().method() === 'GET');
-    await poll;
-    assert.equal(await page.locator('[name=bank_name]').inputValue(), 'Chủ tài khoản thử');
+    await page.locator('#tabs').getByRole('button', {name:'R2 / Backup', exact:true}).click();
+    await page.locator('[name=retention]').fill('45');
+    const poll=page.waitForResponse(r=>r.url()===origin+'/api/schools'&&r.request().method()==='GET');await poll;
+    assert.equal(await page.locator('[name=retention]').inputValue(),'45');
+    for(const label of ['Khóa học & video','Học viên','Giáo viên','Email & thanh toán','Thu chi','Quản trị kinh doanh'])assert.equal(await page.locator('#tabs').getByRole('button',{name:label,exact:true}).count(),0);
     await page
       .getByRole("button", { name: "Cài đặt / Nâng cấp", exact: true })
       .click();

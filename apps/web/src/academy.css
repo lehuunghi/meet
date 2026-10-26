@@ -1,4 +1,8 @@
 /* Academy theme is scoped to avoid changing existing school and meeting pages. */
+.academy-shell code {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
 .academy-shell,
 .academy-auth,
 .academy-loading {

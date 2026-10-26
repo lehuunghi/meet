@@ -17,6 +17,19 @@ config=json.loads(request('/api/public-config'));assert config['platform_mode']=
 landing=request('/').decode();assert 'VA thử nghiệm' in landing and 'Học thử miễn phí' in landing
 assert json.loads(request('/api/login',{'email':'admin@example.test','password':'integration-new-admin-123'}))['role']=='admin'
 people=json.loads(request('/api/academy/control/people'));assert len(people)==1 and people[0]['role']=='admin'
+local=json.loads(request('/api/academy/settings'))
+settings={**local['settings'],'free_videos':7,'bank_name':'Tên người nhận Việt Nam','smtp_password':'private-local-secret'}
+saved=json.loads(request('/api/academy/settings',{'settings':settings,'revision':local['revision']}));assert saved['revision']==1
+visible=json.loads(request('/api/academy/settings'));assert visible['settings']['free_videos']==7 and visible['settings']['smtp_password']=='' and visible['secrets']['smtp_password']
+# An infrastructure configuration push cannot overwrite locally owned commerce.
+payload['settings']['commerce']={'free_videos':99,'smtp_password':'central-must-not-replace'}
+b.compose('exec','-T','api','/usr/local/bin/meet','managed-config',data=json.dumps(payload).encode())
+visible=json.loads(request('/api/academy/settings'));assert visible['settings']['free_videos']==7 and visible['revision']==1
+with open(root/'runtime-config/settings.json') as f:assert json.load(f)['commerce']['smtp_password']=='private-local-secret'
+try:request('/api/academy/settings',{'settings':settings,'revision':0});raise AssertionError('stale local settings accepted')
+except urllib.error.HTTPError as e:assert e.code==409
+try:b.compose('exec','-T','api','/usr/local/bin/meet','managed-academy',data=b'{"Method":"GET","Path":"/api/academy/admin/students"}');raise AssertionError('central business bridge accepted')
+except subprocess.CalledProcessError:pass
 b.compose('stop','api','web');b.compose('exec','-T','mysql','sh','-c','MYSQL_PWD="$(cat /run/secrets/mysql_root_password)" mysql -h 127.0.0.1 -u root -e "DROP DATABASE meet; CREATE DATABASE meet CHARACTER SET utf8mb4"');b.compose('run','--rm','migrate')
 for name in ['settings.json','managed.json']:(root/'runtime-config'/name).unlink(missing_ok=True)
 os.environ['APP_ORIGIN']=original;(root/'.env').write_text('APP_ORIGIN='+original+'\n');b.compose('up','-d','api','web')

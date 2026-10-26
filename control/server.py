@@ -8,7 +8,7 @@ from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 ROOT=Path(os.environ.get('MEET_CONTROL_DATA','/var/lib/meet-control'))
 ORIGIN=os.environ.get('MEET_CONTROL_ORIGIN','https://admin.tn.edu.vn').rstrip('/')
 HOST=re.compile(r'(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,63}')
-ACTIONS={'configure','check','update','backup','domain','accounts','provision','academy','lifecycle','relocate'}
+ACTIONS={'configure','check','update','backup','domain','accounts','provision','lifecycle','relocate'}
 
 class ClosingConnection(sqlite3.Connection):
     def __exit__(self,*args):
@@ -118,11 +118,6 @@ def deployment_readiness(row,cfg):
     add('sfu','Lớp Live / SFU',bool(active),str(len(active))+' SFU đã điền. Chưa kiểm tra cuộc gọi thật.' if active else 'Có thể cài trước; thêm SFU để mở lớp Live.')
     r2=cfg.get('r2',{});complete=all(r2.get(k) for k in ('account_id','bucket','access_key_id','secret_access_key'))
     add('r2','Video, ảnh và biên lai R2',bool(r2.get('enabled') and complete),'R2 đã điền; cần nghiệm thu tải lên/phát video.' if complete and r2.get('enabled') else 'Chưa bật hoặc thiếu cấu hình. Cần R2 để dùng kho video và ảnh.',bool(r2.get('enabled')))
-    if cfg.get('platform_mode','school')=='academy':
-        commerce=cfg.get('commerce',{})
-        add('email','Đăng ký bằng mã email',bool(commerce.get('smtp_address') and commerce.get('smtp_from')),'Cấu hình SMTP STARTTLS; cần gửi thử email trước khi mở đăng ký.')
-        add('bank','Chuyển khoản / QR',all(commerce.get(k) for k in ('bank_bin','bank_account','bank_name')),'Cần BIN ngân hàng, số tài khoản và tên người nhận để bán gói.')
-        add('payos','Thanh toán tự động payOS',all(commerce.get(k) for k in ('client_id','api_key','checksum_key')),'Tùy chọn. Khi chưa có, quản trị đối soát và duyệt thủ công.')
     return {'platform_mode':cfg.get('platform_mode','school'),'can_install':row['desired_state']=='active' and not connected and not any(x['state']=='blocked' for x in checks),'connected':connected,'checks':checks,'notice':'Kiểm tra thông tin đã nhập; không thay thế nghiệm thu DNS/SSH/Cloudflare/thanh toán thật.'}
 
 def redact(value):
@@ -276,10 +271,9 @@ class Handler(BaseHTTPRequestHandler):
         if row['desired_state']=='deleted':raise PermissionError('Đơn vị đã xóa')
         if self.command=='GET':return {k:row[k] for k in ('id','name','domain','ip','revision','applied','desired_state','applied_state')}
         if 'name' in data and not isinstance(data['name'],str):raise ValueError('Tên đơn vị không hợp lệ')
-        if set(data)-{'revision','name','retention_days','free_videos'} or 'revision' not in data:raise ValueError('Chỉ sửa name, retention_days, free_videos; cần revision hiện tại')
+        if set(data)-{'revision','name','retention_days'} or 'revision' not in data:raise ValueError('Chỉ sửa name, retention_days; cài đặt kinh doanh thuộc website')
         cfg=decrypt(row['config'],row['id'])
         if 'retention_days' in data:cfg['retention_days']=data['retention_days']
-        if 'free_videos' in data:cfg.setdefault('commerce',{})['free_videos']=data['free_videos']
         user=db.execute('SELECT * FROM admins WHERE id=?',(key['issuer'],)).fetchone()
         old_path,old_command=self.path,self.command
         self.path='/api/schools/save';self.command='POST'
@@ -426,7 +420,10 @@ class Handler(BaseHTTPRequestHandler):
             if old and db.execute("SELECT 1 FROM jobs WHERE school=? AND action='domain' AND state IN ('queued','running')",(sid,)).fetchone():raise ValueError('Đang đổi domain, chờ hoàn tất trước khi lưu')
             if old and data.get('revision')!=old['revision']:raise ValueError('Cấu hình đã thay đổi. Tải lại trước khi lưu')
             if old and type(data.get('revision')) is not int:raise ValueError('Revision phải là số nguyên')
-            cfg=validate_config(merge_secrets(data.get('config',{}),decrypt(old['config'],sid) if old else {}));revision=old['revision']+1 if old else 1
+            incoming=dict(data.get('config',{}))
+            if incoming.get('commerce'):raise ValueError('Cấu hình email/thanh toán được quản lý tại website của đơn vị')
+            incoming.pop('commerce',None)
+            cfg=validate_config(merge_secrets(incoming,decrypt(old['config'],sid) if old else {}));revision=old['revision']+1 if old else 1
             if old and old['agent_hash']:
                 prior_cfg=decrypt(old['config'],sid)
                 if cfg.get('school_slug','')!=prior_cfg.get('school_slug',''):raise ValueError('Không đổi mã nội bộ sau khi liên kết VPS')
@@ -445,7 +442,9 @@ class Handler(BaseHTTPRequestHandler):
             if not row:raise ValueError('Không tìm thấy trường')
             if op in ('lifecycle','keys','relocations'):return self.manage_school(db,user,row,op,data)
             if row['desired_state']=='deleted' and op not in ('config','jobs','readiness'):raise ValueError('Đơn vị nằm trong thùng rác')
-            if op=='config':return {'config':redact(decrypt(row['config'],sid)),'revision':row['revision']}
+            if op=='config':
+                cfg=decrypt(row['config'],sid);cfg.pop('commerce',None)
+                return {'config':redact(cfg),'revision':row['revision']}
             if op=='readiness':
                 report=deployment_readiness(row,decrypt(row['config'],sid))
                 report['installing']=bool(db.execute("SELECT 1 FROM jobs WHERE school=? AND action='provision' AND state IN ('queued','running')",(sid,)).fetchone())
@@ -459,10 +458,8 @@ class Handler(BaseHTTPRequestHandler):
                 for x in db.execute('SELECT id,action,revision,state,created,result FROM jobs WHERE school=? ORDER BY created DESC LIMIT 100',(sid,)):
                     item=dict(x);result=json.loads(item['result'])
                     if 'payload' in result:
-                        encrypted=result.pop('payload')
-                        if user['role']=='owner' and int(time.time())-item['created']<900:result['data']=decrypt(encrypted,sid)
-                        else:result['expired']=True
-                        item['result']=json.dumps(result,ensure_ascii=False)
+                        result.pop('payload');result['expired']=True
+                        item['result']=json.dumps(result)
                     output.append(item)
                 return output
             if op=='action':
@@ -470,9 +467,7 @@ class Handler(BaseHTTPRequestHandler):
                 if action in ('lifecycle','relocate'):raise ValueError('Dùng chức năng quản lý riêng')
                 if db.execute("SELECT 1 FROM relocations WHERE school=? AND state IN ('backup_ready','preparing','prepared','cutting_over','cutover_failed')",(sid,)).fetchone():raise ValueError('Đang chuyển VPS; chờ hoàn tất')
                 if not isinstance(payload,dict):raise ValueError('Nội dung tác vụ không hợp lệ')
-                if action=='academy':
-                    if user['role']!='owner':raise ValueError('Chỉ chủ hệ thống được quản trị kinh doanh')
-                    if decrypt(row['config'],sid).get('platform_mode','school')!='academy':raise ValueError('Đơn vị này đang ở chế độ trường học')
+                if action=='academy':raise ValueError('Quản lý khóa học và học viên tại website của đơn vị')
                 if action=='provision':
                     if row['desired_state']!='active':raise ValueError('Kích hoạt đơn vị trước khi cài mới')
                     if user['role']!='owner':raise ValueError('Cần quyền chủ hệ thống')

@@ -138,6 +138,12 @@ func (a *app) setupSave(w http.ResponseWriter, r *http.Request) {
 		problem(w, 500, "Không đọc được cấu hình cũ")
 		return
 	}
+	// A managed VPS owns business configuration locally. Infrastructure pushes
+	// must not overwrite email, payment or quota changes made by its admins.
+	if _, managed := os.Stat(configPath("managed.json")); managed == nil && old.Platform == "academy" {
+		in.Settings.Commerce = old.Commerce
+		in.Settings.CommerceRevision = old.CommerceRevision
+	}
 	if e = validateSettings(&in.Settings, old); e != nil {
 		problem(w, 400, e.Error())
 		return

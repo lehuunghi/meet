@@ -34,13 +34,14 @@ type backupSettings struct {
 	Interval int  `json:"interval_hours"`
 }
 type systemSettings struct {
-	Platform  string           `json:"platform_mode"`
-	Commerce  commerceSettings `json:"commerce"`
-	Backup    backupSettings   `json:"backup"`
-	SFU       []sfuProvider    `json:"sfu"`
-	TURN      []turnKey        `json:"turn"`
-	R2        r2Settings       `json:"r2"`
-	Retention int              `json:"retention_days"`
+	Platform         string           `json:"platform_mode"`
+	Commerce         commerceSettings `json:"commerce"`
+	CommerceRevision int              `json:"commerce_revision"`
+	Backup           backupSettings   `json:"backup"`
+	SFU              []sfuProvider    `json:"sfu"`
+	TURN             []turnKey        `json:"turn"`
+	R2               r2Settings       `json:"r2"`
+	Retention        int              `json:"retention_days"`
 }
 
 func configPath(name string) string {

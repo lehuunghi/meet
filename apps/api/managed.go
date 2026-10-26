@@ -32,49 +32,7 @@ func managedCommand(db *sql.DB, action string) error {
 	defer cache.Close()
 	a := &app{db: db, cache: cache, client: &http.Client{Timeout: 45 * time.Second}, origin: os.Getenv("APP_ORIGIN")}
 	if action == "managed-academy" {
-		var in struct {
-			Method, Path string
-			Body         json.RawMessage
-			RequestID    string `json:"request_id"`
-		}
-		if json.Unmarshal(raw, &in) != nil || !academyManagedPath(in.Method, in.Path) {
-			return errors.New("unsupported academy operation")
-		}
-		var count int
-		if db.QueryRow("SELECT COUNT(*) FROM schools").Scan(&count) != nil || count != 1 {
-			return errors.New("single academy deployment required")
-		}
-		if in.Method == "POST" && (in.Path == "/api/academy/courses" || in.Path == "/api/academy/plans" || in.Path == "/api/academy/finance" || regexp.MustCompile(`^/api/academy/courses/[a-zA-Z0-9-]{1,36}/lessons$`).MatchString(in.Path)) {
-			var body map[string]any
-			if json.Unmarshal(in.Body, &body) != nil {
-				return errors.New("invalid business payload")
-			}
-			if body["id"] == nil || body["id"] == "" {
-				if !regexp.MustCompile(`^[a-f0-9]{32}$`).MatchString(in.RequestID) {
-					return errors.New("request ID required")
-				}
-				body["id"] = in.RequestID
-				in.Body, _ = json.Marshal(body)
-			}
-		}
-		var u identity
-		u.Role = "admin"
-		if db.QueryRow("SELECT u.id,u.school_id,u.name FROM users u LEFT JOIN user_controls c ON c.user_id=u.id WHERE u.role='admin' AND u.active=TRUE AND c.permissions IS NULL ORDER BY u.id LIMIT 1").Scan(&u.ID, &u.School, &u.Name) != nil {
-			return errors.New("active root administrator required")
-		}
-		req := httptest.NewRequest(in.Method, in.Path, bytes.NewReader(in.Body))
-		req.Header.Set("Origin", a.origin)
-		req = req.WithContext(context.WithValue(context.WithValue(req.Context(), authKey{}, u), managedAcademyKey{}, true))
-		rec := httptest.NewRecorder()
-		a.routes().ServeHTTP(rec, req)
-		if rec.Code < 200 || rec.Code >= 300 {
-			return fmt.Errorf("academy operation rejected (%d)", rec.Code)
-		}
-		var data any
-		if json.Unmarshal(rec.Body.Bytes(), &data) != nil {
-			return errors.New("non-JSON academy response")
-		}
-		return json.NewEncoder(os.Stdout).Encode(map[string]any{"status": rec.Code, "data": data})
+		return errors.New("business management is available only on the website")
 	}
 	if action == "managed-status" {
 		var live int
@@ -108,7 +66,7 @@ func managedCommand(db *sql.DB, action string) error {
 		if schoolSuspended() {
 			state = "suspended"
 		}
-		return json.NewEncoder(os.Stdout).Encode(map[string]any{"live": live, "admins": accounts, "version": buildVersion, "commit": buildCommit, "platform_mode": mode, "school_state": state, "features": []string{"academy_management", "lifecycle", "relocation"}})
+		return json.NewEncoder(os.Stdout).Encode(map[string]any{"live": live, "admins": accounts, "version": buildVersion, "commit": buildCommit, "platform_mode": mode, "school_state": state, "features": []string{"local_academy_management", "lifecycle", "relocation"}})
 	}
 	if action == "managed-config" {
 		var in struct {

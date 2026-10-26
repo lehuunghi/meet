@@ -82,7 +82,7 @@ class ControlTests(unittest.TestCase):
         self.assertEqual(c.merge_secrets({'sfu':[{'id':'b','secret':'••••••••'},{'id':'a','secret':'••••••••'}]},{'sfu':[{'id':'a','secret':'a-secret'},{'id':'b','secret':'b-secret'}]})['sfu'][0]['secret'],'b-secret')
     def test_academy_install_readiness_and_guards(self):
         cookie=self.login()
-        cfg={'platform_mode':'academy','retention_days':30,'commerce':{'free_videos':4,'api_key':'private-payos-key'},'initial_admin':{}}
+        cfg={'platform_mode':'academy','retention_days':30,'initial_admin':{}}
         data={'name':'Academy QA','domain':'academy-install.example.test','ip':'8.8.8.8','config':cfg}
         status,result,_=self.request('/api/schools/save',data,cookie);self.assertEqual(status,200);sid=result['id'];base='/api/schools/'+sid
         status,report,_=self.request(base+'/readiness',cookie=cookie);self.assertEqual(status,200);self.assertFalse(report['can_install']);self.assertNotIn('private-payos-key',json.dumps(report))
@@ -110,20 +110,19 @@ class ControlTests(unittest.TestCase):
             self.assertEqual(db.execute('SELECT domain FROM schools WHERE id=?',(sid,)).fetchone()['domain'],'corrected.example.test')
             self.assertEqual(db.execute("SELECT count(*) FROM jobs WHERE school=? AND action='configure' AND state='queued'",(sid,)).fetchone()[0],1)
             self.assertEqual(db.execute("SELECT count(*) FROM jobs WHERE school=? AND state='superseded'",(sid,)).fetchone()[0],1)
-    def test_academy_results_encrypted_and_owner_only(self):
-        cookie=self.login();cfg={'platform_mode':'academy','commerce':{'free_videos':4}}
-        _,out,_=self.request('/api/schools/save',{'name':'Business QA','domain':'business.example.test','ip':'8.8.4.4','config':cfg},cookie);sid=out['id'];base='/api/schools/'+sid
-        _,out,_=self.request(base+'/enroll',{},cookie);_,out,_=self.request('/agent/enroll',{'token':out['token']});agent=out['token']
-        _,out,_=self.request('/agent/poll',{'status':{}},agent=agent);job=out['job'];self.request('/agent/ack',{'id':job['id'],'lease':job['lease'],'state':'success','code':'OK'},agent=agent)
-        _,out,_=self.request(base+'/action',{'action':'academy','payload':{'method':'GET','path':'/api/academy/admin/students'}},cookie);jid=out['id']
-        _,out,_=self.request('/agent/poll',{'status':{}},agent=agent);job=out['job'];self.assertEqual(job['payload']['request_id'],jid)
-        sensitive={'status':200,'data':[{'email':'private-student@example.test'}]}
-        self.assertEqual(self.request('/agent/ack',{'id':jid,'lease':job['lease'],'state':'success','code':sensitive},agent=agent)[0],200)
-        with c.connect() as db:self.assertNotIn('private-student',db.execute('SELECT result FROM jobs WHERE id=?',(jid,)).fetchone()['result'])
-        rows=self.request(base+'/jobs',cookie=cookie)[1];self.assertEqual(json.loads(next(x for x in rows if x['id']==jid)['result'])['data'],sensitive)
-        self.request('/api/admins',{'email':'business-view@example.test','password':'business-viewer-123','role':'viewer','active':True},cookie)
-        _,_,viewer=self.request('/api/login',{'email':'business-view@example.test','password':'business-viewer-123'})
-        rows=self.request(base+'/jobs',cookie=viewer)[1];self.assertNotIn('private-student',json.dumps(rows))
+    def test_business_management_is_not_a_central_capability(self):
+        cookie=self.login();cfg={'platform_mode':'academy'}
+        _,out,_=self.request('/api/academies/save',{'name':'Business QA','domain':'business.example.test','ip':'8.8.4.4','config':cfg},cookie);sid=out['id'];base='/api/schools/'+sid
+        self.assertEqual(self.request(base+'/action',{'action':'academy','payload':{'method':'GET','path':'/api/academy/admin/students'}},cookie)[0],400)
+        self.assertEqual(self.request('/api/academies/save',{'id':sid,'revision':1,'name':'Business QA','domain':'business.example.test','ip':'8.8.4.4','config':{**cfg,'commerce':{'free_videos':8}}},cookie)[0],400)
+        self.assertNotIn('commerce',self.request(base+'/config',cookie=cookie)[1]['config'])
+        _,key,_=self.request(base+'/keys',{'label':'QA','days':1},cookie)
+        self.assertEqual(self.request('/api/v1/schools/'+sid,{'revision':1,'free_videos':8},agent=key['token'],method='PATCH')[0],400)
+        # Legacy encrypted business results must not be readable centrally anymore.
+        with c.connect() as db:
+            jid='f'*32;result={'code':'OK','payload':c.encrypt({'private':'student-profile'},sid)}
+            db.execute("INSERT INTO jobs(id,school,action,payload,revision,state,created,result) VALUES(?,?,?,?,?,'success',?,?)",(jid,sid,'academy',c.encrypt({},sid),1,1790000000,json.dumps(result)))
+        rows=self.request(base+'/jobs',cookie=cookie)[1];self.assertNotIn('student-profile',json.dumps(rows));self.assertTrue(json.loads(rows[0]['result']).get('expired') or any(json.loads(x['result']).get('expired') for x in rows))
     def test_viewer_and_single_session(self):
         cookie=self.login();second=self.login();self.assertEqual(self.request('/api/me',cookie=cookie)[0],401)
         self.assertEqual(self.request('/api/admins',{'email':'view@example.test','password':'viewer-password-123','role':'viewer','active':True},second)[0],200)

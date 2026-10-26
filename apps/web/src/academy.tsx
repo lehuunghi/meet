@@ -3,6 +3,7 @@ import { api } from "./api";
 import { LearningWorkspace } from "./learning";
 import { AcademicAdmin } from "./academic";
 import { Accounts } from "./accounts";
+import { AcademySettings } from "./academy-settings";
 import "./academy.css";
 const money = (n: number) =>
   new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(
@@ -71,13 +72,6 @@ export function AcademyApp({
     [meetings, setMeetings] = useState<any[]>([]),
     [authTab, setAuthTab] = useState("login"),
     [challenge, setChallenge] = useState("");
-  const [management, setManagement] = useState("");
-  useEffect(() => {
-    if (!demo)
-      void api("/public-config")
-        .then((v) => setManagement(v.management_url || ""))
-        .catch(() => {});
-  }, []);
   const perform = async (fn: () => Promise<void>) => {
     setError("");
     setNotice("");
@@ -133,7 +127,7 @@ export function AcademyApp({
       );
   }, [user]);
   useEffect(() => {
-    if (!user || demo || tab !== "live") return;
+    if (!user || demo || !["live", "reports"].includes(tab)) return;
     const load = () =>
       void perform(async () => {
         const [c, m] = await Promise.all([
@@ -150,14 +144,6 @@ export function AcademyApp({
   const vip = profile.expires_at && Date.parse(profile.expires_at) > Date.now();
   if (loading)
     return <main className="academy-loading">Đang mở cổng học tập…</main>;
-  if (user?.role === "admin" && management)
-    return (
-      <main className="academy-auth">
-        <h1>Quản trị tập trung</h1>
-        <p>Nền tảng này được quản lý tại một bảng quản trị duy nhất.</p>
-        <a href={management}>Mở bảng quản trị nền tảng</a>
-      </main>
-    );
   if (room && user)
     return (
       <RoomComponent
@@ -343,8 +329,9 @@ export function AcademyApp({
           {[
             ["courses", "Khóa học"],
             ["live", "Lớp học trực tiếp"],
-            ["vip", "Gói học & thanh toán"],
-            ["profile", "Hồ sơ học viên"],
+            ["reports", "Điểm danh & bản ghi"],
+            ...(!staff ? [["vip", "Gói học & thanh toán"]] : []),
+            ["profile", staff ? "Tài khoản của bạn" : "Hồ sơ học viên"],
             ...(admin
               ? [
                   ["manage", "Quản lý nội dung"],
@@ -353,6 +340,7 @@ export function AcademyApp({
                   ["orders", "Duyệt thanh toán"],
                   ["students", "Học viên"],
                   ["finance", "Thu chi"],
+                  ["settings", "Email & thanh toán"],
                 ]
               : []),
           ].map(([id, label]) => (
@@ -455,7 +443,7 @@ export function AcademyApp({
             )}
           </>
         )}
-        {tab === "live" &&
+        {["live", "reports"].includes(tab) &&
           (demo ? (
             <p>
               Demo phòng học nằm trong bản Meet hiện có. Cuộc gọi thật cần trung
@@ -467,7 +455,7 @@ export function AcademyApp({
               courses={classrooms}
               meetings={meetings}
               demo={false}
-              reports={false}
+              reports={tab === "reports"}
               canTeach={staff}
               canVideo={true}
               onRefresh={async () => {
@@ -508,6 +496,7 @@ export function AcademyApp({
             notice={setNotice}
           />
         )}
+        {admin && tab === "settings" && <AcademySettings demo={demo} />}
         {admin && tab === "academic" && (
           <AcademicAdmin demo={demo} onChange={refresh} />
         )}

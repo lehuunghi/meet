@@ -1,5 +1,13 @@
 # Quản trị trung tâm nhiều VPS — v0.6.0 (release candidate)
 
+## Phân tách quản trị từ v0.9.3
+
+Quy định này thay thế mô hình quản lý kinh doanh tập trung trong các phần lịch sử bên dưới. `admin.tn.edu.vn` chỉ quản lý SFU, R2/sao lưu, cài đặt/nâng cấp, tài khoản quản trị, lịch sử, trạng thái/xóa, chuyển VPS và API tích hợp. Việc tạo nền tảng vẫn khởi tạo tài khoản quản trị đầu tiên, nhưng không sao chép tài khoản đăng nhập giữa hai hệ thống.
+
+Khóa học/video, website giới thiệu, giáo viên/học viên, lớp/môn, điểm danh, gói VIP, duyệt thanh toán, thu chi và cấu hình email/thanh toán do quản trị của đơn vị đăng nhập tại `/hoc` trên domain riêng để quản lý. Tài khoản VA không có quyền đăng nhập trung tâm. Trung tâm không còn API điều khiển các nghiệp vụ này; không trả lại kết quả nghiệp vụ cũ trong lịch sử. API tích hợp chỉ sửa tên đơn vị và thời hạn ghi hình, không sửa hạn mức học thử.
+
+Thiết lập email/thanh toán lưu cục bộ trên VPS của website, chỉ trả cờ đã lưu cho secret. Có khóa chống lưu đồng thời và revision chống ghi đè. Cập nhật hạ tầng từ trung tâm giữ nguyên thiết lập kinh doanh cục bộ; sao lưu/khôi phục vẫn bao gồm các cấu hình này.
+
 ## Đồng bộ tự động và chẩn đoán hiện tại
 
 Khi cài VPS, bộ cài tự tạo liên kết agent HTTPS bằng mã đăng ký dùng một lần; credential riêng của VPS được lưu trên máy, trung tâm chỉ giữ hash. Không cần tạo API key thủ công để quản trị website. API key trong mục **API tích hợp** dành cho ứng dụng bên ngoài và có phạm vi hạn chế.
