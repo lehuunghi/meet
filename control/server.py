@@ -69,7 +69,43 @@ def validate_config(value):
     if not 1<=int(value.get('retention_days',30))<=3650:raise ValueError('Thời hạn video phải từ 1 đến 3650 ngày')
     for name in ('sfu','turn'):
         if not isinstance(value.get(name,[]),list) or len(value.get(name,[]))>50:raise ValueError('Danh sách credential không hợp lệ')
+        if any(not isinstance(x,dict) for x in value.get(name,[])):raise ValueError('Credential không hợp lệ')
+    for item in value.get('sfu',[]):
+        if not isinstance(item.get('weight',1),int) or not 1<=item.get('weight',1)<=100:raise ValueError('Trọng số SFU phải từ 1 đến 100')
+    commerce=value.get('commerce',{})
+    if not isinstance(commerce,dict):raise ValueError('Cấu hình kinh doanh không hợp lệ')
+    if not isinstance(commerce.get('free_videos',4),int) or isinstance(commerce.get('free_videos'),bool) or not 1<=commerce.get('free_videos',4)<=100:raise ValueError('Hạn mức xem thử phải từ 1 đến 100 bài mỗi tháng')
+    for key in ('bank_bin','bank_account','bank_name','client_id','api_key','checksum_key','smtp_address','smtp_from','smtp_user','smtp_password'):
+        if not isinstance(commerce.get(key,''),str) or len(commerce.get(key,''))>1000:raise ValueError('Thông tin kinh doanh quá dài hoặc sai định dạng')
+    for key in ('r2','backup','initial_admin'):
+        if not isinstance(value.get(key,{}),dict):raise ValueError('Cấu hình '+key+' không hợp lệ')
+    admin=value.get('initial_admin',{})
+    if any(not isinstance(admin.get(k,''),str) for k in ('email','password')):raise ValueError('Quản trị khởi tạo không hợp lệ')
+    if not isinstance(value.get('school_slug',''),str):raise ValueError('Mã nội bộ không hợp lệ')
     return value
+
+def deployment_readiness(row,cfg):
+    """Configuration-only preflight: never returns secrets or claims a live integration passed."""
+    checks=[]
+    def add(key,title,ok,detail,required=False):
+        checks.append({'key':key,'title':title,'state':'ready' if ok else ('blocked' if required else 'optional'),'detail':detail})
+    connected=bool(row['seen'] or row['agent_hash'])
+    admin=cfg.get('initial_admin',{})
+    email=admin.get('email','');password=admin.get('password','')
+    add('admin','Quản trị đầu tiên',connected or (bool(re.fullmatch(r'[^\s@]+@[^\s@]+\.[^\s@]+',email)) and 12<=len(password.encode())<=72),'Tài khoản đã khởi tạo' if connected else 'Cần email và mật khẩu 12–72 byte; không hiện lại mật khẩu.',True)
+    slug=cfg.get('school_slug','')
+    add('slug','Mã nội bộ',not slug or bool(re.fullmatch('[a-z0-9-]{2,64}',slug)),'Để trống để hệ thống tự tạo; mã không xuất hiện ở đăng nhập.',True)
+    add('host','Domain và VPS',bool(row['domain'] and row['ip']),'DNS sẽ được đối chiếu với IP trước khi cài qua SSH.',True)
+    active=[v for v in cfg.get('sfu',[]) if v.get('enabled',True) and v.get('app_id') and v.get('secret') and int(v.get('weight',1))>0]
+    add('sfu','Lớp Live / SFU',bool(active),str(len(active))+' SFU đã điền. Chưa kiểm tra cuộc gọi thật.' if active else 'Có thể cài trước; thêm SFU để mở lớp Live.')
+    r2=cfg.get('r2',{});complete=all(r2.get(k) for k in ('account_id','bucket','access_key_id','secret_access_key'))
+    add('r2','Video, ảnh và biên lai R2',bool(r2.get('enabled') and complete),'R2 đã điền; cần nghiệm thu tải lên/phát video.' if complete and r2.get('enabled') else 'Chưa bật hoặc thiếu cấu hình. Cần R2 để dùng kho video và ảnh.',bool(r2.get('enabled')))
+    if cfg.get('platform_mode','school')=='academy':
+        commerce=cfg.get('commerce',{})
+        add('email','Đăng ký bằng mã email',bool(commerce.get('smtp_address') and commerce.get('smtp_from')),'Cấu hình SMTP STARTTLS; cần gửi thử email trước khi mở đăng ký.')
+        add('bank','Chuyển khoản / QR',all(commerce.get(k) for k in ('bank_bin','bank_account','bank_name')),'Cần BIN ngân hàng, số tài khoản và tên người nhận để bán gói.')
+        add('payos','Thanh toán tự động payOS',all(commerce.get(k) for k in ('client_id','api_key','checksum_key')),'Tùy chọn. Khi chưa có, quản trị đối soát và duyệt thủ công.')
+    return {'platform_mode':cfg.get('platform_mode','school'),'can_install':not connected and not any(x['state']=='blocked' for x in checks),'connected':connected,'checks':checks,'notice':'Kiểm tra thông tin đã nhập; không thay thế nghiệm thu DNS/SSH/Cloudflare/thanh toán thật.'}
 
 def redact(value):
     if isinstance(value,list):return [redact(v) for v in value]
@@ -120,7 +156,7 @@ class Handler(BaseHTTPRequestHandler):
     def dispatch(self):
         try:
             if self.path=='/' and self.command=='GET':
-                body=Path(__file__).with_name('index.html').read_bytes();self.send_response(200);self.send_header('Content-Type','text/html; charset=utf-8');self.send_header('Content-Security-Policy',"default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; frame-ancestors 'none'; base-uri 'none'");self.end_headers();self.wfile.write(body);return
+                body=Path(__file__).with_name('index.html').read_bytes();self.send_response(200);self.send_header('Content-Type','text/html; charset=utf-8');self.send_header('Cache-Control','no-store');self.send_header('Content-Security-Policy',"default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' https://*.r2.cloudflarestorage.com; frame-ancestors 'none'; base-uri 'none'");self.end_headers();self.wfile.write(body);return
             if self.path=='/health' and self.command=='GET':self.reply(200,{'ok':True});return
             if self.command=='POST':
                 n=int(self.headers.get('Content-Length','0'))
@@ -177,7 +213,7 @@ class Handler(BaseHTTPRequestHandler):
         if not row:raise PermissionError('Agent chưa đăng ký')
         sid=row['id'];status=data.get('status',{})
         # Only known, non-secret telemetry is retained.
-        safe={k:status[k] for k in ('version','commit','live','disk_free','config_revision','backup','update','admins') if k in status}
+        safe={k:status[k] for k in ('version','commit','live','disk_free','config_revision','backup','update','admins','platform_mode','features') if k in status}
         if self.path=='/agent/poll':db.execute('UPDATE schools SET seen=?,status=? WHERE id=?',(now,json.dumps(safe),sid))
         else:db.execute('UPDATE schools SET seen=? WHERE id=?',(now,sid))
         if self.path=='/agent/poll':
@@ -205,7 +241,7 @@ class Handler(BaseHTTPRequestHandler):
         raise ValueError('Unknown endpoint')
     def admin(self,db,user,data):
         path=self.path;actor=user['id']
-        readonly=path in ('/api/me','/api/audit','/api/schools') or bool(re.fullmatch(r'/api/schools/[a-f0-9]{32}/(config|jobs)',path))
+        readonly=path in ('/api/me','/api/audit','/api/schools') or bool(re.fullmatch(r'/api/schools/[a-f0-9]{32}/(config|jobs|readiness)',path))
         if self.command=='GET' and not readonly and path!='/api/admins':raise ValueError('POST required')
         if path=='/api/logout':db.execute('DELETE FROM sessions WHERE admin=?',(actor,));return {'ok':True}
         if path=='/api/me':return {'email':user['email'],'role':user['role'],'mfa_enabled':bool(user['mfa'])}
@@ -241,7 +277,7 @@ class Handler(BaseHTTPRequestHandler):
             if not old and not password:raise ValueError('Cần mật khẩu tài khoản mới')
             db.execute('INSERT INTO admins(id,email,hash,role,active) VALUES(?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET email=excluded.email,hash=excluded.hash,role=excluded.role,active=excluded.active',(id,email,password_hash(password) if password else old['hash'],role,int(data.get('active',True))))
             db.execute('DELETE FROM sessions WHERE admin=?',(id,));db.execute('DELETE FROM mfa_challenges WHERE admin=?',(id,));audit(db,actor,'admin.save',id);return {'ok':True}
-        if path=='/api/schools' and self.command=='GET':return [{k:r[k] for k in ('id','name','domain','ip','revision','applied','seen','status')} for r in db.execute('SELECT * FROM schools ORDER BY name')]
+        if path=='/api/schools' and self.command=='GET':return [{**{k:r[k] for k in ('id','name','domain','ip','revision','applied','seen','status')},'platform_mode':decrypt(r['config'],r['id']).get('platform_mode','school')} for r in db.execute('SELECT * FROM schools ORDER BY name')]
         if path=='/api/schools/save':
             sid=data.get('id') or secrets.token_hex(16);domain=str(data['domain']).lower().strip();name=str(data['name']).strip();ip=str(data['ip'])
             if not HOST.fullmatch(domain) or not 1<=len(name)<=200:raise ValueError('Tên trường/domain không hợp lệ')
@@ -251,16 +287,25 @@ class Handler(BaseHTTPRequestHandler):
             if old and db.execute("SELECT 1 FROM jobs WHERE school=? AND action='domain' AND state IN ('queued','running')",(sid,)).fetchone():raise ValueError('Đang đổi domain, chờ hoàn tất trước khi lưu')
             if old and data.get('revision')!=old['revision']:raise ValueError('Cấu hình đã thay đổi. Tải lại trước khi lưu')
             cfg=validate_config(merge_secrets(data.get('config',{}),decrypt(old['config'],sid) if old else {}));revision=old['revision']+1 if old else 1
-            if old and old['seen'] and decrypt(old['config'],sid).get('platform_mode','school')!=cfg.get('platform_mode','school'):raise ValueError('Tạo nền tảng mới để đổi loại triển khai')
+            installing=old and db.execute("SELECT 1 FROM jobs WHERE school=? AND action='provision' AND state IN ('queued','running')",(sid,)).fetchone()
+            if installing:raise ValueError('Đang cài VPS; chờ cài đặt hoàn tất trước khi đổi cấu hình')
+            if old and (old['seen'] or old['agent_hash']) and decrypt(old['config'],sid).get('platform_mode','school')!=cfg.get('platform_mode','school'):raise ValueError('Tạo nền tảng mới để đổi loại triển khai')
+            if user['role']!='owner' and cfg.get('platform_mode','school')=='academy' and (not old or decrypt(old['config'],sid).get('platform_mode','school')!='academy'):raise ValueError('Tạo nền tảng thương mại cần quyền chủ hệ thống')
             if user['role']!='owner' and cfg.get('commerce',{})!=(decrypt(old['config'],sid).get('commerce',{}) if old else {}):raise ValueError('Cấu hình kinh doanh cần quyền chủ hệ thống')
-            if old and old['domain']!=domain:raise ValueError('Dùng tác vụ Đổi domain để chuyển có kiểm tra')
-            db.execute('INSERT INTO schools(id,name,domain,ip,config,revision) VALUES(?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET name=excluded.name,ip=excluded.ip,config=excluded.config,revision=excluded.revision',(sid,name,domain,ip,encrypt(cfg,sid),revision))
+            if old and (old['seen'] or old['agent_hash']) and old['domain']!=domain:raise ValueError('Dùng tác vụ Đổi domain để chuyển có kiểm tra')
+            db.execute('INSERT INTO schools(id,name,domain,ip,config,revision) VALUES(?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET name=excluded.name,domain=excluded.domain,ip=excluded.ip,config=excluded.config,revision=excluded.revision',(sid,name,domain,ip,encrypt(cfg,sid),revision))
+            db.execute("UPDATE jobs SET state='superseded',payload=? WHERE school=? AND action='configure' AND state='queued'",(encrypt({},sid),sid))
             queue(db,sid,'configure',{'settings':cfg,'name':name,'domain':domain},revision);audit(db,actor,'school.save',sid);return {'id':sid,'revision':revision}
-        match=re.fullmatch(r'/api/schools/([a-f0-9]{32})/(config|enroll|jobs|action)',path)
+        match=re.fullmatch(r'/api/schools/([a-f0-9]{32})/(config|enroll|jobs|action|readiness)',path)
         if match:
             sid,op=match.groups();row=db.execute('SELECT * FROM schools WHERE id=?',(sid,)).fetchone()
             if not row:raise ValueError('Không tìm thấy trường')
             if op=='config':return {'config':redact(decrypt(row['config'],sid)),'revision':row['revision']}
+            if op=='readiness':
+                report=deployment_readiness(row,decrypt(row['config'],sid))
+                report['installing']=bool(db.execute("SELECT 1 FROM jobs WHERE school=? AND action='provision' AND state IN ('queued','running')",(sid,)).fetchone())
+                report['can_install']=report['can_install'] and not report['installing']
+                return report
             if op=='enroll':
                 if user['role']!='owner':raise ValueError('Cần quyền chủ hệ thống')
                 token=secrets.token_urlsafe(48);db.execute('UPDATE schools SET enroll_hash=?,enroll_expires=? WHERE id=?',(digest(token),int(time.time())+900,sid));audit(db,actor,'agent.enroll-issued',sid);return {'token':token,'expires_seconds':900}
@@ -277,11 +322,17 @@ class Handler(BaseHTTPRequestHandler):
                 return output
             if op=='action':
                 action=data['action'];payload=data.get('payload',{})
+                if not isinstance(payload,dict):raise ValueError('Nội dung tác vụ không hợp lệ')
                 if action=='academy':
                     if user['role']!='owner':raise ValueError('Chỉ chủ hệ thống được quản trị kinh doanh')
                     if decrypt(row['config'],sid).get('platform_mode','school')!='academy':raise ValueError('Đơn vị này đang ở chế độ trường học')
                 if action=='provision':
                     if user['role']!='owner':raise ValueError('Cần quyền chủ hệ thống')
+                    if not db.in_transaction:db.execute('BEGIN IMMEDIATE')
+                    row=db.execute('SELECT * FROM schools WHERE id=?',(sid,)).fetchone()
+                    if not deployment_readiness(row,decrypt(row['config'],sid))['can_install']:raise ValueError('Chưa đủ thông tin khởi tạo hoặc VPS đã kết nối; xem Tổng quan')
+                    if db.execute("SELECT 1 FROM jobs WHERE school=? AND action='provision' AND state IN ('queued','running')",(sid,)).fetchone():raise ValueError('Đã có tác vụ cài đặt đang chờ hoặc đang chạy')
+                    if not payload.get('password') and not payload.get('private_key'):raise ValueError('Cần mật khẩu root hoặc khóa SSH')
                     payload['ip']=row['ip'];payload['domain']=row['domain']
                     if not re.fullmatch(r'SHA256:[A-Za-z0-9+/]{43}',payload.get('fingerprint','')):raise ValueError('Cần fingerprint SSH SHA256 đã đối chiếu')
                     if not 1<=int(payload.get('port',22))<=65535:raise ValueError('Cổng SSH không hợp lệ')

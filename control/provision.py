@@ -1,5 +1,5 @@
 """Provision a fresh Ubuntu VPS via pinned SSH host key. Never retain raw remote output."""
-import base64, hashlib, io, json, shlex, threading, time, secrets, urllib.request, re
+import base64, hashlib, io, json, shlex, threading, time, secrets, urllib.request, re, socket, ipaddress
 from pathlib import Path
 import paramiko
 
@@ -16,13 +16,13 @@ def approved_revision():
     latest=max(runs,key=lambda r:(r.get('run_number',0),r.get('run_attempt',0),r['id']))
     if latest['status']!='completed' or latest['conclusion']!='success':raise ValueError('CI_NOT_READY')
     jobs=get('/actions/runs/'+str(latest['id'])+'/jobs?per_page=100')['jobs']
-    if not all(any(j['name']==name and j['status']=='completed' and j['conclusion']=='success' for j in jobs) for name in ('api','web','containers','control')):raise ValueError('CI_NOT_READY')
+    if not all(any(j['name']==name and j['status']=='completed' and j['conclusion']=='success' for j in jobs) for name in ('api','web','containers','control','recorder')):raise ValueError('CI_NOT_READY')
     return target
 
 def failure_code(error):
     if isinstance(error,paramiko.AuthenticationException):return 'SSH_AUTH_FAILED'
     if isinstance(error,TimeoutError):return 'SSH_TIMEOUT'
-    known={'SSH_HOST_KEY_MISMATCH','INVALID_SSH_KEY','CI_NOT_READY','INVALID_RELEASE','EXISTING_INSTALLATION','AGENT_INSTALL_FAILED','PROVISION_TIMEOUT','PROVISION_FAILED'}
+    known={'SSH_HOST_KEY_MISMATCH','INVALID_SSH_KEY','CI_NOT_READY','INVALID_RELEASE','EXISTING_INSTALLATION','AGENT_INSTALL_FAILED','PROVISION_TIMEOUT','PROVISION_FAILED','DNS_NOT_READY'}
     if isinstance(error,ValueError) and str(error) in known:return str(error)
     if isinstance(error,paramiko.SSHException):return 'SSH_CONNECTION_FAILED'
     if isinstance(error,urllib.error.URLError):return 'RELEASE_CHECK_UNAVAILABLE'
@@ -30,6 +30,9 @@ def failure_code(error):
 
 def provision(c,job,payload):
     target=approved_revision()
+    try:addresses={str(ipaddress.ip_address(x[4][0])) for x in socket.getaddrinfo(payload['domain'],443)}
+    except socket.gaierror:raise ValueError('DNS_NOT_READY') from None
+    if str(ipaddress.ip_address(payload['ip'])) not in addresses:raise ValueError('DNS_NOT_READY')
     class Pinned(paramiko.MissingHostKeyPolicy):
         def missing_host_key(self,client,hostname,key):
             actual='SHA256:'+base64.b64encode(hashlib.sha256(key.asbytes()).digest()).decode().rstrip('=')

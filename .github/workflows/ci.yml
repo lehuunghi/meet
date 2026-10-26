@@ -101,6 +101,10 @@ jobs:
       - run: npm run build
       - run: npx playwright install --with-deps chromium
       - run: npx playwright test
+      - run: sudo apt-get update && sudo apt-get install -y python3-cryptography
+      - run: node ../../control/test_ui.cjs
+        env:
+          CONTROL_TEST_PYTHON: /usr/bin/python3
       - uses: actions/upload-artifact@v4
         if: failure()
         with:

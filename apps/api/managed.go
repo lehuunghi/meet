@@ -99,7 +99,12 @@ func managedCommand(db *sql.DB, action string) error {
 		if err = rows.Err(); err != nil {
 			return err
 		}
-		return json.NewEncoder(os.Stdout).Encode(map[string]any{"live": live, "admins": accounts, "version": buildVersion, "commit": buildCommit})
+		cfg, _ := loadSettings()
+		mode := cfg.Platform
+		if mode == "" {
+			mode = "school"
+		}
+		return json.NewEncoder(os.Stdout).Encode(map[string]any{"live": live, "admins": accounts, "version": buildVersion, "commit": buildCommit, "platform_mode": mode, "features": []string{"academy_management"}})
 	}
 	if action == "managed-config" {
 		var in struct {

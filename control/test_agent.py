@@ -40,7 +40,7 @@ class AgentTests(unittest.TestCase):
         spec=importlib.util.spec_from_file_location('provision',Path(__file__).with_name('provision.py'));p=importlib.util.module_from_spec(spec);spec.loader.exec_module(p)
         target='a'*40
         run={'id':1,'run_number':1,'run_attempt':1,'head_sha':target,'path':'.github/workflows/ci.yml','status':'completed','conclusion':'success'}
-        jobs=[{'name':n,'status':'completed','conclusion':'success'} for n in ('api','web','containers','control')]
+        jobs=[{'name':n,'status':'completed','conclusion':'success'} for n in ('api','web','containers','control','recorder')]
         def responses(values):return [io.BytesIO(json.dumps(v).encode()) for v in values]
         with patch.object(p.urllib.request,'urlopen',side_effect=responses([{'sha':target},{'workflow_runs':[run]},{'jobs':jobs}])):
             self.assertEqual(p.approved_revision(),target)
@@ -54,4 +54,9 @@ class AgentTests(unittest.TestCase):
         self.assertEqual(p.failure_code(ValueError('SSH_HOST_KEY_MISMATCH')), 'SSH_HOST_KEY_MISMATCH')
         self.assertEqual(p.failure_code(ValueError('EXISTING_INSTALLATION')), 'EXISTING_INSTALLATION')
         self.assertEqual(p.failure_code(RuntimeError('token-private')), 'PROVISION_FAILED_REVIEW_VPS')
+    def test_wrong_dns_stops_before_ssh(self):
+        spec=importlib.util.spec_from_file_location('provision',Path(__file__).with_name('provision.py'));p=importlib.util.module_from_spec(spec);spec.loader.exec_module(p)
+        with patch.object(p,'approved_revision',return_value='a'*40),patch.object(p.socket,'getaddrinfo',return_value=[(None,None,None,None,('8.8.4.4',443))]),patch.object(p.paramiko,'SSHClient') as ssh:
+            with self.assertRaisesRegex(ValueError,'DNS_NOT_READY'):p.provision(None,{}, {'domain':'academy.example.test','ip':'8.8.8.8'})
+            ssh.assert_not_called()
 if __name__=='__main__':unittest.main()

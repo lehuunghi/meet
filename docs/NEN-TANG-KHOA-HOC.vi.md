@@ -18,6 +18,21 @@ Demo dùng dữ liệu minh họa, không tạo giao dịch, không kích hoạt
 
 ## Luồng cấu hình trên môi trường mới
 
+Trên `admin.tn.edu.vn`, dùng nút **+ Nền tảng khóa học / VIP** (quyền chủ hệ thống). Nút **+ Trường nội bộ** giữ quy trình riêng cho trường học. Danh sách có bộ lọc loại nền tảng; hệ thống không tự chuyển DTTX sang VIP.
+
+Trong hộp quản lý:
+
+- **Thông tin:** tên thương hiệu, domain mới, IP VPS và email/mật khẩu quản trị đầu tiên. Mã nội bộ có thể để trống. Domain có thể sửa khi chưa cài; sau khi VPS kết nối phải dùng tác vụ đổi domain có kiểm tra.
+- **Nền tảng / VIP:** hạn mức xem thử, ngân hàng nhận tiền, payOS và SMTP. URL webhook hiển thị theo domain đã lưu. Loại nền tảng được cố định theo lựa chọn lúc tạo.
+- **SFU / TURN:** thêm/xóa app, trọng số cân bằng theo lớp; secret cũ được che và giữ nguyên khi lưu dấu che.
+- **R2 / Backup:** bucket riêng, khóa R2, số ngày giữ ghi hình phòng học và chu kỳ sao lưu. Video khóa học tách riêng tiền tố lưu trữ.
+- **Tổng quan:** kiểm tra mục bắt buộc và mục có thể thêm sau, phiên bản, kết nối, cấu hình đã áp dụng hay còn chờ. Trạng thái “đã điền” chưa xác nhận tích hợp đã chạy thật.
+- **Cài đặt / Nâng cấp:** nhập thông tin SSH và fingerprint lấy từ Console/VNC. Cài mới yêu cầu thông tin khởi tạo hợp lệ, VPS chưa kết nối và không có tác vụ cài khác. Thông tin SSH bị xóa khỏi tác vụ khi kết thúc. Thay đổi chưa lưu phải lưu trước khi chạy tác vụ.
+- **Lịch sử:** tự tải lại khi còn tác vụ đang chờ/chạy. Bộ cài đối chiếu DNS với IP và chỉ lấy commit đã qua đủ kiểm thử API, giao diện, container, quản trị và bộ ghi hình.
+- **Quản trị kinh doanh:** sau khi VPS kết nối, đồng bộ và báo hỗ trợ tính năng, owner lấy dữ liệu và quản lý khóa học, gói VIP, đơn hàng, học viên, thu chi và nội dung website qua agent. Cổng `/hoc` trên domain mới vẫn là nơi giáo viên/học viên đăng nhập.
+
+Không nhập thông tin domain/VPS giả trên trung tâm thật để thử nút cài. Bộ kiểm thử `control/test_ui.cjs` có cơ sở dữ liệu tạm và không chạy SSH, dùng riêng cho nghiệm thu luồng giao diện.
+
 1. Chuẩn bị DNS, VPS Ubuntu, đối chiếu fingerprint SSH từ console của nhà cung cấp; cài qua quản trị trung tâm với bản nguồn đã qua kiểm thử. Không gửi khóa hay mật khẩu trong chat hoặc GitHub.
 2. Chọn `academy`, cấu hình ngân hàng nhận tiền, số bài học miễn phí mỗi tháng (mặc định 4), SMTP có STARTTLS. Chỉ cấu hình payOS bằng khóa nhập trong trang quản trị riêng; nếu chưa có, dùng duyệt chuyển khoản thủ công.
 3. Cấu hình SFU/TURN và R2. Bucket phải riêng tư; CORS chỉ cho domain học tập cần thiết với GET/PUT/HEAD và Content-Type. Kiểm tra upload ảnh, video và biên lai từ trình duyệt thật.

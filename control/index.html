@@ -161,18 +161,275 @@
     a {
       color: #1967d2;
     }
+    body {
+      background: #f5f7fb;
+      color: #20324e;
+      font-family: "Segoe UI", system-ui, sans-serif;
+    }
+    header {
+      border-color: #e2e8f0;
+      padding: 18px 28px;
+      gap: 16px;
+    }
+    header small {
+      font-size: 12px;
+      font-weight: 400;
+      margin-left: 8px;
+    }
+    #identity {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      font-size: 12px;
+      color: #64748b;
+    }
+    h2 {
+      letter-spacing: -0.4px;
+      margin: 0 0 12px;
+    }
+    h3 {
+      color: #334966;
+    }
+    p {
+      color: #64748b;
+      line-height: 1.7;
+    }
+    section,
+    .card {
+      border-color: #e2e8f0;
+      box-shadow: 0 2px 4px #172b4d03;
+      border-radius: 12px;
+    }
+    button {
+      min-height: 38px;
+      padding: 9px 13px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #365681;
+      border-color: #d5deeb;
+    }
+    button:hover {
+      background: #f0f5ff;
+    }
+    button.primary {
+      background: #245de5;
+      border-color: #245de5;
+    }
+    button:focus-visible,
+    a:focus-visible {
+      outline: 3px solid #8cafff;
+      outline-offset: 3px;
+    }
+    input:focus,
+    textarea:focus,
+    select:focus {
+      outline: none;
+      border-color: #4c7bed;
+      box-shadow: 0 0 0 3px #245de514;
+    }
+    label {
+      font-size: 12px;
+      color: #52637b;
+    }
+    input,
+    textarea,
+    select {
+      padding: 11px;
+      color: #203654;
+      border-color: #d5deeb;
+    }
+    .toolbar h2 {
+      margin: 0 auto 0 0;
+    }
+    .filters {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 240px;
+      gap: 16px;
+      margin-top: 22px;
+    }
+    .badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      border-radius: 6px;
+      padding: 4px 8px;
+      background: #edf3ff;
+      color: #2857a7;
+    }
+    .muted {
+      color: #71829c;
+      font-size: 12px;
+    }
+    .tabs {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 16px 0;
+      margin-bottom: 20px;
+    }
+    .tabs button {
+      flex-shrink: 0;
+      border-color: transparent;
+      color: #64748b;
+    }
+    .tabs button.active {
+      color: #1d50cb;
+      background: #edf3ff;
+    }
+    dialog {
+      border-color: #dce4f0;
+      padding: 24px;
+      width: min(1080px, 96vw);
+      box-shadow: 0 24px 80px #172b4d26;
+    }
+    #dialogtop {
+      position: sticky;
+      top: -24px;
+      background: white;
+      z-index: 2;
+      padding: 12px 0;
+    }
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin: 20px 0;
+    }
+    .summary-grid article {
+      border: 1px solid #e2e8f0;
+      background: #f8faff;
+      padding: 16px;
+      border-radius: 9px;
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+    .summary-grid strong {
+      display: block;
+      font-size: 14px;
+      margin-top: 7px;
+    }
+    .checklist {
+      display: grid;
+      gap: 8px;
+      margin: 16px 0 22px;
+    }
+    .checkitem {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px 20px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 14px;
+    }
+    .checkitem p {
+      margin: 5px 0 0;
+      font-size: 12px;
+    }
+    .state-ready {
+      color: #18764f;
+      background: #edf9f2;
+    }
+    .state-blocked {
+      color: #b13b35;
+      background: #fff1ef;
+    }
+    .state-optional {
+      color: #966022;
+      background: #fff8e8;
+    }
+    .intro {
+      padding: 14px 16px;
+      background: #edf3ff;
+      color: #42618f;
+      border-radius: 8px;
+      font-size: 13px;
+    }
+    th {
+      background: #f8fafd;
+      color: #52637b;
+    }
+    td {
+      font-size: 13px;
+    }
+    .table {
+      padding: 0;
+    }
+    .table tbody tr:hover {
+      background: #f9fbff;
+    }
+    .install-hint {
+      padding: 12px 14px;
+      background: #fff8e8;
+      color: #966022;
+      border-radius: 8px;
+    }
+    .links {
+      display: flex;
+      gap: 18px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+      font-size: 13px;
+    }
+    .step-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+    code {
+      overflow-wrap: anywhere;
+    }
     @media (max-width: 600px) {
       main {
         padding: 12px;
       }
       header {
         padding: 14px;
+        align-items: flex-start;
+        flex-direction: column;
       }
       .grid {
         grid-template-columns: 1fr;
       }
       section {
         padding: 14px;
+      }
+      .filters,
+      .summary-grid {
+        grid-template-columns: 1fr;
+      }
+      .filters {
+        gap: 0;
+      }
+      .summary-grid {
+        gap: 8px;
+      }
+      .summary-grid article {
+        padding: 12px;
+      }
+      dialog {
+        padding: 16px;
+      }
+      #dialogtop {
+        top: -16px;
+      }
+      input,
+      select,
+      textarea {
+        font-size: 16px;
+      }
+      #identity {
+        font-size: 11px;
+      }
+      .toolbar {
+        align-items: flex-start;
+      }
+      .toolbar h2 {
+        flex-basis: 100%;
+      }
+      .table {
+        padding: 0;
       }
     }
   </style>
@@ -203,7 +460,13 @@
       selected = null,
       cfg = {},
       tab = "general",
-      me = null;
+      me = null,
+      dirty = false,
+      jobTimer = null;
+    $("#modal").addEventListener("close", () => clearTimeout(jobTimer));
+    $("#modal").addEventListener("input", (e) => {
+      if (e.target.closest("#configform")) dirty = true;
+    });
     function msg(s) {
       $("#message").textContent = s;
       $("#message").style.display = "block";
@@ -350,10 +613,18 @@
         }),
       );
       $("#content").innerHTML =
-        '<div class="toolbar" id="actions"><h2>Trường học & VPS</h2></div><p>Cấu hình chỉ được xác nhận khi VPS áp dụng thành công. Tác vụ nhạy cảm chờ hết buổi học.</p><label>Tìm trường hoặc domain<input id="search" placeholder="Nhập để lọc danh sách"></label><section class="table"><table><thead><tr><th>Trường</th><th>Domain / VPS</th><th>Phiên bản</th><th>Đồng bộ</th><th>Kết nối</th><th>Đang học</th><th></th></tr></thead><tbody id="rows"></tbody></table></section>';
+        '<div class="toolbar" id="actions"><h2>Nền tảng & VPS</h2></div><p>Quản lý trường nội bộ và nền tảng khóa học/VIP riêng biệt. Cấu hình chỉ hoàn tất khi VPS xác nhận đã áp dụng.</p><div class="filters"><label><span>Tìm đơn vị hoặc domain</span><input id="search" placeholder="Nhập tên hoặc domain"></label><label><span>Loại nền tảng</span><select id="modefilter"><option value="">Tất cả nền tảng</option><option value="school">Trường học nội bộ</option><option value="academy">Khóa học / VIP</option></select></label></div><section class="table"><table><thead><tr><th>Đơn vị / Loại nền tảng</th><th>Domain / VPS</th><th>Phiên bản</th><th>Đồng bộ</th><th>Kết nối</th><th>Đang học</th><th></th></tr></thead><tbody id="rows"></tbody></table></section>';
       if (me.role !== "viewer")
         $("#actions").append(
-          button("+ Thêm trường", () => edit(null), "primary"),
+          button("+ Trường nội bộ", () => edit(null, "school")),
+        );
+      if (me.role === "owner")
+        $("#actions").append(
+          button(
+            "+ Nền tảng khóa học / VIP",
+            () => edit(null, "academy"),
+            "primary",
+          ),
         );
       $("#actions").append(
         button("Tải lại", list),
@@ -363,22 +634,30 @@
       if (me.role === "owner")
         $("#actions").append(button("Quản trị trung tâm", admins));
       $("#search").oninput = renderRows;
+      $("#modefilter").onchange = renderRows;
       renderRows();
     }
     function renderRows() {
       const term = $("#search").value.toLowerCase();
       $("#rows").innerHTML = "";
-      for (const s of schools.filter((s) =>
-        (s.name + " " + s.domain).toLowerCase().includes(term),
+      for (const s of schools.filter(
+        (s) =>
+          (s.name + " " + s.domain).toLowerCase().includes(term) &&
+          (!$("#modefilter").value ||
+            (s.platform_mode || "school") === $("#modefilter").value),
       )) {
         const st = JSON.parse(s.status),
           tr = document.createElement("tr");
-        tr.innerHTML = `<td><strong>${esc(s.name)}</strong></td><td>${esc(s.domain)}<br><small>${esc(s.ip)}</small></td><td>${esc(st.version || "Chưa cài")}</td><td>${s.applied === s.revision ? "Đã áp dụng" : "Đang chờ"} ${s.applied}/${s.revision}</td><td>${Date.now() / 1000 - s.seen < 90 ? "Đang kết nối" : "Chưa kết nối"}</td><td>${esc(st.live ?? "—")}</td><td></td>`;
+        tr.innerHTML = `<td><strong>${esc(s.name)}</strong><br><span class="badge">${s.platform_mode === "academy" ? "Khóa học / VIP" : "Trường nội bộ"}</span></td><td>${esc(s.domain)}<br><small>${esc(s.ip)}</small></td><td>${esc(st.version || "Chưa cài")}</td><td>${s.applied === s.revision ? "Đã áp dụng" : "Đang chờ"} ${s.applied}/${s.revision}</td><td>${Date.now() / 1000 - s.seen < 90 ? "Đang kết nối" : "Chưa kết nối"}</td><td>${esc(st.live ?? "—")}</td><td></td>`;
         tr.lastChild.append(button("Chi tiết", () => edit(s)));
         $("#rows").append(tr);
       }
+      if (!$("#rows").children.length)
+        $("#rows").innerHTML =
+          '<tr><td colspan="7">Chưa có nền tảng phù hợp. Tạo đơn vị mới hoặc đổi bộ lọc.</td></tr>';
     }
-    async function edit(s) {
+    async function edit(s, mode = "school") {
+      dirty = false;
       selected = s;
       cfg = s
         ? (await api("schools/" + s.id + "/config")).config
@@ -390,33 +669,53 @@
             backup: { enabled: false, interval_hours: 24 },
             initial_admin: {},
             school_slug: "",
+            platform_mode: mode,
+            commerce: mode === "academy" ? { free_videos: 4 } : {},
           };
-      tab = "general";
+      tab = selected ? "overview" : "general";
       draw();
     }
     function draw() {
+      clearTimeout(jobTimer);
       const d = $("#modal");
       d.innerHTML =
         '<div class="toolbar" id="dialogtop"><h2>' +
-        esc(selected?.name || "Thêm trường học") +
+        esc(
+          selected?.name ||
+            (cfg.platform_mode === "academy"
+              ? "Tạo nền tảng khóa học / VIP"
+              : "Tạo trường học nội bộ"),
+        ) +
         '</h2></div><div class="tabs" id="tabs"></div><div id="panel"></div>';
       $("#dialogtop").append(button("Đóng", () => d.close()));
+      if (dirty && me.role !== "viewer")
+        $("#dialogtop").append(button("Lưu thay đổi", save, "primary"));
       for (const [id, title] of [
+        ["overview", "Tổng quan"],
         ["general", "Thông tin"],
         ["academy", "Nền tảng / VIP"],
         ["business", "Quản trị kinh doanh"],
         ["sfu", "SFU / TURN"],
         ["r2", "R2 / Backup"],
         ["ops", "Cài đặt / Nâng cấp"],
-        ["accounts", "Quản trị trường"],
+        ["accounts", "Tài khoản quản trị"],
         ["jobs", "Lịch sử"],
-      ])
+      ].filter(
+        ([id]) =>
+          (id !== "overview" || selected) &&
+          (!["academy", "business"].includes(id) ||
+            cfg.platform_mode === "academy"),
+      ))
         $("#tabs").append(
-          button(title, async () => {
-            if ($("#configform")) collect();
-            tab = id;
-            draw();
-          }),
+          button(
+            title,
+            async () => {
+              if ($("#configform")) collect();
+              tab = id;
+              draw();
+            },
+            tab === id ? "active" : "",
+          ),
         );
       if (!d.open) d.showModal();
       panel();
@@ -437,7 +736,7 @@
         cfg._ip = get("ip");
       }
       if (tab === "academy") {
-        cfg.platform_mode = get("platform_mode");
+        cfg.platform_mode = get("platform_mode") || cfg.platform_mode;
         cfg.commerce = { ...cfg.commerce };
         for (const key of [
           "bank_bin",
@@ -503,6 +802,7 @@
         ip: cfg._ip || selected?.ip,
         config: value,
       });
+      dirty = false;
       $("#modal").close();
       await list();
       msg("Đã lưu cấu hình. VPS sẽ xác nhận sau khi áp dụng.");
@@ -511,6 +811,15 @@
     async function academyRequest(method, path, body = {}) {
       if (!selected || me.role !== "owner")
         throw Error("Chọn trung tâm và dùng tài khoản chủ hệ thống.");
+      const st = JSON.parse(selected.status);
+      if (
+        Date.now() / 1000 - selected.seen >= 90 ||
+        selected.applied !== selected.revision ||
+        !st.features?.includes("academy_management")
+      )
+        throw Error(
+          "VPS cần kết nối, đồng bộ cấu hình và hỗ trợ quản trị khóa học. Xem Tổng quan trước.",
+        );
       const out = await api("schools/" + selected.id + "/action", {
         action: "academy",
         payload: { method, path, body },
@@ -717,8 +1026,129 @@
         }
       };
     }
+    async function overview() {
+      const sid = selected?.id;
+      if (!sid) return;
+      const root = $("#panel");
+      root.textContent = "Đang kiểm tra cấu hình…";
+      try {
+        const [report, units] = await Promise.all([
+          api("schools/" + sid + "/readiness"),
+          api("schools"),
+        ]);
+        if (!$("#modal").open || tab !== "overview" || selected?.id !== sid)
+          return;
+        const latest = units.find((s) => s.id === sid);
+        if (latest) selected = { ...latest, revision: selected.revision }; // Keep the draft's optimistic-lock revision.
+        const st = JSON.parse(selected.status);
+        const online = Date.now() / 1000 - selected.seen < 90;
+        root.innerHTML =
+          '<p class="intro">' +
+          (report.platform_mode === "academy"
+            ? "Nền tảng khóa học / VIP · Website giới thiệu, học viên, giáo viên và bán gói học. Cấu hình này chỉ áp dụng cho VPS của đơn vị này."
+            : "Trường nội bộ · Học theo lớp và phân công. Không áp dụng điều kiện VIP của nền tảng thương mại.") +
+          '</p><div class="summary-grid"><article><small>Domain / VPS</small><strong>' +
+          esc(selected.domain) +
+          "</strong><small>" +
+          esc(selected.ip) +
+          "</small></article><article><small>Trạng thái cài đặt</small><strong>" +
+          esc(
+            report.installing
+              ? "Đang cài đặt"
+              : report.connected
+                ? online
+                  ? "VPS đang kết nối"
+                  : "VPS mất kết nối"
+                : "Chưa cài VPS",
+          ) +
+          "</strong><small>" +
+          esc(st.version || "Chưa nhận phiên bản") +
+          "</small></article><article><small>Đồng bộ cấu hình</small><strong>" +
+          esc(
+            selected.applied === selected.revision
+              ? "Đã áp dụng"
+              : "Đang chờ VPS",
+          ) +
+          "</strong><small>Phiên bản cấu hình " +
+          selected.applied +
+          "/" +
+          selected.revision +
+          '</small></article></div><h3>Kiểm tra trước khi cài</h3><p class="muted">' +
+          esc(report.notice) +
+          '</p><div class="checklist">' +
+          report.checks
+            .map(
+              (x) =>
+                '<div class="checkitem"><div><strong>' +
+                esc(x.title) +
+                "</strong><p>" +
+                esc(x.detail) +
+                '</p></div><div><span class="badge state-' +
+                esc(x.state) +
+                '">' +
+                esc(
+                  {
+                    ready: "Đã điền",
+                    blocked: "Cần bổ sung",
+                    optional: "Có thể thêm sau",
+                  }[x.state],
+                ) +
+                "</span></div></div>",
+            )
+            .join("") +
+          '</div><div id="nextsteps" class="step-actions"></div>';
+        const jump = (id) => {
+          tab = id;
+          draw();
+        };
+        $("#nextsteps").append(
+          button("Thông tin khởi tạo", () => jump("general")),
+          button("SFU / TURN", () => jump("sfu")),
+          button("R2 / Backup", () => jump("r2")),
+        );
+        if (report.platform_mode === "academy")
+          $("#nextsteps").append(
+            button("Email & thanh toán", () => jump("academy")),
+          );
+        $("#nextsteps").append(
+          button(
+            report.connected ? "Vận hành / nâng cấp" : "Tiếp tục cài VPS",
+            () => jump("ops"),
+            "primary",
+          ),
+          button("Tải lại trạng thái", overview),
+        );
+        if (report.connected) {
+          const links = document.createElement("div");
+          links.className = "links";
+          for (const [path, label] of [
+            ["/", "Mở website"],
+            [
+              report.platform_mode === "academy" ? "/hoc" : "/",
+              report.platform_mode === "academy"
+                ? "Mở cổng học tập / quản trị"
+                : "Mở cổng trường",
+            ],
+          ]) {
+            const a = document.createElement("a");
+            a.href = "https://" + selected.domain + path;
+            a.target = "_blank";
+            a.rel = "noopener";
+            a.textContent = label;
+            links.append(a);
+          }
+          root.append(links);
+        }
+      } catch (e) {
+        if (tab === "overview") root.textContent = e.message;
+      }
+    }
     function panel() {
       const p = $("#panel");
+      if (tab === "overview") {
+        void overview();
+        return;
+      }
       if (tab === "business") {
         business();
         return;
@@ -744,8 +1174,16 @@
       p.append(f);
       if (tab === "general")
         f.innerHTML =
-          '<div class="grid">' +
-          input("name", "Tên trường", cfg._name || selected?.name) +
+          '<p class="intro">' +
+          (cfg.platform_mode === "academy"
+            ? "Khóa học / VIP · Tạo trên VPS và domain mới. Sau khi lưu, cấu hình email, thanh toán, SFU và R2 rồi cài VPS."
+            : "Trường nội bộ · Quản lý lớp, giáo viên và học sinh.") +
+          '</p><div class="grid">' +
+          input(
+            "name",
+            "Tên đơn vị / thương hiệu",
+            cfg._name || selected?.name,
+          ) +
           input("domain", "Domain website", cfg._domain || selected?.domain) +
           input("ip", "IP public VPS", cfg._ip || selected?.ip) +
           input("slug", "Mã nội bộ (không hiện ở login)", cfg.school_slug) +
@@ -761,7 +1199,7 @@
             cfg.initial_admin?.password,
             "password",
           ) +
-          "</div><p>Thông tin admin đầu tiên chỉ dùng khi trường chưa được khởi tạo. Đổi domain ở tab Cài đặt / Nâng cấp.</p>";
+          "</div><p>Admin đầu tiên chỉ dùng lúc khởi tạo. Để trống mã nội bộ để hệ thống tự tạo. Các thay đổi tài khoản sau cài đặt dùng mục Tài khoản quản trị; đổi domain dùng Cài đặt / Nâng cấp.</p>";
       if (tab === "academy") {
         const c = cfg.commerce || {};
         f.innerHTML =
@@ -787,8 +1225,15 @@
           input("smtp_from", "Email gửi", c.smtp_from, "email") +
           input("smtp_user", "SMTP user", c.smtp_user) +
           input("smtp_password", "SMTP password", c.smtp_password, "password") +
-          "</div><p>Đơn vị kinh doanh quản lý website, khóa học, đơn hàng và báo cáo tại cổng quản trị riêng. R2/SFU/VPS tiếp tục quản lý ở các tab tương ứng.</p>";
+          "</div><p>SMTP cần STARTTLS để gửi mã đăng ký. payOS tùy chọn; chưa có khóa thì dùng duyệt chuyển khoản thủ công. Khóa đã lưu được che; giữ nguyên dấu che để không thay khóa.</p><p>Webhook payOS: <code>" +
+          esc(
+            selected
+              ? "https://" + selected.domain + "/api/academy/webhooks/payos"
+              : "Lưu đơn vị để lấy URL webhook",
+          ) +
+          "</code></p><p>Quản lý website, khóa học và đơn hàng ở tab Quản trị kinh doanh sau khi VPS kết nối và đồng bộ.</p>";
         f.platform_mode.value = cfg.platform_mode || "school";
+        f.platform_mode.disabled = true;
         if (selected) {
           const a = document.createElement("a");
           a.textContent = "Mở quản trị khóa học/VIP";
@@ -804,18 +1249,24 @@
         for (const v of cfg.sfu || []) sfuRow(v);
         for (const v of cfg.turn || []) turnRow(v);
         $("#addsf").append(
-          button("+ SFU App", () =>
-            sfuRow({ id: crypto.randomUUID(), weight: 1, enabled: true }),
-          ),
+          button("+ SFU App", () => {
+            dirty = true;
+            sfuRow({ id: crypto.randomUUID(), weight: 1, enabled: true });
+          }),
         );
-        $("#addturn").append(button("+ TURN key", () => turnRow({ id: "" })));
+        $("#addturn").append(
+          button("+ TURN key", () => {
+            dirty = true;
+            turnRow({ id: "" });
+          }),
+        );
       }
       if (tab === "r2")
         f.innerHTML =
           check("enabled", "Bật lưu video R2", cfg.r2?.enabled) +
           '<div class="grid">' +
           input("account", "Cloudflare Account ID", cfg.r2?.account_id) +
-          input("bucket", "Bucket riêng của trường", cfg.r2?.bucket) +
+          input("bucket", "Bucket riêng của đơn vị", cfg.r2?.bucket) +
           input("access", "Access Key ID", cfg.r2?.access_key_id, "password") +
           input(
             "secret",
@@ -825,7 +1276,7 @@
           ) +
           input(
             "retention",
-            "Số ngày giữ video",
+            "Số ngày giữ ghi hình phòng học",
             cfg.retention_days || 30,
             "number",
           ) +
@@ -837,7 +1288,12 @@
             cfg.backup?.interval_hours || 24,
             "number",
           ) +
-          "<p>Dùng bucket riêng cho từng trường. Khi đã có video, hệ thống hiện giữ nguyên account/bucket để bảo vệ vị trí dữ liệu cũ. Giảm thời hạn lưu có thể xóa video sớm hơn.</p>";
+          "<p>Dùng bucket riêng cho từng đơn vị. Kho video khóa học (academy/) tách khỏi ghi hình phòng học; không đặt lifecycle xóa toàn bucket sau 30 ngày. Giảm thời hạn ghi hình có thể xóa bản ghi phòng học sớm hơn.</p>";
+      if (tab === "general") {
+        for (const name of ["name", "domain", "ip"])
+          f.elements.namedItem(name).required = true;
+        if (selected?.seen) f.elements.namedItem("domain").readOnly = true;
+      }
       if (me.role !== "viewer") {
         const b = document.createElement("button");
         b.textContent = "Lưu & đồng bộ";
@@ -858,7 +1314,12 @@
         input("weight", "Trọng số", v.weight || 1, "number") +
         "</div>" +
         check("enabled", "Nhận lớp mới", v.enabled);
-      row.append(button("Xóa dòng", () => row.remove()));
+      row.append(
+        button("Xóa dòng", () => {
+          dirty = true;
+          row.remove();
+        }),
+      );
       $("#sfus").append(row);
     }
     function turnRow(v) {
@@ -870,10 +1331,19 @@
         input("id", "TURN Key ID", v.id) +
         input("token", "API Token", v.token, "password") +
         "</div>";
-      row.append(button("Xóa dòng", () => row.remove()));
+      row.append(
+        button("Xóa dòng", () => {
+          dirty = true;
+          row.remove();
+        }),
+      );
       $("#turns").append(row);
     }
     async function action(name, payload = {}) {
+      if (dirty)
+        throw Error(
+          "Có thay đổi chưa lưu. Bấm Lưu thay đổi trước khi chạy tác vụ.",
+        );
       if (!selected) throw Error("Lưu trường trước");
       await api("schools/" + selected.id + "/action", {
         action: name,
@@ -881,19 +1351,49 @@
       });
       msg("Đã xếp hàng tác vụ. Xem Lịch sử để kiểm tra kết quả.");
     }
-    function operations() {
+    async function operations() {
       const p = $("#panel");
       if (!selected) {
         p.textContent = "Lưu trường trước khi cài đặt.";
         return;
       }
       const status = JSON.parse(selected.status);
+      const sid = selected.id;
+      p.textContent = "Đang kiểm tra điều kiện cài đặt…";
+      let report;
+      try {
+        report = await api("schools/" + sid + "/readiness");
+      } catch (e) {
+        if (tab === "ops") p.textContent = e.message;
+        return;
+      }
+      if (tab !== "ops" || selected?.id !== sid || !$("#modal").open) return;
       p.innerHTML =
-        '<section><h3>Cài mới Ubuntu</h3><p>Chỉ dùng VPS trống. Đối chiếu fingerprint SSH trước khi cài. Không ghi đè bản đã có.</p><form id="provision"><div class="grid">' +
+        "<section><h3>Cài " +
+        (cfg.platform_mode === "academy"
+          ? "nền tảng khóa học / VIP"
+          : "trường nội bộ") +
+        " lên Ubuntu mới</h3><p>VPS: <strong>" +
+        esc(selected.ip) +
+        "</strong> · Domain: <strong>" +
+        esc(selected.domain) +
+        '</strong></p><p>Chỉ dùng Ubuntu 24.04/26.04 trống. DNS phải trỏ về IP trên và mở cổng 80/443. Bộ cài kiểm tra fingerprint SSH, phiên bản đã qua CI và không ghi đè /opt/meet có sẵn.</p><p class="install-hint">' +
+        esc(
+          report.connected
+            ? "VPS đã kết nối. Dùng nâng cấp bên dưới; không cài lại."
+            : report.installing
+              ? "Đã có tác vụ cài đặt. Xem Lịch sử."
+              : report.can_install
+                ? "Đủ thông tin khởi tạo. Cấu hình chưa điền được liệt kê tại Tổng quan."
+                : "Cần bổ sung thông tin khởi tạo tại Tổng quan trước khi cài.",
+        ) +
+        '</p><details><summary>Cách lấy fingerprint SSH</summary><p>Mở Console/VNC của nhà cung cấp VPS và chạy:</p><pre>ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub -E sha256</pre><p>Chép phần bắt đầu bằng SHA256:. Không lấy fingerprint từ nguồn chưa tin cậy.</p></details><form id="provision"><div class="grid">' +
         input("port", "Cổng SSH", 22, "number") +
         input("fingerprint", "Fingerprint SSH SHA256") +
         input("password", "Mật khẩu root ban đầu", "", "password") +
-        '</div><label>Hoặc khóa SSH riêng<textarea name="private_key" rows="3" autocomplete="off"></textarea></label><button class="primary">Cài trường lên VPS</button></form></section><section><h3>Phiên bản & Sao lưu</h3><p>Phiên bản mới: ' +
+        '</div><label>Hoặc khóa SSH riêng<textarea name="private_key" rows="3" autocomplete="off"></textarea></label><button class="primary">Cài nền tảng lên VPS</button></form><p class="muted">Thông tin SSH được mã hóa trong tác vụ và xóa sau khi tác vụ kết thúc. Không gửi mật khẩu qua chat.</p></section><section><h3>Phiên bản & Sao lưu</h3><p>Phiên bản hiện tại: ' +
+        esc(status.version || "Chưa cài") +
+        " · Phiên bản mới: " +
         esc(status.update?.available_version || "Chưa kiểm tra") +
         '</p><div id="opbuttons" class="toolbar"></div></section><section><h3>Đổi domain</h3><form id="domain">' +
         input("domain", "Domain mới") +
@@ -902,13 +1402,30 @@
         e.preventDefault();
         const values = Object.fromEntries(new FormData(e.target));
         values.port = Number(values.port);
+        const form = e.target;
+        const submit = form.querySelector("button");
+        submit.disabled = true;
         try {
           await action("provision", values);
-          e.target.reset();
+          form.reset();
+          tab = "jobs";
+          draw();
         } catch (e) {
           msg(e.message);
+        } finally {
+          submit.disabled = false;
         }
       };
+      $('#provision input[name="fingerprint"]').required = true;
+      if (!report.can_install || me.role !== "owner")
+        for (const el of $("#provision").elements) el.disabled = true;
+      if (dirty) {
+        $("#provision button").disabled = true;
+        $("#provision").insertAdjacentHTML(
+          "beforebegin",
+          '<p class="install-hint">Có cấu hình chưa lưu. Bấm Lưu thay đổi trước khi cài.</p>',
+        );
+      }
       $("#opbuttons").append(
         button("Kiểm tra bản mới", () => action("check")),
         button("Nâng cấp đã kiểm tra", () =>
@@ -943,6 +1460,8 @@
             "VPS đã có /opt/meet. Cần kiểm tra bản cài hiện có, không chạy cài mới đè lên.",
           CI_NOT_READY:
             "Bản mã nguồn mới đang chờ đủ kiểm thử. Thử lại sau khi CI hoàn tất.",
+          DNS_NOT_READY:
+            "Domain chưa trỏ đúng IP VPS. Kiểm tra bản ghi A/AAAA và tắt proxy Cloudflare khi cần đối chiếu IP trực tiếp.",
           RELEASE_CHECK_UNAVAILABLE:
             "Chưa kiểm tra được phiên bản trên GitHub.",
           AGENT_INSTALL_FAILED:
@@ -964,7 +1483,9 @@
         $("#panel").textContent = "Lưu trường trước";
         return;
       }
-      const rows = await api("schools/" + selected.id + "/jobs");
+      const sid = selected.id;
+      const rows = await api("schools/" + sid + "/jobs");
+      if (tab !== "jobs" || selected?.id !== sid || !$("#modal").open) return;
       $("#panel").innerHTML =
         '<div class="table"><table><tr><th>Thời gian</th><th>Tác vụ</th><th>Trạng thái</th><th>Kết quả</th></tr>' +
         rows
@@ -975,6 +1496,12 @@
           .join("") +
         "</table></div>";
       $("#panel").append(button("Tải lại", jobs));
+      clearTimeout(jobTimer);
+      if (rows.some((j) => ["queued", "running"].includes(j.state)))
+        jobTimer = setTimeout(() => {
+          if (tab === "jobs" && selected?.id === sid && $("#modal").open)
+            void jobs().catch((e) => msg(e.message));
+        }, 6000);
     }
     function accounts() {
       const p = $("#panel");
@@ -1005,6 +1532,12 @@
         ["meetings", "Buổi học"],
         ["recordings", "Bản ghi"],
         ["audit", "Nhật ký"],
+        ...(cfg.platform_mode === "academy"
+          ? [
+              ["content", "Nội dung khóa học"],
+              ["finance", "Tài chính / VIP"],
+            ]
+          : []),
       ])
         $("#permissions").insertAdjacentHTML(
           "beforeend",
@@ -1022,6 +1555,8 @@
           "meetings",
           "recordings",
           "audit",
+          "content",
+          "finance",
         ].filter((k) => fd.has(k));
         for (const k of data.permissions) delete data[k];
         try {
