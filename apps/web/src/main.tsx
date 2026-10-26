@@ -374,7 +374,7 @@ function App() {
       />
     );
   return (
-    <div className="shell">
+    <div className={"shell"+(user.role!=="admin"?" classroom-shell":"")}>
       <aside>
         <button
           className="mobile-menu-control secondary"

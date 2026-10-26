@@ -12,7 +12,7 @@ test("student sees only subjects, active first, with waiting state and scoped vi
   await expect(
     page.getByRole("button", { name: "Chuẩn bị dạy", exact: true }),
   ).toHaveCount(0);
-  await expect(page.locator(".learning-table tbody tr").first()).toContainText(
+  await expect(page.locator(".classroom-card").first()).toContainText(
     "Đang học",
   );
   await page

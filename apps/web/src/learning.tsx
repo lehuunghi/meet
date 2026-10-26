@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import {ClassroomCourses} from "./classroom";
+import type {ReactNode} from "react";
 import { api } from "./api";
 import { AttendanceReport } from "./attendance";
 
@@ -34,6 +36,7 @@ export function LearningWorkspace({
   onRefresh,
   canTeach = true,
   canVideo = true,
+  renderClasswork,
 }: {
   role: string;
   courses: Course[];
@@ -45,6 +48,7 @@ export function LearningWorkspace({
   onRefresh: () => Promise<void>;
   canTeach?: boolean;
   canVideo?: boolean;
+  renderClasswork?: (id:string)=>ReactNode;
 }) {
   const [classId, setClassId] = useState(""),
     [expanded, setExpanded] = useState(""),
@@ -109,6 +113,7 @@ export function LearningWorkspace({
     }
   }
   const selected = courses.find((c) => c.id === expanded);
+  if(!reports && role!=='admin')return <ClassroomCourses role={role} courses={courses} meetings={meetings} busy={busy} error={error} canTeach={canTeach} onPrepare={c=>void prepare(c)} onOpen={onOpen} renderClasswork={renderClasswork} renderLessons={c=><CourseLessons key={c.id} course={c} role={role} demo={demo} reports={false} canVideo={canVideo} samples={meetings.filter(m=>m.course_id===c.id)} onOpen={onOpen}/>}/>;
   return (
     <section className="section learning-workspace">
       <div className="section-title">

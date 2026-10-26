@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { api } from "./api";
+import {PreviewRoom} from "./preview";
 import { LearningWorkspace } from "./learning";
 import { AcademicAdmin } from "./academic";
 import { Accounts } from "./accounts";
@@ -14,12 +15,22 @@ const parse = (v: any) => (typeof v === "string" ? JSON.parse(v) : v);
 const demoCourses = [
   {
     id: "demo-course",
+    academic_course_id: "demo-academic-math",
     title: "Toán nền tảng",
     description:
       "Hiểu bản chất, luyện bài có hướng dẫn và học Live cùng giáo viên.",
     teacher_name: "Giáo viên minh họa",
     published: 1,
   },
+];
+const demoClassrooms = [
+ {id:'demo-academic-math',name:'Toán nền tảng',class_id:'demo-class-10a1',class_name:'10A1',teacher:'Nguyễn Minh Anh',lesson_count:12},
+ {id:'demo-academic-physics',name:'Vật lý',class_id:'demo-class-10a1',class_name:'10A1',teacher:'Trần Quốc Huy',lesson_count:8},
+ {id:'demo-academic-literature',name:'Ngữ văn',class_id:'demo-class-11a2',class_name:'11A2',teacher:'Lê Thu Hà',lesson_count:6},
+];
+const demoMeetings = [
+ {id:'demo-live-math',course_id:'demo-academic-math',title:'Hàm số và đồ thị',course:'Toán nền tảng',class_name:'10A1',status:'live',starts_at:'2026-10-26T01:00:00Z',recording_allowed:false},
+ {id:'demo-ended-math',course_id:'demo-academic-math',title:'Ôn tập phương trình',course:'Toán nền tảng',class_name:'10A1',status:'ended',starts_at:'2026-10-24T01:00:00Z',recording_allowed:true},
 ];
 const demoPlans = [
   {
@@ -54,7 +65,7 @@ export function AcademyApp({
         : null,
     ),
     [loading, setLoading] = useState(!demo),
-    [tab, setTab] = useState("courses"),
+    [tab, setTab] = useState(demo&&role!=="admin"?"live":"courses"),
     [error, setError] = useState(""),
     [notice, setNotice] = useState(""),
     [courses, setCourses] = useState<any[]>(demo ? demoCourses : []),
@@ -84,6 +95,7 @@ export function AcademyApp({
       setError((e as Error).message);
     }
   };
+  useEffect(()=>{if(user&&user.role!=='admin')setTab('live');},[user?.id]);
   async function refresh() {
     if (demo) return;
     const [c, p] = await Promise.all([
@@ -147,6 +159,7 @@ export function AcademyApp({
   const vip = profile.expires_at && Date.parse(profile.expires_at) > Date.now();
   if (loading)
     return <main className="academy-loading">Đang mở cổng học tập…</main>;
+  if(room&&user&&demo)return <PreviewRoom role={user.role} title={room.title} onExit={()=>setRoom(null)}/>;
   if (room && user)
     return (
       <RoomComponent
@@ -324,15 +337,14 @@ export function AcademyApp({
   const admin = user.role === "admin",
     staff = user.role !== "student";
   return (
-    <div className="academy-shell">
+    <div className={"academy-shell"+(!admin?" classroom-shell":"")}>
       <aside data-menu-open={menuOpen}>
         <a className="academy-brand" href="/hoc"><span className="academy-logo-mark"><AcademyIcon name="courses"/></span><span className="academy-brand-name">{brand}<small>KHÔNG GIAN HỌC TẬP</small></span></a>
         <button className="academy-menu-toggle" aria-expanded={menuOpen} aria-controls="academy-navigation" onClick={()=>setMenuOpen(!menuOpen)}><AcademyIcon name="menu"/>Danh mục</button>
         <div className="academy-user-card"><span className="academy-user-avatar">{user.name?.trim().charAt(0)||'V'}</span><div><strong>{user.name}</strong><small>{admin?'Quản trị nền tảng':staff?'Giáo viên':'Học viên'}</small></div></div>
         <nav id="academy-navigation" aria-label="Danh mục học tập">
           {[
-            ["courses", "Khóa học"],
-            ["live", "Lớp học trực tiếp"],
+            ...(admin?[["courses", "Khóa học"],["live", "Lớp học trực tiếp"]]:[["live", "Lớp học"],["courses", "Kho bài giảng"]]),
             ["reports", "Điểm danh & bản ghi"],
             ...(!staff ? [["vip", "Gói học & thanh toán"]] : []),
             ["profile", staff ? "Tài khoản của bạn" : "Hồ sơ học viên"],
@@ -388,7 +400,7 @@ export function AcademyApp({
                         : tab === "students"
                           ? "Học viên"
                           : tab === "live"
-                            ? "Lớp học trực tiếp"
+                            ? (admin?"Lớp học trực tiếp":"Lớp học của tôi")
                             : tab === "reports" ? "Điểm danh & bản ghi"
                             : tab === "academic" ? "Lớp học và giáo viên"
                             : tab === "accounts" ? "Tài khoản và phân quyền"
@@ -451,32 +463,24 @@ export function AcademyApp({
             )}
           </>
         )}
-        {["live", "reports"].includes(tab) &&
-          (demo ? (
-            <p>
-              Demo phòng học nằm trong bản Meet hiện có. Cuộc gọi thật cần trung
-              tâm được gắn SFU và phân công lớp học.
-            </p>
-          ) : (
+        {["live", "reports"].includes(tab) && (
             <LearningWorkspace
               role={user.role}
-              courses={classrooms}
-              meetings={meetings}
-              demo={false}
+              courses={demo?demoClassrooms:classrooms}
+              meetings={demo?demoMeetings:meetings}
+              demo={demo}
               reports={tab === "reports"}
+              renderClasswork={id=>{const c=courses.find(v=>v.academic_course_id===id);return c?<Assignments course={c.id} demo={demo} staff={staff} perform={perform}/>:null;}}
               canTeach={staff}
               canVideo={true}
               onRefresh={async () => {
+                if(demo)return;
                 setClassrooms(await api("/catalog"));
                 setMeetings(await api("/meetings"));
               }}
-              onOpen={(m) =>
-                void perform(async () =>
-                  setRoom(await api(`/meetings/${m.id}`)),
-                )
-              }
+              onOpen={(m) => demo?setRoom(m):void perform(async () =>setRoom(await api(`/meetings/${m.id}`)))}
             />
-          ))}
+          )}
         {tab === "vip" && (
           <VipPanel
             demo={demo}

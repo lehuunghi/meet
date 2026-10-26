@@ -42,8 +42,8 @@ test("academy demos are role-specific, mobile-friendly and never make real payme
       await page.setViewportSize({ width, height: 900 });
       await page.goto(`/hoc?academy_demo=1&role=${role}`);
       await expect(
-        page.getByRole("heading", {
-          name: role === 'admin' ? 'Tổng quan khóa học' : role === 'teacher' ? 'Không gian giảng dạy' : "Học từng bước. Tiến bộ mỗi ngày.",
+        page.locator("main > header").getByRole("heading", {
+          name: role === 'admin' ? 'Tổng quan khóa học' : 'Lớp học của tôi',
           exact: true,
         }),
       ).toBeVisible();
