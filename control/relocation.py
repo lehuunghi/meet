@@ -98,7 +98,7 @@ def perform(c,job,payload):
         target=connect(ip,payload['target'])
         try:
             # Fresh-only installer refuses /opt/meet. Never retry by deleting the old checkout.
-            script='set -eu; test ! -e /opt/meet; export DEBIAN_FRONTEND=noninteractive; apt-get update >/dev/null; apt-get install -y git ca-certificates >/dev/null; stage=$(mktemp -d); trap \'rm -rf "$stage"\' EXIT; git clone --branch codex/multi-school-platform https://github.com/lehuunghi/meet.git "$stage/source" >/dev/null 2>&1; git -C "$stage/source" checkout --detach '+shlex.quote(target_sha)+' >/dev/null 2>&1; MEET_TARGET_SHA='+shlex.quote(target_sha)+' MEET_MANAGED=true MEET_DOMAIN='+shlex.quote(host)+' bash "$stage/source/deploy/install.sh" >/root/meet-relocation-install.log 2>&1'
+            script='set -eu; test ! -e /opt/meet; export DEBIAN_FRONTEND=noninteractive; apt-get update >/dev/null; apt-get install -y git ca-certificates >/dev/null; stage=$(mktemp -d); trap \'rm -rf "$stage"\' EXIT; git clone --branch codex/multi-school-platform https://github.com/lehuunghi/meet.git "$stage/source" >/dev/null 2>&1; git -C "$stage/source" checkout --detach '+shlex.quote(target_sha)+' >/dev/null 2>&1; MEET_TARGET_SHA='+shlex.quote(target_sha)+' MEET_MANAGED=true MEET_CONTROL_ORIGIN='+shlex.quote(c.ORIGIN)+' MEET_CONTROL_ID='+shlex.quote(sid)+' MEET_DOMAIN='+shlex.quote(host)+' bash "$stage/source/deploy/install.sh" >/root/meet-relocation-install.log 2>&1'
             run(target,'bash -c '+shlex.quote(script),timeout=2400)
             run(target,'install -d -m 0700 /var/lib/meet-relocations /etc/meet')
             with target.open_sftp() as sftp:

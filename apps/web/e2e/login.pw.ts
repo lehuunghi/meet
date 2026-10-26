@@ -1,4 +1,24 @@
 import { test, expect } from "@playwright/test";
+test("managed installation never falls back to the old school login while awaiting configuration", async ({
+  page,
+}) => {
+  await page.route("**/api/public-config", (route) =>
+    route.fulfill({
+      json: { setup_pending: true, platform_mode: "", managed: false },
+    }),
+  );
+  await page.goto("/");
+  await expect(
+    page.getByRole("heading", {
+      name: "Nền tảng đang được khởi tạo",
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(page.locator('input[name="school"]')).toHaveCount(0);
+  await expect(
+    page.getByRole("button", { name: "Kiểm tra lại", exact: true }),
+  ).toBeVisible();
+});
 test("login hides school and asks for OTP only after password verification", async ({
   page,
 }) => {

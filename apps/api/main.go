@@ -160,7 +160,8 @@ func (a *app) routes() http.Handler {
 			}
 		}
 		cfg, _ := loadSettings()
-		send(w, 200, map[string]any{"managed": e == nil, "school_name": name, "platform_mode": cfg.Platform, "management_url": managementURL()})
+		_, pending := os.Stat(configPath("managed-install.json"))
+		send(w, 200, map[string]any{"managed": e == nil, "school_name": name, "platform_mode": cfg.Platform, "management_url": managementURL(), "setup_pending": pending == nil && count == 0})
 	})
 	m.HandleFunc("POST /api/login", a.login)
 	m.HandleFunc("POST /api/login/2fa", a.loginOTP)

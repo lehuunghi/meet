@@ -59,6 +59,14 @@ else
   printf 'APP_ORIGIN=https://%s\n' "$MEET_DOMAIN" > .env
 fi
 bash deploy/init-secrets.sh
+if [[ "${MEET_MANAGED:-}" == true ]]; then
+  python3 - "${MEET_CONTROL_ORIGIN:-https://admin.tn.edu.vn}" "${MEET_CONTROL_ID:-}" <<'PY'
+import json,os,sys
+path='runtime-config/managed-install.json'
+with open(path,'w') as f:json.dump({'control_origin':sys.argv[1],'control_id':sys.argv[2]},f)
+os.chmod(path,0o600);os.chown(path,10001,10001)
+PY
+fi
 cat > /usr/local/bin/meet <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail

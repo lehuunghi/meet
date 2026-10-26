@@ -1477,7 +1477,13 @@ function PlatformEntry() {
     }
     api("/public-config")
       .then((c) =>
-        setMode(c.platform_mode === "academy" ? "academy" : "school"),
+        setMode(
+          c.setup_pending
+            ? "initializing"
+            : c.platform_mode === "academy"
+              ? "academy"
+              : "school",
+        ),
       )
       .catch(() => setMode("school"));
   }, []);
@@ -1485,6 +1491,17 @@ function PlatformEntry() {
     return (
       <main className="login">
         <p>Đang kết nối…</p>
+      </main>
+    );
+  if (mode === "initializing")
+    return (
+      <main className="academy-auth">
+        <h1>Nền tảng đang được khởi tạo</h1>
+        <p>
+          Cấu hình chưa hoàn tất. Chủ nền tảng kiểm tra trạng thái đồng bộ tại
+          bảng quản trị trung tâm.
+        </p>
+        <button onClick={() => location.reload()}>Kiểm tra lại</button>
       </main>
     );
   return mode === "academy" ? <AcademyApp RoomComponent={Room} /> : <App />;

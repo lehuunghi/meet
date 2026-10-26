@@ -159,6 +159,7 @@ func managedCommand(db *sql.DB, action string) error {
 			return err
 		}
 		os.Remove(configPath("setup-token"))
+		os.Remove(configPath("managed-install.json"))
 		fmt.Println(`{"ok":true}`)
 		return nil
 	}

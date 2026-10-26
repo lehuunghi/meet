@@ -59,7 +59,7 @@ stage=$(mktemp -d)
 trap 'rm -rf "$stage"' EXIT
 git clone --branch codex/multi-school-platform https://github.com/lehuunghi/meet.git "$stage/source" >/dev/null 2>&1
 git -C "$stage/source" checkout --detach '''+shlex.quote(target)+''' >/dev/null 2>&1
-MEET_TARGET_SHA='''+shlex.quote(target)+''' MEET_DOMAIN='''+shlex.quote(payload['domain'])+''' MEET_MANAGED=true bash "$stage/source/deploy/install.sh" >/root/meet-client-install.log 2>&1
+MEET_TARGET_SHA='''+shlex.quote(target)+''' MEET_DOMAIN='''+shlex.quote(payload['domain'])+''' MEET_MANAGED=true MEET_CONTROL_ORIGIN='''+shlex.quote(c.ORIGIN)+''' MEET_CONTROL_ID='''+shlex.quote(job['school'])+''' bash "$stage/source/deploy/install.sh" >/root/meet-client-install.log 2>&1
 install -d -m 0700 /etc/meet
 '''
         # No host-supplied command strings; only a validated hostname is shell-quoted above.
