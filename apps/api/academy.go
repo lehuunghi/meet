@@ -171,6 +171,10 @@ func (a *app) academyAdmin(w http.ResponseWriter, r *http.Request) {
 	if err == nil {
 		expected = digest(old)
 	}
+	if expected != "" && in.Revision == nil {
+		problem(w, 409, "Trang quản trị đã cũ. Tải lại trang trước khi lưu website.")
+		return
+	}
 	if in.Revision != nil && *in.Revision != expected {
 		problem(w, 409, "Website đã được thay đổi. Tải lại nội dung trước khi lưu.")
 		return

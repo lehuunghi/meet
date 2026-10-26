@@ -9,7 +9,7 @@
 3. **Liên hệ & chính sách**: nhập email, số điện thoại, địa chỉ và nội dung chính sách đã được đơn vị duyệt. Mục để trống không tạo trang chính sách công khai.
 4. **Hồ sơ giáo viên**: nhập tên, môn phụ trách và kinh nghiệm thật. Nội dung giới thiệu không thay đổi tài khoản/phân công giáo viên.
 5. **Bài viết & lịch khai giảng**: đường dẫn chỉ gồm chữ thường, số và dấu gạch ngang. Chỉ bài được đánh dấu xuất bản mới xuất hiện. Góc học tập được ẩn nếu không có bài công khai.
-6. Bấm **Lưu website**. Nếu người khác đã sửa nội dung, hệ thống báo xung đột; tải lại bản đã lưu trước khi chỉnh tiếp.
+6. Bấm **Lưu website**. Trang quản trị cũ phải tải lại trước khi lưu. Nếu người khác đã sửa nội dung, hệ thống báo xung đột; tải lại bản đã lưu trước khi chỉnh tiếp.
 
 Trang khóa học công khai có dạng `/khoa-hoc/ID-KHOA-HOC`. Khóa chưa xuất bản hoặc thuộc đơn vị khác trả 404. Mục tiêu, chương trình, bài viết và chính sách được hiển thị dưới dạng văn bản an toàn, không chạy HTML do người nhập cung cấp.
 

@@ -173,8 +173,14 @@ func TestAcademyIntegration(t *testing.T) {
 	}
 	// Marketing pages escape CMS text, retain course intent and never expose storage keys.
 	siteBody := `{"content":{"headline":"VA thử","published":true,"about":"Giới thiệu thật","contact_email":"support@example.test","privacy":"Chính sách <script>không thực thi</script>","course_pages":{"ac-course":{"audience":"Học sinh lớp 10","objectives":"Hiểu hàm số\nVận dụng đồ thị","outline":"Chương 1\nChương 2","schedule":"Thứ hai","preview_lesson":"lesson-0"}}}}`
+	siteRead := request("GET", "/api/academy/site", "", admin)
+	must(siteRead, 200)
+	var siteRows []map[string]string
+	_ = json.Unmarshal(siteRead.Body.Bytes(), &siteRows)
+	siteBody = strings.Replace(siteBody, `{"content":`, `{"revision":"`+siteRows[0]["revision"]+`","content":`, 1)
 	saved := request("POST", "/api/academy/site", siteBody, admin)
 	must(saved, 200)
+	must(request("POST", "/api/academy/site", `{"content":{"headline":"old client"}}`, admin), 409)
 	var revision map[string]any
 	_ = json.Unmarshal(saved.Body.Bytes(), &revision)
 	must(request("POST", "/api/academy/site", `{"revision":"stale","content":{"headline":"không ghi đè","published":true}}`, admin), 409)
