@@ -76,6 +76,19 @@ const origin = `http://127.0.0.1:${port}`;
     assert.equal(await page.locator("#workspace").count(), 1);
     assert.equal(await page.locator("#modal").evaluate((el) => el.open), false);
     assert.match(page.url(), /#academy\/[a-f0-9]{32}$/);
+    assert.match(await page.locator('#sync-status').innerText(), /Liên kết API bảo mật được tạo tự động/);
+    const syncRoute = async route => {
+      const response = await route.fetch();
+      const units = await response.json();
+      for (const unit of units.filter(s => s.platform_mode === 'academy')) {
+        unit.sync = { linked: true, online: true, state: 'failed', code: 'CONFIG_R2_REJECTED', revision: unit.revision, applied: 0 };
+      }
+      await route.fulfill({response, json: units});
+    };
+    await page.route('**/api/schools', syncRoute);
+    await page.locator('#sync-status').getByText('Đồng bộ thất bại', {exact: true}).waitFor({timeout: 12000});
+    assert.match(await page.locator('#sync-status').innerText(), /Admin Read & Write/);
+    await page.unroute('**/api/schools', syncRoute);
     for (const width of [1440, 390]) {
       await page.setViewportSize({ width, height: 900 });
       assert.equal(
@@ -109,6 +122,10 @@ const origin = `http://127.0.0.1:${port}`;
       "smtp.example.test:587",
     );
     await page.locator("[name=bank_name]").fill("Chủ tài khoản thử");
+    // Background acknowledgement polling must not replace a partially edited form.
+    const poll = page.waitForResponse(r => r.url() === origin + '/api/schools' && r.request().method() === 'GET');
+    await poll;
+    assert.equal(await page.locator('[name=bank_name]').inputValue(), 'Chủ tài khoản thử');
     await page
       .getByRole("button", { name: "Cài đặt / Nâng cấp", exact: true })
       .click();

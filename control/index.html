@@ -548,6 +548,7 @@
       me = null,
       dirty = false,
       jobTimer = null,
+      syncTimer = null,
       viewMode = "";
     function viewOpen() {
       return !!$("#workspace") || $("#modal").open;
@@ -779,8 +780,50 @@
       tab = selected ? "overview" : "general";
       draw();
     }
+    function syncLabel(s) {
+      if ((s.sync?.applied ?? s.applied) === (s.sync?.revision ?? s.revision)) return "Đã đồng bộ";
+      if (s.sync?.state === "failed") return "Đồng bộ thất bại";
+      if (!s.sync?.linked) return "Chờ cài đặt / liên kết VPS";
+      if (!s.sync?.online) return "VPS mất kết nối";
+      if (s.sync?.code === "LIVE_MEETINGS") return "Chờ buổi học kết thúc";
+      return "Đang đồng bộ";
+    }
+    function renderSync() {
+      const root = $("#sync-status");
+      if (!root || !selected) return;
+      const s = selected;
+      root.innerHTML = '<strong>' + esc(syncLabel(s)) + '</strong> · ' +
+        (s.sync?.applied ?? s.applied) + '/' + (s.sync?.revision ?? s.revision) + '<p class="muted">' +
+        (s.sync?.linked ? 'API quản trị đã liên kết tự động qua HTTPS. Lưu tại trung tâm sẽ tự gửi xuống website; không cần tạo API key thủ công.' : 'Liên kết API bảo mật được tạo tự động khi cài VPS.') + '</p>';
+      if (s.sync?.state === 'failed' && s.sync.applied !== s.sync.revision) {
+        const error = document.createElement('p');
+        error.textContent = jobMessage(s.sync.code || 'APPLY_FAILED');
+        root.append(error);
+        if (me.role !== 'viewer') root.append(button('Thử đồng bộ lại', async () => {
+          if (dirty) throw Error('Lưu thay đổi đang sửa trước khi đồng bộ lại.');
+          await action('configure');
+          await monitorSync(s.id);
+        }));
+      }
+    }
+    async function monitorSync(sid) {
+      clearTimeout(syncTimer);
+      if (!viewOpen() || selected?.id !== sid || !$("#sync-status")) return;
+      try {
+        const units = await api('schools');
+        if (!viewOpen() || selected?.id !== sid || !$("#sync-status")) return;
+        const latest = units.find(s => s.id === sid);
+        // Keep the draft revision: a concurrent edit must still conflict at save.
+        if (latest) selected = { ...latest, revision: selected.revision };
+        renderSync();
+      } catch (_) {
+        if ($("#sync-status")) $("#sync-status").textContent = 'Chưa tải được trạng thái đồng bộ. Đang thử kết nối lại…';
+      }
+      syncTimer = setTimeout(() => void monitorSync(sid), 5000);
+    }
     function draw() {
       clearTimeout(jobTimer);
+      clearTimeout(syncTimer);
       const workspace = selected && cfg.platform_mode === "academy";
       if (workspace) {
         if ($("#modal").open) $("#modal").close();
@@ -875,6 +918,15 @@
           ),
         );
       if (!workspace && !d.open) d.showModal();
+      if (selected) {
+        const status = document.createElement('section');
+        status.id = 'sync-status';
+        status.className = 'install-hint';
+        status.setAttribute('role', 'status');
+        $('#panel').before(status);
+        renderSync();
+        syncTimer = setTimeout(() => void monitorSync(selected.id), 5000);
+      }
       panel();
     }
     function collect() {
@@ -1600,9 +1652,7 @@
           esc(st.version || "Chưa nhận phiên bản") +
           "</small></article><article><small>Đồng bộ cấu hình</small><strong>" +
           esc(
-            selected.applied === selected.revision
-              ? "Đã áp dụng"
-              : "Đang chờ VPS",
+            syncLabel(selected),
           ) +
           "</strong><small>Phiên bản cấu hình " +
           selected.applied +
@@ -1993,6 +2043,13 @@
     function jobMessage(code) {
       return (
         {
+          CONFIG_R2_REJECTED: "R2 chưa được chấp nhận. Kiểm tra đúng Account ID/bucket và khóa S3 có quyền Admin Read & Write để đọc/ghi CORS và lifecycle. Cấu hình mới chưa áp dụng lên website; cấu hình cũ tiếp tục hoạt động.",
+          CONFIG_REJECTED: "VPS từ chối cấu hình. Kiểm tra định dạng SFU, email, thanh toán và các thông số rồi lưu lại.",
+          CONFIG_SCHOOL_MISMATCH: "Mã nội bộ khác với nền tảng đã cài. Giữ nguyên mã sau khi cài đặt.",
+          CONFIG_DATABASE_UNAVAILABLE: "VPS chưa kết nối được cơ sở dữ liệu. Kiểm tra dịch vụ trước khi đồng bộ lại.",
+          ACCOUNT_REJECTED: "Tài khoản chưa được cập nhật. Kiểm tra email, mật khẩu và quyền được chọn.",
+          ACCOUNT_CONFLICT: "Tài khoản đã thay đổi hoặc là quản trị gốc được bảo vệ. Tải lại thông tin trước khi sửa.",
+          APPLY_FAILED: "VPS chưa áp dụng được thay đổi. Kiểm tra cấu hình hoặc liên hệ người vận hành; website chưa xác nhận cấu hình mới.",
           SSH_AUTH_FAILED:
             "Không đăng nhập SSH được: kiểm tra mật khẩu root hoặc khóa SSH.",
           SSH_HOST_KEY_MISMATCH:

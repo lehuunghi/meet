@@ -1,5 +1,13 @@
 # Quản trị trung tâm nhiều VPS — v0.6.0 (release candidate)
 
+## Đồng bộ tự động và chẩn đoán hiện tại
+
+Khi cài VPS, bộ cài tự tạo liên kết agent HTTPS bằng mã đăng ký dùng một lần; credential riêng của VPS được lưu trên máy, trung tâm chỉ giữ hash. Không cần tạo API key thủ công để quản trị website. API key trong mục **API tích hợp** dành cho ứng dụng bên ngoài và có phạm vi hạn chế.
+
+Mỗi lần **Lưu & đồng bộ** tạo một revision và tác vụ cấu hình. Thanh trạng thái tự kiểm tra mỗi 5 giây, hiển thị revision trung tâm và revision VPS đã xác nhận. **Đã lưu** chưa có nghĩa là **Đã đồng bộ**. VPS có buổi live sẽ chờ buổi học kết thúc; cấu hình bị từ chối phải sửa rồi lưu lại hoặc dùng **Thử đồng bộ lại**. Việc kiểm tra trạng thái không xóa dữ liệu đang nhập; lưu dựa trên revision để tránh ghi đè thay đổi đồng thời. Không đổi mã nội bộ sau khi đã liên kết.
+
+R2 tự cấu hình CORS và lifecycle cần khóa S3 với quyền **Admin Read & Write**. Khóa **Object Read & Write** có thể đọc danh sách video thành công nhưng vẫn nhận `403 AccessDenied` khi đọc/ghi cấu hình bucket. Xem [quyền R2 chính thức](https://developers.cloudflare.com/r2/api/tokens/). Nhập khóa ở trang cấu hình riêng, không gửi qua chat hoặc đưa vào Git. Khi R2 bị từ chối, revision mới chưa áp dụng; không báo thành công giả hoặc tự tắt R2. Agent chỉ gửi mã lỗi cố định về trung tâm, không gửi stderr hay secret.
+
 ## Phạm vi
 
 `control/` là dịch vụ quản trị độc lập cho `admin.tn.edu.vn`, chạy trên VPS Ubuntu riêng. Mỗi trường dùng một VPS/bộ MySQL/Redis riêng; dữ liệu học vụ tiếp tục ở VPS của trường. Trung tâm dùng SQLite WAL cho metadata và hàng đợi, chỉ hỗ trợ một instance trung tâm; không chia sẻ file SQLite qua NFS. Secret cấu hình được mã hóa AES-256-GCM theo ID trường; mật khẩu quản trị dùng scrypt. Đây là bản cần nghiệm thu SSH/DNS/Cloudflare trên môi trường staging trước khi mở vận hành nhiều trường.

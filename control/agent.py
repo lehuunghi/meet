@@ -15,6 +15,21 @@ def run(*args,data=None,timeout=1200):return subprocess.run(args,input=data,stdo
 
 def compose(*args,data=None):return run('docker','compose','--project-name','meet','--env-file',str(ROOT/'.env'),'-f',str(ROOT/'deploy/compose.yaml'),*args,data=data)
 def cli(command,value=None):return json.loads(compose('exec','-T','api','/usr/local/bin/meet',command,data=json.dumps(value or {},ensure_ascii=False).encode()))
+
+def failure_code(error):
+    # Only fixed codes cross the management link. stderr may contain secrets.
+    if isinstance(error,subprocess.TimeoutExpired):return 'REMOTE_TIMEOUT'
+    if isinstance(error,subprocess.CalledProcessError):
+        message=(error.stderr or b'')
+        if isinstance(message,bytes):message=message.decode(errors='replace')
+        if 'deployment school mismatch' in message:return 'CONFIG_SCHOOL_MISMATCH'
+        if 'Database unavailable' in message or 'database unavailable' in message:return 'CONFIG_DATABASE_UNAVAILABLE'
+        if 'managed config rejected' in message:
+            if 'R2' in message:return 'CONFIG_R2_REJECTED'
+            return 'CONFIG_REJECTED'
+        if 'account rejected (409)' in message:return 'ACCOUNT_CONFLICT'
+        if 'account rejected (' in message:return 'ACCOUNT_REJECTED'
+    return 'APPLY_FAILED'
 def request(config,path,data):
     if not config['url'].startswith('https://') or urlparse(config['url']).path not in ('','/'):raise ValueError('HTTPS control origin required')
     req=urllib.request.Request(config['url'].rstrip('/')+path,data=json.dumps(data).encode(),headers={'Content-Type':'application/json','Authorization':'Bearer '+config.get('token','')})
@@ -139,7 +154,7 @@ def tick():
     if job['id'] in prior:state,code=prior[job['id']]
     else:
         try:state,code=execute(job,status)
-        except Exception:state,code='failed','APPLY_FAILED' # Never upload stdout, secrets or exception bodies.
+        except Exception as error:state,code='failed',failure_code(error)
         if state=='success':
             prior[job['id']]=[state,code];atomic(JOURNAL,dict(list(prior.items())[-500:]))
     request(config,'/agent/ack',{'status':{},'id':job['id'],'lease':job['lease'],'state':state,'code':code})

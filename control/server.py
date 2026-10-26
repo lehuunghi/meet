@@ -57,6 +57,18 @@ def password_hash(password,salt=None):
     return salt+':'+hashlib.scrypt(password.encode(),salt=bytes.fromhex(salt),n=16384,r=8,p=1).hex()
 
 def digest(value):return hashlib.sha256(value.encode()).hexdigest()
+
+def sync_status(db,row):
+    """Expose acknowledgement state, never credentials or raw command errors."""
+    job=db.execute("SELECT id,state,result FROM jobs WHERE school=? AND action='configure' AND revision=? ORDER BY rowid DESC LIMIT 1",(row['id'],row['revision'])).fetchone()
+    state='applied' if row['applied']==row['revision'] else 'pending'
+    code=''
+    if state!='applied' and job:
+        state=job['state']
+        candidate=json.loads(job['result']).get('code','')
+        allowed={'LIVE_MEETINGS','APPLY_FAILED','CONFIG_R2_REJECTED','CONFIG_REJECTED','CONFIG_SCHOOL_MISMATCH','CONFIG_DATABASE_UNAVAILABLE','REMOTE_TIMEOUT','ACCOUNT_REJECTED','ACCOUNT_CONFLICT'}
+        code=candidate if isinstance(candidate,str) and candidate in allowed else ''
+    return {'linked':bool(row['agent_hash']),'online':bool(row['seen'] and int(time.time())-row['seen']<90),'state':state,'code':code,'job_id':job['id'] if job else None,'revision':row['revision'],'applied':row['applied']}
 def encrypt(value,scope):
     nonce=secrets.token_bytes(12)
     return base64.b64encode(nonce+AESGCM((ROOT/'vault.key').read_bytes()).encrypt(nonce,json.dumps(value,ensure_ascii=False).encode(),scope.encode())).decode()
@@ -395,7 +407,7 @@ class Handler(BaseHTTPRequestHandler):
             if not old and not password:raise ValueError('Cần mật khẩu tài khoản mới')
             db.execute('INSERT INTO admins(id,email,hash,role,active) VALUES(?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET email=excluded.email,hash=excluded.hash,role=excluded.role,active=excluded.active',(id,email,password_hash(password) if password else old['hash'],role,int(data.get('active',True))))
             db.execute('DELETE FROM sessions WHERE admin=?',(id,));db.execute('DELETE FROM mfa_challenges WHERE admin=?',(id,));audit(db,actor,'admin.save',id);return {'ok':True}
-        if path=='/api/schools' and self.command=='GET':return [{**{k:r[k] for k in ('id','name','domain','ip','revision','applied','seen','status','desired_state','applied_state')},'platform_mode':decrypt(r['config'],r['id']).get('platform_mode','school')} for r in db.execute('SELECT * FROM schools ORDER BY name')]
+        if path=='/api/schools' and self.command=='GET':return [{**{k:r[k] for k in ('id','name','domain','ip','revision','applied','seen','status','desired_state','applied_state')},'sync':sync_status(db,r),'platform_mode':decrypt(r['config'],r['id']).get('platform_mode','school')} for r in db.execute('SELECT * FROM schools ORDER BY name')]
         if path=='/api/academies/save':
             if user['role']!='owner' or data.get('config',{}).get('platform_mode')!='academy':raise ValueError('Luồng này chỉ tạo nền tảng khóa học/VIP mới bằng quyền owner')
             prior=db.execute('SELECT * FROM schools WHERE id=?',(str(data.get('id','')),)).fetchone()
@@ -415,6 +427,9 @@ class Handler(BaseHTTPRequestHandler):
             if old and data.get('revision')!=old['revision']:raise ValueError('Cấu hình đã thay đổi. Tải lại trước khi lưu')
             if old and type(data.get('revision')) is not int:raise ValueError('Revision phải là số nguyên')
             cfg=validate_config(merge_secrets(data.get('config',{}),decrypt(old['config'],sid) if old else {}));revision=old['revision']+1 if old else 1
+            if old and old['agent_hash']:
+                prior_cfg=decrypt(old['config'],sid)
+                if cfg.get('school_slug','')!=prior_cfg.get('school_slug',''):raise ValueError('Không đổi mã nội bộ sau khi liên kết VPS')
             installing=old and db.execute("SELECT 1 FROM jobs WHERE school=? AND action='provision' AND state IN ('queued','running')",(sid,)).fetchone()
             if installing:raise ValueError('Đang cài VPS; chờ cài đặt hoàn tất trước khi đổi cấu hình')
             if old and (old['seen'] or old['agent_hash']) and decrypt(old['config'],sid).get('platform_mode','school')!=cfg.get('platform_mode','school'):raise ValueError('Tạo nền tảng mới để đổi loại triển khai')
@@ -423,7 +438,7 @@ class Handler(BaseHTTPRequestHandler):
             if old and (old['seen'] or old['agent_hash']) and old['domain']!=domain:raise ValueError('Dùng tác vụ Đổi domain để chuyển có kiểm tra')
             db.execute('INSERT INTO schools(id,name,domain,ip,config,revision) VALUES(?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET name=excluded.name,domain=excluded.domain,ip=excluded.ip,config=excluded.config,revision=excluded.revision',(sid,name,domain,ip,encrypt(cfg,sid),revision))
             db.execute("UPDATE jobs SET state='superseded',payload=? WHERE school=? AND action='configure' AND state='queued'",(encrypt({},sid),sid))
-            queue(db,sid,'configure',{'settings':cfg,'name':name,'domain':domain},revision);audit(db,actor,'school.save',sid);return {'id':sid,'revision':revision}
+            job=queue(db,sid,'configure',{'settings':cfg,'name':name,'domain':domain},revision);audit(db,actor,'school.save',sid);return {'id':sid,'revision':revision,'job_id':job}
         match=re.fullmatch(r'/api/schools/([a-f0-9]{32})/(config|enroll|jobs|action|readiness|lifecycle|keys|relocations)',path)
         if match:
             sid,op=match.groups();row=db.execute('SELECT * FROM schools WHERE id=?',(sid,)).fetchone()

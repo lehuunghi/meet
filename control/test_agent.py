@@ -3,6 +3,12 @@ from pathlib import Path
 from unittest.mock import patch
 spec=importlib.util.spec_from_file_location('meet_agent',Path(__file__).with_name('agent.py'));a=importlib.util.module_from_spec(spec);spec.loader.exec_module(a)
 class AgentTests(unittest.TestCase):
+    def test_failure_diagnostics_are_fixed_codes_without_secrets(self):
+        import subprocess
+        cases=[('managed config rejected (502): R2 secret-private','CONFIG_R2_REJECTED'),('managed config rejected (400): private-token','CONFIG_REJECTED'),('deployment school mismatch private','CONFIG_SCHOOL_MISMATCH'),('account rejected (409) private','ACCOUNT_CONFLICT'),('private-token','APPLY_FAILED')]
+        for message,code in cases:
+            self.assertEqual(a.failure_code(subprocess.CalledProcessError(1,['meet'],stderr=message.encode())),code)
+        self.assertEqual(a.failure_code(subprocess.TimeoutExpired(['secret-private'],1)),'REMOTE_TIMEOUT')
     def test_suspension_waits_for_live_and_can_resume(self):
         with tempfile.TemporaryDirectory() as tmp,patch.object(a,'ROOT',Path(tmp)),patch.object(a.os,'chown'),patch.object(a,'cli',return_value={'live':1}):
             job={'action':'lifecycle','payload':{'state':'suspended'}}

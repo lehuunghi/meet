@@ -18,6 +18,21 @@ class ControlTests(unittest.TestCase):
         response=conn.getresponse();raw=response.read();cookies=response.getheader('Set-Cookie','').split(';')[0];status=response.status;conn.close();return status,json.loads(raw),cookies
     def login(self):
         status,_,cookie=self.request('/api/login',{'email':'owner@example.test','password':'integration-password-123'});self.assertEqual(status,200);return cookie
+    def test_auto_link_save_ack_and_failure_status(self):
+        cookie=self.login();data={'name':'Sync QA','domain':'sync-qa.example.test','ip':'8.8.4.4','config':{'platform_mode':'academy','school_slug':'sync-qa','retention_days':30}}
+        status,result,_=self.request('/api/academies/save',data,cookie);self.assertEqual(status,200);sid=result['id'];self.assertTrue(result['job_id'])
+        def unit():return next(s for s in self.request('/api/schools',cookie=cookie)[1] if s['id']==sid)
+        self.assertFalse(unit()['sync']['linked'])
+        _,issued,_=self.request('/api/schools/'+sid+'/enroll',{},cookie)
+        _,issued,_=self.request('/agent/enroll',{'token':issued['token']});agent=issued['token']
+        _,polled,_=self.request('/agent/poll',{'status':{}},agent=agent);job=polled['job']
+        self.request('/agent/ack',{'id':job['id'],'lease':job['lease'],'state':'failed','code':'CONFIG_R2_REJECTED'},agent=agent)
+        sync=unit()['sync'];self.assertTrue(sync['linked']);self.assertTrue(sync['online']);self.assertEqual(sync['state'],'failed');self.assertEqual(sync['applied'],0);self.assertEqual(sync['code'],'CONFIG_R2_REJECTED')
+        self.assertEqual(self.request('/api/academies/save',{**data,'id':sid,'revision':1,'config':{**data['config'],'school_slug':'wrong-slug'}},cookie)[0],400)
+        self.request('/api/schools/'+sid+'/action',{'action':'configure','payload':{}},cookie)
+        _,polled,_=self.request('/agent/poll',{'status':{}},agent=agent);job=polled['job']
+        self.request('/agent/ack',{'id':job['id'],'lease':job['lease'],'state':'success','code':'OK'},agent=agent)
+        self.assertEqual(unit()['sync']['state'],'applied');self.assertEqual(unit()['sync']['applied'],1)
     def test_control_lifecycle(self):
         cookie=self.login()
         self.assertEqual(self.request('/api/schools')[0],401)
