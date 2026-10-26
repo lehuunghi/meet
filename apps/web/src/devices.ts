@@ -8,6 +8,8 @@ export function deviceError(error: unknown): string {
     return "Không mở được camera/micro. Thiết bị có thể đang được ứng dụng khác sử dụng; đóng ứng dụng đó hoặc vào lớp không dùng thiết bị.";
   return error instanceof Error ? error.message : "Không mở được camera/micro";
 }
+export const microphoneConstraints=(id?:string):MediaTrackConstraints=>({echoCancellation:true,noiseSuppression:true,autoGainControl:true,...(id?{deviceId:{exact:id}}:{})});
+export const cameraConstraints=(id?:string):MediaTrackConstraints=>({width:{ideal:640},height:{ideal:360},frameRate:{ideal:15,max:30},...(id?{deviceId:{exact:id}}:{})});
 export async function captureDevices(
   mic: boolean,
   camera: boolean,
@@ -20,18 +22,8 @@ export async function captureDevices(
     );
   try {
     return await navigator.mediaDevices.getUserMedia({
-      audio: mic
-        ? devices.audio
-          ? { deviceId: { exact: devices.audio } }
-          : true
-        : false,
-      video: camera
-        ? {
-            width: 640,
-            height: 360,
-            ...(devices.video ? { deviceId: { exact: devices.video } } : {}),
-          }
-        : false,
+      audio: mic ? microphoneConstraints(devices.audio) : false,
+      video: camera ? cameraConstraints(devices.video) : false,
     });
   } catch (e) {
     // A missing camera must not prevent a working microphone from joining.
@@ -42,8 +34,8 @@ export async function captureDevices(
       ["NotFoundError", "OverconstrainedError"].includes(e.name)
     ) {
       for (const request of [
-        { audio: true, video: false },
-        { audio: false, video: true },
+        { audio: microphoneConstraints(devices.audio), video: false },
+        { audio: false, video: cameraConstraints(devices.video) },
       ]) {
         try {
           return await navigator.mediaDevices.getUserMedia(request);

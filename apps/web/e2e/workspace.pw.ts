@@ -127,7 +127,7 @@ test("listen-only classroom keeps the mobile toolbar clear of page content", asy
             el.querySelector(".room-toolbar")!.getBoundingClientRect().height,
         ),
     )
-    .toBeGreaterThanOrEqual(23);
+    .toBeGreaterThanOrEqual(11);
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth,

@@ -3,6 +3,7 @@ import { api } from "./api";
 import "./room-tools.css";
 import { RoomModeration } from "./room-moderation";
 import { RoomPolls } from "./room-polls";
+import type { MeetingPanel } from './meeting-controls';
 export function RoomTools({
   meeting,
   user,
@@ -14,6 +15,7 @@ export function RoomTools({
   open = true,
   onClose,
   onWaitingChange,
+  panelTab, onPanelTabChange, handRaised, onHandChange, onStats,
 }: {
   meeting: string;
   user: { id: string; name: string };
@@ -25,6 +27,11 @@ export function RoomTools({
   open?: boolean;
   onClose?: () => void;
   onWaitingChange?: (count: number) => void;
+  panelTab?: MeetingPanel;
+  onPanelTabChange?: (tab:MeetingPanel)=>void;
+  handRaised?: boolean;
+  onHandChange?: (raised:boolean)=>void;
+  onStats?: (stats:{people:number;unread:number})=>void;
 }) {
   const [tab, setTab] = useState("people"),
     [people, setPeople] = useState<any[]>([]),
@@ -33,7 +40,14 @@ export function RoomTools({
     [raised, setRaised] = useState(false),
     [error, setError] = useState(""),
     [sending, setSending] = useState(false);
-  const cursor = useRef(0);
+  const cursor = useRef(0), initialized = useRef(false);
+  const [unread,setUnread]=useState(0),[search,setSearch]=useState('');
+  const chatVisible=useRef(false);chatVisible.current=open&&tab==='chat';
+  useEffect(()=>{if(panelTab)setTab(panelTab);},[panelTab]);
+  useEffect(()=>{if(handRaised!==undefined){setRaised(handRaised);if(demo)setPeople(rows=>rows.map(p=>p.id===user.id?{...p,hand_raised:handRaised}:p));}},[handRaised]);
+  useEffect(()=>{if(open&&tab==='chat')setUnread(0);},[open,tab]);
+  useEffect(()=>{onStats?.({people:people.length,unread});},[people.length,unread]);
+  const choose=(next:MeetingPanel)=>{setTab(next);onPanelTabChange?.(next);};
   useEffect(() => {
     if (demo) {
       setPeople([
@@ -44,7 +58,7 @@ export function RoomTools({
           hand_raised: false,
         },
         {
-          id: "teacher",
+          id: "preview-peer",
           name: canManage ? "Nguyễn Hoàng An" : "Nguyễn Minh Anh",
           role: canManage ? "student" : "teacher",
           hand_raised: false,
@@ -67,11 +81,15 @@ export function RoomTools({
         if (!active) return;
         setPeople(p);
         onReactions?.(reactions);
-        setRaised(!!p.find((v) => v.id === user.id)?.hand_raised);
+        const hand=!!p.find((v) => v.id === user.id)?.hand_raised;
+        setRaised(hand);onHandChange?.(hand);
         if (m.length) {
+          if(initialized.current&&!chatVisible.current)setUnread(v=>v+m.filter(row=>row.user_id!==user.id).length);
           cursor.current = Number(m[m.length - 1].id);
           setMessages((v) => [...v, ...m].slice(-500));
         }
+        initialized.current=true;
+        setError("");
       } catch (e) {
         if (active) setError((e as Error).message);
       } finally {
@@ -80,9 +98,12 @@ export function RoomTools({
     };
     void tick();
     const id = setInterval(() => void tick(), 5000);
+    const changed=(e:Event)=>{if((e as CustomEvent).detail===meeting)void tick();};
+    window.addEventListener('meeting:refresh',changed);
     return () => {
       active = false;
       clearInterval(id);
+      window.removeEventListener('meeting:refresh',changed);
     };
   }, [joined, meeting, demo, canManage, user.id, user.name]);
   return (
@@ -94,7 +115,7 @@ export function RoomTools({
     >
       {onClose && (
         <div className="room-panel-heading">
-          <strong>Người tham gia & trò chuyện</strong>
+          <strong>{{people:'Người tham gia',chat:'Trò chuyện trong lớp',polls:'Khảo sát',host:'Điều hành phòng'}[tab]||'Công cụ lớp học'}</strong>
           <button
             className="secondary"
             aria-label="Đóng công cụ"
@@ -105,31 +126,34 @@ export function RoomTools({
         </div>
       )}
       {canManage && (
+        <div hidden={tab!=='host'}>
         <RoomModeration
           meeting={meeting}
           demo={demo}
           onWaitingChange={onWaitingChange}
         />
+        </div>
       )}
       <div className="room-tool-tabs">
         <button
           className={tab === "polls" ? "selected" : "secondary"}
-          onClick={() => setTab("polls")}
+          onClick={() => choose("polls")}
         >
           Khảo sát
         </button>
         <button
           className={tab === "people" ? "selected" : "secondary"}
-          onClick={() => setTab("people")}
+          onClick={() => choose("people")}
         >
           Thành viên ({people.length})
         </button>
         <button
           className={tab === "chat" ? "selected" : "secondary"}
-          onClick={() => setTab("chat")}
+          onClick={() => choose("chat")}
         >
           Tin nhắn ({messages.length})
         </button>
+        {canManage&&<button className={tab==='host'?'selected':'secondary'} onClick={()=>choose('host')}>Điều hành</button>}
         <button
           className="secondary"
           disabled={!joined || sending}
@@ -141,6 +165,7 @@ export function RoomTools({
               if (!demo)
                 await api(`/meetings/${meeting}/hand`, { raised: !raised });
               setRaised(!raised);
+              onHandChange?.(!raised);
               if (demo)
                 setPeople((v) =>
                   v.map((p) =>
@@ -196,9 +221,10 @@ export function RoomTools({
           joined={joined}
           demo={demo}
         />
-      ) : tab === "people" ? (
+      ) : tab === "host" ? null : tab === "people" ? (
+        <><label className="room-people-search">Tìm người tham gia<input type="search" value={search} onChange={e=>setSearch(e.target.value)} placeholder="Tên hoặc mã học sinh"/></label>
         <div className="room-people">
-          {people.map((p) => (
+          {people.filter(p=>(p.name+' '+(p.short_id||'')).toLocaleLowerCase('vi').includes(search.toLocaleLowerCase('vi'))).map((p) => (
             <div key={p.id}>
               <span className="avatar">{p.name[0]}</span>
               <strong>
@@ -216,6 +242,7 @@ export function RoomTools({
             </div>
           ))}
         </div>
+        </>
       ) : (
         <>
           <div
@@ -258,6 +285,7 @@ export function RoomTools({
                 else
                   await api(`/meetings/${meeting}/messages`, { content: text });
                 setText("");
+                if(!demo)window.dispatchEvent(new CustomEvent('meeting:refresh',{detail:meeting}));
               } catch (e) {
                 setError((e as Error).message);
               } finally {

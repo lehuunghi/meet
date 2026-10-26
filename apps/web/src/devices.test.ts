@@ -11,7 +11,7 @@ it("falls back to microphone when the selected camera does not exist", async () 
     .mockResolvedValueOnce(stream);
   vi.stubGlobal("navigator", { mediaDevices: { getUserMedia } });
   expect(await captureDevices(true, true)).toBe(stream);
-  expect(getUserMedia.mock.calls[1][0]).toEqual({ audio: true, video: false });
+  expect(getUserMedia.mock.calls[1][0]).toEqual({ audio: {echoCancellation:true,noiseSuppression:true,autoGainControl:true}, video: false });
 });
 it("explains denied permission and does not repeatedly request devices", async () => {
   const error = new Error("denied");

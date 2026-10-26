@@ -103,8 +103,9 @@ test("host admits waiting students, updates rules, pins video and sends reaction
   ).toHaveCount(0);
   await expect(page.locator(".room-tools")).toBeHidden();
   await page
-    .getByRole("button", { name: "Người tham gia & trò chuyện", exact: true })
+    .getByRole("button", { name: "Người tham gia", exact: true })
     .click();
+  await page.getByRole("button",{name:"Điều hành",exact:true}).click();
   await page.getByRole("button", { name: "Cho vào", exact: true }).click();
   expect(moderated).toEqual([{ action: "admit", user_id: "student" }]);
   const panel = page.locator(".room-moderation");
@@ -162,7 +163,7 @@ test("host admits waiting students, updates rules, pins video and sends reaction
       .top,
   }));
   expect(bounds.header).toBeLessThanOrEqual(bounds.controls);
-  await page.locator(".room-end-menu > summary").click();
+  await page.getByLabel("Thêm tùy chọn", {exact:true}).click();
   await expect(
     page.getByRole("button", { name: "Kết thúc buổi học", exact: true }),
   ).toBeVisible();

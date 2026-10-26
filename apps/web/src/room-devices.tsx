@@ -3,10 +3,12 @@ export function RoomDevices({
   onInput,
   onOutput,
   refreshKey,
+  expanded = false,
 }: {
   onInput: (kind: "audio" | "video", id: string) => Promise<void>;
   onOutput: (id: string) => Promise<void>;
   refreshKey?: string;
+  expanded?: boolean;
 }) {
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([]),
     [error, setError] = useState(""),
@@ -37,7 +39,7 @@ export function RoomDevices({
     }
   };
   return (
-    <details className="room-device-settings">
+    <details className="room-device-settings" open={expanded || undefined}>
       <summary>Thiết bị âm thanh & hình ảnh</summary>
       <div className="device-options">
         {[
@@ -82,7 +84,7 @@ export function RoomDevices({
         Làm mới thiết bị
       </button>
       <p>
-        Nếu chưa có tên thiết bị, bấm kiểm tra camera/mic và cấp quyền. Chọn loa
+        Nếu chưa có tên thiết bị, đóng cài đặt rồi bật mic/camera để cấp quyền. Chọn loa
         phụ thuộc trình duyệt.
       </p>
       {error && (

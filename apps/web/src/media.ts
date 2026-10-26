@@ -1,4 +1,5 @@
 import { api } from "./api";
+import {microphoneConstraints,cameraConstraints} from './devices';
 export type Publication = {
   session_id: string;
   track_name: string;
@@ -298,7 +299,7 @@ export class ClassroomMedia {
   }
   changeDevice(kind: "audio" | "video", deviceID: string) {
     return this.serial(async () => {
-      const selected = deviceID ? { deviceId: { exact: deviceID } } : true;
+      const selected = kind==='audio'?microphoneConstraints(deviceID):cameraConstraints(deviceID);
       const stream = await navigator.mediaDevices.getUserMedia(
         kind === "audio"
           ? { audio: selected, video: false }
@@ -383,8 +384,8 @@ export class ClassroomMedia {
         .filter((t) => t.kind === kind && t.readyState === "ended")
         .forEach((t) => this.local!.removeTrack(t));
       const stream = await navigator.mediaDevices.getUserMedia({
-        audio: kind === "audio",
-        video: kind === "video",
+        audio: kind === "audio" ? microphoneConstraints() : false,
+        video: kind === "video" ? cameraConstraints() : false,
       });
       await this.publishInternal(stream);
     }

@@ -82,6 +82,7 @@ test("reload automatically rejoins the authenticated room, while explicit leave 
   await expect(page.locator(".prejoin")).toHaveCount(0);
   expect(devices).toBe(0);
   await page.getByRole("button", { name: "Rời lớp", exact: true }).click();
+  if(await page.getByRole("button",{name:"Chỉ mình tôi rời đi",exact:true}).isVisible())await page.getByRole("button",{name:"Chỉ mình tôi rời đi",exact:true}).click();
   await expect(page.locator(".room")).toHaveCount(0);
   await page.reload({ waitUntil: "domcontentloaded" });
   await expect(

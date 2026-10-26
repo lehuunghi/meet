@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { RoomTools } from "./room-tools";
-import { CallIcon } from "./call-icon";
+import { MeetingControls, MeetingLeaveDialog, MeetingModal, type MeetingPanel } from "./meeting-controls";
 export const previewRoles = [
   { id: "admin", name: "Lê Thu Hà", label: "Admin" },
   { id: "teacher", name: "Nguyễn Minh Anh", label: "Giáo viên" },
@@ -133,6 +133,10 @@ export function PreviewRoom({
     [toolsOpen, setToolsOpen] = useState(false),
     [message, setMessage] = useState("");
   const [pinned, setPinned] = useState("");
+  const [panelTab,setPanelTab]=useState<MeetingPanel>('people'),[raised,setRaised]=useState(false),[people,setPeople]=useState(2),[unread,setUnread]=useState(0),[mirror,setMirror]=useState(true);
+  const [leaveChoice,setLeaveChoice]=useState<false|'leave'|'end'>(false),[info,setInfo]=useState('');
+  const openPanel=(next:MeetingPanel)=>{setToolsOpen(!(toolsOpen&&panelTab===next));setPanelTab(next);};
+
   return (
     <main className={"room" + (toolsOpen ? " room-tools-open" : "")}>
       <header>
@@ -178,59 +182,9 @@ export function PreviewRoom({
               ),
             )}
           </div>
-          <div className="room-toolbar">
-            <button
-              className="call-control"
-              aria-label={mic ? "Tắt mic" : "Bật mic"}
-              aria-pressed={mic}
-              onClick={() => setMic(!mic)}
-            >
-              <CallIcon kind="mic" off={!mic} />
-              <span className="control-label">
-                {mic ? "Tắt mic" : "Bật mic"}
-              </span>
-            </button>
-            <button
-              className="call-control"
-              aria-label={camera ? "Tắt camera" : "Bật camera"}
-              aria-pressed={camera}
-              onClick={() => setCamera(!camera)}
-            >
-              <CallIcon kind="camera" off={!camera} />
-              <span className="control-label">
-                {camera ? "Tắt camera" : "Bật camera"}
-              </span>
-            </button>
-            <button
-              className="call-control"
-              aria-label="Chia sẻ màn hình"
-              onClick={() =>
-                setMessage(
-                  "Chia sẻ màn hình cần cuộc gọi thật. Bản xem trước không yêu cầu quyền thiết bị.",
-                )
-              }
-            >
-              <CallIcon kind="present" />
-              <span className="control-label">Chia sẻ màn hình</span>
-            </button>
-            <button
-              className="call-control"
-              aria-label="Người tham gia & trò chuyện"
-              aria-expanded={toolsOpen}
-              onClick={() => setToolsOpen(!toolsOpen)}
-            >
-              <CallIcon kind="people" />
-              <span className="control-label">Người tham gia & trò chuyện</span>
-            </button>
-            <button
-              className="call-control room-leave"
-              aria-label="Rời lớp"
-              onClick={onExit}
-            >
-              <CallIcon kind="leave" />
-              <span className="control-label">Rời lớp</span>
-            </button>
-          </div>{" "}
+          <div className="room-toolbar"><MeetingControls joined mic={mic} camera={camera} sharing={false} raised={raised} busy={false} canManage={role!=='student'} people={people} unread={unread} panel={toolsOpen?panelTab:null} code="Phòng minh họa" onMic={()=>setMic(!mic)} onCamera={()=>setCamera(!camera)} onShare={()=>setMessage('Chia sẻ màn hình cần cuộc gọi thật. Bản xem trước không yêu cầu quyền thiết bị.')} onHand={()=>setRaised(!raised)} onReact={emoji=>setMessage('Phản ứng minh họa: '+emoji)} onPanel={openPanel} onLeave={()=>role!=='student'?setLeaveChoice('leave'):onExit()} onEnd={()=>setLeaveChoice('end')} onSettings={()=>setInfo('Cài đặt thiết bị')} onInfo={()=>setInfo('Thông tin phòng học')} mirror={mirror} onMirror={()=>setMirror(!mirror)} onFullscreen={()=>void document.querySelector<HTMLElement>('.room')?.requestFullscreen?.().catch(()=>setMessage('Trình duyệt chưa hỗ trợ toàn màn hình'))}/></div>
+          {leaveChoice&&<MeetingLeaveDialog busy={false} ending={leaveChoice==='end'} onLeave={onExit} onEnd={onExit} onClose={()=>setLeaveChoice(false)}/>}
+          {info&&<MeetingModal title={info} onClose={()=>setInfo('')}><p>Đây là bản xem trước. Không có kết nối SFU, truy cập camera/micro hoặc thay đổi buổi học thật.</p></MeetingModal>}
           {message && (
             <div className="banner" role="status">
               {message}
@@ -238,7 +192,7 @@ export function PreviewRoom({
           )}
         </section>
       </div>
-      <RoomTools
+      <RoomTools panelTab={panelTab} onPanelTabChange={setPanelTab} handRaised={raised} onHandChange={setRaised} onStats={s=>{setPeople(s.people);setUnread(s.unread);}}
         open={toolsOpen}
         onClose={() => setToolsOpen(false)}
         demo
