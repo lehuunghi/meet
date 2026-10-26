@@ -72,7 +72,8 @@ class AgentTests(unittest.TestCase):
         self.assertEqual(p.failure_code(RuntimeError('token-private')), 'PROVISION_FAILED_REVIEW_VPS')
     def test_wrong_dns_stops_before_ssh(self):
         spec=importlib.util.spec_from_file_location('provision',Path(__file__).with_name('provision.py'));p=importlib.util.module_from_spec(spec);spec.loader.exec_module(p)
-        with patch.object(p,'approved_revision',return_value='a'*40),patch.object(p.socket,'getaddrinfo',return_value=[(None,None,None,None,('8.8.4.4',443))]),patch.object(p.paramiko,'SSHClient') as ssh:
+        with patch.object(p,'mark') as mark,patch.object(p,'approved_revision',return_value='a'*40),patch.object(p.socket,'getaddrinfo',return_value=[(None,None,None,None,('8.8.4.4',443))]),patch.object(p.paramiko,'SSHClient') as ssh:
             with self.assertRaisesRegex(ValueError,'DNS_NOT_READY'):p.provision(None,{}, {'domain':'academy.example.test','ip':'8.8.8.8'})
             ssh.assert_not_called()
+            self.assertEqual([x.args[2] for x in mark.call_args_list],['release','dns'])
 if __name__=='__main__':unittest.main()
