@@ -280,7 +280,9 @@ class Handler(BaseHTTPRequestHandler):
             if state=='success':progress(db,job['id'],'done')
             if state=='success' and job['action']=='restore':db.execute("UPDATE schools SET desired_state='suspended',applied_state='suspended' WHERE id=?",(sid,))
             if state=='success' and job['action']=='configure':
-                for pending in db.execute("SELECT id FROM jobs WHERE school=? AND action='provision' AND state IN ('running','success')",(sid,)).fetchall():progress(db,pending['id'],'done')
+                for pending in db.execute("SELECT id,state FROM jobs WHERE school=? AND action='provision' AND state IN ('running','success')",(sid,)).fetchall():
+                    progress(db,pending['id'],'done')
+                    if pending['state']=='success':db.execute('UPDATE jobs SET result=? WHERE id=?',(json.dumps({'code':'OK'}),pending['id']))
             db.execute('UPDATE jobs SET state=?,result=?,lease=NULL,lease_until=? WHERE id=?',('queued' if state=='waiting' else state,json.dumps(result),now+60,job['id']))
             if state=='success' and job['action']=='configure':db.execute('UPDATE schools SET applied=MAX(applied,?) WHERE id=?',(job['revision'],sid))
             if state=='success' and job['action']=='lifecycle':db.execute('UPDATE schools SET applied_state=? WHERE id=?',(decrypt(job['payload'],sid)['state'],sid))

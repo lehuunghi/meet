@@ -130,6 +130,9 @@ def start_worker(c):
                             phase=payload['phase'];fallback='cutover_failed' if phase=='cutover' else 'backup_ready' if phase=='prepare' else 'failed'
                             with c.connect() as db:db.execute('UPDATE relocations SET state=? WHERE id=?',(fallback,payload['relocation_id']))
                     with c.connect() as db:
+                        if state=='success' and job['action']=='provision':
+                            school=db.execute('SELECT applied,agent_hash FROM schools WHERE id=?',(job['school'],)).fetchone()
+                            if school['agent_hash'] and school['applied']>=job['revision']:code='OK';c.progress(db,job['id'],'done')
                         db.execute('UPDATE jobs SET state=?,result=?,payload=? WHERE id=?',(state,json.dumps({'code':code}),c.encrypt({},job['school']),job['id']))
                         c.audit(db,'provisioner',state,job['school'])
             except Exception:pass

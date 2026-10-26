@@ -96,7 +96,11 @@ class ControlTests(unittest.TestCase):
             self.assertEqual(self.request('/agent/progress',{'id':job['id'],'lease':job['lease'],'stage':stage},agent=agent)[0],200)
         self.assertEqual(self.request('/agent/progress',{'id':job['id'],'lease':job['lease'],'stage':'password=PRIVATE'},agent=agent)[0],400)
         rows=self.request('/api/schools/'+sid+'/jobs',cookie=owner)[1];self.assertEqual(rows[0]['progress'][-1]['percent'],72)
+        with c.connect() as db:
+            installed=c.queue(db,sid,'provision',{},1);db.execute("UPDATE jobs SET state='success',result=? WHERE id=?",(json.dumps({'code':'WAITING_AGENT'}),installed));c.progress(db,installed,'configure')
         self.request('/agent/ack',{'id':job['id'],'lease':job['lease'],'state':'success','code':'OK'},agent=agent)
+        with c.connect() as db:
+            self.assertEqual(json.loads(db.execute('SELECT result FROM jobs WHERE id=?',(installed,)).fetchone()['result'])['code'],'OK');self.assertEqual(c.job_progress(db,installed)[-1]['percent'],100)
         _,out,_=self.request('/api/schools/'+sid+'/action',{'action':'backup-list'},owner)
         _,out,_=self.request('/agent/poll',{'status':{'control_protocol':3,'live':0}},agent=agent);job=out['job'];key='backups/updates/'+'a'*36+'.meet'
         self.assertEqual(self.request('/agent/ack',{'id':job['id'],'lease':job['lease'],'state':'success','code':'OK','backups':[{'object_key':key,'bytes':400,'modified':'2026-10-27T00:00:00Z'}]},agent=agent)[0],200)
