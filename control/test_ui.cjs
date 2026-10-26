@@ -55,7 +55,10 @@ const origin = `http://127.0.0.1:${port}`;
       .locator("[name=admin_password]")
       .fill("academy-initial-password");
     await page
-      .getByRole("button", { name: "Nền tảng / VIP", exact: true })
+      .getByRole("button", {
+        name: /^(Nền tảng \/ VIP|Email & thanh toán)$/,
+        exact: true,
+      })
       .click();
     assert.equal(
       await page.locator("[name=platform_mode]").inputValue(),
@@ -70,6 +73,9 @@ const origin = `http://127.0.0.1:${port}`;
     await page
       .getByRole("heading", { name: "Kiểm tra trước khi cài", exact: true })
       .waitFor();
+    assert.equal(await page.locator("#workspace").count(), 1);
+    assert.equal(await page.locator("#modal").evaluate((el) => el.open), false);
+    assert.match(page.url(), /#academy\/[a-f0-9]{32}$/);
     for (const width of [1440, 390]) {
       await page.setViewportSize({ width, height: 900 });
       assert.equal(
@@ -93,7 +99,10 @@ const origin = `http://127.0.0.1:${port}`;
     await install.waitFor();
     assert.equal(await install.isEnabled(), true);
     await page
-      .getByRole("button", { name: "Nền tảng / VIP", exact: true })
+      .getByRole("button", {
+        name: /^(Nền tảng \/ VIP|Email & thanh toán)$/,
+        exact: true,
+      })
       .click();
     assert.equal(
       await page.locator("[name=smtp_address]").inputValue(),
@@ -111,7 +120,9 @@ const origin = `http://127.0.0.1:${port}`;
     await page
       .getByRole("heading", { name: "Kiểm tra trước khi cài", exact: true })
       .waitFor();
-    await page.getByRole("button", { name: "Đóng", exact: true }).click();
+    await page
+      .getByRole("button", { name: /^(Đóng|Danh sách nền tảng)$/, exact: true })
+      .click();
     await page.locator("#modefilter").selectOption("academy");
     assert.equal(await page.locator("#rows tr").count(), 1);
     assert.match(await page.locator("#rows").innerText(), /Academy thử nghiệm/);
@@ -131,10 +142,15 @@ const origin = `http://127.0.0.1:${port}`;
       .click();
     await install.waitFor();
     assert.equal(await install.isDisabled(), true); // Existing school must not be reinstalled.
-    await page.getByRole("button", { name: "Đóng", exact: true }).click();
+    await page
+      .getByRole("button", { name: /^(Đóng|Danh sách nền tảng)$/, exact: true })
+      .click();
     await page.locator("#modefilter").selectOption("academy");
     await page.getByRole("button", { name: "Chi tiết", exact: true }).click();
-    await page.getByRole("button", { name: "SFU", exact: true }).click();
+    await page
+      .locator("#tabs")
+      .getByRole("button", { name: "SFU", exact: true })
+      .click();
     assert.equal(await page.getByText("TURN keys", { exact: true }).count(), 0);
     await page
       .getByRole("button", { name: "API tích hợp", exact: true })

@@ -215,3 +215,39 @@ func (a *app) academyProfile(w http.ResponseWriter, r *http.Request) {
 	}
 	send(w, 200, map[string]bool{"ok": true})
 }
+
+func (a *app) academyVerifyEmail(w http.ResponseWriter, r *http.Request) {
+	var in struct{ Code string }
+	if !decode(w, r, &in) {
+		return
+	}
+	u := who(r)
+	var email string
+	if a.db.QueryRowContext(r.Context(), "SELECT email FROM users WHERE id=? AND school_id=?", u.ID, u.School).Scan(&email) != nil {
+		problem(w, 404, "Không thấy tài khoản")
+		return
+	}
+	key := "academy-otp:" + digest(u.School+email)
+	tries, e := a.cache.Incr(r.Context(), "academy-profile-otp:"+u.ID).Result()
+	a.cache.Expire(r.Context(), "academy-profile-otp:"+u.ID, 15*time.Minute)
+	if e != nil || tries > 10 {
+		problem(w, 429, "Thử lại sau 15 phút")
+		return
+	}
+	expected, e := a.cache.Get(r.Context(), key).Result()
+	if e != nil || !hmac.Equal([]byte(expected), []byte(digest(in.Code))) {
+		problem(w, 400, "Mã email sai hoặc hết hạn")
+		return
+	}
+	var exists int
+	if a.db.QueryRowContext(r.Context(), "SELECT COUNT(*) FROM academy_profiles WHERE school_id=? AND user_id=?", u.School, u.ID).Scan(&exists) != nil || exists != 1 {
+		problem(w, 409, "Lưu hồ sơ đầy đủ trước khi xác thực email")
+		return
+	}
+	if _, e = a.db.ExecContext(r.Context(), "UPDATE academy_profiles SET email_verified=TRUE WHERE school_id=? AND user_id=?", u.School, u.ID); e != nil {
+		problem(w, 503, "Chưa xác thực được email")
+		return
+	}
+	a.cache.Del(r.Context(), key)
+	send(w, 200, map[string]bool{"ok": true})
+}

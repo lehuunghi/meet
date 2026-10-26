@@ -30,7 +30,7 @@ def configure(job):
     payload=job['payload'];cfg=payload['settings'];domain=payload['domain'];school=(cfg.get('school_slug') or 'school-'+config['school'][:8]);admin=cfg.get('initial_admin',{})
     if not HOST.fullmatch(domain):raise ValueError('invalid domain')
     settings={k:cfg[k] for k in ('sfu','turn','r2','retention_days','backup','platform_mode','commerce') if k in cfg}
-    cli('managed-config',{'settings':settings,'school':{'slug':school,'name':payload['name'],'email':admin.get('email',''),'password':admin.get('password','')},'domain':domain})
+    cli('managed-config',{'settings':settings,'school':{'slug':school,'name':payload['name'],'email':admin.get('email',''),'password':admin.get('password','')},'domain':domain,'control_origin':config['url'],'control_id':config['school']})
     atomic(ROOT/'runtime-config/control-revision.json',{'revision':job['revision']},(10001,10001))
 
 def _domain_change(payload):
@@ -143,6 +143,7 @@ def tick():
         if state=='success':
             prior[job['id']]=[state,code];atomic(JOURNAL,dict(list(prior.items())[-500:]))
     request(config,'/agent/ack',{'status':{},'id':job['id'],'lease':job['lease'],'state':state,'code':code})
+    return True
 
 if __name__=='__main__':
     os.umask(0o077)
@@ -158,6 +159,6 @@ if __name__=='__main__':
                 if DOMAIN_JOURNAL.exists():
                     with open('/run/meet-backup.lock','w') as recovery_lock:
                         fcntl.flock(recovery_lock,fcntl.LOCK_EX|fcntl.LOCK_NB);recover_domain()
-                tick()
-            except Exception:pass
-            time.sleep(20)
+                worked=tick()
+                time.sleep(1 if worked else 5)
+            except Exception:time.sleep(20)

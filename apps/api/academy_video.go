@@ -18,6 +18,7 @@ func (a *app) academyLessonUpload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var in struct {
+		ID          string `json:"id"`
 		Title, Type string
 		Size        int64
 		Duration    int `json:"duration_seconds"`
@@ -40,6 +41,13 @@ func (a *app) academyLessonUpload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	id := uid()
+	if in.ID != "" {
+		if r.Context().Value(managedAcademyKey{}) != true || !configID.MatchString(in.ID) || len(in.ID) != 32 {
+			problem(w, 400, "Invalid upload request ID")
+			return
+		}
+		id = in.ID
+	}
 	ext := ".mp4"
 	if in.Type == "video/webm" {
 		ext = ".webm"
@@ -50,8 +58,13 @@ func (a *app) academyLessonUpload(w http.ResponseWriter, r *http.Request) {
 		problem(w, 502, "Không cấp được link tải")
 		return
 	}
-	if _, e = a.db.ExecContext(r.Context(), "INSERT INTO academy_lessons(id,school_id,course_id,title,object_key,bucket,duration_seconds) VALUES(?,?,?,?,?,?,?)", id, u.School, r.PathValue("course"), in.Title, key, store.Bucket, in.Duration); e != nil {
+	if _, e = a.db.ExecContext(r.Context(), "INSERT INTO academy_lessons(id,school_id,course_id,title,object_key,bucket,duration_seconds) VALUES(?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE id=id", id, u.School, r.PathValue("course"), in.Title, key, store.Bucket, in.Duration); e != nil {
 		problem(w, 500, "Không tạo được bài giảng")
+		return
+	}
+	var own int
+	if a.db.QueryRowContext(r.Context(), "SELECT COUNT(*) FROM academy_lessons WHERE id=? AND school_id=? AND course_id=?", id, u.School, r.PathValue("course")).Scan(&own) != nil || own != 1 {
+		problem(w, 409, "Upload ID conflict")
 		return
 	}
 	send(w, 201, map[string]any{"id": id, "url": result.URL, "content_type": in.Type})

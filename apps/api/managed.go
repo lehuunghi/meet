@@ -44,7 +44,7 @@ func managedCommand(db *sql.DB, action string) error {
 		if db.QueryRow("SELECT COUNT(*) FROM schools").Scan(&count) != nil || count != 1 {
 			return errors.New("single academy deployment required")
 		}
-		if in.Method == "POST" && (in.Path == "/api/academy/courses" || in.Path == "/api/academy/plans" || in.Path == "/api/academy/finance") {
+		if in.Method == "POST" && (in.Path == "/api/academy/courses" || in.Path == "/api/academy/plans" || in.Path == "/api/academy/finance" || regexp.MustCompile(`^/api/academy/courses/[a-zA-Z0-9-]{1,36}/lessons$`).MatchString(in.Path)) {
 			var body map[string]any
 			if json.Unmarshal(in.Body, &body) != nil {
 				return errors.New("invalid business payload")
@@ -112,13 +112,19 @@ func managedCommand(db *sql.DB, action string) error {
 	}
 	if action == "managed-config" {
 		var in struct {
-			Settings systemSettings `json:"settings"`
-			School   firstSchool    `json:"school"`
-			Domain   string         `json:"domain"`
+			Settings      systemSettings `json:"settings"`
+			School        firstSchool    `json:"school"`
+			Domain        string         `json:"domain"`
+			ControlOrigin string         `json:"control_origin"`
+			ControlID     string         `json:"control_id"`
 		}
 		if json.Unmarshal(raw, &in) != nil || !regexp.MustCompile(`^([a-z0-9][a-z0-9-]*\.)+[a-z]{2,63}$`).MatchString(in.Domain) {
 			return errors.New("invalid managed config")
 		}
+		if in.ControlOrigin != "" && (!validControlOrigin(in.ControlOrigin) || !regexp.MustCompile(`^[a-f0-9]{32}$`).MatchString(in.ControlID)) {
+			return errors.New("invalid control binding")
+		}
+		a.controlOrigin = in.ControlOrigin
 		var n int
 		var slug string
 		if db.QueryRow("SELECT COUNT(*),COALESCE(MIN(slug),'') FROM schools").Scan(&n, &slug) != nil {
@@ -137,7 +143,13 @@ func managedCommand(db *sql.DB, action string) error {
 		if _, err = db.Exec("UPDATE schools SET name=? WHERE slug=?", in.School.Name, in.School.Slug); err != nil {
 			return err
 		}
-		binding, _ := json.Marshal(map[string]string{"school": in.School.Slug, "domain": in.Domain})
+		if in.Settings.Platform == "academy" {
+			content, _ := json.Marshal(map[string]any{"headline": in.School.Name, "description": "Khóa học trực tuyến, lớp Live và bài giảng xem lại.", "published": true})
+			if _, err = db.Exec("INSERT IGNORE INTO academy_site(school_id,content) SELECT id,? FROM schools WHERE slug=?", string(content), in.School.Slug); err != nil {
+				return err
+			}
+		}
+		binding, _ := json.Marshal(map[string]string{"school": in.School.Slug, "domain": in.Domain, "control_origin": in.ControlOrigin, "control_id": in.ControlID})
 		path := configPath("managed.json")
 		temp := filepath.Join(filepath.Dir(path), ".managed-next")
 		if err = os.WriteFile(temp, binding, 0600); err != nil {

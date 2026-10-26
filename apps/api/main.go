@@ -26,11 +26,12 @@ import (
 var schema string
 
 type app struct {
-	db     *sql.DB
-	cache  *redis.Client
-	client *http.Client
-	origin string
-	secure bool
+	db            *sql.DB
+	cache         *redis.Client
+	client        *http.Client
+	origin        string
+	secure        bool
+	controlOrigin string
 }
 type identity struct {
 	Permissions []string `json:"permissions"`
@@ -159,7 +160,7 @@ func (a *app) routes() http.Handler {
 			}
 		}
 		cfg, _ := loadSettings()
-		send(w, 200, map[string]any{"managed": e == nil, "school_name": name, "platform_mode": cfg.Platform})
+		send(w, 200, map[string]any{"managed": e == nil, "school_name": name, "platform_mode": cfg.Platform, "management_url": managementURL()})
 	})
 	m.HandleFunc("POST /api/login", a.login)
 	m.HandleFunc("POST /api/login/2fa", a.loginOTP)

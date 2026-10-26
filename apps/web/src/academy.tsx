@@ -71,6 +71,13 @@ export function AcademyApp({
     [meetings, setMeetings] = useState<any[]>([]),
     [authTab, setAuthTab] = useState("login"),
     [challenge, setChallenge] = useState("");
+  const [management, setManagement] = useState("");
+  useEffect(() => {
+    if (!demo)
+      void api("/public-config")
+        .then((v) => setManagement(v.management_url || ""))
+        .catch(() => {});
+  }, []);
   const perform = async (fn: () => Promise<void>) => {
     setError("");
     setNotice("");
@@ -143,6 +150,14 @@ export function AcademyApp({
   const vip = profile.expires_at && Date.parse(profile.expires_at) > Date.now();
   if (loading)
     return <main className="academy-loading">Đang mở cổng học tập…</main>;
+  if (user?.role === "admin" && management)
+    return (
+      <main className="academy-auth">
+        <h1>Quản trị tập trung</h1>
+        <p>Nền tảng này được quản lý tại một bảng quản trị duy nhất.</p>
+        <a href={management}>Mở bảng quản trị nền tảng</a>
+      </main>
+    );
   if (room && user)
     return (
       <RoomComponent
@@ -802,6 +817,51 @@ function ProfilePanel({ demo, profile, user, perform, refresh, notice }: any) {
     <section className="academy-section">
       <h2>Hồ sơ học viên</h2>
       <p>Email: {profile.email || user.email || "—"}</p>
+      {!profile.email_verified && (
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            const code = new FormData(e.currentTarget).get("code");
+            void perform(async () => {
+              if (!demo) {
+                await api("/academy/profile/verify-email", { code });
+                await refresh();
+              }
+              notice("Đã xác thực email.");
+            });
+          }}
+        >
+          <p>Lưu hồ sơ bên dưới rồi xác thực email trước khi mua gói học.</p>
+          <button
+            type="button"
+            onClick={() =>
+              void perform(async () => {
+                if (!demo)
+                  await api("/academy/email-code", {
+                    email: profile.email || user.email,
+                  });
+                notice(
+                  demo
+                    ? "Mã xác thực minh họa."
+                    : "Đã gửi mã xác thực qua email.",
+                );
+              })
+            }
+          >
+            Gửi mã email
+          </button>
+          <label>
+            Mã xác thực
+            <input
+              name="code"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              required
+            />
+          </label>
+          <button>Xác thực email</button>
+        </form>
+      )}
       <form
         className="academy-form-grid"
         onSubmit={(e) => {

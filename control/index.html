@@ -380,6 +380,90 @@
     code {
       overflow-wrap: anywhere;
     }
+    .control-workspace {
+      display: grid;
+      grid-template-columns: 214px minmax(0, 1fr);
+      gap: 20px;
+      align-items: start;
+    }
+    .workspace-side {
+      position: sticky;
+      top: 20px;
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 16px;
+    }
+    .workspace-side strong {
+      display: block;
+      font-size: 14px;
+      overflow-wrap: anywhere;
+      margin-bottom: 6px;
+    }
+    .workspace-main {
+      min-width: 0;
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 24px;
+    }
+    #workspace #tabs {
+      display: grid;
+      max-height: calc(100dvh - 170px);
+      gap: 3px;
+      overflow: auto;
+      border: 0;
+      margin: 16px 0 0;
+      padding: 0;
+    }
+    #workspace #tabs button {
+      text-align: left;
+      white-space: normal;
+    }
+    #workspace #dialogtop {
+      position: static;
+      padding: 0 0 18px;
+      border-bottom: 1px solid #e2e8f0;
+      margin-bottom: 20px;
+    }
+    .workspace-main .intro {
+      margin-top: 0;
+    }
+    .bootstrap-banner {
+      padding: 20px;
+      background: #edf3ff;
+      border: 1px solid #d6e4ff;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+    .bootstrap-banner h3 {
+      margin: 0 0 8px;
+      color: #214d9b;
+    }
+    @media (max-width: 800px) {
+      .control-workspace {
+        display: block;
+      }
+      .workspace-side {
+        position: static;
+        margin-bottom: 16px;
+      }
+      .workspace-main {
+        padding: 16px;
+      }
+      #workspace #tabs {
+        display: flex;
+        overflow-x: auto;
+        max-height: none;
+      }
+      #workspace #tabs button {
+        white-space: nowrap;
+      }
+      .workspace-side strong {
+        display: inline;
+        margin-right: 10px;
+      }
+    }
     @media (max-width: 600px) {
       main {
         padding: 12px;
@@ -442,6 +526,7 @@
     <div id="content"></div>
   </main>
   <dialog id="modal"></dialog>
+  <script src="/workspace.js"></script>
   <script>
     const $ = (s) => document.querySelector(s),
       esc = (v) =>
@@ -462,9 +547,13 @@
       tab = "general",
       me = null,
       dirty = false,
-      jobTimer = null;
+      jobTimer = null,
+      viewMode = "";
+    function viewOpen() {
+      return !!$("#workspace") || $("#modal").open;
+    }
     $("#modal").addEventListener("close", () => clearTimeout(jobTimer));
-    $("#modal").addEventListener("input", (e) => {
+    document.addEventListener("input", (e) => {
       if (e.target.closest("#configform")) dirty = true;
     });
     function msg(s) {
@@ -508,6 +597,13 @@
       try {
         me = await api("me");
         await list();
+        const match = location.hash.match(/^#academy\/([a-f0-9]{32})$/);
+        if (match) {
+          const unit = schools.find(
+            (s) => s.id === match[1] && s.platform_mode === "academy",
+          );
+          if (unit) await edit(unit);
+        }
       } catch {
         login();
       }
@@ -635,6 +731,11 @@
         $("#actions").append(button("Quản trị trung tâm", admins));
       $("#search").oninput = renderRows;
       $("#modefilter").onchange = renderRows;
+      $("#modefilter").value = viewMode;
+      $("#modefilter").onchange = () => {
+        viewMode = $("#modefilter").value;
+        renderRows();
+      };
       $("#statefilter").onchange = renderRows;
       renderRows();
     }
@@ -660,6 +761,7 @@
     }
     async function edit(s, mode = "school") {
       dirty = false;
+      if ((s?.platform_mode || mode) === "academy") viewMode = "academy";
       selected = s;
       cfg = s
         ? (await api("schools/" + s.id + "/config")).config
@@ -679,37 +781,83 @@
     }
     function draw() {
       clearTimeout(jobTimer);
-      const d = $("#modal");
-      d.innerHTML =
-        '<div class="toolbar" id="dialogtop"><h2>' +
-        esc(
-          selected?.name ||
-            (cfg.platform_mode === "academy"
-              ? "Tạo nền tảng khóa học / VIP"
-              : "Tạo trường học nội bộ"),
-        ) +
-        '</h2></div><div class="tabs" id="tabs"></div><div id="panel"></div>';
-      $("#dialogtop").append(button("Đóng", () => d.close()));
+      const workspace = selected && cfg.platform_mode === "academy";
+      if (workspace) {
+        if ($("#modal").open) $("#modal").close();
+        $("#modal").innerHTML = "";
+        $("#content").innerHTML =
+          '<div id="workspace" class="control-workspace"><aside class="workspace-side"><strong>' +
+          esc(selected.name) +
+          "</strong><small>" +
+          esc(selected.domain) +
+          '</small><nav id="tabs"></nav></aside><div class="workspace-main"><div class="toolbar" id="dialogtop"><h2>' +
+          esc(selected.name) +
+          '</h2></div><div id="panel"></div></div></div>';
+        history.replaceState(null, "", "#academy/" + selected.id);
+      }
+      const d = workspace ? $("#workspace") : $("#modal");
+      if (!workspace)
+        d.innerHTML =
+          '<div class="toolbar" id="dialogtop"><h2>' +
+          esc(
+            selected?.name ||
+              (cfg.platform_mode === "academy"
+                ? "Tạo nền tảng khóa học / VIP"
+                : "Tạo trường học nội bộ"),
+          ) +
+          '</h2></div><div class="tabs" id="tabs"></div><div id="panel"></div>';
+      $("#dialogtop").append(
+        button(workspace ? "Danh sách nền tảng" : "Đóng", async () => {
+          if (workspace) {
+            clearTimeout(jobTimer);
+            history.replaceState(null, "", location.pathname);
+            await list();
+          } else d.close();
+        }),
+      );
       if (dirty && me.role !== "viewer")
         $("#dialogtop").append(button("Lưu thay đổi", save, "primary"));
-      for (const [id, title] of [
-        ["overview", "Tổng quan"],
-        ["general", "Thông tin"],
-        ["academy", "Nền tảng / VIP"],
-        ["business", "Quản trị kinh doanh"],
-        ["sfu", "SFU"],
-        ["r2", "R2 / Backup"],
-        ["ops", "Cài đặt / Nâng cấp"],
-        ["accounts", "Tài khoản quản trị"],
-        ["jobs", "Lịch sử"],
-        ...(selected && me.role === "owner"
-          ? [
-              ["lifecycle", "Hoạt động / Xóa"],
-              ["relocate", "Backup / Chuyển VPS"],
-              ["api", "API tích hợp"],
-            ]
-          : []),
-      ].filter(
+      const entries = workspace
+        ? [
+            ["overview", "Bảng điều khiển"],
+            ["biz_courses", "Khóa học & video"],
+            ["biz_plans", "Gói VIP"],
+            ["biz_orders", "Đơn hàng"],
+            ["biz_students", "Học viên"],
+            ["biz_teachers", "Giáo viên"],
+            ["biz_classes", "Lớp Live & phân công"],
+            ["biz_finance", "Thu chi"],
+            ["biz_site", "Website giới thiệu"],
+            ["general", "Thông tin nền tảng"],
+            ["academy", "Email & thanh toán"],
+            ["sfu", "SFU"],
+            ["r2", "R2 / Backup"],
+            ["ops", "Cài đặt / Nâng cấp"],
+            ["accounts", "Quản trị & phân quyền"],
+            ["jobs", "Lịch sử"],
+            ["lifecycle", "Hoạt động / Xóa"],
+            ["relocate", "Backup / Chuyển VPS"],
+            ["api", "API tích hợp"],
+          ]
+        : [
+            ["overview", "Tổng quan"],
+            ["general", "Thông tin"],
+            ["academy", "Nền tảng / VIP"],
+            ["business", "Quản trị kinh doanh"],
+            ["sfu", "SFU"],
+            ["r2", "R2 / Backup"],
+            ["ops", "Cài đặt / Nâng cấp"],
+            ["accounts", "Tài khoản quản trị"],
+            ["jobs", "Lịch sử"],
+            ...(selected && me.role === "owner"
+              ? [
+                  ["lifecycle", "Hoạt động / Xóa"],
+                  ["relocate", "Backup / Chuyển VPS"],
+                  ["api", "API tích hợp"],
+                ]
+              : []),
+          ];
+      for (const [id, title] of entries.filter(
         ([id]) =>
           (id !== "overview" || selected) &&
           (!["academy", "business"].includes(id) ||
@@ -726,7 +874,7 @@
             tab === id ? "active" : "",
           ),
         );
-      if (!d.open) d.showModal();
+      if (!workspace && !d.open) d.showModal();
       panel();
     }
     function collect() {
@@ -737,7 +885,7 @@
       if (tab === "general") {
         cfg.school_slug = get("slug");
         cfg.initial_admin = {
-          email: get("admin_email"),
+          email: get("admin_email").trim().toLowerCase(),
           password: get("admin_password"),
         };
         cfg._name = get("name");
@@ -799,14 +947,17 @@
       delete value._name;
       delete value._domain;
       delete value._ip;
-      const result = await api("schools/save", {
-        id: selected?.id,
-        revision: selected?.revision,
-        name: cfg._name || selected?.name,
-        domain: cfg._domain || selected?.domain,
-        ip: cfg._ip || selected?.ip,
-        config: value,
-      });
+      const result = await api(
+        cfg.platform_mode === "academy" ? "academies/save" : "schools/save",
+        {
+          id: selected?.id,
+          revision: selected?.revision,
+          name: cfg._name || selected?.name,
+          domain: cfg._domain || selected?.domain,
+          ip: cfg._ip || selected?.ip,
+          config: value,
+        },
+      );
       dirty = false;
       $("#modal").close();
       await list();
@@ -848,7 +999,7 @@
       }
       throw Error("Đang chờ agent; xem tab Tác vụ trước khi gửi lại thao tác.");
     }
-    function business() {
+    function business(preset = "") {
       const root = $("#panel");
       root.innerHTML = "";
       if (!selected || cfg.platform_mode !== "academy" || me.role !== "owner") {
@@ -858,6 +1009,10 @@
       }
       root.innerHTML =
         '<p>Dữ liệu được lấy từ VPS theo yêu cầu. Không lưu bản rõ thông tin học viên/thanh toán tại trung tâm quản trị.</p><label>Nội dung<select id="business-kind"><option value="courses">Khóa học</option><option value="plans">Gói VIP</option><option value="orders">Đơn hàng</option><option value="students">Học viên</option><option value="finance">Thu chi</option><option value="site">Website giới thiệu</option></select></label><button id="business-load">Tải dữ liệu từ VPS</button><p role="status" id="business-status"></p><div id="business-content"></div>';
+      if (preset) {
+        $("#business-kind").value = preset;
+        $("#business-kind").closest("label").style.display = "none";
+      }
       $("#business-load").onclick = async () => {
         const btn = $("#business-load"),
           target = $("#business-content"),
@@ -901,6 +1056,11 @@
           if (kind === "orders") {
             const th = document.createElement("th");
             th.textContent = "Duyệt thanh toán";
+            head.append(th);
+          }
+          if (["courses", "plans"].includes(kind)) {
+            const th = document.createElement("th");
+            th.textContent = "Thao tác";
             head.append(th);
           }
           table.append(head);
@@ -952,14 +1112,61 @@
                   );
               tr.append(td);
             }
+            if (["courses", "plans"].includes(kind)) {
+              const td = document.createElement("td");
+              td.append(
+                button("Sửa", () => {
+                  const f = $("#business-edit-form");
+                  if (!f) return;
+                  for (const el of f.elements) {
+                    if (!el.name) continue;
+                    const key =
+                      el.name === "teacher" ? "teacher_name" : el.name;
+                    if (el.type === "checkbox") el.checked = !!row[key];
+                    else el.value = row[key] ?? "";
+                  }
+                  f.scrollIntoView({ block: "nearest" });
+                }),
+              );
+              if (kind === "courses")
+                td.append(
+                  button("Video", () => centralCourseVideos(row.id, row.title)),
+                );
+              tr.append(td);
+            }
             table.append(tr);
           });
           const wrap = document.createElement("div");
           wrap.style.overflow = "auto";
           wrap.append(table);
           target.append(wrap);
+          if (kind === "students") {
+            const f = document.createElement("form");
+            f.className = "grid";
+            f.innerHTML =
+              "<h3>Tạo tài khoản học viên</h3>" +
+              input("name", "Họ tên") +
+              input("email", "Email", "", "email") +
+              input("student_code", "Mã học viên (tùy chọn)") +
+              input("password", "Mật khẩu từ 6 ký tự", "", "password") +
+              '<button class="primary">Tạo học viên</button><p>Học viên hoàn thiện hồ sơ và xác thực email tại cổng học tập.</p>';
+            f.onsubmit = async (e) => {
+              e.preventDefault();
+              try {
+                const v = Object.fromEntries(new FormData(f));
+                await academyRequest("POST", "/api/academy/control/students", {
+                  rows: [v],
+                });
+                $("#business-load").click();
+              } catch (e) {
+                msg(e.message);
+              }
+            };
+            target.append(f);
+          }
           if (["courses", "plans", "site", "finance"].includes(kind)) {
             const f = document.createElement("form");
+            f.id = "business-edit-form";
             f.className = "grid";
             if (kind === "courses")
               f.innerHTML =
@@ -1030,6 +1237,8 @@
           btn.disabled = false;
         }
       };
+      if (preset && selected.applied === selected.revision)
+        $("#business-load").click();
     }
     async function refreshUnit() {
       const sid = selected.id;
@@ -1363,8 +1572,7 @@
           api("schools/" + sid + "/readiness"),
           api("schools"),
         ]);
-        if (!$("#modal").open || tab !== "overview" || selected?.id !== sid)
-          return;
+        if (!viewOpen() || tab !== "overview" || selected?.id !== sid) return;
         const latest = units.find((s) => s.id === sid);
         if (latest) selected = { ...latest, revision: selected.revision }; // Keep the draft's optimistic-lock revision.
         const st = JSON.parse(selected.status);
@@ -1472,6 +1680,14 @@
     }
     function panel() {
       const p = $("#panel");
+      if (tab === "biz_teachers" || tab === "biz_classes") {
+        void academicPanel(tab === "biz_teachers" ? "teachers" : "classes");
+        return;
+      }
+      if (tab.startsWith("biz_")) {
+        business(tab.slice(4));
+        return;
+      }
       if (tab === "lifecycle") {
         void lifecyclePanel();
         return;
@@ -1575,7 +1791,7 @@
         f.platform_mode.disabled = true;
         if (selected) {
           const a = document.createElement("a");
-          a.textContent = "Mở quản trị khóa học/VIP";
+          a.textContent = "Mở cổng học viên / giáo viên";
           a.href = "https://" + selected.domain + "/hoc";
           a.target = "_blank";
           a.rel = "noopener";
@@ -1624,6 +1840,19 @@
       if (tab === "general") {
         for (const name of ["name", "domain", "ip"])
           f.elements.namedItem(name).required = true;
+        if (cfg.platform_mode === "academy") {
+          f.elements.namedItem("slug").closest("label").hidden = true;
+          f.insertAdjacentHTML(
+            "afterbegin",
+            '<div class="bootstrap-banner"><h3>Nền tảng khóa học / VIP mới</h3><p>Website giới thiệu, khóa học, học viên, giáo viên, gói VIP và thanh toán được quản lý tập trung tại đây. Đây là nền tảng thương mại riêng, không phải trường nội bộ.</p></div>',
+          );
+          if (!selected) {
+            f.elements.namedItem("admin_email").required = true;
+            f.elements.namedItem("admin_password").required = true;
+            f.elements.namedItem("admin_password").minLength = 12;
+            f.elements.namedItem("admin_password").maxLength = 72;
+          }
+        }
         if (selected?.seen) f.elements.namedItem("domain").readOnly = true;
       }
       if (me.role !== "viewer") {
@@ -1682,7 +1911,7 @@
         if (tab === "ops") p.textContent = e.message;
         return;
       }
-      if (tab !== "ops" || selected?.id !== sid || !$("#modal").open) return;
+      if (tab !== "ops" || selected?.id !== sid || !viewOpen()) return;
       p.innerHTML =
         "<section><h3>Cài " +
         (cfg.platform_mode === "academy"
@@ -1823,7 +2052,7 @@
       }
       const sid = selected.id;
       const rows = await api("schools/" + sid + "/jobs");
-      if (tab !== "jobs" || selected?.id !== sid || !$("#modal").open) return;
+      if (tab !== "jobs" || selected?.id !== sid || !viewOpen()) return;
       $("#panel").innerHTML =
         '<div class="table"><table><tr><th>Thời gian</th><th>Tác vụ</th><th>Trạng thái</th><th>Kết quả</th></tr>' +
         rows
@@ -1837,7 +2066,7 @@
       clearTimeout(jobTimer);
       if (rows.some((j) => ["queued", "running"].includes(j.state)))
         jobTimer = setTimeout(() => {
-          if (tab === "jobs" && selected?.id === sid && $("#modal").open)
+          if (tab === "jobs" && selected?.id === sid && viewOpen())
             void jobs().catch((e) => msg(e.message));
         }, 6000);
     }

@@ -162,8 +162,10 @@ class Handler(BaseHTTPRequestHandler):
     def do_PATCH(self):self.dispatch()
     def dispatch(self):
         try:
+            if self.path=='/workspace.js' and self.command=='GET':
+                body=Path(__file__).with_name('workspace.js').read_bytes();self.send_response(200);self.send_header('Content-Type','application/javascript; charset=utf-8');self.send_header('Cache-Control','no-store');self.end_headers();self.wfile.write(body);return
             if self.path=='/' and self.command=='GET':
-                body=Path(__file__).with_name('index.html').read_bytes();self.send_response(200);self.send_header('Content-Type','text/html; charset=utf-8');self.send_header('Cache-Control','no-store');self.send_header('Content-Security-Policy',"default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' https://*.r2.cloudflarestorage.com; frame-ancestors 'none'; base-uri 'none'");self.end_headers();self.wfile.write(body);return
+                body=Path(__file__).with_name('index.html').read_bytes();self.send_response(200);self.send_header('Content-Type','text/html; charset=utf-8');self.send_header('Cache-Control','no-store');self.send_header('Content-Security-Policy',"default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' https://*.r2.cloudflarestorage.com; connect-src 'self' https://*.r2.cloudflarestorage.com; media-src 'self' blob: https://*.r2.cloudflarestorage.com; frame-ancestors 'none'; base-uri 'none'");self.end_headers();self.wfile.write(body);return
             if self.path=='/health' and self.command=='GET':self.reply(200,{'ok':True});return
             if self.command in ('POST','PATCH'):
                 n=int(self.headers.get('Content-Length','0'))
@@ -394,9 +396,16 @@ class Handler(BaseHTTPRequestHandler):
             db.execute('INSERT INTO admins(id,email,hash,role,active) VALUES(?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET email=excluded.email,hash=excluded.hash,role=excluded.role,active=excluded.active',(id,email,password_hash(password) if password else old['hash'],role,int(data.get('active',True))))
             db.execute('DELETE FROM sessions WHERE admin=?',(id,));db.execute('DELETE FROM mfa_challenges WHERE admin=?',(id,));audit(db,actor,'admin.save',id);return {'ok':True}
         if path=='/api/schools' and self.command=='GET':return [{**{k:r[k] for k in ('id','name','domain','ip','revision','applied','seen','status','desired_state','applied_state')},'platform_mode':decrypt(r['config'],r['id']).get('platform_mode','school')} for r in db.execute('SELECT * FROM schools ORDER BY name')]
+        if path=='/api/academies/save':
+            if user['role']!='owner' or data.get('config',{}).get('platform_mode')!='academy':raise ValueError('Luồng này chỉ tạo nền tảng khóa học/VIP mới bằng quyền owner')
+            prior=db.execute('SELECT * FROM schools WHERE id=?',(str(data.get('id','')),)).fetchone()
+            if prior and decrypt(prior['config'],prior['id']).get('platform_mode','school')!='academy':raise ValueError('Không dùng bản ghi trường cũ cho nền tảng mới')
+            self.path='/api/schools/save'
+            try:return self.admin(db,user,data)
+            finally:self.path=path
         if path=='/api/schools/save':
             sid=data.get('id') or secrets.token_hex(16);domain=str(data['domain']).lower().strip();name=str(data['name']).strip();ip=str(data['ip'])
-            if not HOST.fullmatch(domain) or not 1<=len(name)<=200:raise ValueError('Tên trường/domain không hợp lệ')
+            if not HOST.fullmatch(domain) or not 1<=len(name.encode())<=200:raise ValueError('Tên đơn vị/domain không hợp lệ')
             address=ipaddress.ip_address(ip)
             if not address.is_global:raise ValueError('VPS phải có IP public')
             old=db.execute('SELECT * FROM schools WHERE id=?',(sid,)).fetchone()

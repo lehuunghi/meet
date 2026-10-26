@@ -133,6 +133,10 @@ jobs:
         env:
           APP_ORIGIN: http://localhost:8080
       - run: sudo apt-get update && sudo apt-get install -y python3-cryptography
+      - run: sudo --preserve-env=APP_ORIGIN,MEET_DISPOSABLE_BACKUP_TEST python3 deploy/academy_bootstrap_integration.py
+        env:
+          APP_ORIGIN: http://localhost:8080
+          MEET_DISPOSABLE_BACKUP_TEST: 'true'
       - run: sudo --preserve-env=APP_ORIGIN,MEET_DISPOSABLE_BACKUP_TEST python3 deploy/relocate_integration.py
         env:
           APP_ORIGIN: http://localhost:8080

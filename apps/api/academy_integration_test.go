@@ -111,6 +111,10 @@ func TestAcademyIntegration(t *testing.T) {
 	}
 	must(request("GET", "/api/meetings/ac-meeting", "", student), 402)
 	must(request("GET", "/api/academy/admin/orders", "", limited), 403)
+	must(request("GET", "/api/academy/control/people", "", limited), 403)
+	must(request("GET", "/api/academy/control/classes", "", limited), 403)
+	must(request("GET", "/api/academy/control/people", "", student), 403)
+	must(request("GET", "/api/academy/control/people", "", admin), 200)
 	must(request("POST", "/api/academy/lessons/lesson-0/play", "{}", other), 404)
 	for i := 0; i < 3; i++ {
 		must(request("POST", fmt.Sprintf("/api/academy/lessons/lesson-%d/play", i), "{}", student), 200)

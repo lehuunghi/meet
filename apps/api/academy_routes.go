@@ -8,6 +8,18 @@ import (
 type managedAcademyKey struct{}
 
 func academyManagedPath(method, path string) bool {
+	if method == "GET" && regexp.MustCompile(`^/api/academy/courses/[a-zA-Z0-9-]{1,36}/lessons$`).MatchString(path) {
+		return true
+	}
+	if method == "POST" && regexp.MustCompile(`^/api/academy/(courses/[a-zA-Z0-9-]{1,36}/lessons|lessons/[a-zA-Z0-9-]{1,36}/(finish|play))$`).MatchString(path) {
+		return true
+	}
+	if method == "GET" && regexp.MustCompile(`^/api/academy/control/(people|classes|catalog|meetings)$`).MatchString(path) {
+		return true
+	}
+	if method == "POST" && regexp.MustCompile(`^/api/academy/control/(people|classes|teachers|students|assignments|subjects/[a-zA-Z0-9-]{1,36})$`).MatchString(path) {
+		return true
+	}
 	return (method == "GET" && regexp.MustCompile(`^/api/academy/(admin/(courses|plans|orders|students)|site|finance|orders/[a-zA-Z0-9-]{1,36}/receipt)$`).MatchString(path)) || (method == "POST" && regexp.MustCompile(`^/api/academy/(site|courses|plans|finance|orders/[a-zA-Z0-9-]{1,36}/review)$`).MatchString(path))
 }
 
@@ -32,9 +44,36 @@ func (a *app) academyRoutes(m *http.ServeMux) {
 	public("POST /api/academy/email-code", a.academyEmailCode)
 	public("POST /api/academy/register", a.academyRegister)
 	public("POST /api/academy/webhooks/payos", a.academyPayOS)
+	control := func(pattern, permission string, h http.HandlerFunc) {
+		member(pattern, func(w http.ResponseWriter, r *http.Request) {
+			if a.businessAdmin(w, r, permission) {
+				h(w, r)
+			}
+		})
+	}
 	member("GET /api/academy/me", a.academyMe)
+	control("GET /api/academy/control/people", "accounts", a.accounts)
+	control("POST /api/academy/control/people", "accounts", a.accountSave)
+	control("POST /api/academy/control/teachers", "academic", a.teacherBatch)
+	control("POST /api/academy/control/students", "accounts", func(w http.ResponseWriter, r *http.Request) {
+		var in struct {
+			Rows []accountRow `json:"rows"`
+		}
+		if decode(w, r, &in) {
+			a.saveAccounts(w, r, in.Rows, "student", "")
+		}
+	})
+	control("GET /api/academy/control/catalog", "academic", a.catalog)
+	control("GET /api/academy/control/meetings", "meetings", a.meetings)
+	control("GET /api/academy/control/classes", "academic", func(w http.ResponseWriter, r *http.Request) {
+		a.query(w, r, "SELECT id,short_id,name FROM classes WHERE school_id=? ORDER BY name LIMIT 1000", who(r).School)
+	})
+	control("POST /api/academy/control/classes", "academic", a.createClass)
+	control("POST /api/academy/control/subjects/{id}", "academic", a.courseBatch)
+	control("POST /api/academy/control/assignments", "academic", a.assignTeachers)
 	member("GET /api/academy/teaching", a.academyTeaching)
 	member("POST /api/academy/profile", a.academyProfile)
+	member("POST /api/academy/profile/verify-email", a.academyVerifyEmail)
 	member("GET /api/academy/site", a.academyAdmin)
 	member("POST /api/academy/site", a.academyAdmin)
 	member("GET /api/academy/admin/{kind}", a.academyLists)

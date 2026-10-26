@@ -92,7 +92,15 @@ func (a *app) configureBucket(ctx context.Context, c r2Settings, retention ...in
 			}
 		}
 	}
-	cr = append(cr, types.CORSRule{ID: aws.String("meet-origin"), AllowedOrigins: []string{a.origin}, AllowedMethods: []string{"PUT", "GET", "HEAD"}, AllowedHeaders: []string{"Content-Type"}, ExposeHeaders: []string{"ETag"}, MaxAgeSeconds: aws.Int32(3600)})
+	origins := []string{a.origin}
+	control := a.controlOrigin
+	if control == "" {
+		control, _ = controlBinding()
+	}
+	if control != "" && control != a.origin {
+		origins = append(origins, control)
+	}
+	cr = append(cr, types.CORSRule{ID: aws.String("meet-origin"), AllowedOrigins: origins, AllowedMethods: []string{"PUT", "GET", "HEAD"}, AllowedHeaders: []string{"Content-Type"}, ExposeHeaders: []string{"ETag"}, MaxAgeSeconds: aws.Int32(3600)})
 	if _, e = client.PutBucketCors(ctx, &s3.PutBucketCorsInput{Bucket: &c.Bucket, CORSConfiguration: &types.CORSConfiguration{CORSRules: cr}}); e != nil {
 		return e
 	}
