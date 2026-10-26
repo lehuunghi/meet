@@ -292,6 +292,33 @@ func TestAcademyIntegration(t *testing.T) {
 		t.Fatal("free workspace exposed VIP actions")
 	}
 
+	// Permanent catalog deletion is tenant-scoped, confirmed and atomic with CMS.
+	exec("INSERT INTO academy_courses(id,school_id,title,description,published) VALUES('delete-qa','academy-school','Xóa thử','Nội dung',TRUE)")
+	must(request("POST", "/api/academy/courses/delete-qa/delete", `{"confirm":"Xóa thử"}`, student), 403)
+	must(request("POST", "/api/academy/courses/delete-qa/delete", `{"confirm":"Xóa thử"}`, other), 404)
+	must(request("POST", "/api/academy/courses/delete-qa/delete", `{"confirm":"sai"}`, admin), 400)
+	must(request("POST", "/api/academy/courses/ac-course/delete", `{"confirm":"Khóa Toán"}`, admin), 409)
+	var deletionSite string
+	if e = db.QueryRow("SELECT content FROM academy_site WHERE school_id='academy-school'").Scan(&deletionSite); e != nil {
+		t.Fatal(e)
+	}
+	var siteFields map[string]any
+	_ = json.Unmarshal([]byte(deletionSite), &siteFields)
+	siteFields["course_pages"] = map[string]any{"delete-qa": map[string]string{"audience": "Thử"}, "ac-course": map[string]string{"audience": "Giữ"}}
+	siteJSON, _ := json.Marshal(siteFields)
+	exec("UPDATE academy_site SET content=? WHERE school_id='academy-school'", string(siteJSON))
+	must(request("POST", "/api/academy/courses/delete-qa/delete", `{"confirm":"Xóa thử"}`, limited), 200)
+	must(request("POST", "/api/academy/courses/delete-qa/delete", `{"confirm":"Xóa thử"}`, limited), 404)
+	var deletedCount int
+	_ = db.QueryRow("SELECT COUNT(*) FROM academy_courses WHERE id='delete-qa'").Scan(&deletedCount)
+	if deletedCount != 0 {
+		t.Fatal("course deletion was not permanent")
+	}
+	_ = db.QueryRow("SELECT content FROM academy_site WHERE school_id='academy-school'").Scan(&deletionSite)
+	if strings.Contains(deletionSite, "delete-qa") || !strings.Contains(deletionSite, "ac-course") {
+		t.Fatal("course page cleanup affected other content")
+	}
+
 	bad := request("POST", "/api/academy/webhooks/payos", `{"success":true,"data":{"amount":1000},"signature":"00"}`, nil)
 	must(bad, 403)
 }

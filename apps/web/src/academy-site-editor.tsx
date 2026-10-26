@@ -391,7 +391,9 @@ export function AcademyCourseEditor({
     published: false,
   };
   const [value, setValue] = useState<any>(empty),
-    [busy, setBusy] = useState(false);
+    [busy, setBusy] = useState(false),
+    [deleteConfirm, setDeleteConfirm] = useState("");
+  const savedCourse = courses.find((c: any) => c.id === value.id);
   return (
     <section className="academy-section">
       <h2>Tạo & sửa khóa học</h2>
@@ -400,6 +402,7 @@ export function AcademyCourseEditor({
         <select
           value={value.id}
           onChange={(e) => {
+            setDeleteConfirm("");
             const c = courses.find((v: any) => v.id === e.target.value);
             setValue(
               c
@@ -484,6 +487,54 @@ export function AcademyCourseEditor({
         </label>
         <button disabled={busy}>{busy ? "Đang lưu…" : "Lưu khóa học"}</button>
       </form>
+      {savedCourse && (
+        <section aria-label="Xóa vĩnh viễn khóa học">
+          <h3>Xóa vĩnh viễn khóa học</h3>
+          <p>
+            Chỉ xóa khóa chưa có bài giảng hoặc bài tập. Trang giới thiệu khóa
+            học cũng được xóa. Lớp, môn Live và tài khoản học sinh được giữ
+            nguyên. Với khóa đã có nội dung, bỏ chọn Xuất bản để ngừng hiển thị.
+          </p>
+          <label>
+            Nhập đúng tên khóa học: {savedCourse.title}
+            <input
+              value={deleteConfirm}
+              autoComplete="off"
+              onChange={(e) => setDeleteConfirm(e.target.value)}
+            />
+          </label>
+          <button
+            type="button"
+            disabled={busy || deleteConfirm !== savedCourse.title}
+            onClick={() => {
+              if (
+                !confirm(
+                  `Xóa vĩnh viễn khóa học “${savedCourse.title}”? Thao tác này không thể hoàn tác trong danh mục.`,
+                )
+              )
+                return;
+              setBusy(true);
+              void perform(async () => {
+                if (demo) {
+                  notice("Bản demo không xóa dữ liệu thật.");
+                  return;
+                }
+                await api(`/academy/courses/${value.id}/delete`, {
+                  confirm: deleteConfirm,
+                });
+                setValue(empty);
+                setDeleteConfirm("");
+                await refresh();
+                notice(
+                  "Đã xóa vĩnh viễn khóa học và trang giới thiệu của khóa.",
+                );
+              }).finally(() => setBusy(false));
+            }}
+          >
+            Xóa vĩnh viễn khóa học
+          </button>
+        </section>
+      )}
     </section>
   );
 }
