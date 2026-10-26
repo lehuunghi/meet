@@ -26,7 +26,14 @@ jobs:
       - run: npm audit --omit=dev --audit-level=high
       - run: npm test && npm run build
       - run: npx playwright install --with-deps chromium
-      - run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - name: Ensure ffmpeg is available
+        timeout-minutes: 6
+        run: |
+          if ! command -v ffmpeg >/dev/null 2>&1; then
+            sudo apt-get -o Acquire::Retries=2 -o Acquire::http::Timeout=30 update
+            sudo apt-get -o Acquire::Retries=2 -o Acquire::http::Timeout=30 install -y --no-install-recommends ffmpeg
+          fi
+          ffmpeg -version
       - run: node --test browser-test.mjs
       - run: docker build -f apps/recorder/Dockerfile apps -t meet-recorder:ci
         working-directory: .
