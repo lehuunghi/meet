@@ -56,3 +56,11 @@ func TestAcademyWebsiteDesignAndEscaping(t *testing.T) {
 		t.Fatal("draft website exposed published content")
 	}
 }
+
+func TestSubjectArtworkDoesNotConfuseKhoaHocWithHoaHoc(t *testing.T) {
+	for title, name := range map[string]string{"Khóa Tiếng Anh": "english", "Khóa học minh họa · Khoa học": "learning", "Hóa học – Lớp 10": "chemistry", "Hoá – Lớp 11": "chemistry", "Toán 12": "math", "Ngữ văn 11": "literature", "Vật lí 10": "physics"} {
+		if got := academySubjectArt(title); got != "/images/"+name+".svg" {
+			t.Errorf("%s: %s", title, got)
+		}
+	}
+}

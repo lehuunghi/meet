@@ -329,7 +329,7 @@ func academySubjectArt(title string) string {
 		name = "math"
 	case strings.Contains(t, "vật l") || strings.Contains(t, "lý"):
 		name = "physics"
-	case strings.Contains(t, "hóa") || strings.Contains(t, "hoá"):
+	case strings.Contains(" "+t, " hóa") || strings.Contains(" "+t, " hoá"):
 		name = "chemistry"
 	case strings.Contains(t, "văn"):
 		name = "literature"
