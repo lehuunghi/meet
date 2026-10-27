@@ -319,6 +319,25 @@ func TestAcademyIntegration(t *testing.T) {
 		t.Fatal("course page cleanup affected other content")
 	}
 
+	// A published site may hold unfinished profiles without exposing them via HTML or public JSON.
+	profileSite := request("GET", "/api/academy/site", "", admin)
+	var profileRows []map[string]string
+	_ = json.Unmarshal(profileSite.Body.Bytes(), &profileRows)
+	profilePayload := `{"revision":"` + profileRows[0]["revision"] + `","content":{"published":true,"show_teachers":true,"show_testimonials":true,"teachers":[{"Name":"PRIVATE-TEACHER","Published":false}],"testimonials":[{"Name":"PRIVATE-REVIEW","Text":"DRAFT-TEXT","Audience":"parent","Published":false}]}}`
+	must(request("POST", "/api/academy/site", profilePayload, admin), 200)
+	profilePublic := request("GET", "/api/academy/public", "", nil)
+	must(profilePublic, 200)
+	if strings.Contains(profilePublic.Body.String(), "PRIVATE-") || strings.Contains(profilePublic.Body.String(), "DRAFT-TEXT") {
+		t.Fatal("public API exposed unpublished profiles")
+	}
+	profileSite = request("GET", "/api/academy/site", "", admin)
+	if !strings.Contains(profileSite.Body.String(), "PRIVATE-TEACHER") {
+		t.Fatal("admin lost editable draft")
+	}
+	_ = json.Unmarshal(profileSite.Body.Bytes(), &profileRows)
+	must(request("POST", "/api/academy/site", `{"revision":"`+profileRows[0]["revision"]+`","content":{"published":true,"testimonials":[{"Name":"","Text":"","Audience":"parent","Published":true}]}}`, admin), 400)
+	must(request("POST", "/api/academy/site", `{"revision":"`+profileRows[0]["revision"]+`","content":{"published":true,"testimonials":[{"Name":"Minh họa","Text":"Thử","Rating":6,"Published":true}]}}`, admin), 400)
+
 	bad := request("POST", "/api/academy/webhooks/payos", `{"success":true,"data":{"amount":1000},"signature":"00"}`, nil)
 	must(bad, 403)
 }

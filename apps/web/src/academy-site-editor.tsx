@@ -32,6 +32,13 @@ export function AcademySiteEditor({ demo, courses, perform, notice }: any) {
           Body: p.Body ?? p.body ?? "",
           Published: p.Published ?? p.published ?? false,
         }));
+        parsed.testimonials = (parsed.testimonials || []).map((t: any) => ({
+          Name: t.Name ?? t.name ?? "",
+          Text: t.Text ?? t.text ?? "",
+          Audience: t.Audience ?? t.audience ?? "",
+          Rating: t.Rating ?? t.rating ?? 0,
+          Published: t.Published ?? t.published ?? true,
+        }));
       }
       setValue(parsed || { headline: "", description: "", published: false });
       setRevision(rows[0]?.revision || "");
@@ -99,7 +106,8 @@ export function AcademySiteEditor({ demo, courses, perform, notice }: any) {
       <h2>Website giới thiệu</h2>
       <p>
         Nội dung công khai chỉ xuất hiện khi website được xuất bản. Các trường
-        để trống sẽ được ẩn.
+        để trống sẽ được ẩn. Có thể bật sẵn mục giáo viên và cảm nhận; từng hồ
+        sơ mới được giữ nháp đến khi anh/chị chọn công khai.
       </p>
       {error && (
         <p className="error" role="alert">
@@ -238,6 +246,16 @@ export function AcademySiteEditor({ demo, courses, perform, notice }: any) {
           <summary>Hồ sơ giáo viên</summary>
           <fieldset disabled={!loaded || saving}>
             <legend>Giáo viên giới thiệu công khai</legend>
+            <label className="academy-check">
+              <input
+                type="checkbox"
+                checked={!!value.show_teachers}
+                onChange={(e) =>
+                  setValue({ ...value, show_teachers: e.target.checked })
+                }
+              />
+              Hiện mục giáo viên tiêu biểu kể cả khi đang cập nhật
+            </label>
             {(value.teachers || []).map((t: any, i: number) => (
               <div className="academy-editor-row" key={i}>
                 {[
@@ -255,6 +273,7 @@ export function AcademySiteEditor({ demo, courses, perform, notice }: any) {
                           Name: t.Name ?? t.name ?? "",
                           Subject: t.Subject ?? t.subject ?? "",
                           Bio: t.Bio ?? t.bio ?? "",
+                          Published: t.Published ?? t.published ?? true,
                           [key]: e.target.value,
                         };
                         setValue({
@@ -267,6 +286,21 @@ export function AcademySiteEditor({ demo, courses, perform, notice }: any) {
                     />
                   </label>
                 ))}
+                <label className="academy-check">
+                  <input
+                    type="checkbox"
+                    checked={t.Published ?? t.published ?? true}
+                    onChange={(e) =>
+                      setValue({
+                        ...value,
+                        teachers: value.teachers.map((v: any, n: number) =>
+                          n === i ? { ...v, Published: e.target.checked } : v,
+                        ),
+                      })
+                    }
+                  />
+                  Công khai hồ sơ giáo viên này
+                </label>
                 <button
                   type="button"
                   className="secondary"
@@ -290,12 +324,141 @@ export function AcademySiteEditor({ demo, courses, perform, notice }: any) {
                   ...value,
                   teachers: [
                     ...(value.teachers || []),
-                    { Name: "", Subject: "", Bio: "" },
+                    { Name: "", Subject: "", Bio: "", Published: false },
                   ],
                 })
               }
             >
               Thêm hồ sơ giáo viên
+            </button>
+          </fieldset>
+        </details>
+        <details>
+          <summary>Cảm nhận học sinh & phụ huynh</summary>
+          <fieldset disabled={!loaded || saving}>
+            <legend>Chia sẻ thực tế được đồng ý công khai</legend>
+            <p>
+              Chỉ đăng lời nhận xét thật đã được đồng ý sử dụng. Có thể dùng tên
+              viết tắt; không nhập số điện thoại hoặc thông tin riêng tư của học
+              sinh.
+            </p>
+            <label className="academy-check">
+              <input
+                type="checkbox"
+                checked={!!value.show_testimonials}
+                onChange={(e) =>
+                  setValue({ ...value, show_testimonials: e.target.checked })
+                }
+              />
+              Hiện mục cảm nhận kể cả khi đang cập nhật
+            </label>
+            {(value.testimonials || []).map((t: any, i: number) => (
+              <div className="academy-editor-row" key={i}>
+                <label>
+                  Tên hiển thị
+                  <input
+                    maxLength={200}
+                    value={t.Name}
+                    onChange={(e) =>
+                      changeRow("testimonials", i, "Name", e.target.value)
+                    }
+                  />
+                </label>
+                <label>
+                  Người chia sẻ
+                  <select
+                    value={t.Audience}
+                    onChange={(e) =>
+                      changeRow("testimonials", i, "Audience", e.target.value)
+                    }
+                  >
+                    <option value="">Chưa chọn</option>
+                    <option value="student">Học sinh</option>
+                    <option value="parent">Phụ huynh</option>
+                  </select>
+                </label>
+                <label>
+                  Nội dung cảm nhận
+                  <textarea
+                    rows={4}
+                    maxLength={5000}
+                    value={t.Text}
+                    onChange={(e) =>
+                      changeRow("testimonials", i, "Text", e.target.value)
+                    }
+                  />
+                </label>
+                <label>
+                  Điểm đánh giá (không bắt buộc)
+                  <select
+                    value={t.Rating}
+                    onChange={(e) =>
+                      changeRow(
+                        "testimonials",
+                        i,
+                        "Rating",
+                        Number(e.target.value),
+                      )
+                    }
+                  >
+                    <option value={0}>Không hiển thị điểm</option>
+                    {[1, 2, 3, 4, 5].map((n) => (
+                      <option key={n} value={n}>
+                        {n} / 5
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="academy-check">
+                  <input
+                    type="checkbox"
+                    checked={t.Published}
+                    onChange={(e) =>
+                      changeRow(
+                        "testimonials",
+                        i,
+                        "Published",
+                        e.target.checked,
+                      )
+                    }
+                  />
+                  Công khai cảm nhận này — đã được người chia sẻ đồng ý
+                </label>
+                <button
+                  type="button"
+                  className="secondary"
+                  onClick={() =>
+                    setValue({
+                      ...value,
+                      testimonials: value.testimonials.filter(
+                        (_: any, n: number) => n !== i,
+                      ),
+                    })
+                  }
+                >
+                  Xóa cảm nhận
+                </button>
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={() =>
+                setValue({
+                  ...value,
+                  testimonials: [
+                    ...(value.testimonials || []),
+                    {
+                      Name: "",
+                      Text: "",
+                      Audience: "student",
+                      Rating: 0,
+                      Published: false,
+                    },
+                  ],
+                })
+              }
+            >
+              Thêm cảm nhận
             </button>
           </fieldset>
         </details>

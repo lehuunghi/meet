@@ -78,6 +78,12 @@ func (a *app) academyPublic(w http.ResponseWriter, r *http.Request) {
 		}
 		site["posts"] = visible
 	}
+	var profiles academySite
+	_ = json.Unmarshal([]byte(data), &profiles)
+	if site["published"] == true {
+		site["teachers"] = profiles.PublicTeachers()
+		site["testimonials"] = profiles.PublicTestimonials()
+	}
 	cfg, _ := loadSettings()
 	send(w, 200, map[string]any{"site": site, "free_videos": cfg.Commerce.FreeVideos, "bank_configured": cfg.Commerce.BankBIN != "" && cfg.Commerce.BankAccount != ""})
 }
@@ -146,8 +152,18 @@ func (a *app) academyAdmin(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	for _, teacher := range site.Teachers {
-		if site.Published && strings.TrimSpace(teacher.Name) == "" {
+		if site.Published && visibleProfile(teacher.Published) && strings.TrimSpace(teacher.Name) == "" {
 			problem(w, 400, "Nhập tên giáo viên giới thiệu trước khi xuất bản")
+			return
+		}
+	}
+	for _, review := range site.Testimonials {
+		if review.Rating < 0 || review.Rating > 5 || (review.Audience != "" && review.Audience != "student" && review.Audience != "parent") {
+			problem(w, 400, "Cảm nhận cần đúng đối tượng và điểm đánh giá từ 0–5")
+			return
+		}
+		if site.Published && visibleProfile(review.Published) && (strings.TrimSpace(review.Name) == "" || strings.TrimSpace(review.Text) == "") {
+			problem(w, 400, "Cảm nhận công khai cần tên hiển thị và nội dung thực tế")
 			return
 		}
 	}

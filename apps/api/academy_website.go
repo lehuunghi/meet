@@ -19,24 +19,53 @@ type academyCoursePage struct {
 	PreviewLesson string `json:"preview_lesson"`
 }
 type academySite struct {
-	About        string                                `json:"about"`
-	ContactEmail string                                `json:"contact_email"`
-	ContactPhone string                                `json:"contact_phone"`
-	Address      string                                `json:"address"`
-	Terms        string                                `json:"terms"`
-	Privacy      string                                `json:"privacy"`
-	Refund       string                                `json:"refund"`
-	CoursePages  map[string]academyCoursePage          `json:"course_pages"`
-	Headline     string                                `json:"headline"`
-	Description  string                                `json:"description"`
-	Published    bool                                  `json:"published"`
-	Teachers     []struct{ Name, Subject, Bio string } `json:"teachers"`
-	Testimonials []struct {
-		Name, Text string
-		Rating     int
-	} `json:"testimonials"`
-	Posts []academyPost `json:"posts"`
+	About            string                       `json:"about"`
+	ContactEmail     string                       `json:"contact_email"`
+	ContactPhone     string                       `json:"contact_phone"`
+	Address          string                       `json:"address"`
+	Terms            string                       `json:"terms"`
+	Privacy          string                       `json:"privacy"`
+	Refund           string                       `json:"refund"`
+	CoursePages      map[string]academyCoursePage `json:"course_pages"`
+	Headline         string                       `json:"headline"`
+	Description      string                       `json:"description"`
+	Published        bool                         `json:"published"`
+	ShowTeachers     bool                         `json:"show_teachers"`
+	ShowTestimonials bool                         `json:"show_testimonials"`
+	Teachers         []academyTeacher             `json:"teachers"`
+	Testimonials     []academyTestimonial         `json:"testimonials"`
+	Posts            []academyPost                `json:"posts"`
 }
+type academyTeacher struct {
+	Name, Subject, Bio string
+	Published          *bool
+}
+type academyTestimonial struct {
+	Name, Text, Audience string
+	Rating               int
+	Published            *bool
+}
+
+func visibleProfile(published *bool) bool { return published == nil || *published }
+func (s academySite) PublicTeachers() []academyTeacher {
+	out := []academyTeacher{}
+	for _, t := range s.Teachers {
+		if s.Published && visibleProfile(t.Published) && strings.TrimSpace(t.Name) != "" {
+			out = append(out, t)
+		}
+	}
+	return out
+}
+func (s academySite) PublicTestimonials() []academyTestimonial {
+	out := []academyTestimonial{}
+	for _, t := range s.Testimonials {
+		if s.Published && visibleProfile(t.Published) && strings.TrimSpace(t.Name) != "" && strings.TrimSpace(t.Text) != "" {
+			out = append(out, t)
+		}
+	}
+	return out
+}
+
 type academyPost struct {
 	Slug, Title, Summary, Body string
 	Published                  bool
