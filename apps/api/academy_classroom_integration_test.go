@@ -15,6 +15,12 @@ import (
 
 func exerciseAcademyClassroom(t *testing.T, a *app, db *sql.DB, request func(string, string, string, *http.Cookie) *httptest.ResponseRecorder, cookie func(string, string, string) *http.Cookie, admin, student, other *http.Cookie) {
 	t.Helper()
+	var lastRequest string
+	originalRequest := request
+	request = func(method, path, body string, c *http.Cookie) *httptest.ResponseRecorder {
+		lastRequest = method + " " + path
+		return originalRequest(method, path, body, c)
+	}
 	exec := func(q string, args ...any) {
 		t.Helper()
 		if _, e := db.Exec(q, args...); e != nil {
@@ -24,7 +30,7 @@ func exerciseAcademyClassroom(t *testing.T, a *app, db *sql.DB, request func(str
 	must := func(r *httptest.ResponseRecorder, n int) {
 		t.Helper()
 		if r.Code != n {
-			t.Fatalf("want %d got %d: %s", n, r.Code, r.Body.String())
+			t.Fatalf("%s: want %d got %d: %s", lastRequest, n, r.Code, r.Body.String())
 		}
 	}
 	getID := func(r *httptest.ResponseRecorder) string {
@@ -36,7 +42,7 @@ func exerciseAcademyClassroom(t *testing.T, a *app, db *sql.DB, request func(str
 		return data["id"].(string)
 	}
 	hash, _ := bcrypt.GenerateFromPassword([]byte("secret123"), 4)
-	exec("INSERT INTO users(id,school_id,name,email,password_hash,role) VALUES('link-buyer','academy-school','HS thử','buyer@example.test',?,'student'),('link-teacher','academy-school','GV thử','link-teacher@example.test',?,'teacher')", hash, hash)
+	exec("INSERT INTO users(id,school_id,name,email,password_hash,role,short_id) VALUES('link-buyer','academy-school','HS thử','buyer@example.test',?,'student','SV0901'),('link-teacher','academy-school','GV thử','link-teacher@example.test',?,'teacher','GV0901')", hash, hash)
 	exec("INSERT INTO academy_profiles(school_id,user_id,dob,address,school_name,phone,parent_phone,email_verified) VALUES('academy-school','link-buyer','2010-01-01','Hà Nội','Trường thử','0901234567','0912345678',TRUE)")
 	exec("INSERT INTO classes(id,school_id,name) VALUES('link-class','academy-school','Lớp QA')")
 	exec("INSERT INTO courses(id,school_id,class_id,teacher_id,name) VALUES('link-subject','academy-school','link-class','link-teacher','Môn liên kết')")
@@ -112,9 +118,9 @@ func exerciseAcademyClassroom(t *testing.T, a *app, db *sql.DB, request func(str
 	prepared := request("POST", "/api/courses/link-subject/prepare", "{}", teacher)
 	must(prepared, 200)
 	meeting := getID(prepared)
-	must(request("POST", "/api/meetings/"+meeting+"/status", `{"status":"live"}`, teacher), 200)
+	must(request("POST", "/api/meetings/"+meeting+"/state", `{"status":"live"}`, teacher), 200)
 	must(request("POST", "/api/classes/link-class/manage", `{"name":"Lớp QA đã sửa","state":"suspended","revision":1}`, admin), 409)
-	must(request("POST", "/api/meetings/"+meeting+"/status", `{"status":"ended"}`, teacher), 200)
+	must(request("POST", "/api/meetings/"+meeting+"/state", `{"status":"ended"}`, teacher), 200)
 	must(request("POST", "/api/classes/link-class/manage", `{"name":"Lớp QA đã sửa","state":"suspended","revision":1}`, admin), 200)
 	must(request("POST", "/api/courses/link-subject/prepare", "{}", teacher), 409)
 	must(request("POST", "/api/academy/courses/link-course/enroll", "{}", buyer), 409)
@@ -132,6 +138,10 @@ func exerciseAcademyClassroom(t *testing.T, a *app, db *sql.DB, request func(str
 	var revision int
 	_ = db.QueryRow("SELECT revision FROM users WHERE id='link-teacher'").Scan(&revision)
 	must(request("POST", "/api/teachers/batch", fmt.Sprintf(`{"rows":[{"id":"link-teacher","name":"GV đã sửa","email":"link-teacher@example.test","password":"","revision":%d}]}`, revision), admin), 200)
+	login := request("POST", "/api/login", `{"email":"link-teacher@example.test","password":"secret123"}`, nil)
+	must(login, 200)
+	teacher = login.Result().Cookies()[0]
+	must(request("GET", "/api/catalog", "", teacher), 200)
 	_ = db.QueryRow("SELECT revision FROM users WHERE id='link-teacher'").Scan(&revision)
 	must(request("POST", "/api/accounts", fmt.Sprintf(`{"id":"link-teacher","state":"suspended","permissions":[],"revision":%d}`, revision), admin), 200)
 	must(request("GET", "/api/catalog", "", teacher), 401)
