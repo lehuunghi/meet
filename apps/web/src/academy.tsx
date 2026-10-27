@@ -1,3 +1,4 @@
+import { StudentLiveClasses } from "./student-live-classes";
 import { subjectArt } from "./subject-art";
 import { LearningDataCleanup } from "./academy-data-cleanup";
 import { CourseClassroomLink } from "./academy-classroom-links";
@@ -1029,6 +1030,7 @@ export function AcademyApp({
             )}
           </>
         )}
+        {user.role === "student" && tab === "live" && !route.subjectId && !route.classId && <StudentLiveClasses demo={demo} onEnter={async m=>{if(!demo){setClassrooms(await api("/catalog"));setMeetings(await api("/meetings"))}await openMeeting(m)}}/>}
         {admin && tab === "reports" && (user.permissions == null || ["attendance","recordings","content"].every(p=>user.permissions.includes(p))) && <LearningDataCleanup demo={demo} />}
         {!routeBusy &&
           !routeError &&
@@ -1039,6 +1041,7 @@ export function AcademyApp({
           !routeError &&
           !route.invalid &&
           classroomsLoaded &&
+ (user.role !== "student" || tab !== "live" || route.subjectId || route.classId || demo || classrooms.length > 0) &&
           ["live", "reports"].includes(tab) && (
             <LearningWorkspace
               routed
@@ -1059,6 +1062,7 @@ export function AcademyApp({
                 ) : null;
               }}
               canTeach={staff}
+ canLive={demo || !!vip}
               canVideo={true}
               onRefresh={async () => {
                 if (demo) return;
@@ -1491,7 +1495,7 @@ function VipPanel({
             <h2>{p.name}</h2>
             <strong>{money(p.price_vnd)}</strong>
             <p>
-              {p.days} ngày · {p.live_enabled ? "Có lớp Live" : "Video xem lại"}
+              {p.days} ngày · Video & Live
             </p>
             <ul>
               <li>Xem bài giảng trong danh mục trung tâm</li>

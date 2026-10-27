@@ -1,6 +1,6 @@
 {
   "description": "Học vững kiến thức lớp 10, 11, 12 với Toán, Vật lí, Hóa học, Ngữ văn và Tiếng Anh. Một không gian để học cùng giáo viên khi có lịch Live, ôn lại bài giảng đã công bố và chủ động theo dõi tiến độ của mình.",
-  "about": "VA Academy là không gian học tập trực tuyến dành cho học sinh THPT, tập trung vào năm môn Toán, Vật lí, Hóa học, Ngữ văn và Tiếng Anh. Chúng tôi hướng tới cách học rõ mục tiêu, hiểu bản chất và có thời gian nhìn lại sau mỗi chủ đề.\n\nHọc sinh chọn đúng khối lớp, tìm môn cần học và sử dụng bài giảng đang được xuất bản để củng cố kiến thức. Với lớp trực tuyến được phân công và gói có quyền Live, việc trao đổi với giáo viên diễn ra ngay trên trình duyệt.\n\nMỗi học sinh có nhịp học riêng. Vì vậy, VA khuyến khích bắt đầu từ phần còn thiếu, ghi lại câu hỏi và duy trì lịch học vừa sức. Website đang được hoàn thiện; hồ sơ, ảnh chân dung và cảm nhận có nhãn mẫu là nội dung minh họa để đơn vị bổ sung thông tin thật.",
+  "about": "VA Academy là không gian học tập trực tuyến dành cho học sinh THPT, tập trung vào năm môn Toán, Vật lí, Hóa học, Ngữ văn và Tiếng Anh. Chúng tôi hướng tới cách học rõ mục tiêu, hiểu bản chất và có thời gian nhìn lại sau mỗi chủ đề.\n\nHọc sinh chọn đúng khối lớp, tìm môn cần học và sử dụng bài giảng đang được xuất bản để củng cố kiến thức. Với VIP còn hạn và các lớp trực tuyến đang mở, việc trao đổi với giáo viên diễn ra ngay trên trình duyệt.\n\nMỗi học sinh có nhịp học riêng. Vì vậy, VA khuyến khích bắt đầu từ phần còn thiếu, ghi lại câu hỏi và duy trì lịch học vừa sức. Website đang được hoàn thiện; hồ sơ, ảnh chân dung và cảm nhận có nhãn mẫu là nội dung minh họa để đơn vị bổ sung thông tin thật.",
   "hero_image": "/images/va-online-learning-v1.webp",
   "about_image": "/images/va-study-desk-v1.webp",
   "faqs": [
@@ -10,7 +10,7 @@
     },
     {
       "Question": "Một gói VIP dùng được cho những khóa học nào?",
-      "Answer": "VIP áp dụng chung cho toàn bộ danh mục bài giảng đã xuất bản của trung tâm trong thời hạn gói, không cần mua lại cho từng môn. Quyền học Live phụ thuộc gói đã chọn và lớp học được phân công."
+      "Answer": "VIP còn hạn áp dụng chung cho toàn bộ danh mục bài giảng đã xuất bản và cho phép tham gia các lớp Live đang mở của trung tâm. Không cần mua lại cho từng môn. Khi bấm vào học, hệ thống tự ghi danh vào lớp để theo dõi việc học."
     },
     {
       "Question": "Học thử và VIP khác nhau thế nào?",
@@ -18,7 +18,7 @@
     },
     {
       "Question": "Khi nào tôi vào được lớp Live?",
-      "Answer": "Bạn cần gói có quyền Live còn hiệu lực và được gán vào lớp tương ứng. Mở khóa học đã liên kết rồi chọn lớp trực tuyến. Khi giáo viên chuẩn bị hoặc bắt đầu buổi học, trạng thái lớp được cập nhật trong không gian học tập."
+      "Answer": "Mở Lớp học để xem tất cả buổi đang chuẩn bị và đang học. Mọi tài khoản VIP còn hạn đều có thể bấm Vào học Live khi giáo viên đã bắt đầu. Tài khoản miễn phí chỉ xem thông tin và trạng thái lớp. Không cần được phân lớp trước để nhìn thấy các lớp đang mở."
     },
     {
       "Question": "Vì sao khóa học chưa có video?",
@@ -165,7 +165,7 @@
         "audience": "Học sinh lớp 10 muốn củng cố kiến thức Toán, xây dựng cách học đều đặn và có lộ trình ôn tập rõ ràng. Có thể dùng để học lại phần còn thiếu hoặc chủ động chuẩn bị trước bài mới.",
         "objectives": "Nhận diện dạng bài và điều kiện áp dụng\nTrình bày lời giải theo từng bước rõ ràng\nTự kiểm tra kết quả và ghi lại lỗi thường gặp",
         "outline": "Tập hợp, mệnh đề và tư duy lập luận\nHàm số, đồ thị và các bài toán đại số\nVectơ và hình học tọa độ trong mặt phẳng\nThống kê, xác suất và vận dụng thực tế\nÔn tập theo chủ đề, tự kiểm tra và rút kinh nghiệm",
-        "schedule": "Lộ trình trên là gợi ý nội dung, được điều chỉnh theo kế hoạch của giáo viên. Bài giảng hiển thị khi trung tâm xuất bản. Lịch Live và nút vào lớp xuất hiện trong lớp được phân công; tham gia Live cần gói có quyền Live còn hiệu lực."
+        "schedule": "Lộ trình trên là gợi ý nội dung, được điều chỉnh theo kế hoạch của giáo viên. Bài giảng hiển thị khi trung tâm xuất bản. Mọi VIP còn hạn đều được vào các buổi đang học từ Lớp đang mở; buổi chuẩn bị cần đợi giáo viên bắt đầu. Tài khoản miễn phí vẫn xem được thông tin lớp nhưng không tham gia Live."
       }
     },
     "Toán – Lớp 11": {
@@ -174,7 +174,7 @@
         "audience": "Học sinh lớp 11 muốn củng cố kiến thức Toán, xây dựng cách học đều đặn và có lộ trình ôn tập rõ ràng. Có thể dùng để học lại phần còn thiếu hoặc chủ động chuẩn bị trước bài mới.",
         "objectives": "Nhận diện dạng bài và điều kiện áp dụng\nTrình bày lời giải theo từng bước rõ ràng\nTự kiểm tra kết quả và ghi lại lỗi thường gặp",
         "outline": "Hàm số lượng giác và phương trình lượng giác\nDãy số, cấp số cộng và cấp số nhân\nGiới hạn, tính liên tục và đạo hàm\nHình học không gian và đọc hiểu số liệu\nÔn tập theo chủ đề, tự kiểm tra và rút kinh nghiệm",
-        "schedule": "Lộ trình trên là gợi ý nội dung, được điều chỉnh theo kế hoạch của giáo viên. Bài giảng hiển thị khi trung tâm xuất bản. Lịch Live và nút vào lớp xuất hiện trong lớp được phân công; tham gia Live cần gói có quyền Live còn hiệu lực."
+        "schedule": "Lộ trình trên là gợi ý nội dung, được điều chỉnh theo kế hoạch của giáo viên. Bài giảng hiển thị khi trung tâm xuất bản. Mọi VIP còn hạn đều được vào các buổi đang học từ Lớp đang mở; buổi chuẩn bị cần đợi giáo viên bắt đầu. Tài khoản miễn phí vẫn xem được thông tin lớp nhưng không tham gia Live."
       }
     },
     "Toán – Lớp 12": {
@@ -183,7 +183,7 @@
         "audience": "Học sinh lớp 12 muốn củng cố kiến thức Toán, xây dựng cách học đều đặn và có lộ trình ôn tập rõ ràng. Có thể dùng để học lại phần còn thiếu hoặc chủ động chuẩn bị trước bài mới.",
         "objectives": "Nhận diện dạng bài và điều kiện áp dụng\nTrình bày lời giải theo từng bước rõ ràng\nTự kiểm tra kết quả và ghi lại lỗi thường gặp",
         "outline": "Khảo sát hàm số và ứng dụng đạo hàm\nNguyên hàm, tích phân và bài toán ứng dụng\nVectơ, tọa độ và hình học trong không gian\nThống kê, xác suất và luyện tập tổng hợp\nÔn tập theo chủ đề, tự kiểm tra và rút kinh nghiệm",
-        "schedule": "Lộ trình trên là gợi ý nội dung, được điều chỉnh theo kế hoạch của giáo viên. Bài giảng hiển thị khi trung tâm xuất bản. Lịch Live và nút vào lớp xuất hiện trong lớp được phân công; tham gia Live cần gói có quyền Live còn hiệu lực."
+        "schedule": "Lộ trình trên là gợi ý nội dung, được điều chỉnh theo kế hoạch của giáo viên. Bài giảng hiển thị khi trung tâm xuất bản. Mọi VIP còn hạn đều được vào các buổi đang học từ Lớp đang mở; buổi chuẩn bị cần đợi giáo viên bắt đầu. Tài khoản miễn phí vẫn xem được thông tin lớp nhưng không tham gia Live."
       }
     },
     "Vật lí – Lớp 10": {
@@ -192,7 +192,7 @@
         "audience": "Học sinh lớp 10 muốn củng cố kiến thức Vật lí, xây dựng cách học đều đặn và có lộ trình ôn tập rõ ràng. Có thể dùng để học lại phần còn thiếu hoặc chủ động chuẩn bị trước bài mới.",
         "objectives": "Tóm tắt dữ kiện, đổi đơn vị và đọc đồ thị\nChọn mô hình phù hợp cho từng tình huống\nGiải thích hiện tượng trước khi tính toán",
         "outline": "Chuyển động và mô tả bằng đồ thị\nLực, các định luật chuyển động và cân bằng\nCông, năng lượng và động lượng\nThực hành xử lí số liệu và bài toán vận dụng\nÔn tập theo chủ đề, tự kiểm tra và rút kinh nghiệm",
-        "schedule": "Lộ trình trên là gợi ý nội dung, được điều chỉnh theo kế hoạch của giáo viên. Bài giảng hiển thị khi trung tâm xuất bản. Lịch Live và nút vào lớp xuất hiện trong lớp được phân công; tham gia Live cần gói có quyền Live còn hiệu lực."
+        "schedule": "Lộ trình trên là gợi ý nội dung, được điều chỉnh theo kế hoạch của giáo viên. Bài giảng hiển thị khi trung tâm xuất bản. Mọi VIP còn hạn đều được vào các buổi đang học từ Lớp đang mở; buổi chuẩn bị cần đợi giáo viên bắt đầu. Tài khoản miễn phí vẫn xem được thông tin lớp nhưng không tham gia Live."
       }
     },
     "Vật lí – Lớp 11": {
@@ -201,7 +201,7 @@
         "audience": "Học sinh lớp 11 muốn củng cố kiến thức Vật lí, xây dựng cách học đều đặn và có lộ trình ôn tập rõ ràng. Có thể dùng để học lại phần còn thiếu hoặc chủ động chuẩn bị trước bài mới.",
         "objectives": "Tóm tắt dữ kiện, đổi đơn vị và đọc đồ thị\nChọn mô hình phù hợp cho từng tình huống\nGiải thích hiện tượng trước khi tính toán",
         "outline": "Dao động và cách đọc các đại lượng đặc trưng\nSóng và những hiện tượng thường gặp\nĐiện trường, điện thế và năng lượng điện\nDòng điện, mạch điện và bài toán tổng hợp\nÔn tập theo chủ đề, tự kiểm tra và rút kinh nghiệm",
-        "schedule": "Lộ trình trên là gợi ý nội dung, được điều chỉnh theo kế hoạch của giáo viên. Bài giảng hiển thị khi trung tâm xuất bản. Lịch Live và nút vào lớp xuất hiện trong lớp được phân công; tham gia Live cần gói có quyền Live còn hiệu lực."
+        "schedule": "Lộ trình trên là gợi ý nội dung, được điều chỉnh theo kế hoạch của giáo viên. Bài giảng hiển thị khi trung tâm xuất bản. Mọi VIP còn hạn đều được vào các buổi đang học từ Lớp đang mở; buổi chuẩn bị cần đợi giáo viên bắt đầu. Tài khoản miễn phí vẫn xem được thông tin lớp nhưng không tham gia Live."
       }
     },
     "Vật lí – Lớp 12": {
@@ -210,7 +210,7 @@
         "audience": "Học sinh lớp 12 muốn củng cố kiến thức Vật lí, xây dựng cách học đều đặn và có lộ trình ôn tập rõ ràng. Có thể dùng để học lại phần còn thiếu hoặc chủ động chuẩn bị trước bài mới.",
         "objectives": "Tóm tắt dữ kiện, đổi đơn vị và đọc đồ thị\nChọn mô hình phù hợp cho từng tình huống\nGiải thích hiện tượng trước khi tính toán",
         "outline": "Vật lí nhiệt và những quá trình biến đổi\nKhí lí tưởng và các mô hình mô tả\nTừ trường và cảm ứng điện từ\nVật lí hạt nhân và luyện tập ứng dụng\nÔn tập theo chủ đề, tự kiểm tra và rút kinh nghiệm",
-        "schedule": "Lộ trình trên là gợi ý nội dung, được điều chỉnh theo kế hoạch của giáo viên. Bài giảng hiển thị khi trung tâm xuất bản. Lịch Live và nút vào lớp xuất hiện trong lớp được phân công; tham gia Live cần gói có quyền Live còn hiệu lực."
+        "schedule": "Lộ trình trên là gợi ý nội dung, được điều chỉnh theo kế hoạch của giáo viên. Bài giảng hiển thị khi trung tâm xuất bản. Mọi VIP còn hạn đều được vào các buổi đang học từ Lớp đang mở; buổi chuẩn bị cần đợi giáo viên bắt đầu. Tài khoản miễn phí vẫn xem được thông tin lớp nhưng không tham gia Live."
       }
     },
     "Hóa học – Lớp 10": {
@@ -219,7 +219,7 @@
         "audience": "Học sinh lớp 10 muốn củng cố kiến thức Hóa học, xây dựng cách học đều đặn và có lộ trình ôn tập rõ ràng. Có thể dùng để học lại phần còn thiếu hoặc chủ động chuẩn bị trước bài mới.",
         "objectives": "Đọc và cân bằng phương trình phản ứng\nLiên hệ cấu tạo với tính chất của chất\nLập sơ đồ kiến thức và giải bài tập có kiểm tra",
         "outline": "Cấu tạo nguyên tử và bảng tuần hoàn\nLiên kết hóa học và cấu tạo chất\nPhản ứng oxi hóa – khử và năng lượng hóa học\nTốc độ phản ứng và kiến thức nhóm halogen\nÔn tập theo chủ đề, tự kiểm tra và rút kinh nghiệm",
-        "schedule": "Lộ trình trên là gợi ý nội dung, được điều chỉnh theo kế hoạch của giáo viên. Bài giảng hiển thị khi trung tâm xuất bản. Lịch Live và nút vào lớp xuất hiện trong lớp được phân công; tham gia Live cần gói có quyền Live còn hiệu lực."
+        "schedule": "Lộ trình trên là gợi ý nội dung, được điều chỉnh theo kế hoạch của giáo viên. Bài giảng hiển thị khi trung tâm xuất bản. Mọi VIP còn hạn đều được vào các buổi đang học từ Lớp đang mở; buổi chuẩn bị cần đợi giáo viên bắt đầu. Tài khoản miễn phí vẫn xem được thông tin lớp nhưng không tham gia Live."
       }
     },
     "Hóa học – Lớp 11": {
@@ -228,7 +228,7 @@
         "audience": "Học sinh lớp 11 muốn củng cố kiến thức Hóa học, xây dựng cách học đều đặn và có lộ trình ôn tập rõ ràng. Có thể dùng để học lại phần còn thiếu hoặc chủ động chuẩn bị trước bài mới.",
         "objectives": "Đọc và cân bằng phương trình phản ứng\nLiên hệ cấu tạo với tính chất của chất\nLập sơ đồ kiến thức và giải bài tập có kiểm tra",
         "outline": "Cân bằng hóa học và các yếu tố ảnh hưởng\nKiến thức trọng tâm về nitrogen, sulfur và hợp chất\nNhập môn hóa học hữu cơ và hydrocarbon\nHợp chất hữu cơ chứa oxygen và bài tập hệ thống\nÔn tập theo chủ đề, tự kiểm tra và rút kinh nghiệm",
-        "schedule": "Lộ trình trên là gợi ý nội dung, được điều chỉnh theo kế hoạch của giáo viên. Bài giảng hiển thị khi trung tâm xuất bản. Lịch Live và nút vào lớp xuất hiện trong lớp được phân công; tham gia Live cần gói có quyền Live còn hiệu lực."
+        "schedule": "Lộ trình trên là gợi ý nội dung, được điều chỉnh theo kế hoạch của giáo viên. Bài giảng hiển thị khi trung tâm xuất bản. Mọi VIP còn hạn đều được vào các buổi đang học từ Lớp đang mở; buổi chuẩn bị cần đợi giáo viên bắt đầu. Tài khoản miễn phí vẫn xem được thông tin lớp nhưng không tham gia Live."
       }
     },
     "Hóa học – Lớp 12": {
@@ -237,7 +237,7 @@
         "audience": "Học sinh lớp 12 muốn củng cố kiến thức Hóa học, xây dựng cách học đều đặn và có lộ trình ôn tập rõ ràng. Có thể dùng để học lại phần còn thiếu hoặc chủ động chuẩn bị trước bài mới.",
         "objectives": "Đọc và cân bằng phương trình phản ứng\nLiên hệ cấu tạo với tính chất của chất\nLập sơ đồ kiến thức và giải bài tập có kiểm tra",
         "outline": "Ester, lipid và carbohydrate\nHợp chất chứa nitrogen và vật liệu polymer\nĐiện hóa, kim loại và tính chất đặc trưng\nSơ đồ chuyển hóa và luyện tập tổng hợp\nÔn tập theo chủ đề, tự kiểm tra và rút kinh nghiệm",
-        "schedule": "Lộ trình trên là gợi ý nội dung, được điều chỉnh theo kế hoạch của giáo viên. Bài giảng hiển thị khi trung tâm xuất bản. Lịch Live và nút vào lớp xuất hiện trong lớp được phân công; tham gia Live cần gói có quyền Live còn hiệu lực."
+        "schedule": "Lộ trình trên là gợi ý nội dung, được điều chỉnh theo kế hoạch của giáo viên. Bài giảng hiển thị khi trung tâm xuất bản. Mọi VIP còn hạn đều được vào các buổi đang học từ Lớp đang mở; buổi chuẩn bị cần đợi giáo viên bắt đầu. Tài khoản miễn phí vẫn xem được thông tin lớp nhưng không tham gia Live."
       }
     },
     "Ngữ văn – Lớp 10": {
@@ -246,7 +246,7 @@
         "audience": "Học sinh lớp 10 muốn củng cố kiến thức Ngữ văn, xây dựng cách học đều đặn và có lộ trình ôn tập rõ ràng. Có thể dùng để học lại phần còn thiếu hoặc chủ động chuẩn bị trước bài mới.",
         "objectives": "Đọc hiểu theo thể loại và bối cảnh văn bản\nXây dựng luận điểm, dẫn chứng và lập luận\nRèn viết, nói và lắng nghe qua từng chủ đề",
         "outline": "Đọc hiểu truyện, thơ và văn bản theo thể loại\nNhận diện chi tiết, hình tượng và thông điệp\nViết đoạn văn và bài văn có bố cục rõ ràng\nLuyện nói, lắng nghe và phản hồi có căn cứ\nÔn tập theo chủ đề, tự kiểm tra và rút kinh nghiệm",
-        "schedule": "Lộ trình trên là gợi ý nội dung, được điều chỉnh theo kế hoạch của giáo viên. Bài giảng hiển thị khi trung tâm xuất bản. Lịch Live và nút vào lớp xuất hiện trong lớp được phân công; tham gia Live cần gói có quyền Live còn hiệu lực."
+        "schedule": "Lộ trình trên là gợi ý nội dung, được điều chỉnh theo kế hoạch của giáo viên. Bài giảng hiển thị khi trung tâm xuất bản. Mọi VIP còn hạn đều được vào các buổi đang học từ Lớp đang mở; buổi chuẩn bị cần đợi giáo viên bắt đầu. Tài khoản miễn phí vẫn xem được thông tin lớp nhưng không tham gia Live."
       }
     },
     "Ngữ văn – Lớp 11": {
@@ -255,7 +255,7 @@
         "audience": "Học sinh lớp 11 muốn củng cố kiến thức Ngữ văn, xây dựng cách học đều đặn và có lộ trình ôn tập rõ ràng. Có thể dùng để học lại phần còn thiếu hoặc chủ động chuẩn bị trước bài mới.",
         "objectives": "Đọc hiểu theo thể loại và bối cảnh văn bản\nXây dựng luận điểm, dẫn chứng và lập luận\nRèn viết, nói và lắng nghe qua từng chủ đề",
         "outline": "Đọc hiểu văn bản tự sự, trữ tình và kịch\nPhân tích điểm nhìn, ngôn ngữ và hình tượng\nNghị luận văn học, nghị luận xã hội và dẫn chứng\nThực hành viết, sửa bài và trình bày ý kiến\nÔn tập theo chủ đề, tự kiểm tra và rút kinh nghiệm",
-        "schedule": "Lộ trình trên là gợi ý nội dung, được điều chỉnh theo kế hoạch của giáo viên. Bài giảng hiển thị khi trung tâm xuất bản. Lịch Live và nút vào lớp xuất hiện trong lớp được phân công; tham gia Live cần gói có quyền Live còn hiệu lực."
+        "schedule": "Lộ trình trên là gợi ý nội dung, được điều chỉnh theo kế hoạch của giáo viên. Bài giảng hiển thị khi trung tâm xuất bản. Mọi VIP còn hạn đều được vào các buổi đang học từ Lớp đang mở; buổi chuẩn bị cần đợi giáo viên bắt đầu. Tài khoản miễn phí vẫn xem được thông tin lớp nhưng không tham gia Live."
       }
     },
     "Ngữ văn – Lớp 12": {
@@ -264,7 +264,7 @@
         "audience": "Học sinh lớp 12 muốn củng cố kiến thức Ngữ văn, xây dựng cách học đều đặn và có lộ trình ôn tập rõ ràng. Có thể dùng để học lại phần còn thiếu hoặc chủ động chuẩn bị trước bài mới.",
         "objectives": "Đọc hiểu theo thể loại và bối cảnh văn bản\nXây dựng luận điểm, dẫn chứng và lập luận\nRèn viết, nói và lắng nghe qua từng chủ đề",
         "outline": "Đọc hiểu và hệ thống hóa kiến thức theo thể loại\nPhân tích, so sánh và đánh giá tác phẩm\nXây dựng bài nghị luận với luận điểm rõ ràng\nLuyện đề, phân bổ thời gian và tự sửa bài\nÔn tập theo chủ đề, tự kiểm tra và rút kinh nghiệm",
-        "schedule": "Lộ trình trên là gợi ý nội dung, được điều chỉnh theo kế hoạch của giáo viên. Bài giảng hiển thị khi trung tâm xuất bản. Lịch Live và nút vào lớp xuất hiện trong lớp được phân công; tham gia Live cần gói có quyền Live còn hiệu lực."
+        "schedule": "Lộ trình trên là gợi ý nội dung, được điều chỉnh theo kế hoạch của giáo viên. Bài giảng hiển thị khi trung tâm xuất bản. Mọi VIP còn hạn đều được vào các buổi đang học từ Lớp đang mở; buổi chuẩn bị cần đợi giáo viên bắt đầu. Tài khoản miễn phí vẫn xem được thông tin lớp nhưng không tham gia Live."
       }
     },
     "Tiếng Anh – Lớp 10": {
@@ -273,7 +273,7 @@
         "audience": "Học sinh lớp 10 muốn củng cố kiến thức Tiếng Anh, xây dựng cách học đều đặn và có lộ trình ôn tập rõ ràng. Có thể dùng để học lại phần còn thiếu hoặc chủ động chuẩn bị trước bài mới.",
         "objectives": "Xây dựng vốn từ theo chủ đề và ngữ cảnh\nCủng cố ngữ pháp qua tình huống sử dụng\nRèn nghe, đọc và diễn đạt ý tưởng mạch lạc",
         "outline": "Từ vựng về bản thân, gia đình và cộng đồng\nCủng cố cấu trúc câu và các điểm ngữ pháp nền tảng\nLuyện nghe – đọc theo tình huống quen thuộc\nThực hành nói – viết và tự kiểm tra\nÔn tập theo chủ đề, tự kiểm tra và rút kinh nghiệm",
-        "schedule": "Lộ trình trên là gợi ý nội dung, được điều chỉnh theo kế hoạch của giáo viên. Bài giảng hiển thị khi trung tâm xuất bản. Lịch Live và nút vào lớp xuất hiện trong lớp được phân công; tham gia Live cần gói có quyền Live còn hiệu lực."
+        "schedule": "Lộ trình trên là gợi ý nội dung, được điều chỉnh theo kế hoạch của giáo viên. Bài giảng hiển thị khi trung tâm xuất bản. Mọi VIP còn hạn đều được vào các buổi đang học từ Lớp đang mở; buổi chuẩn bị cần đợi giáo viên bắt đầu. Tài khoản miễn phí vẫn xem được thông tin lớp nhưng không tham gia Live."
       }
     },
     "Tiếng Anh – Lớp 11": {
@@ -282,7 +282,7 @@
         "audience": "Học sinh lớp 11 muốn củng cố kiến thức Tiếng Anh, xây dựng cách học đều đặn và có lộ trình ôn tập rõ ràng. Có thể dùng để học lại phần còn thiếu hoặc chủ động chuẩn bị trước bài mới.",
         "objectives": "Xây dựng vốn từ theo chủ đề và ngữ cảnh\nCủng cố ngữ pháp qua tình huống sử dụng\nRèn nghe, đọc và diễn đạt ý tưởng mạch lạc",
         "outline": "Mở rộng từ vựng theo chủ đề đời sống và học tập\nLiên kết ý, cấu trúc câu và ngữ pháp vận dụng\nNghe – đọc tìm ý chính, chi tiết và suy luận\nNói – viết có bố cục và phản hồi để cải thiện\nÔn tập theo chủ đề, tự kiểm tra và rút kinh nghiệm",
-        "schedule": "Lộ trình trên là gợi ý nội dung, được điều chỉnh theo kế hoạch của giáo viên. Bài giảng hiển thị khi trung tâm xuất bản. Lịch Live và nút vào lớp xuất hiện trong lớp được phân công; tham gia Live cần gói có quyền Live còn hiệu lực."
+        "schedule": "Lộ trình trên là gợi ý nội dung, được điều chỉnh theo kế hoạch của giáo viên. Bài giảng hiển thị khi trung tâm xuất bản. Mọi VIP còn hạn đều được vào các buổi đang học từ Lớp đang mở; buổi chuẩn bị cần đợi giáo viên bắt đầu. Tài khoản miễn phí vẫn xem được thông tin lớp nhưng không tham gia Live."
       }
     },
     "Tiếng Anh – Lớp 12": {
@@ -291,7 +291,7 @@
         "audience": "Học sinh lớp 12 muốn củng cố kiến thức Tiếng Anh, xây dựng cách học đều đặn và có lộ trình ôn tập rõ ràng. Có thể dùng để học lại phần còn thiếu hoặc chủ động chuẩn bị trước bài mới.",
         "objectives": "Xây dựng vốn từ theo chủ đề và ngữ cảnh\nCủng cố ngữ pháp qua tình huống sử dụng\nRèn nghe, đọc và diễn đạt ý tưởng mạch lạc",
         "outline": "Hệ thống từ vựng và ngữ pháp trọng tâm\nĐọc hiểu, liên kết thông tin và chiến lược làm bài\nNghe – nói – viết trong bối cảnh học tập và nghề nghiệp\nLuyện tập tổng hợp, quản lí thời gian và sửa lỗi\nÔn tập theo chủ đề, tự kiểm tra và rút kinh nghiệm",
-        "schedule": "Lộ trình trên là gợi ý nội dung, được điều chỉnh theo kế hoạch của giáo viên. Bài giảng hiển thị khi trung tâm xuất bản. Lịch Live và nút vào lớp xuất hiện trong lớp được phân công; tham gia Live cần gói có quyền Live còn hiệu lực."
+        "schedule": "Lộ trình trên là gợi ý nội dung, được điều chỉnh theo kế hoạch của giáo viên. Bài giảng hiển thị khi trung tâm xuất bản. Mọi VIP còn hạn đều được vào các buổi đang học từ Lớp đang mở; buổi chuẩn bị cần đợi giáo viên bắt đầu. Tài khoản miễn phí vẫn xem được thông tin lớp nhưng không tham gia Live."
       }
     }
   }

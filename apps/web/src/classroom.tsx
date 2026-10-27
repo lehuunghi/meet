@@ -37,6 +37,7 @@ type Props = {
   busy: string;
   error: string;
   canTeach: boolean;
+ canLive?: boolean;
   onPrepare: (c: Subject) => void;
   onOpen: (m: any) => void;
   renderLessons: (c: Subject) => ReactNode;
@@ -332,14 +333,14 @@ export function ClassroomCourses(p: Props) {
                     {p.role === "student" ? (
                       <button
                         disabled={
-                          !live ||
+                          p.canLive === false || !live ||
                           (!!c.class_state && c.class_state !== "active")
                         }
                         onClick={() => p.onOpen(m)}
                       >
                         {c.class_state && c.class_state !== "active"
                           ? "Lớp đang ngưng"
-                          : live
+                          : p.canLive === false ? "Cần VIP còn hạn" : live
                             ? "Vào lớp học"
                             : "Đang chờ"}
                       </button>
@@ -503,13 +504,13 @@ export function ClassroomCourses(p: Props) {
                   {p.role === "student" ? (
                     <button
                       disabled={
-                        active(current)?.status !== "live" ||
+                        p.canLive === false || active(current)?.status !== "live" ||
                         (!!current.class_state &&
                           current.class_state !== "active")
                       }
                       onClick={() => p.onOpen(active(current))}
                     >
-                      {active(current)?.status === "live"
+                      {p.canLive === false ? "Cần VIP còn hạn" : active(current)?.status === "live"
                         ? "Vào lớp học"
                         : "Đang chờ"}
                     </button>

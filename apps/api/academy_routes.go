@@ -58,6 +58,8 @@ func (a *app) academyRoutes(m *http.ServeMux) {
 		})
 	}
 	member("GET /api/academy/me", a.academyMe)
+	member("GET /api/academy/live-classes", a.academyLiveClasses)
+	member("POST /api/academy/live-classes/{meeting}/enter", a.academyEnterLiveClass)
 	member("GET /api/academy/mail-status", a.academyMailStatus)
 	member("POST /api/academy/mail-status", a.academyMailStatus)
 	member("GET /api/academy/workspace", a.academyWorkspace)

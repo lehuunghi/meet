@@ -101,7 +101,7 @@ func (a *app) academyPlans(w http.ResponseWriter, r *http.Request) {
 		problem(w, 404, "Chưa có trung tâm")
 		return
 	}
-	a.query(w, r, "SELECT id,name,price_vnd,days,live_enabled FROM academy_plans WHERE school_id=? AND active=TRUE ORDER BY price_vnd", school)
+	a.query(w, r, "SELECT id,name,price_vnd,days,TRUE AS live_enabled FROM academy_plans WHERE school_id=? AND active=TRUE ORDER BY price_vnd", school)
 }
 func (a *app) academyAdmin(w http.ResponseWriter, r *http.Request) {
 	if !a.businessAdmin(w, r, "content") {
@@ -272,16 +272,19 @@ func (a *app) academyTeaching(w http.ResponseWriter, r *http.Request) {
 }
 func (a *app) academyMe(w http.ResponseWriter, r *http.Request) {
 	u := who(r)
-	a.query(w, r, "SELECT u.id,u.name,u.email,p.dob,p.address,p.school_name,p.phone,p.parent_phone,p.avatar_key,p.marketing_consent,p.email_verified,(COALESCE(p.avatar_key,'')<>'' OR EXISTS(SELECT 1 FROM academy_registration_avatars av WHERE av.school_id=u.school_id AND av.user_id=u.id)) AS registration_avatar,m.expires_at,CASE WHEN lm.expires_at>UTC_TIMESTAMP(6) THEN lm.expires_at ELSE NULL END AS live_expires_at,(m.expires_at>UTC_TIMESTAMP(6) AND COALESCE(lm.expires_at,IF(m.live_enabled,m.expires_at,NULL))>UTC_TIMESTAMP(6)) AS live_enabled FROM users u LEFT JOIN academy_profiles p ON p.school_id=u.school_id AND p.user_id=u.id LEFT JOIN academy_memberships m ON m.school_id=u.school_id AND m.user_id=u.id LEFT JOIN academy_live_memberships lm ON lm.school_id=u.school_id AND lm.user_id=u.id WHERE u.school_id=? AND u.id=?", u.School, u.ID)
+	a.query(w, r, "SELECT u.id,u.name,u.email,p.dob,p.address,p.school_name,p.phone,p.parent_phone,p.avatar_key,p.marketing_consent,p.email_verified,(COALESCE(p.avatar_key,'')<>'' OR EXISTS(SELECT 1 FROM academy_registration_avatars av WHERE av.school_id=u.school_id AND av.user_id=u.id)) AS registration_avatar,m.expires_at,CASE WHEN m.expires_at>UTC_TIMESTAMP(6) THEN m.expires_at ELSE NULL END AS live_expires_at,(m.expires_at>UTC_TIMESTAMP(6)) AS live_enabled FROM users u LEFT JOIN academy_profiles p ON p.school_id=u.school_id AND p.user_id=u.id LEFT JOIN academy_memberships m ON m.school_id=u.school_id AND m.user_id=u.id LEFT JOIN academy_live_memberships lm ON lm.school_id=u.school_id AND lm.user_id=u.id WHERE u.school_id=? AND u.id=?", u.School, u.ID)
 }
-func (a *app) hasVIP(ctx context.Context, school, user string, live bool) bool {
+
+// VIP now includes all published videos and Live for its full membership term.
+// The legacy Live ledger is retained for financial history, not access decisions.
+func (a *app) hasVIP(ctx context.Context, school, user string, _ bool) bool {
 	var n int
-	e := a.db.QueryRowContext(ctx, "SELECT COUNT(*) FROM academy_memberships m LEFT JOIN academy_live_memberships lm ON lm.school_id=m.school_id AND lm.user_id=m.user_id WHERE m.school_id=? AND m.user_id=? AND m.expires_at>UTC_TIMESTAMP(6) AND (?=FALSE OR COALESCE(lm.expires_at,IF(m.live_enabled,m.expires_at,NULL))>UTC_TIMESTAMP(6))", school, user, live).Scan(&n)
+	e := a.db.QueryRowContext(ctx, "SELECT COUNT(*) FROM academy_memberships WHERE school_id=? AND user_id=? AND expires_at>UTC_TIMESTAMP(6)", school, user).Scan(&n)
 	return e == nil && n == 1
 }
 func (a *app) academyLiveGate(w http.ResponseWriter, r *http.Request) bool {
 	if academyEnabled() && who(r).Role == "student" && !a.hasVIP(r.Context(), who(r).School, who(r).ID, true) {
-		problem(w, 402, "Gói hiện tại chưa có quyền học Live")
+		problem(w, 402, "Cần VIP còn hạn để tham gia Live")
 		return false
 	}
 	return true

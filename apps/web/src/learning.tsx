@@ -40,6 +40,7 @@ export function LearningWorkspace({
   onRefresh,
   canTeach = true,
   canVideo = true,
+ canLive = true,
   renderClasswork,
   routed = false,
 }: {
@@ -53,6 +54,7 @@ export function LearningWorkspace({
   onRefresh: () => Promise<void>;
   canTeach?: boolean;
   canVideo?: boolean;
+ canLive?: boolean;
   renderClasswork?: (id: string) => ReactNode;
   routed?: boolean;
 }) {
@@ -155,6 +157,7 @@ export function LearningWorkspace({
         busy={busy}
         error={error}
         canTeach={canTeach}
+ canLive={canLive}
         onPrepare={(c) => void prepare(c)}
         onOpen={onOpen}
         renderClasswork={renderClasswork}
@@ -167,6 +170,7 @@ export function LearningWorkspace({
             reports={false}
             routed={routed}
             canVideo={canVideo}
+ canLive={canLive}
             samples={meetings.filter((m) => m.course_id === c.id)}
             onOpen={onOpen}
           />
@@ -403,6 +407,7 @@ function CourseLessons({
   reports,
   routed = false,
   canVideo,
+ canLive = true,
   samples,
   onOpen,
 }: {
@@ -412,6 +417,7 @@ function CourseLessons({
   reports: boolean;
   routed?: boolean;
   canVideo: boolean;
+ canLive?: boolean;
   samples: Lesson[];
   onOpen: (m: any) => void;
 }) {
@@ -514,7 +520,7 @@ function CourseLessons({
                     Xem thống kê buổi
                   </button>
                   {!reports && m.status === "live" && (
-                    <button onClick={() => onOpen(m)}>Vào lớp học</button>
+                    <button disabled={role === "student" && !canLive} onClick={() => onOpen(m)}>{role === "student" && !canLive ? "Cần VIP còn hạn" : "Vào lớp học"}</button>
                   )}
                 </td>
                 <td>

@@ -62,7 +62,7 @@ func (a *app) academySitePreview(w http.ResponseWriter, r *http.Request) {
 		problem(w, 503, "Chưa đọc xong khóa học")
 		return
 	}
-	prices, e := a.db.QueryContext(r.Context(), "SELECT id,name,price_vnd,days,live_enabled FROM academy_plans WHERE school_id=? AND active=TRUE ORDER BY price_vnd LIMIT 12", u.School)
+	prices, e := a.db.QueryContext(r.Context(), "SELECT id,name,price_vnd,days,TRUE AS live_enabled FROM academy_plans WHERE school_id=? AND active=TRUE ORDER BY price_vnd LIMIT 12", u.School)
 	if e != nil {
 		problem(w, 503, "Chưa tải được gói học")
 		return

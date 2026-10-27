@@ -86,7 +86,7 @@ export function CourseClassroomLink({
                 ? "Lớp đang tạm ngưng"
                 : role === "student"
                   ? !info.can_live
-                    ? "Gói hiện tại chưa có Live"
+                    ? "Cần VIP còn hạn"
                     : info.enrolled
                       ? "Mở lớp trực tuyến"
                       : "Đăng ký & mở lớp Live"
@@ -94,8 +94,7 @@ export function CourseClassroomLink({
           </button>
           {role === "student" && !info.can_live && (
             <small>
-              Video bài giảng vẫn xem theo quyền của gói VIP. Chọn gói có Live
-              để vào lớp trực tuyến.
+              VIP còn hạn mở quyền xem bài giảng và tham gia lớp Live.
             </small>
           )}
         </>

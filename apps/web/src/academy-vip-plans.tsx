@@ -50,7 +50,7 @@ export function AcademyVIPPlans({ demo = false }: { demo?: boolean }) {
       name: v.name,
       price_vnd: Number(v.price_vnd),
       days: Number(v.days),
-      live_enabled: !!v.live_enabled,
+      live_enabled: true,
       active: !!v.active,
       revision: v.revision || 0,
     });
@@ -74,7 +74,7 @@ export function AcademyVIPPlans({ demo = false }: { demo?: boolean }) {
             price_vnd: 299000,
             days: 30,
             active: true,
-            live_enabled: false,
+            live_enabled: true,
           })
         }
       >
@@ -96,7 +96,7 @@ export function AcademyVIPPlans({ demo = false }: { demo?: boolean }) {
                 <td>
                   {p.name}
                   <small>
-                    {p.live_enabled ? "Có học Live" : "Video xem lại"}
+                    Video & Live
                   </small>
                 </td>
                 <td>
@@ -190,12 +190,9 @@ export function AcademyVIPPlans({ demo = false }: { demo?: boolean }) {
             <label>
               <input
                 type="checkbox"
-                checked={!!edit.live_enabled}
-                onChange={(e) =>
-                  setEdit({ ...edit, live_enabled: e.target.checked })
-                }
+                checked={true} disabled readOnly
               />
-              Có quyền học Live
+              Mọi gói VIP còn hạn đều có quyền Live
             </label>
             <label>
               <input

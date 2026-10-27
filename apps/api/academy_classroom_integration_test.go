@@ -75,7 +75,7 @@ func exerciseAcademyClassroom(t *testing.T, a *app, db *sql.DB, request func(str
 	}
 	must(request("POST", "/api/academy/lessons/lesson-4/play", "{}", buyer), 402)
 	approve(pending)
-	if !a.hasVIP(context.Background(), "academy-school", "link-buyer", false) || a.hasVIP(context.Background(), "academy-school", "link-buyer", true) {
+	if !a.hasVIP(context.Background(), "academy-school", "link-buyer", false) || !a.hasVIP(context.Background(), "academy-school", "link-buyer", true) {
 		t.Fatal("video purchase entitlement incorrect")
 	}
 	for _, id := range []string{"lesson-4", "lesson-5", "lesson-6", "link-video"} {
@@ -85,7 +85,7 @@ func exerciseAcademyClassroom(t *testing.T, a *app, db *sql.DB, request func(str
 	exec("UPDATE academy_courses SET published=FALSE WHERE id='link-course'")
 	must(request("POST", "/api/academy/lessons/link-video/play", "{}", buyer), 404)
 	exec("UPDATE academy_courses SET published=TRUE WHERE id='link-course'")
-	must(request("POST", "/api/academy/courses/link-course/enroll", "{}", buyer), 402)
+	must(request("POST", "/api/academy/courses/link-course/enroll", "{}", buyer), 200)
 	liveOrder := purchase(livePlanID)
 	approve(liveOrder)
 	if !a.hasVIP(context.Background(), "academy-school", "link-buyer", true) {
