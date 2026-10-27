@@ -49,6 +49,23 @@ func exerciseAcademyManagement(t *testing.T, a *app, db *sql.DB, request func(st
 	}
 	must(request("POST", "/api/academy/admin/ui-texts", `{"texts":{"NOT-A-UI-KEY":"bad"},"revision":1}`, admin), 400)
 	must(request("POST", "/api/academy/admin/ui-texts", `{"texts":{},"revision":1}`, admin), 200)
+	// Many distinct students behind the same reverse proxy must not share an eight-attempt limit.
+	scope := "rate-test-" + uid()
+	sameProxy := httptest.NewRequest("POST", "/api/academy/register", nil)
+	for i := 0; i < 8; i++ {
+		if !a.verificationRate(sameProxy, scope, "one@example.test") {
+			t.Fatal("premature email rate limit")
+		}
+	}
+	if a.verificationRate(sameProxy, scope, "ONE@example.test") {
+		t.Fatal("email rate limit bypass")
+	}
+	if !a.verificationRate(sameProxy, scope, "two@example.test") {
+		t.Fatal("reverse proxy peer blocked another student")
+	}
+	t.Cleanup(func() {
+		a.cache.Del(context.Background(), "academy-registration-email:"+digest(scope+":one@example.test"), "academy-registration-email:"+digest(scope+":two@example.test"), "academy-registration-tenant:"+digest(scope))
+	})
 	// Existing orders retain price/rights after the plan is edited, suspended and removed.
 	must(request("POST", "/api/academy/plans", `{"id":"ac-plan","name":"VIP đã sửa","price_vnd":200000,"days":60,"live_enabled":false,"active":false,"revision":0}`, admin), 200)
 	must(request("POST", "/api/academy/plans", `{"id":"ac-plan","name":"Sai","price_vnd":300000,"days":30,"active":true,"revision":0}`, admin), 409)

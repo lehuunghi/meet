@@ -11,7 +11,6 @@ import (
 	"image"
 	_ "image/jpeg"
 	_ "image/png"
-	"net"
 	"net/http"
 	"net/mail"
 	"os"
@@ -19,10 +18,10 @@ import (
 	"time"
 )
 
-func (a *app) verificationRate(r *http.Request, school string) bool {
-	ip, _, _ := net.SplitHostPort(r.RemoteAddr)
-	n, e := a.cache.Eval(r.Context(), `local n=redis.call('INCR',KEYS[1]);if n==1 then redis.call('EXPIRE',KEYS[1],900) end;return n`, []string{"academy-registration:" + digest(school+ip)}).Int()
-	return e == nil && n <= 8
+// Reverse proxies share a backend peer address; rate-limit the email and tenant instead.
+func (a *app) verificationRate(r *http.Request, school, email string) bool {
+	n, e := a.cache.Eval(r.Context(), `local n=redis.call('INCR',KEYS[1]);if n==1 then redis.call('EXPIRE',KEYS[1],900) end;local g=redis.call('INCR',KEYS[2]);if g==1 then redis.call('EXPIRE',KEYS[2],900) end;if g>1000 then return -1 end;return n`, []string{"academy-registration-email:" + digest(school+":"+normalizeEmail(email)), "academy-registration-tenant:" + digest(school)}).Int()
+	return e == nil && n > 0 && n <= 8
 }
 func verificationToken() (string, string, error) {
 	token := uid() + uid()
@@ -77,7 +76,7 @@ func (a *app) academyRegister(w http.ResponseWriter, r *http.Request) {
 		problem(w, 404, "Chưa có trung tâm")
 		return
 	}
-	if !a.verificationRate(r, school) {
+	if !a.verificationRate(r, school, in.Email) {
 		problem(w, 429, "Đăng ký quá nhiều lần; thử lại sau 15 phút")
 		return
 	}
@@ -186,7 +185,7 @@ func (a *app) academyResendVerification(w http.ResponseWriter, r *http.Request) 
 		problem(w, 404, "Chưa có trung tâm")
 		return
 	}
-	if !a.verificationRate(r, school) {
+	if !a.verificationRate(r, school, in.Email) {
 		problem(w, 429, "Thử lại sau 15 phút")
 		return
 	}

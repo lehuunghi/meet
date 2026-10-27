@@ -1,6 +1,6 @@
 # Ngôn ngữ, gói VIP, tài khoản và đăng ký thành viên
 
-Phiên bản 0.15.0, schema 11. Các mục này quản lý trên website VA, không nằm trong trung tâm hạ tầng.
+Phiên bản 0.15.1, schema 11. Các mục này quản lý trên website VA, không nằm trong trung tâm hạ tầng.
 
 ## Ngôn ngữ & câu chữ
 
@@ -45,3 +45,5 @@ Trong **Cài đặt → Email & thanh toán**, nhập SMTP dùng STARTTLS (thư�
 Mục **Email xác thực thành viên** cho biết đã có cấu hình SMTP hay chưa, số thư đang chờ và cần thử lại. Khi SMTP tạm lỗi, tài khoản và hồ sơ đã tạo không mất; hệ thống tự thử lại sau 5 phút. Sau khi sửa cấu hình có thể bấm **Thử gửi lại email đang chờ**. Khi liên kết hết hạn hoặc chưa nhận thư, người dùng nhập email trên trang đăng nhập và bấm **Gửi lại liên kết xác thực email**; phản hồi không tiết lộ tài khoản có tồn tại hay không.
 
 Phần **Tài khoản của bạn / Hồ sơ học viên** chỉ hiển thị trạng thái email, không còn nút gửi mã và form nhập mã. 2FA đăng nhập vẫn là cơ chế riêng, chỉ hỏi sau khi mật khẩu đúng.
+
+Giới hạn chống gửi lặp được tính theo email và đơn vị, không gộp tất cả học sinh vào địa chỉ của reverse proxy. Mỗi email tối đa 8 yêu cầu/15 phút; mỗi đơn vị tối đa 1.000 yêu cầu/15 phút.
