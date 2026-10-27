@@ -2179,3 +2179,13 @@
 
 .student-live-directory .section-title{align-items:flex-start}.student-live-directory .section-title p{max-width:65ch;font-size:13px;line-height:1.6}.student-live-filters{display:grid;grid-template-columns:minmax(0,1fr) 190px;gap:14px;margin:18px 0}.student-live-filters label{display:grid;gap:6px;font-size:12px;color:#5d6a80}.student-live-filters input,.student-live-filters select{width:100%;min-width:0;box-sizing:border-box}.student-live-row{display:grid;grid-template-columns:minmax(0,1fr) 110px 185px;gap:16px;align-items:center;padding:16px 0;border-top:1px solid #e8edf3}.student-live-row strong{font-size:14px}.student-live-row p{margin:5px 0;font-size:13px}.student-live-row small{font-size:12px;color:#69768a}.student-live-row button{width:100%;font-size:12px;min-height:40px}.live-state{font-size:11px;color:#84651b;background:#fff4d9;border-radius:20px;padding:6px 9px;text-align:center}.live-state.is-live{background:#e4f5ec;color:#18794e}
 @media(max-width:650px){.student-live-filters{grid-template-columns:1fr;gap:10px}.student-live-row{grid-template-columns:minmax(0,1fr) auto;gap:12px}.student-live-row>button{grid-column:1/-1}.student-live-directory .section-title{flex-wrap:wrap;gap:8px}.student-live-row small{display:block;line-height:1.6}.student-live-row strong{font-size:13px}}
+
+.vip-mobile-hint{display:none}
+@media(max-width:800px){
+ .academy-vip-offers{display:grid;grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:calc((100% - 12px)/1.5);gap:12px;min-width:0;width:100%;max-width:100%;overflow-x:auto;scroll-snap-type:x proximity;overscroll-behavior-inline:contain;scrollbar-width:thin;padding:4px 0 14px}
+ .academy-vip-offers:has(> :only-child){grid-auto-columns:100%}
+ .academy-vip-offers>.academy-plan{min-width:0;padding:18px;scroll-snap-align:start;overflow-wrap:anywhere}
+ .academy-vip-offers .academy-plan>strong{font-size:clamp(23px,6.5vw,30px)}
+ .academy-vip-offers:focus-visible{outline:2px solid #3562dc;outline-offset:4px}
+ .vip-mobile-hint:has(+ .academy-vip-offers > article:nth-of-type(2)){display:block;text-align:right;font-size:11px;color:#6b7890;margin:0 0 10px}
+}

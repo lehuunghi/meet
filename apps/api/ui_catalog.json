@@ -1860,6 +1860,10 @@
     "area": "Không gian học tập"
   },
   {
+    "key": "Các gói VIP",
+    "area": "Không gian học tập"
+  },
+  {
     "key": "Cài đặt",
     "area": "Không gian học tập"
   },
@@ -3069,6 +3073,10 @@
   },
   {
     "key": "Vui lòng điền đầy đủ và kiểm tra các ô được đánh dấu.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Vuốt ngang để xem thêm →",
     "area": "Không gian học tập"
   },
   {
@@ -7720,6 +7728,10 @@
     "area": "Website công khai"
   },
   {
+    "key": "Các gói học",
+    "area": "Website công khai"
+  },
+  {
     "key": "Các gói học và quyền lợi sẽ được trung tâm công bố tại đây.",
     "area": "Website công khai"
   },
@@ -7729,6 +7741,10 @@
   },
   {
     "key": "Cảm nhận của học sinh & phụ huynh",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Cảm nhận học sinh và phụ huynh",
     "area": "Website công khai"
   },
   {
@@ -8137,6 +8153,10 @@
   },
   {
     "key": "Tìm hiểu người phụ trách môn học và cách đồng hành cùng học sinh.",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Tin tức và bài viết",
     "area": "Website công khai"
   },
   {

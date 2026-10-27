@@ -1482,7 +1482,8 @@ function VipPanel({
   ]);
   return (
     <>
-      <div className="academy-course-grid">
+      <p className="vip-mobile-hint">Vuốt ngang để xem thêm →</p>
+      <div className="academy-course-grid academy-vip-offers" role="region" aria-label="Các gói VIP" tabIndex={0}>
         {plans.map((p: any) => (
           <article
             className={

@@ -2022,3 +2022,25 @@ svg {
 .about-editorial{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center}.about-editorial h2{font-size:clamp(28px,3.5vw,42px);line-height:1.2;letter-spacing:-1px}.about-editorial h2 span{color:#71809c}.about-editorial p.plain-content{line-height:1.8;color:#56647a;font-size:15px}.about-editorial figure{margin:0}.about-editorial img{width:100%;height:auto;aspect-ratio:4/3;object-fit:cover;border-radius:20px}.about-editorial figcaption{font-size:11px;color:#7d8999;margin-top:8px}
 .teacher-photo{width:100%;height:auto;aspect-ratio:3/2;object-fit:cover;border-radius:12px;margin-bottom:14px}.sample-content-label{display:inline-block;font-size:10px;letter-spacing:.02em;line-height:1.5;padding:5px 8px;border-radius:6px;background:#fff4df;color:#8e641f;margin-bottom:12px}.review-avatar{display:block;width:64px;height:64px;border-radius:50%;object-fit:cover;margin:4px 0 12px}.post-cover-link{display:block;margin-bottom:16px}.post-cover{width:100%;height:auto;aspect-ratio:16/10;object-fit:cover;border-radius:10px}.article-cover{display:block;width:100%;height:auto;max-height:500px;object-fit:cover;border-radius:18px;margin:24px 0 32px}
 @media(max-width:700px){.hero .product-photo{display:block;margin-top:28px;transform:none}.hero-photo{border-radius:14px}.about-editorial{grid-template-columns:1fr;gap:24px}.about-editorial figure{grid-row:1}.about-editorial p.plain-content{font-size:14px}.about-editorial img{aspect-ratio:3/2}.teacher-photo{max-height:260px}.article-cover{border-radius:10px}.quote-card .sample-content-label{font-size:10px}}
+
+/* Mobile card strips: one full card plus half of the next, without page overflow. */
+.mobile-card-hint{display:none}
+@media(max-width:800px){
+ .cards:is(.pricing-grid,.teacher-grid,.testimonial-grid,.posts-grid){
+  display:grid;grid-template-columns:none;grid-auto-flow:column;
+  grid-auto-columns:calc((100% - 12px)/1.5);gap:12px;
+  width:100%;min-width:0;max-width:100%;overflow-x:auto;
+  padding:4px 0 14px;scroll-snap-type:x proximity;
+  overscroll-behavior-inline:contain;scrollbar-width:thin;
+  align-items:stretch;
+ }
+ .cards:is(.pricing-grid,.teacher-grid,.testimonial-grid,.posts-grid):has(> :only-child){grid-auto-columns:100%}
+ .cards:is(.pricing-grid,.teacher-grid,.testimonial-grid,.posts-grid)>article{min-width:0;scroll-snap-align:start;overflow-wrap:anywhere;padding:20px}
+ .cards:is(.pricing-grid,.teacher-grid,.testimonial-grid,.posts-grid):focus-visible{outline:2px solid #3562dc;outline-offset:4px}
+ .pricing-grid .price{font-size:clamp(24px,7vw,32px);letter-spacing:-1px}
+ .pricing-grid .price-card h3{font-size:20px}
+ .pricing-grid .price-card .button{width:100%;min-width:0;padding-inline:10px;box-sizing:border-box;font-size:12px}
+ .teacher-grid .teacher-photo{border-radius:9px}
+ .teacher-grid .teacher-card h3{font-size:17px}
+ .mobile-card-hint:has(+ .cards > article:nth-of-type(2)){display:block;text-align:right;font-size:11px;color:#6b7890;margin:0 0 10px}
+}
