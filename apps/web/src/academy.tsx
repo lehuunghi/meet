@@ -1,4 +1,4 @@
-import { useUITexts } from "./ui-language";
+import { useUITexts } from "./ui-language-hook";
 import { AcademyVIPPlans } from "./academy-vip-plans";
 import { registrationAvatarData } from "./registration-avatar";
 import { vnDate, vnDateTime, vnDateCell } from "./date-format";

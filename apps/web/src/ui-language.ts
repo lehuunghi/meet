@@ -1,4 +1,3 @@
-import { useEffect, useReducer } from "react";
 let dictionary: Record<string, string> = {};
 let patterns: Array<{ source: string; target: string; regexp?: RegExp }> = [];
 export function uiText<T>(value: T): T {
@@ -48,22 +47,4 @@ export function applyUITexts(next: Record<string, string>) {
         : {}),
     }));
   window.dispatchEvent(new Event("meet-ui-texts-changed"));
-}
-export function useUITexts() {
-  const [, redraw] = useReducer((n) => n + 1, 0);
-  useEffect(() => {
-    const change = () => redraw();
-    window.addEventListener("meet-ui-texts-changed", change);
-    let active = true;
-    void fetch("/api/academy/ui-texts", { credentials: "same-origin" })
-      .then((r) => (r.ok ? r.json() : {}))
-      .then((v: any) => {
-        if (active && v.texts && !Array.isArray(v.texts)) applyUITexts(v.texts);
-      })
-      .catch(() => {});
-    return () => {
-      active = false;
-      window.removeEventListener("meet-ui-texts-changed", change);
-    };
-  }, []);
 }

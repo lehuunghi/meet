@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"image"
 	"image/png"
 	"net/http"
@@ -135,7 +136,11 @@ func exerciseAcademyManagement(t *testing.T, a *app, db *sql.DB, request func(st
 	must(request("POST", "/api/accounts/"+id+"/delete", `{"confirm":"new@example.test","revision":0}`, other), 404)
 	must(request("POST", "/api/accounts/"+id+"/delete", `{"confirm":"wrong@example.test","revision":0}`, admin), 409)
 	oldSession := cookie(id, "academy-school", "student")
-	must(request("POST", "/api/accounts/"+id+"/delete", `{"confirm":"new@example.test","revision":0}`, admin), 200)
+	var accountRevision int
+	if err := db.QueryRow("SELECT revision FROM users WHERE id=?", id).Scan(&accountRevision); err != nil {
+		t.Fatal(err)
+	}
+	must(request("POST", "/api/accounts/"+id+"/delete", fmt.Sprintf(`{"confirm":"new@example.test","revision":%d}`, accountRevision), admin), 200)
 	must(request("GET", "/api/me", "", oldSession), 401)
 	accounts := request("GET", "/api/accounts", "", admin)
 	if strings.Contains(accounts.Body.String(), id) || strings.Contains(accounts.Body.String(), "new@example.test") {

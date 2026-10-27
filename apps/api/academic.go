@@ -293,7 +293,7 @@ func (a *app) courseBatch(w http.ResponseWriter, r *http.Request) {
 		} else {
 			var id string
 			var rev int
-			e = tx.QueryRowContext(r.Context(), "SELECT id,revision FROM courses WHERE school_id=? AND class_id=? AND (id=? OR short_id=?) AND NOT EXISTS(SELECT 1 FROM account_deletions d WHERE d.user_id=users.id AND d.school_id=users.school_id) FOR UPDATE", school, class, v.ID, v.ID).Scan(&id, &rev)
+			e = tx.QueryRowContext(r.Context(), "SELECT id,revision FROM courses WHERE school_id=? AND class_id=? AND (id=? OR short_id=?) FOR UPDATE", school, class, v.ID, v.ID).Scan(&id, &rev)
 			if e == nil && rev != v.Revision {
 				problem(w, 409, "Môn đã được sửa; tải lại trước khi lưu")
 				return
@@ -344,7 +344,7 @@ func (a *app) assignTeachers(w http.ResponseWriter, r *http.Request) {
 	for _, v := range in.Rows {
 		var course string
 		var rev int
-		e = tx.QueryRowContext(r.Context(), "SELECT id,revision FROM courses WHERE school_id=? AND (id=? OR short_id=?) AND NOT EXISTS(SELECT 1 FROM account_deletions d WHERE d.user_id=users.id AND d.school_id=users.school_id) FOR UPDATE", school, v.Course, v.Course).Scan(&course, &rev)
+		e = tx.QueryRowContext(r.Context(), "SELECT id,revision FROM courses WHERE school_id=? AND (id=? OR short_id=?) FOR UPDATE", school, v.Course, v.Course).Scan(&course, &rev)
 		if e != nil {
 			problem(w, 404, "Không tìm thấy môn")
 			return
