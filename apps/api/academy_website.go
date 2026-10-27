@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -59,7 +60,7 @@ func visibleProfile(published *bool) bool { return published == nil || *publishe
 func (s academySite) PublicTeachers() []academyTeacher {
 	out := []academyTeacher{}
 	for _, t := range s.Teachers {
-		if s.Published && visibleProfile(t.Published) && strings.TrimSpace(t.Name) != "" {
+		if s.Published && !t.Sample && visibleProfile(t.Published) && strings.TrimSpace(t.Name) != "" {
 			out = append(out, t)
 		}
 	}
@@ -68,7 +69,7 @@ func (s academySite) PublicTeachers() []academyTeacher {
 func (s academySite) PublicTestimonials() []academyTestimonial {
 	out := []academyTestimonial{}
 	for _, t := range s.Testimonials {
-		if s.Published && visibleProfile(t.Published) && strings.TrimSpace(t.Name) != "" && strings.TrimSpace(t.Text) != "" {
+		if s.Published && !t.Sample && visibleProfile(t.Published) && strings.TrimSpace(t.Name) != "" && strings.TrimSpace(t.Text) != "" {
 			out = append(out, t)
 		}
 	}
@@ -113,6 +114,13 @@ func (t localizedWebsite) Execute(w io.Writer, data any) error {
 		}
 		return s
 	}})
+	if d, ok := data.(map[string]any); ok {
+		if _, exists := d["News"]; !exists {
+			if site, ok := d["Site"].(academySite); ok {
+				d["News"] = websiteNews(site.Posts, 1)
+			}
+		}
+	}
 	return c.Execute(w, data)
 }
 
@@ -261,9 +269,27 @@ func (a *app) academyWebsite(w http.ResponseWriter, r *http.Request) {
 			hasPosts = true
 		}
 	}
+	news := websiteNews(site.Posts, 1)
+	if post == nil && course == nil && policy == nil {
+		if raw := r.URL.Query().Get("tin"); raw != "" {
+			page, err := strconv.Atoi(raw)
+			if err != nil || page < 1 {
+				problem(w, 400, "Trang tin tức không hợp lệ")
+				return
+			}
+			if page > news.Pages {
+				http.NotFound(w, r)
+				return
+			}
+			news = websiteNews(site.Posts, page)
+			if page > 1 {
+				canonical = a.origin + "/?tin=" + strconv.Itoa(page)
+			}
+		}
+	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.Header().Set("Cache-Control", "public, max-age=60")
-	_ = academyWeb.Execute(w, map[string]any{"UITexts": a.uiTexts(r.Context(), school), "Site": site, "Courses": courses, "Plans": plans, "Free": free, "Canonical": canonical, "Post": post, "Course": course, "Policy": policy, "HasPosts": hasPosts})
+	_ = academyWeb.Execute(w, map[string]any{"UITexts": a.uiTexts(r.Context(), school), "Site": site, "Courses": courses, "Plans": plans, "Free": free, "Canonical": canonical, "Post": post, "Course": course, "Policy": policy, "HasPosts": hasPosts, "News": news, "LogoURL": a.websiteLogoURL(r.Context(), school)})
 }
 func (a *app) academySitemap(w http.ResponseWriter, r *http.Request) {
 	if !academyEnabled() {

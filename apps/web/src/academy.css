@@ -2189,3 +2189,5 @@
  .academy-vip-offers:focus-visible{outline:2px solid #3562dc;outline-offset:4px}
  .vip-mobile-hint:has(+ .academy-vip-offers > article:nth-of-type(2)){display:block;text-align:right;font-size:11px;color:#6b7890;margin:0 0 10px}
 }
+
+.website-logo-editor{padding:18px;border:1px solid #e0e6ef;border-radius:12px;background:#fff;margin-bottom:18px}.website-logo-editor p{font-size:13px;line-height:1.6;color:#617086}.website-logo-preview{padding:20px;margin:16px 0;border:1px dashed #ced7e4;border-radius:10px;background:#f7f9fc}.website-logo-preview img{display:block;max-width:100%;max-height:100px;object-fit:contain}.website-logo-editor label{display:grid;gap:8px}.website-logo-editor input{max-width:100%;min-width:0}.website-logo-editor .academy-actions{margin-top:16px;flex-wrap:wrap}

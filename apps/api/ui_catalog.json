@@ -640,6 +640,10 @@
     "area": "Giao diện chung"
   },
   {
+    "key": "Chọn ảnh PNG/JPG tối đa 512 KB",
+    "area": "Giao diện chung"
+  },
+  {
     "key": "Chọn biểu cảm",
     "area": "Giao diện chung"
   },
@@ -649,6 +653,10 @@
   },
   {
     "key": "Chọn lớp trước",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Chọn tệp logo",
     "area": "Giao diện chung"
   },
   {
@@ -733,6 +741,10 @@
   },
   {
     "key": "Đã cập nhật bản mẫu trong phiên này, không lưu máy chủ",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Đã cập nhật logo cho website.",
     "area": "Giao diện chung"
   },
   {
@@ -825,6 +837,10 @@
   },
   {
     "key": "Đã xóa giáo viên và gỡ phân công.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Đã xóa logo. Website sử dụng biểu tượng mặc định.",
     "area": "Giao diện chung"
   },
   {
@@ -1076,6 +1092,10 @@
     "area": "Giao diện chung"
   },
   {
+    "key": "Không đọc được ảnh",
+    "area": "Giao diện chung"
+  },
+  {
     "key": "Không lấy được đường truyền media. Kiểm tra mạng và cấu hình TURN của trường.",
     "area": "Giao diện chung"
   },
@@ -1136,6 +1156,10 @@
     "area": "Giao diện chung"
   },
   {
+    "key": "Logo website",
+    "area": "Giao diện chung"
+  },
+  {
     "key": "Lớp",
     "area": "Giao diện chung"
   },
@@ -1177,6 +1201,10 @@
   },
   {
     "key": "Lưu hoặc bỏ thay đổi trước khi đổi lớp.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Lưu logo",
     "area": "Giao diện chung"
   },
   {
@@ -1384,6 +1412,10 @@
     "area": "Giao diện chung"
   },
   {
+    "key": "PNG/JPG tối đa 512 KB, kích thước tối đa 2048 × 2048. Logo riêng được hiển thị ở đầu và cuối các trang công khai.",
+    "area": "Giao diện chung"
+  },
+  {
     "key": "Quản lý học vụ",
     "area": "Giao diện chung"
   },
@@ -1461,6 +1493,10 @@
   },
   {
     "key": "Tải lại / bỏ thay đổi",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Tải lại logo",
     "area": "Giao diện chung"
   },
   {
@@ -1673,6 +1709,10 @@
   },
   {
     "key": "Xóa giáo viên sẽ thu hồi đăng nhập và gỡ phân công, giữ lịch sử. Nhập đúng email: ",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Xóa logo",
     "area": "Giao diện chung"
   },
   {
@@ -4288,6 +4328,10 @@
     "area": "Quản trị website"
   },
   {
+    "key": "Chỉ công khai lời nhận xét thật đã được đồng ý sử dụng. Có thể dùng tên viết tắt; không nhập số điện thoại hoặc thông tin riêng tư của học sinh.",
+    "area": "Quản trị website"
+  },
+  {
     "key": "Chỉ video / chưa liên kết lớp Live",
     "area": "Quản trị website"
   },
@@ -4337,10 +4381,6 @@
   },
   {
     "key": "Công khai hồ sơ giáo viên này",
-    "area": "Quản trị website"
-  },
-  {
-    "key": "Công khai nội dung mẫu — có nhãn minh họa",
     "area": "Quản trị website"
   },
   {
@@ -4396,11 +4436,15 @@
     "area": "Quản trị website"
   },
   {
-    "key": "Dùng ảnh công khai HTTPS hoặc đường dẫn /images/. Có thể thay ảnh mẫu bằng ảnh thật của đơn vị.",
+    "key": "Dùng ảnh công khai HTTPS hoặc đường dẫn /images/.",
     "area": "Quản trị website"
   },
   {
     "key": "Đường dẫn ngắn (chữ thường, số, dấu gạch ngang)",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Duyệt nội dung thử nghiệm",
     "area": "Quản trị website"
   },
   {
@@ -4437,10 +4481,6 @@
   },
   {
     "key": "Hồ sơ giáo viên",
-    "area": "Quản trị website"
-  },
-  {
-    "key": "Hồ sơ mẫu / ảnh AI minh họa",
     "area": "Quản trị website"
   },
   {
@@ -4548,11 +4588,7 @@
     "area": "Quản trị website"
   },
   {
-    "key": "Nội dung mẫu / ảnh AI minh họa",
-    "area": "Quản trị website"
-  },
-  {
-    "key": "Nội dung mẫu phải giữ nhãn minh họa. Với đánh giá thật, chỉ đăng lời nhận xét đã được đồng ý sử dụng. Có thể dùng tên viết tắt; không nhập số điện thoại hoặc thông tin riêng tư của học sinh.",
+    "key": "Nội dung thử nghiệm — không công khai",
     "area": "Quản trị website"
   },
   {
@@ -4637,6 +4673,10 @@
   },
   {
     "key": "Thông tin hỗ trợ",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Thông tin thử nghiệm — không công khai",
     "area": "Quản trị website"
   },
   {
@@ -5368,6 +5408,10 @@
     "area": "Thông báo hệ thống"
   },
   {
+    "key": "Chưa hoàn tất lưu logo",
+    "area": "Thông báo hệ thống"
+  },
+  {
     "key": "Chưa hoàn tất sắp xếp",
     "area": "Thông báo hệ thống"
   },
@@ -5445,6 +5489,10 @@
   },
   {
     "key": "Chưa lưu được hồ sơ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa lưu được logo",
     "area": "Thông báo hệ thống"
   },
   {
@@ -5545,6 +5593,10 @@
   },
   {
     "key": "Chưa tải được lịch học",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa tải được logo",
     "area": "Thông báo hệ thống"
   },
   {
@@ -6248,6 +6300,10 @@
     "area": "Thông báo hệ thống"
   },
   {
+    "key": "Không đọc được ảnh logo",
+    "area": "Thông báo hệ thống"
+  },
+  {
     "key": "Không đọc được các phần đã tải",
     "area": "Thông báo hệ thống"
   },
@@ -6556,6 +6612,10 @@
     "area": "Thông báo hệ thống"
   },
   {
+    "key": "Không thấy đơn vị",
+    "area": "Thông báo hệ thống"
+  },
+  {
     "key": "Không thấy khóa học",
     "area": "Thông báo hệ thống"
   },
@@ -6793,6 +6853,18 @@
   },
   {
     "key": "Loại nền tảng không hợp lệ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Logo đã thay đổi. Tải lại trước khi lưu",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Logo phải là PNG/JPG hợp lệ, tối đa 2048 × 2048",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Logo PNG/JPG tối đa 512 KB",
     "area": "Thông báo hệ thống"
   },
   {
@@ -7360,6 +7432,10 @@
     "area": "Thông báo hệ thống"
   },
   {
+    "key": "Trang tin tức không hợp lệ",
+    "area": "Thông báo hệ thống"
+  },
+  {
     "key": "Trợ giảng không hợp lệ, trùng hoặc trùng giáo viên chính",
     "area": "Thông báo hệ thống"
   },
@@ -7664,14 +7740,6 @@
     "area": "Website công khai"
   },
   {
-    "key": "Ảnh AI minh họa",
-    "area": "Website công khai"
-  },
-  {
-    "key": "Ảnh AI minh họa không gian học tập",
-    "area": "Website công khai"
-  },
-  {
     "key": "Bài giảng xem lại",
     "area": "Website công khai"
   },
@@ -7761,10 +7829,6 @@
   },
   {
     "key": "Chi tiết →",
-    "area": "Website công khai"
-  },
-  {
-    "key": "Chia sẻ mẫu · Chờ nội dung thật",
     "area": "Website công khai"
   },
   {
@@ -7872,7 +7936,7 @@
     "area": "Website công khai"
   },
   {
-    "key": "Góc nhìn của học sinh và phụ huynh. Nội dung minh họa được gắn nhãn mẫu.",
+    "key": "Góc nhìn của học sinh và phụ huynh về hành trình học tập.",
     "area": "Website công khai"
   },
   {
@@ -7901,10 +7965,6 @@
   },
   {
     "key": "Hồ sơ giáo viên đang được cập nhật",
-    "area": "Website công khai"
-  },
-  {
-    "key": "Hồ sơ mẫu · Ảnh minh họa",
     "area": "Website công khai"
   },
   {
@@ -8036,10 +8096,6 @@
     "area": "Website công khai"
   },
   {
-    "key": "Minh họa giao diện · Nội dung theo khóa học đã đăng ký",
-    "area": "Website công khai"
-  },
-  {
     "key": "Minh họa học trực tuyến cùng giáo viên",
     "area": "Website công khai"
   },
@@ -8085,6 +8141,10 @@
   },
   {
     "key": "Nhìn rõ từng bước tiến",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Phân trang tin tức",
     "area": "Website công khai"
   },
   {

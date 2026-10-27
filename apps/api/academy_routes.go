@@ -41,6 +41,9 @@ func (a *app) academyRoutes(m *http.ServeMux) {
 		}))
 	}
 	public("GET /api/academy/public", a.academyPublic)
+	public("GET /api/academy/logo", a.academyLogo)
+	member("GET /api/academy/site/logo", a.academyLogoManage)
+	member("POST /api/academy/site/logo", a.academyLogoManage)
 	public("GET /api/academy/ui-texts", a.academyUITextPublic)
 	member("GET /api/academy/admin/ui-texts", a.academyUITextAdmin)
 	member("POST /api/academy/admin/ui-texts", a.academyUITextAdmin)

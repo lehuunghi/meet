@@ -1,6 +1,6 @@
 {
   "description": "Học vững kiến thức lớp 10, 11, 12 với Toán, Vật lí, Hóa học, Ngữ văn và Tiếng Anh. Một không gian để học cùng giáo viên khi có lịch Live, ôn lại bài giảng đã công bố và chủ động theo dõi tiến độ của mình.",
-  "about": "VA Academy là không gian học tập trực tuyến dành cho học sinh THPT, tập trung vào năm môn Toán, Vật lí, Hóa học, Ngữ văn và Tiếng Anh. Chúng tôi hướng tới cách học rõ mục tiêu, hiểu bản chất và có thời gian nhìn lại sau mỗi chủ đề.\n\nHọc sinh chọn đúng khối lớp, tìm môn cần học và sử dụng bài giảng đang được xuất bản để củng cố kiến thức. Với VIP còn hạn và các lớp trực tuyến đang mở, việc trao đổi với giáo viên diễn ra ngay trên trình duyệt.\n\nMỗi học sinh có nhịp học riêng. Vì vậy, VA khuyến khích bắt đầu từ phần còn thiếu, ghi lại câu hỏi và duy trì lịch học vừa sức. Website đang được hoàn thiện; hồ sơ, ảnh chân dung và cảm nhận có nhãn mẫu là nội dung minh họa để đơn vị bổ sung thông tin thật.",
+  "about": "VA Academy là không gian học tập trực tuyến dành cho học sinh THPT, tập trung vào năm môn Toán, Vật lí, Hóa học, Ngữ văn và Tiếng Anh. Chúng tôi hướng tới cách học rõ mục tiêu, hiểu bản chất và có thời gian nhìn lại sau mỗi chủ đề.\n\nHọc sinh chọn đúng khối lớp, tìm môn cần học và sử dụng bài giảng đang được xuất bản để củng cố kiến thức. Với VIP còn hạn và các lớp trực tuyến đang mở, việc trao đổi với giáo viên diễn ra ngay trên trình duyệt.\n\nMỗi học sinh có nhịp học riêng. Vì vậy, VA khuyến khích bắt đầu từ phần còn thiếu, ghi lại câu hỏi và duy trì lịch học vừa sức.",
   "hero_image": "/images/va-online-learning-v1.webp",
   "about_image": "/images/va-study-desk-v1.webp",
   "faqs": [
@@ -44,7 +44,7 @@
       "Bio": "Hiểu bản chất, trình bày mạch lạc và luyện cách giải thay vì chỉ ghi nhớ công thức. Nội dung giới thiệu mẫu; tên, chuyên môn và kinh nghiệm thực tế sẽ được đơn vị cập nhật.",
       "Image": "/images/teacher-math-v1.webp",
       "Sample": true,
-      "Published": true
+      "Published": false
     },
     {
       "Name": "Giáo viên Vật lí",
@@ -52,7 +52,7 @@
       "Bio": "Kết nối hiện tượng với mô hình, hiểu đại lượng và biết kiểm tra ý nghĩa của đáp số. Nội dung giới thiệu mẫu; tên, chuyên môn và kinh nghiệm thực tế sẽ được đơn vị cập nhật.",
       "Image": "/images/teacher-physics-v1.webp",
       "Sample": true,
-      "Published": true
+      "Published": false
     },
     {
       "Name": "Giáo viên Hóa học",
@@ -60,7 +60,7 @@
       "Bio": "Sắp xếp kiến thức thành hệ thống, hiểu mối liên hệ giữa cấu tạo, tính chất và phản ứng. Nội dung giới thiệu mẫu; tên, chuyên môn và kinh nghiệm thực tế sẽ được đơn vị cập nhật.",
       "Image": "/images/teacher-chemistry-v1.webp",
       "Sample": true,
-      "Published": true
+      "Published": false
     },
     {
       "Name": "Giáo viên Ngữ văn",
@@ -68,7 +68,7 @@
       "Bio": "Đọc sâu văn bản, tìm dẫn chứng phù hợp và xây dựng bài viết có quan điểm riêng, có căn cứ. Nội dung giới thiệu mẫu; tên, chuyên môn và kinh nghiệm thực tế sẽ được đơn vị cập nhật.",
       "Image": "/images/teacher-literature-v1.webp",
       "Sample": true,
-      "Published": true
+      "Published": false
     },
     {
       "Name": "Giáo viên Tiếng Anh",
@@ -76,7 +76,7 @@
       "Bio": "Phối hợp nghe, nói, đọc, viết; học từ vựng trong ngữ cảnh và duy trì luyện tập đều đặn. Nội dung giới thiệu mẫu; tên, chuyên môn và kinh nghiệm thực tế sẽ được đơn vị cập nhật.",
       "Image": "/images/teacher-english-v1.webp",
       "Sample": true,
-      "Published": true
+      "Published": false
     }
   ],
   "testimonials": [
@@ -87,7 +87,7 @@
       "Image": "/images/review-student-female-v1.webp",
       "Rating": 0,
       "Sample": true,
-      "Published": true
+      "Published": false
     },
     {
       "Name": "Học sinh lớp 12 — mẫu",
@@ -96,7 +96,7 @@
       "Image": "/images/review-student-male-v1.webp",
       "Rating": 0,
       "Sample": true,
-      "Published": true
+      "Published": false
     },
     {
       "Name": "Phụ huynh — mẫu",
@@ -105,7 +105,7 @@
       "Image": "/images/review-parent-v1.webp",
       "Rating": 0,
       "Sample": true,
-      "Published": true
+      "Published": false
     }
   ],
   "posts": [

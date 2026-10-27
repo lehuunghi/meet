@@ -1,3 +1,4 @@
+import { WebsiteLogo } from "./website-logo";
 import { UILanguageEditor } from "./ui-language-editor";
 import { useEffect, useState, useRef } from "react";
 import { api } from "./api";
@@ -10,6 +11,7 @@ import {
 const cmsSections = [
   ["tong-quan", "Tổng quan"],
   ["trang-chu", "Trang chủ & giới thiệu"],
+ ["logo", "Logo website"],
   ["khoa-hoc", "Trang khóa học"],
   ["giao-vien", "Giáo viên"],
   ["cam-nhan", "Cảm nhận"],
@@ -216,6 +218,7 @@ export function AcademySiteEditor({ demo, courses, perform, notice }: any) {
           ))}
         </nav>
         <div className="academy-cms-main">
+ {visible("logo") && <WebsiteLogo demo={demo}/>}
           <label className="academy-cms-mobile-menu">
             Chuyên mục quản trị
             <select
@@ -310,6 +313,7 @@ export function AcademySiteEditor({ demo, courses, perform, notice }: any) {
             </button>
             <form
               ref={formRef}
+ hidden={section === "logo"}
               onSubmit={(e) => {
                 e.preventDefault();
                 if (!loaded || saving) return;
@@ -388,7 +392,7 @@ export function AcademySiteEditor({ demo, courses, perform, notice }: any) {
                 {field("about", "Giới thiệu đơn vị", true)}
  {field("hero_image", "Ảnh banner trang chủ (URL)")}
  {field("about_image", "Ảnh giới thiệu (URL)")}
- <small>Dùng ảnh công khai HTTPS hoặc đường dẫn /images/. Có thể thay ảnh mẫu bằng ảnh thật của đơn vị.</small>
+ <small>Dùng ảnh công khai HTTPS hoặc đường dẫn /images/.</small>
                 <label className="academy-check">
                   <input
                     type="checkbox"
@@ -597,7 +601,7 @@ export function AcademySiteEditor({ demo, courses, perform, notice }: any) {
                         />
                         Công khai hồ sơ giáo viên này
                       </label>
-                      <label className="academy-check"><input type="checkbox" checked={!!(t.Sample??t.sample)} onChange={e=>changeRow("teachers",i,"Sample",e.target.checked)}/>Hồ sơ mẫu / ảnh AI minh họa</label>
+                      <label className="academy-check"><input type="checkbox" checked={!!(t.Sample??t.sample)} onChange={e=>changeRow("teachers",i,"Sample",e.target.checked)}/>Thông tin thử nghiệm — không công khai</label>
                       <button
                         type="button"
                         className="secondary"
@@ -638,7 +642,7 @@ export function AcademySiteEditor({ demo, courses, perform, notice }: any) {
                 <fieldset disabled={!loaded || saving}>
                   <legend>Chia sẻ thực tế được đồng ý công khai</legend>
                   <p>
-                    Nội dung mẫu phải giữ nhãn minh họa. Với đánh giá thật, chỉ đăng lời nhận xét đã được đồng ý sử dụng. Có thể
+                    Chỉ công khai lời nhận xét thật đã được đồng ý sử dụng. Có thể
                     dùng tên viết tắt; không nhập số điện thoại hoặc thông tin
                     riêng tư của học sinh.
                   </p>
@@ -658,7 +662,7 @@ export function AcademySiteEditor({ demo, courses, perform, notice }: any) {
                   {(value.testimonials || []).map((t: any, i: number) => (
                     <div className="academy-editor-row" key={i}>
                       <label>Ảnh người chia sẻ (URL)<input value={t.Image||""} onChange={e=>changeRow("testimonials",i,"Image",e.target.value)}/></label>
-                      <label className="academy-check"><input type="checkbox" checked={!!t.Sample} onChange={e=>changeRow("testimonials",i,"Sample",e.target.checked)}/>Nội dung mẫu / ảnh AI minh họa</label>
+                      <label className="academy-check"><input type="checkbox" checked={!!t.Sample} onChange={e=>changeRow("testimonials",i,"Sample",e.target.checked)}/>Nội dung thử nghiệm — không công khai</label>
                       <label>
                         Tên hiển thị
                         <input
@@ -732,7 +736,7 @@ export function AcademySiteEditor({ demo, courses, perform, notice }: any) {
                             )
                           }
                         />
-                        {t.Sample ? "Công khai nội dung mẫu — có nhãn minh họa" : "Công khai cảm nhận này — đã được người chia sẻ đồng ý"}
+                        {t.Sample ? "Duyệt nội dung thử nghiệm" : "Công khai cảm nhận này — đã được người chia sẻ đồng ý"}
                       </label>
                       <button
                         type="button"

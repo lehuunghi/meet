@@ -17,9 +17,9 @@ func TestAcademyProfileDraftsAndEmptySections(t *testing.T) {
 	if e := academyWeb.Execute(&html, data); e != nil {
 		t.Fatal(e)
 	}
-	for _, text := range []string{`id="giao-vien"`, `id="cam-nhan"`, "Hồ sơ giáo viên đang được cập nhật", "Chúng tôi đang lắng nghe những chia sẻ đầu tiên"} {
-		if !strings.Contains(html.String(), text) {
-			t.Fatal("missing", text)
+	for _, text := range []string{`id="giao-vien"`, `id="cam-nhan"`, "Hồ sơ giáo viên đang được cập nhật"} {
+		if strings.Contains(html.String(), text) {
+			t.Fatal("empty profile section exposed", text)
 		}
 	}
 	if strings.Contains(html.String(), "PRIVATE-DRAFT") {

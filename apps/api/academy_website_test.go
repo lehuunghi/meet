@@ -15,7 +15,7 @@ func TestAcademyWebsiteDesignAndEscaping(t *testing.T) {
 	if err := academyWeb.Execute(&html, data); err != nil {
 		t.Fatal(err)
 	}
-	for _, text := range []string{"Học thử miễn phí", "Minh họa giao diện", "Khóa học đầu tiên đang được chuẩn bị", "/dang-ky", "Đến nội dung chính"} {
+	for _, text := range []string{"Học thử miễn phí", "Khóa học đầu tiên đang được chuẩn bị", "/dang-ky", "Đến nội dung chính"} {
 		if !strings.Contains(html.String(), text) {
 			t.Fatalf("missing %s", text)
 		}
@@ -75,12 +75,12 @@ func TestWebsiteMediaSamplesAndFAQ(t *testing.T) {
 	if e := academyWeb.Execute(&out, map[string]any{"Site": site, "Free": 4, "HasPosts": true}); e != nil {
 		t.Fatal(e)
 	}
-	for _, expected := range []string{"hero-photo", "about-editorial", "teacher-photo", "review-avatar", "post-cover", "VIP dùng cho khóa nào?", "Hồ sơ mẫu", "Chia sẻ mẫu"} {
+	for _, expected := range []string{"hero-photo", "about-editorial", "post-cover", "VIP dùng cho khóa nào?"} {
 		if !strings.Contains(out.String(), expected) {
 			t.Fatal("missing media", expected)
 		}
 	}
-	if strings.Contains(out.String(), "5 / 5") {
+	if strings.Contains(out.String(), "5 / 5") || strings.Contains(out.String(), "Học sinh mẫu") || strings.Contains(out.String(), "Giáo viên mẫu") {
 		t.Fatal("sample review presented as a real rating")
 	}
 	for _, bad := range []string{"javascript:alert(1)", "data:image/svg+xml,bad", "//tracking.example/face.jpg", "http://insecure.example/x.jpg", "https://user:pass@example.com/x.jpg", "/images/../private.png"} {

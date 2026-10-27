@@ -29,9 +29,11 @@ func (a *app) academySitePreview(w http.ResponseWriter, r *http.Request) {
 	site.Published = true
 	for i := range site.Teachers {
 		site.Teachers[i].Published = nil
+		site.Teachers[i].Sample = false
 	}
 	for i := range site.Testimonials {
 		site.Testimonials[i].Published = nil
+		site.Testimonials[i].Sample = false
 	}
 	hasPosts := false
 	for i := range site.Posts {
@@ -87,7 +89,7 @@ func (a *app) academySitePreview(w http.ResponseWriter, r *http.Request) {
 	if free == 0 {
 		free = 4
 	}
-	data := map[string]any{"UITexts": a.uiTexts(r.Context(), u.School), "Site": site, "Courses": courses, "Plans": plans, "Free": free, "Canonical": a.origin + "/", "HasPosts": hasPosts}
+	data := map[string]any{"UITexts": a.uiTexts(r.Context(), u.School), "Site": site, "Courses": courses, "Plans": plans, "Free": free, "Canonical": a.origin + "/", "HasPosts": hasPosts, "LogoURL": a.websiteLogoURL(r.Context(), u.School)}
 	if in.Post != nil {
 		if *in.Post < 0 || *in.Post >= len(site.Posts) {
 			problem(w, 400, "Không tìm thấy bài viết trong bản nháp")

@@ -271,3 +271,5 @@ CREATE TABLE IF NOT EXISTS media_delete_queue (
  id CHAR(36) PRIMARY KEY,school_id CHAR(36) NOT NULL,storage_account VARCHAR(64) NOT NULL,bucket VARCHAR(100) NOT NULL,object_key VARCHAR(500) NOT NULL,recording_id CHAR(36) NOT NULL DEFAULT '',
  created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),completed_at DATETIME(6) NULL,KEY media_pending(completed_at,created_at)
 );
+
+CREATE TABLE IF NOT EXISTS academy_logos (school_id CHAR(36) PRIMARY KEY,media_type VARCHAR(32) NOT NULL,image_data MEDIUMBLOB NOT NULL,revision CHAR(64) NOT NULL,FOREIGN KEY(school_id) REFERENCES schools(id));
