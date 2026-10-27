@@ -3,7 +3,7 @@ for (const role of ["admin","teacher","student"]) test(`profile and navigation a
  await page.setViewportSize({width:390,height:844});await page.goto(`/hoc/tai-khoan?academy_demo=1&role=${role}`);
  if(role==="student"){await expect(page.getByLabel('Trường đang học',{exact:true})).toBeVisible();await expect(page.getByLabel('Điện thoại phụ huynh',{exact:true})).toBeVisible()}
  else{await expect(page.getByLabel('Trường đang học',{exact:true})).toHaveCount(0);await expect(page.getByLabel('Điện thoại phụ huynh',{exact:true})).toHaveCount(0);await expect(page.getByRole('heading',{name:'Tài khoản của bạn',exact:true,level:2})).toBeVisible()}
- await page.getByRole('button',{name:'Danh mục',exact:true}).click();const nav=page.locator('#academy-navigation');await expect(nav).toBeVisible();expect(await nav.getByRole('button').count()).toBe(role==='admin'?13:role==='teacher'?5:6);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ await page.getByRole('button',{name:'Danh mục',exact:true}).click();const nav=page.locator('#academy-navigation');await expect(nav).toBeVisible();expect(await nav.getByRole('button').count()).toBe(role==='admin'?14:role==='teacher'?5:6);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
 test('deleting data requires an exact confirmation and retains the form on server rejection',async({page})=>{
  let calls=0,blocked=true;

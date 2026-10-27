@@ -179,7 +179,7 @@ func (a *app) accountDelete(w http.ResponseWriter, r *http.Request) {
 	if !strings.HasPrefix(avatar, "academy/avatars/"+u.School+"/"+id+"/") || strings.Contains(avatar, "..") {
 		avatar = ""
 	}
-	if _, e = tx.ExecContext(r.Context(), "UPDATE academy_mail_jobs SET status='cancelled',email='',subject='',body='' WHERE school_id=? AND user_id=? AND status<>'sending'", u.School, id); e != nil {
+	if _, e = tx.ExecContext(r.Context(), "UPDATE academy_mail_jobs SET status=IF(status IN ('queued','failed'),'cancelled',status),email='',subject='',body='' WHERE school_id=? AND user_id=? AND status<>'sending'", u.School, id); e != nil {
 		problem(w, 503, "Chưa thu hồi được email")
 		return
 	}

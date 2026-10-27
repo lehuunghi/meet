@@ -346,21 +346,25 @@ func (a *app) academyBroadcastDelete(w http.ResponseWriter, r *http.Request) {
 	send(w, 200, map[string]bool{"ok": true})
 }
 func (a *app) sendNextAcademyMail(ctx context.Context) error {
-	if _, err := a.db.ExecContext(ctx, "UPDATE academy_mail_jobs SET status='failed',error_code='DELIVERY_UNKNOWN',lease=NULL,lease_until=NULL WHERE status='sending' AND lease_until<UTC_TIMESTAMP(6) AND attempts>=5"); err != nil {
-		return err
-	}
-	tx, e := a.db.BeginTx(ctx, nil)
+	tx, e := a.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelReadCommitted})
 	if e != nil {
 		return e
 	}
 	defer tx.Rollback()
 	var id, school, user, email, subject, body, campaign string
-	e = tx.QueryRowContext(ctx, `SELECT id,school_id,user_id,email,subject,body,campaign_id FROM academy_mail_jobs WHERE attempts<5 AND ((status IN ('queued','failed') AND next_attempt<=UTC_TIMESTAMP(6)) OR (status='sending' AND lease_until<UTC_TIMESTAMP(6))) ORDER BY next_attempt LIMIT 1 FOR UPDATE SKIP LOCKED`).Scan(&id, &school, &user, &email, &subject, &body, &campaign)
+	var attempts int
+	e = tx.QueryRowContext(ctx, `SELECT id,school_id,user_id,email,subject,body,campaign_id,attempts FROM academy_mail_jobs WHERE ((attempts<5 AND status IN ('queued','failed') AND next_attempt<=UTC_TIMESTAMP(6)) OR (status='sending' AND lease_until<UTC_TIMESTAMP(6))) ORDER BY next_attempt LIMIT 1 FOR UPDATE SKIP LOCKED`).Scan(&id, &school, &user, &email, &subject, &body, &campaign, &attempts)
 	if e == sql.ErrNoRows {
 		return nil
 	}
 	if e != nil {
 		return e
+	}
+	if attempts >= 5 {
+		if _, e = tx.ExecContext(ctx, "UPDATE academy_mail_jobs SET status='failed',error_code='DELIVERY_UNKNOWN',lease=NULL,lease_until=NULL WHERE id=?", id); e != nil {
+			return e
+		}
+		return tx.Commit()
 	}
 	lease := uid()
 	if _, e = tx.ExecContext(ctx, "UPDATE academy_mail_jobs SET status='sending',attempts=attempts+1,lease=?,lease_until=UTC_TIMESTAMP()+INTERVAL 2 MINUTE WHERE id=?", lease, id); e != nil {
