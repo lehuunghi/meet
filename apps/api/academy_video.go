@@ -105,7 +105,7 @@ func (a *app) academyLessonFinish(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	head, e := a.s3Client(store).HeadObject(r.Context(), &s3.HeadObjectInput{Bucket: &bucket, Key: &key})
-	if e != nil || aws.ToInt64(head.ContentLength) < 1 || aws.ToInt64(head.ContentLength) > 1<<30 || (aws.ToString(head.ContentType) != "video/mp4" && aws.ToString(head.ContentType) != "video/webm") {
+	if e != nil || head == nil || aws.ToInt64(head.ContentLength) < 1 || aws.ToInt64(head.ContentLength) > 1<<30 || (aws.ToString(head.ContentType) != "video/mp4" && aws.ToString(head.ContentType) != "video/webm") {
 		problem(w, 409, "Video chưa hoàn tất hoặc sai định dạng")
 		return
 	}
@@ -257,12 +257,12 @@ func (a *app) academyReceipt(w http.ResponseWriter, r *http.Request) {
 		if !decode(w, r, &in) {
 			return
 		}
-		if !strings.HasPrefix(in.Key, "academy/receipts/"+u.School+"/"+u.ID+"/") {
+		if !strings.HasPrefix(in.Key, "academy/receipts/"+u.School+"/"+u.ID+"/") || strings.Contains(in.Key, "..") || strings.Contains(in.Key, "\\") {
 			problem(w, 403, "Biên lai không thuộc tài khoản")
 			return
 		}
 		head, e := a.s3Client(store).HeadObject(r.Context(), &s3.HeadObjectInput{Bucket: &store.Bucket, Key: &in.Key})
-		if e != nil || aws.ToInt64(head.ContentLength) < 1 || aws.ToInt64(head.ContentLength) > 2<<20 || (aws.ToString(head.ContentType) != "image/png" && aws.ToString(head.ContentType) != "image/jpeg") {
+		if e != nil || head == nil || aws.ToInt64(head.ContentLength) < 1 || aws.ToInt64(head.ContentLength) > 2<<20 || (aws.ToString(head.ContentType) != "image/png" && aws.ToString(head.ContentType) != "image/jpeg") {
 			problem(w, 409, "Ảnh chưa hoàn tất")
 			return
 		}

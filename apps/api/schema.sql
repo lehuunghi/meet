@@ -273,3 +273,27 @@ CREATE TABLE IF NOT EXISTS media_delete_queue (
 );
 
 CREATE TABLE IF NOT EXISTS academy_logos (school_id CHAR(36) PRIMARY KEY,media_type VARCHAR(32) NOT NULL,image_data MEDIUMBLOB NOT NULL,revision CHAR(64) NOT NULL,FOREIGN KEY(school_id) REFERENCES schools(id));
+CREATE TABLE IF NOT EXISTS academy_images (
+ id CHAR(36) PRIMARY KEY,school_id CHAR(36) NOT NULL,media_type VARCHAR(32) NOT NULL,image_data MEDIUMBLOB NOT NULL,filename VARCHAR(200) NOT NULL,created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+ KEY ai_school(school_id,created_at),FOREIGN KEY(school_id) REFERENCES schools(id)
+);
+CREATE TABLE IF NOT EXISTS academy_broadcasts (
+ id CHAR(36) PRIMARY KEY,school_id CHAR(36) NOT NULL,title VARCHAR(200) NOT NULL,body TEXT NOT NULL,created_by CHAR(36) NOT NULL,email_requested BOOLEAN NOT NULL DEFAULT FALSE,request_id CHAR(36) NOT NULL,created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),deleted_at DATETIME(6) NULL,
+ UNIQUE KEY ab_request(school_id,request_id),UNIQUE KEY ab_tenant(school_id,id),KEY ab_feed(school_id,deleted_at,created_at),FOREIGN KEY(school_id) REFERENCES schools(id)
+);
+CREATE TABLE IF NOT EXISTS academy_mail_templates (
+ school_id CHAR(36) NOT NULL,kind VARCHAR(32) NOT NULL,subject VARCHAR(200) NOT NULL,body TEXT NOT NULL,revision INT NOT NULL DEFAULT 1,PRIMARY KEY(school_id,kind),FOREIGN KEY(school_id) REFERENCES schools(id)
+);
+CREATE TABLE IF NOT EXISTS academy_mail_campaigns (
+ id CHAR(36) PRIMARY KEY,school_id CHAR(36) NOT NULL,request_id CHAR(36) NOT NULL,broadcast_id CHAR(36) NULL,title VARCHAR(200) NOT NULL,created_by CHAR(36) NOT NULL,payload_hash CHAR(64) NOT NULL,created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+ UNIQUE KEY amc_request(school_id,request_id),UNIQUE KEY amc_tenant(school_id,id),FOREIGN KEY(school_id) REFERENCES schools(id)
+);
+CREATE TABLE IF NOT EXISTS academy_mail_jobs (
+ id CHAR(36) PRIMARY KEY,school_id CHAR(36) NOT NULL,campaign_id CHAR(36) NOT NULL,user_id CHAR(36) NOT NULL,email VARCHAR(254) NOT NULL,subject VARCHAR(200) NOT NULL,body TEXT NOT NULL,
+ status ENUM('queued','sending','sent','failed','cancelled') NOT NULL DEFAULT 'queued',attempts INT NOT NULL DEFAULT 0,next_attempt DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),lease CHAR(36) NULL,lease_until DATETIME(6) NULL,error_code VARCHAR(50) NOT NULL DEFAULT '',sent_at DATETIME(6) NULL,
+ UNIQUE KEY amj_recipient(school_id,campaign_id,user_id),KEY amj_queue(status,next_attempt),FOREIGN KEY(school_id,campaign_id) REFERENCES academy_mail_campaigns(school_id,id)
+);
+CREATE TABLE IF NOT EXISTS academy_invoices (
+ school_id CHAR(36) NOT NULL,order_id CHAR(36) NOT NULL,number VARCHAR(32) NOT NULL,buyer_name VARCHAR(200) NOT NULL,buyer_email VARCHAR(254) NOT NULL,plan_name VARCHAR(200) NOT NULL,amount_vnd BIGINT NOT NULL,days INT NOT NULL,created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+ PRIMARY KEY(school_id,order_id),UNIQUE KEY ain_number(school_id,number),FOREIGN KEY(school_id,order_id) REFERENCES academy_orders(school_id,id)
+);

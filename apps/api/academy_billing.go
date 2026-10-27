@@ -54,7 +54,7 @@ func (a *app) academyOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if r.Method == "GET" {
-		a.query(w, r, "SELECT id,code,price_vnd,days,live_enabled,status,created_at,paid_at FROM academy_orders WHERE school_id=? AND user_id=? ORDER BY created_at DESC LIMIT 100", u.School, u.ID)
+		a.query(w, r, "SELECT o.id,o.code,o.price_vnd,o.days,o.live_enabled,o.status,o.created_at,o.paid_at,i.number AS invoice_number FROM academy_orders o LEFT JOIN academy_invoices i ON i.school_id=o.school_id AND i.order_id=o.id WHERE o.school_id=? AND o.user_id=? ORDER BY o.created_at DESC LIMIT 100", u.School, u.ID)
 		return
 	}
 	var in struct {
@@ -182,6 +182,9 @@ func (a *app) payOrder(r *http.Request, school, id, ref, reviewer string, amount
 		liveUntil = now
 	}
 	until := extendVIP(now, previous, days)
+	if e = createAcademyInvoice(r.Context(), tx, school, id); e != nil {
+		return e
+	}
 	if _, e = tx.ExecContext(r.Context(), "UPDATE academy_orders SET status='paid',provider_ref=?,reviewer=NULLIF(?,''),paid_at=? WHERE school_id=? AND id=?", ref, reviewer, now, school, id); e != nil {
 		return e
 	}

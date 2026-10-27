@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-var permissionNames = []string{"academic", "accounts", "attendance", "meetings", "recordings", "audit", "content", "finance"}
+var permissionNames = []string{"academic", "accounts", "attendance", "meetings", "recordings", "audit", "content", "finance", "communications"}
 
 func permitted(u identity, p string) bool {
 	if u.Role != "admin" {

@@ -9,6 +9,7 @@ const permissions = [
   ["recordings", "Ghi hình"],
   ["audit", "Nhật ký"],
   ["content", "Nội dung khóa học"],
+ ["communications", "Thông báo & email"],
   ["finance", "Tài chính / VIP"],
 ];
 export function Accounts({ demo }: { demo: boolean }) {

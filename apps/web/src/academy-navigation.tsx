@@ -53,6 +53,7 @@ export function AcademyBreadcrumbs({ route, courses, classrooms, title }: any) {
             students: "Học viên",
             finance: "Thu chi",
             settings: "Cài đặt",
+ mail: "Nội dung & gửi email",
           } as Record<string, string>
         )[route.tab] || "Trang đã chọn",
       path: route.path,

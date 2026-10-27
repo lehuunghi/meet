@@ -307,7 +307,7 @@ func (a *app) academyLists(w http.ResponseWriter, r *http.Request) {
 		if !a.businessAdmin(w, r, "finance") {
 			return
 		}
-		a.query(w, r, "SELECT o.*,u.name,u.email FROM academy_orders o JOIN users u ON u.id=o.user_id AND u.school_id=o.school_id WHERE o.school_id=? ORDER BY o.created_at DESC LIMIT 500", u.School)
+		a.query(w, r, "SELECT o.*,u.name,u.email,i.number AS invoice_number FROM academy_orders o JOIN users u ON u.id=o.user_id AND u.school_id=o.school_id LEFT JOIN academy_invoices i ON i.school_id=o.school_id AND i.order_id=o.id WHERE o.school_id=? ORDER BY o.created_at DESC LIMIT 500", u.School)
 	case "students":
 		if !a.businessAdmin(w, r, "accounts") {
 			return

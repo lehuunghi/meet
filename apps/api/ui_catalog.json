@@ -636,7 +636,15 @@
     "area": "Giao diện chung"
   },
   {
+    "key": "Chọn ảnh đã tải",
+    "area": "Giao diện chung"
+  },
+  {
     "key": "Chọn ảnh đại diện PNG/JPEG tối đa 2 MB.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Chọn ảnh PNG/JPG tối đa 5 MB",
     "area": "Giao diện chung"
   },
   {
@@ -665,6 +673,10 @@
   },
   {
     "key": "Chu kỳ sao lưu (giờ)",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Chưa có ảnh đã tải.",
     "area": "Giao diện chung"
   },
   {
@@ -876,6 +888,10 @@
     "area": "Giao diện chung"
   },
   {
+    "key": "Đang tải ảnh…",
+    "area": "Giao diện chung"
+  },
+  {
     "key": "Đang tải…",
     "area": "Giao diện chung"
   },
@@ -925,6 +941,10 @@
   },
   {
     "key": "Đóng hộp thoại",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Đóng thư viện",
     "area": "Giao diện chung"
   },
   {
@@ -993,6 +1013,10 @@
   },
   {
     "key": "Giữ nguyên dữ liệu, domain và cấu hình. Chỉ cập nhật bản đã qua kiểm thử từ repository lehuunghi/meet. Không cập nhật khi có buổi học đang diễn ra.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Gỡ ảnh",
     "area": "Giao diện chung"
   },
   {
@@ -1412,6 +1436,10 @@
     "area": "Giao diện chung"
   },
   {
+    "key": "PNG/JPG tối đa 5 MB · tối đa 4096 × 4096. Chọn ảnh rồi lưu website để công khai.",
+    "area": "Giao diện chung"
+  },
+  {
     "key": "PNG/JPG tối đa 512 KB, kích thước tối đa 2048 × 2048. Logo riêng được hiển thị ở đầu và cuối các trang công khai.",
     "area": "Giao diện chung"
   },
@@ -1489,6 +1517,10 @@
   },
   {
     "key": "SV0123 / MH0045 / tên…",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Tải ",
     "area": "Giao diện chung"
   },
   {
@@ -1780,11 +1812,23 @@
     "area": "Không gian học tập"
   },
   {
+    "key": " ngày",
+    "area": "Không gian học tập"
+  },
+  {
     "key": " ngày · Video & Live",
     "area": "Không gian học tập"
   },
   {
     "key": " phút",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": " VND",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": ". Mẫu xác thực phải giữ liên kết xác thực.",
     "area": "Không gian học tập"
   },
   {
@@ -1804,7 +1848,7 @@
     "area": "Không gian học tập"
   },
   {
-    "key": "Ảnh biên lai đưa đơn vào hàng chờ duyệt, không tự kích hoạt VIP.",
+    "key": "Ảnh đã tải xong. Bấm xác nhận bên dưới để tạo hóa đơn.",
     "area": "Không gian học tập"
   },
   {
@@ -1872,6 +1916,10 @@
     "area": "Không gian học tập"
   },
   {
+    "key": "Biến bắt buộc: {{verification_link}}",
+    "area": "Không gian học tập"
+  },
+  {
     "key": "Biên lai",
     "area": "Không gian học tập"
   },
@@ -1880,11 +1928,19 @@
     "area": "Không gian học tập"
   },
   {
+    "key": "Biên lai đã chọn",
+    "area": "Không gian học tập"
+  },
+  {
     "key": "Biên lai mẫu chưa có ảnh.",
     "area": "Không gian học tập"
   },
   {
-    "key": "Biên lai minh họa.",
+    "key": "Biên lai và xác nhận của học viên đang chờ đối soát; chưa kích hoạt VIP.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Biến thông báo: {{title}}, {{content}}, {{notification_link}}",
     "area": "Không gian học tập"
   },
   {
@@ -1893,6 +1949,10 @@
   },
   {
     "key": "Buổi sắp dạy",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Cá nhân hóa bằng ",
     "area": "Không gian học tập"
   },
   {
@@ -1920,6 +1980,14 @@
     "area": "Không gian học tập"
   },
   {
+    "key": "Chào {{name}},\n\n{{content}}\n\n{{notification_link}}",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Chào {{name}},\n\nBấm {{verification_link}} để xác thực email.",
+    "area": "Không gian học tập"
+  },
+  {
     "key": "Chào mừng trở lại",
     "area": "Không gian học tập"
   },
@@ -1928,11 +1996,19 @@
     "area": "Không gian học tập"
   },
   {
+    "key": "Chỉ gửi thử đến tài khoản của tôi",
+    "area": "Không gian học tập"
+  },
+  {
     "key": "Chỉ quản trị có đủ quyền được xóa. Kết thúc các buổi đang học và đợi sao chép video hoàn tất trước khi thực hiện.",
     "area": "Không gian học tập"
   },
   {
     "key": "Chi tiết đơn",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Chỉ trên website",
     "area": "Không gian học tập"
   },
   {
@@ -1953,6 +2029,10 @@
   },
   {
     "key": "Chọn ảnh",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Chọn ảnh biên lai PNG/JPG tối đa 2 MB",
     "area": "Không gian học tập"
   },
   {
@@ -2008,11 +2088,19 @@
     "area": "Không gian học tập"
   },
   {
+    "key": "Chưa có đợt gửi email.",
+    "area": "Không gian học tập"
+  },
+  {
     "key": "Chưa có dữ liệu.",
     "area": "Không gian học tập"
   },
   {
     "key": "Chưa có lịch học trong 7 ngày tới.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Chưa có thông báo chung.",
     "area": "Không gian học tập"
   },
   {
@@ -2048,7 +2136,15 @@
     "area": "Không gian học tập"
   },
   {
+    "key": "Chứng từ thanh toán nội bộ của nền tảng, không thay thế hóa đơn thuế.",
+    "area": "Không gian học tập"
+  },
+  {
     "key": "Chương / chủ đề",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Có gửi email",
     "area": "Không gian học tập"
   },
   {
@@ -2072,7 +2168,19 @@
     "area": "Không gian học tập"
   },
   {
+    "key": "Đã cập nhật mẫu minh họa.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Đã chuyển khoản — Tạo hóa đơn",
+    "area": "Không gian học tập"
+  },
+  {
     "key": "Đã có cấu hình gửi email.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Đã đăng thông báo cho tất cả tài khoản.",
     "area": "Không gian học tập"
   },
   {
@@ -2084,7 +2192,7 @@
     "area": "Không gian học tập"
   },
   {
-    "key": "Đã gửi biên lai để đối soát.",
+    "key": "Đã gửi",
     "area": "Không gian học tập"
   },
   {
@@ -2093,6 +2201,10 @@
   },
   {
     "key": "Đã hoàn tiền",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Đã hủy",
     "area": "Không gian học tập"
   },
   {
@@ -2108,7 +2220,19 @@
     "area": "Không gian học tập"
   },
   {
+    "key": "Đã lưu mẫu email.",
+    "area": "Không gian học tập"
+  },
+  {
     "key": "Đã lưu thứ tự bài giảng.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Đã mô phỏng gửi thông báo; không gửi email thật.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Đã mô phỏng xác nhận chuyển khoản; không tạo hóa đơn thật.",
     "area": "Không gian học tập"
   },
   {
@@ -2120,6 +2244,10 @@
     "area": "Không gian học tập"
   },
   {
+    "key": "Đã tạo hóa đơn chờ đối soát. VIP sẽ mở sau khi xác nhận thanh toán.",
+    "area": "Không gian học tập"
+  },
+  {
     "key": "Đã thanh toán",
     "area": "Không gian học tập"
   },
@@ -2128,11 +2256,19 @@
     "area": "Không gian học tập"
   },
   {
+    "key": "Đã xác nhận chuyển khoản — chờ đối soát",
+    "area": "Không gian học tập"
+  },
+  {
     "key": "Đã xóa dữ liệu minh họa.",
     "area": "Không gian học tập"
   },
   {
     "key": "Đã xóa gói khỏi danh mục; giữ lịch sử và quyền VIP đã cấp.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Đã xóa thông báo khỏi hệ thống và hủy email chưa gửi.",
     "area": "Không gian học tập"
   },
   {
@@ -2153,6 +2289,10 @@
   },
   {
     "key": "Đang diễn ra",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Đang gửi…",
     "area": "Không gian học tập"
   },
   {
@@ -2196,7 +2336,15 @@
     "area": "Không gian học tập"
   },
   {
+    "key": "Đang xếp hàng…",
+    "area": "Không gian học tập"
+  },
+  {
     "key": "Đang xóa…",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Đang xử lý…",
     "area": "Không gian học tập"
   },
   {
@@ -2268,6 +2416,14 @@
     "area": "Không gian học tập"
   },
   {
+    "key": "Đóng hóa đơn",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Đồng thời gửi thông báo đến email",
+    "area": "Không gian học tập"
+  },
+  {
     "key": "Đồng ý nhận thông tin khai giảng/ưu đãi",
     "area": "Không gian học tập"
   },
@@ -2305,6 +2461,10 @@
   },
   {
     "key": "Email đang chờ xác thực qua liên kết trong hộp thư.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Email dạng văn bản tiếng Việt, không chèn mã HTML. Có thể dùng",
     "area": "Không gian học tập"
   },
   {
@@ -2368,7 +2528,23 @@
     "area": "Không gian học tập"
   },
   {
+    "key": "Gửi đến tài khoản đang hoạt động trong nền tảng này. Email được xếp hàng, theo dõi kết quả và thử lại khi SMTP tạm thời lỗi. Cấu hình máy chủ gửi tại Email & thanh toán.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Gửi email mô phỏng; không gửi thư thật.",
+    "area": "Không gian học tập"
+  },
+  {
     "key": "Gửi lại liên kết xác thực email",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Gửi thông báo",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Gửi thông báo toàn nền tảng",
     "area": "Không gian học tập"
   },
   {
@@ -2404,6 +2580,14 @@
     "area": "Không gian học tập"
   },
   {
+    "key": "Hóa đơn thanh toán",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Hóa đơn: ",
+    "area": "Không gian học tập"
+  },
+  {
     "key": "Học chủ động.",
     "area": "Không gian học tập"
   },
@@ -2424,6 +2608,10 @@
     "area": "Không gian học tập"
   },
   {
+    "key": "Học viên demo",
+    "area": "Không gian học tập"
+  },
+  {
     "key": "Học viên minh họa",
     "area": "Không gian học tập"
   },
@@ -2441,6 +2629,10 @@
   },
   {
     "key": "Hủy sửa",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "In / Lưu PDF",
     "area": "Không gian học tập"
   },
   {
@@ -2552,6 +2744,14 @@
     "area": "Không gian học tập"
   },
   {
+    "key": "Lịch sử gửi email",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Lỗi",
+    "area": "Không gian học tập"
+  },
+  {
     "key": "Lớp ",
     "area": "Không gian học tập"
   },
@@ -2604,6 +2804,10 @@
     "area": "Không gian học tập"
   },
   {
+    "key": "Lưu mẫu email",
+    "area": "Không gian học tập"
+  },
+  {
     "key": "Mã đơn",
     "area": "Không gian học tập"
   },
@@ -2625,6 +2829,10 @@
   },
   {
     "key": "Mọi gói VIP còn hạn đều có quyền Live",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Mọi tài khoản quản trị, giáo viên và học sinh đều nhận trong website. Thông báo tự cập nhật khi tài khoản đang mở trang.",
     "area": "Không gian học tập"
   },
   {
@@ -2652,11 +2860,19 @@
     "area": "Không gian học tập"
   },
   {
+    "key": "Ngày xác nhận thu",
+    "area": "Không gian học tập"
+  },
+  {
     "key": "Ngữ văn",
     "area": "Không gian học tập"
   },
   {
     "key": "Ngưng bán",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Người nhận",
     "area": "Không gian học tập"
   },
   {
@@ -2684,11 +2900,27 @@
     "area": "Không gian học tập"
   },
   {
+    "key": "Nội dung & gửi email",
+    "area": "Không gian học tập"
+  },
+  {
     "key": "Nội dung chi",
     "area": "Không gian học tập"
   },
   {
+    "key": "Nội dung email",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Nội dung email tự động",
+    "area": "Không gian học tập"
+  },
+  {
     "key": "Nội dung minh họa",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Nội dung thông báo",
     "area": "Không gian học tập"
   },
   {
@@ -2812,6 +3044,10 @@
     "area": "Không gian học tập"
   },
   {
+    "key": "Soạn và gửi email",
+    "area": "Không gian học tập"
+  },
+  {
     "key": "STT",
     "area": "Không gian học tập"
   },
@@ -2829,6 +3065,10 @@
   },
   {
     "key": "Sửa thông tin bài giảng",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Tải ảnh biên lai rồi xác nhận đã chuyển khoản để tạo hóa đơn chờ đối soát. Hệ thống không tự kích hoạt VIP từ ảnh biên lai.",
     "area": "Không gian học tập"
   },
   {
@@ -2888,6 +3128,22 @@
     "area": "Không gian học tập"
   },
   {
+    "key": "Tất cả giáo viên",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Tất cả học sinh",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Tất cả quản trị viên",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Tất cả tài khoản đang hoạt động",
+    "area": "Không gian học tập"
+  },
+  {
     "key": "Tên bài giảng",
     "area": "Không gian học tập"
   },
@@ -2932,6 +3188,10 @@
     "area": "Không gian học tập"
   },
   {
+    "key": "Thời hạn gói",
+    "area": "Không gian học tập"
+  },
+  {
     "key": "Thời lượng (phút)",
     "area": "Không gian học tập"
   },
@@ -2944,7 +3204,15 @@
     "area": "Không gian học tập"
   },
   {
+    "key": "Thông báo chung",
+    "area": "Không gian học tập"
+  },
+  {
     "key": "Thông báo của bạn",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Thông báo đã đăng",
     "area": "Không gian học tập"
   },
   {
@@ -2961,6 +3229,10 @@
   },
   {
     "key": "Thu gọn",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Thử gửi lại",
     "area": "Không gian học tập"
   },
   {
@@ -3001,6 +3273,22 @@
   },
   {
     "key": "Tiếp tục khóa học đã chọn",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Tiêu đề",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Tiêu đề email",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Tiêu đề email tự động",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Tiêu đề thông báo",
     "area": "Không gian học tập"
   },
   {
@@ -3112,6 +3400,10 @@
     "area": "Không gian học tập"
   },
   {
+    "key": "VIP minh họa",
+    "area": "Không gian học tập"
+  },
+  {
     "key": "Vui lòng điền đầy đủ và kiểm tra các ô được đánh dấu.",
     "area": "Không gian học tập"
   },
@@ -3120,7 +3412,19 @@
     "area": "Không gian học tập"
   },
   {
+    "key": "Xác nhận gửi email",
+    "area": "Không gian học tập"
+  },
+  {
     "key": "Xác nhận xóa",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Xác thực email tài khoản học tập",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Xác thực tài khoản",
     "area": "Không gian học tập"
   },
   {
@@ -3153,6 +3457,10 @@
   },
   {
     "key": "Xem ghi chú",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Xem hóa đơn",
     "area": "Không gian học tập"
   },
   {
@@ -3193,6 +3501,14 @@
   },
   {
     "key": "Xóa tất cả video",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Xóa thông báo",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Xóa thông báo khỏi tất cả tài khoản? Email chưa gửi sẽ bị hủy; email đã gửi không thể thu hồi.",
     "area": "Không gian học tập"
   },
   {
@@ -4012,10 +4328,6 @@
     "area": "Phòng học & hệ thống"
   },
   {
-    "key": "Nội dung thông báo",
-    "area": "Phòng học & hệ thống"
-  },
-  {
     "key": "Ôn tập phương trình bậc hai",
     "area": "Phòng học & hệ thống"
   },
@@ -4148,10 +4460,6 @@
     "area": "Phòng học & hệ thống"
   },
   {
-    "key": "Tiêu đề thông báo",
-    "area": "Phòng học & hệ thống"
-  },
-  {
     "key": "Tìm lớp hoặc môn học",
     "area": "Phòng học & hệ thống"
   },
@@ -4260,23 +4568,23 @@
     "area": "Quản trị website"
   },
   {
-    "key": "Ảnh bài viết (URL)",
+    "key": "Ảnh bài viết",
     "area": "Quản trị website"
   },
   {
-    "key": "Ảnh banner trang chủ (URL)",
+    "key": "Ảnh banner trang chủ",
     "area": "Quản trị website"
   },
   {
-    "key": "Ảnh giáo viên (URL)",
+    "key": "Ảnh giáo viên",
     "area": "Quản trị website"
   },
   {
-    "key": "Ảnh giới thiệu (URL)",
+    "key": "Ảnh giới thiệu",
     "area": "Quản trị website"
   },
   {
-    "key": "Ảnh người chia sẻ (URL)",
+    "key": "Ảnh người chia sẻ",
     "area": "Quản trị website"
   },
   {
@@ -4688,10 +4996,6 @@
     "area": "Quản trị website"
   },
   {
-    "key": "Tiêu đề",
-    "area": "Quản trị website"
-  },
-  {
     "key": "Tối đa 30 câu. Nội dung được hiển thị trên trang chủ và có thể sửa, thêm hoặc xóa.",
     "area": "Quản trị website"
   },
@@ -4956,6 +5260,10 @@
     "area": "Tài khoản & phân quyền"
   },
   {
+    "key": "Thông báo & email",
+    "area": "Tài khoản & phân quyền"
+  },
+  {
     "key": "Thông tin chỉ xem. Liên hệ quản trị trường nếu cần điều chỉnh.",
     "area": "Tài khoản & phân quyền"
   },
@@ -4994,10 +5302,6 @@
   {
     "key": "Xóa tài khoản sẽ thu hồi đăng nhập và xóa hồ sơ cá nhân; giữ lịch sử học/thanh toán. Nhập đúng email: ",
     "area": "Tài khoản & phân quyền"
-  },
-  {
-    "key": "\n\nKhông cần nhập mã. Nếu không đăng ký, vui lòng bỏ qua thư này.",
-    "area": "Thông báo hệ thống"
   },
   {
     "key": "2FA đã bật",
@@ -5041,6 +5345,14 @@
   },
   {
     "key": "Ảnh PNG/JPEG tối đa 2 MiB",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Ảnh sau xử lý vượt quá 5 MB",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Ảnh tối đa 5 MB",
     "area": "Thông báo hệ thống"
   },
   {
@@ -5108,7 +5420,15 @@
     "area": "Thông báo hệ thống"
   },
   {
+    "key": "Biên lai chưa tải hoàn tất. Vui lòng tải lại",
+    "area": "Thông báo hệ thống"
+  },
+  {
     "key": "Biên lai không thuộc tài khoản",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Bỏ chọn email hoặc cấu hình SMTP trước khi gửi",
     "area": "Thông báo hệ thống"
   },
   {
@@ -5176,11 +5496,23 @@
     "area": "Thông báo hệ thống"
   },
   {
+    "key": "Cấu hình SMTP trước khi gửi email",
+    "area": "Thông báo hệ thống"
+  },
+  {
     "key": "Câu hỏi không hợp lệ",
     "area": "Thông báo hệ thống"
   },
   {
     "key": "Câu hỏi tối đa 200 ký tự và 2–6 lựa chọn",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chào {{name}},\n\n{{content}}\n\nXem thông báo: {{notification_link}}",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chào {{name}},\n\nTài khoản đã được tạo. Bấm liên kết sau để xác thực email (hiệu lực 24 giờ):\n\n{{verification_link}}\n\nKhông cần nhập mã. Nếu không đăng ký, vui lòng bỏ qua thư này.",
     "area": "Thông báo hệ thống"
   },
   {
@@ -5193,6 +5525,10 @@
   },
   {
     "key": "Chỉ học sinh mua gói",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chỉ học sinh xác nhận đơn của mình",
     "area": "Thông báo hệ thống"
   },
   {
@@ -5224,6 +5560,10 @@
     "area": "Thông báo hệ thống"
   },
   {
+    "key": "Chọn ảnh PNG/JPG hợp lệ, tối đa 4096 × 4096",
+    "area": "Thông báo hệ thống"
+  },
+  {
     "key": "Chọn điểm danh hoặc video",
     "area": "Thông báo hệ thống"
   },
@@ -5233,6 +5573,10 @@
   },
   {
     "key": "Chọn lớp, môn và trang hợp lệ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chọn một ảnh PNG/JPG tối đa 5 MB",
     "area": "Thông báo hệ thống"
   },
   {
@@ -5249,6 +5593,10 @@
   },
   {
     "key": "Chữ ký không hợp lệ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa ẩn được hồ sơ hóa đơn",
     "area": "Thông báo hệ thống"
   },
   {
@@ -5384,6 +5732,10 @@
     "area": "Thông báo hệ thống"
   },
   {
+    "key": "Chưa được cấp quyền hóa đơn",
+    "area": "Thông báo hệ thống"
+  },
+  {
     "key": "Chưa được cấp quyền tài khoản",
     "area": "Thông báo hệ thống"
   },
@@ -5400,7 +5752,15 @@
     "area": "Thông báo hệ thống"
   },
   {
+    "key": "Chưa gửi được thông báo",
+    "area": "Thông báo hệ thống"
+  },
+  {
     "key": "Chưa gửi được yêu cầu",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa gửi lại được email",
     "area": "Thông báo hệ thống"
   },
   {
@@ -5433,6 +5793,10 @@
   },
   {
     "key": "Chưa khóa được khóa học",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa khóa được yêu cầu. Vui lòng thử lại",
     "area": "Thông báo hệ thống"
   },
   {
@@ -5472,7 +5836,19 @@
     "area": "Thông báo hệ thống"
   },
   {
+    "key": "Chưa kiểm tra được thông báo",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa lưu được ảnh",
+    "area": "Thông báo hệ thống"
+  },
+  {
     "key": "Chưa lưu được bài giảng",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa lưu được email",
     "area": "Thông báo hệ thống"
   },
   {
@@ -5485,6 +5861,10 @@
   },
   {
     "key": "Chưa lưu được gói",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa lưu được hàng đợi email",
     "area": "Thông báo hệ thống"
   },
   {
@@ -5504,11 +5884,19 @@
     "area": "Thông báo hệ thống"
   },
   {
+    "key": "Chưa lưu được mẫu email",
+    "area": "Thông báo hệ thống"
+  },
+  {
     "key": "Chưa lưu được ngôn ngữ",
     "area": "Thông báo hệ thống"
   },
   {
     "key": "Chưa lưu được tên bài giảng",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa lưu được thông báo",
     "area": "Thông báo hệ thống"
   },
   {
@@ -5584,6 +5972,10 @@
     "area": "Thông báo hệ thống"
   },
   {
+    "key": "Chưa tải được hóa đơn",
+    "area": "Thông báo hệ thống"
+  },
+  {
     "key": "Chưa tải được khóa học",
     "area": "Thông báo hệ thống"
   },
@@ -5601,6 +5993,10 @@
   },
   {
     "key": "Chưa tải được lớp đang mở",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa tải được mẫu email",
     "area": "Thông báo hệ thống"
   },
   {
@@ -5624,6 +6020,10 @@
     "area": "Thông báo hệ thống"
   },
   {
+    "key": "Chưa tải được thông báo chung",
+    "area": "Thông báo hệ thống"
+  },
+  {
     "key": "Chưa tải được trạng thái thông báo",
     "area": "Thông báo hệ thống"
   },
@@ -5637,6 +6037,14 @@
   },
   {
     "key": "Chưa tạo được bài giảng",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa tạo được hàng đợi email",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa tạo được hóa đơn",
     "area": "Thông báo hệ thống"
   },
   {
@@ -5676,6 +6084,10 @@
     "area": "Thông báo hệ thống"
   },
   {
+    "key": "Chưa thu hồi được email",
+    "area": "Thông báo hệ thống"
+  },
+  {
     "key": "Chưa thu hồi được tài khoản",
     "area": "Thông báo hệ thống"
   },
@@ -5689,6 +6101,10 @@
   },
   {
     "key": "Chưa xóa được tài khoản",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa xóa được thông báo",
     "area": "Thông báo hệ thống"
   },
   {
@@ -5872,6 +6288,10 @@
     "area": "Thông báo hệ thống"
   },
   {
+    "key": "Đơn chưa có hóa đơn",
+    "area": "Thông báo hệ thống"
+  },
+  {
     "key": "Đơn đã được xử lý",
     "area": "Thông báo hệ thống"
   },
@@ -5949,6 +6369,10 @@
   },
   {
     "key": "Email liên hệ không hợp lệ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Email người nhận không hợp lệ",
     "area": "Thông báo hệ thống"
   },
   {
@@ -6300,6 +6724,10 @@
     "area": "Thông báo hệ thống"
   },
   {
+    "key": "Không có tài khoản nhận phù hợp",
+    "area": "Thông báo hệ thống"
+  },
+  {
     "key": "Không đọc được ảnh logo",
     "area": "Thông báo hệ thống"
   },
@@ -6620,6 +7048,10 @@
     "area": "Thông báo hệ thống"
   },
   {
+    "key": "Không thấy thông báo",
+    "area": "Thông báo hệ thống"
+  },
+  {
     "key": "Không thấy video",
     "area": "Thông báo hệ thống"
   },
@@ -6685,6 +7117,10 @@
   },
   {
     "key": "Không tìm thấy buổi trong lớp/môn",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không tìm thấy đơn",
     "area": "Thông báo hệ thống"
   },
   {
@@ -6968,6 +7404,14 @@
     "area": "Thông báo hệ thống"
   },
   {
+    "key": "Mẫu email đã thay đổi. Tải lại trước khi lưu",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Mẫu email không hợp lệ; mẫu xác thực phải giữ {{verification_link}}",
+    "area": "Thông báo hệ thống"
+  },
+  {
     "key": "Media negotiation busy; retry",
     "area": "Thông báo hệ thống"
   },
@@ -7085,6 +7529,10 @@
   },
   {
     "key": "Nhập tên, thời lượng 1–28800 giây và ghi chú hợp lệ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Nhập tiêu đề và nội dung email hợp lệ",
     "area": "Thông báo hệ thống"
   },
   {
@@ -7292,11 +7740,11 @@
     "area": "Thông báo hệ thống"
   },
   {
-    "key": "Tài khoản chưa được cấp quyền cho chức năng này",
+    "key": "Tải biên lai chuyển khoản trước khi xác nhận",
     "area": "Thông báo hệ thống"
   },
   {
-    "key": "Tài khoản đã được tạo. Bấm liên kết sau để xác thực email (hiệu lực 24 giờ):\n\n",
+    "key": "Tài khoản chưa được cấp quyền cho chức năng này",
     "area": "Thông báo hệ thống"
   },
   {
@@ -7389,6 +7837,10 @@
   },
   {
     "key": "Thử lại sau 5 phút",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Thư viện ảnh đạt giới hạn 300 MB",
     "area": "Thông báo hệ thống"
   },
   {
@@ -7536,7 +7988,11 @@
     "area": "Thông báo hệ thống"
   },
   {
-    "key": "Xác thực email tài khoản học tập",
+    "key": "Xác nhận đã chuyển khoản trước khi tạo hóa đơn",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Xác nhận xóa thông báo",
     "area": "Thông báo hệ thống"
   },
   {
@@ -7552,11 +8008,19 @@
     "area": "Thông báo hệ thống"
   },
   {
+    "key": "Yêu cầu đã được dùng. Tạo thông báo mới",
+    "area": "Thông báo hệ thống"
+  },
+  {
     "key": "Yêu cầu đã được sử dụng",
     "area": "Thông báo hệ thống"
   },
   {
     "key": "Yêu cầu đã hết hạn. Đăng nhập lại.",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Yêu cầu gửi không hợp lệ hoặc đã thay đổi",
     "area": "Thông báo hệ thống"
   },
   {

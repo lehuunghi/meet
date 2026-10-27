@@ -313,7 +313,7 @@ func migrate(db *sql.DB) error {
 	if _, e = c.ExecContext(context.Background(), "INSERT IGNORE INTO academy_live_memberships(school_id,user_id,expires_at) SELECT school_id,user_id,expires_at FROM academy_memberships WHERE live_enabled=TRUE"); e != nil {
 		return e
 	}
-	_, e = c.ExecContext(context.Background(), "INSERT IGNORE INTO schema_migrations VALUES(6),(7),(8),(9),(10),(11),(12),(13),(14)")
+	_, e = c.ExecContext(context.Background(), "INSERT IGNORE INTO schema_migrations VALUES(6),(7),(8),(9),(10),(11),(12),(13),(14),(15)")
 	return e
 }
 func main() {
@@ -367,6 +367,9 @@ func main() {
 	go a.retentionLoop(ctx)
 	go a.academyRecordingImportLoop(ctx)
 	go a.academyVerificationMailLoop(ctx)
+	for i := 0; i < 3; i++ {
+		go a.academyGeneralMailLoop(ctx)
+	}
 	go a.mediaCleanupLoop(ctx)
 	go func() {
 		<-ctx.Done()

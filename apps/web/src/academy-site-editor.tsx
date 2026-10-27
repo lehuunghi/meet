@@ -1,3 +1,4 @@
+import { WebsiteImage } from "./website-image";
 import { WebsiteLogo } from "./website-logo";
 import { UILanguageEditor } from "./ui-language-editor";
 import { useEffect, useState, useRef } from "react";
@@ -29,7 +30,8 @@ export function AcademySiteEditor({ demo, courses, perform, notice }: any) {
   const section = cmsSections.some(([id]) => id === requested)
     ? requested
     : "tong-quan";
-  const [languageVisited, setLanguageVisited] = useState(
+  const [imageUploads,setImageUploads]=useState(0);
+ const [languageVisited, setLanguageVisited] = useState(
     section === "ngon-ngu",
   );
   useEffect(() => {
@@ -384,14 +386,14 @@ export function AcademySiteEditor({ demo, courses, perform, notice }: any) {
               )}
               <fieldset
                 hidden={!visible("trang-chu")}
-                disabled={!loaded || saving}
+                disabled={!loaded || saving || imageUploads>0}
               >
                 <legend>Thương hiệu & giới thiệu</legend>
                 {field("headline", "Tên nền tảng")}
                 {field("description", "Thông điệp giới thiệu", true)}
                 {field("about", "Giới thiệu đơn vị", true)}
- {field("hero_image", "Ảnh banner trang chủ (URL)")}
- {field("about_image", "Ảnh giới thiệu (URL)")}
+ <WebsiteImage label="Ảnh banner trang chủ" value={value.hero_image||""} demo={demo} onBusy={n=>setImageUploads(v=>v+n)} onChange={url=>setValue((v:any)=>({...v,hero_image:url}))}/>
+ <WebsiteImage label="Ảnh giới thiệu" value={value.about_image||""} demo={demo} onBusy={n=>setImageUploads(v=>v+n)} onChange={url=>setValue((v:any)=>({...v,about_image:url}))}/>
  <small>Dùng ảnh công khai HTTPS hoặc đường dẫn /images/.</small>
                 <label className="academy-check">
                   <input
@@ -409,7 +411,7 @@ export function AcademySiteEditor({ demo, courses, perform, notice }: any) {
                 open={section !== "tat-ca"}
               >
                 <summary>Liên hệ & chính sách</summary>
-                <fieldset disabled={!loaded || saving}>
+                <fieldset disabled={!loaded || saving || imageUploads>0}>
                   <legend>Thông tin hỗ trợ</legend>
                   <div hidden={!visible("lien-he")}>
                     {field("contact_email", "Email liên hệ")}
@@ -459,7 +461,7 @@ export function AcademySiteEditor({ demo, courses, perform, notice }: any) {
                   </select>
                 </label>
                 {selected && (
-                  <fieldset disabled={!loaded || saving}>
+                  <fieldset disabled={!loaded || saving || imageUploads>0}>
                     <legend>Nội dung khóa học</legend>
                     {[
                       ["audience", "Đối tượng học"],
@@ -538,7 +540,7 @@ export function AcademySiteEditor({ demo, courses, perform, notice }: any) {
                 open={section !== "tat-ca"}
               >
                 <summary>Hồ sơ giáo viên</summary>
-                <fieldset disabled={!loaded || saving}>
+                <fieldset disabled={!loaded || saving || imageUploads>0}>
                   <legend>Giáo viên giới thiệu công khai</legend>
                   <label className="academy-check">
                     <input
@@ -551,12 +553,12 @@ export function AcademySiteEditor({ demo, courses, perform, notice }: any) {
                     Hiện mục giáo viên tiêu biểu kể cả khi đang cập nhật
                   </label>
                   {(value.teachers || []).map((t: any, i: number) => (
-                    <div className="academy-editor-row" key={i}>
+                    <div className="academy-editor-row" key={i}><WebsiteImage label="Ảnh giáo viên" value={t.Image||t.image||""} demo={demo} onBusy={n=>setImageUploads(v=>v+n)} onChange={url=>changeRow("teachers",i,"Image",url)}/>
                       {[
                         ["Name", "Họ tên"],
                         ["Subject", "Môn phụ trách"],
                         ["Bio", "Kinh nghiệm & giới thiệu"],
- ["Image", "Ảnh giáo viên (URL)"],
+
                       ].map(([key, label]) => (
                         <label key={key}>
                           {label}
@@ -639,7 +641,7 @@ export function AcademySiteEditor({ demo, courses, perform, notice }: any) {
                 open={section !== "tat-ca"}
               >
                 <summary>Cảm nhận học sinh & phụ huynh</summary>
-                <fieldset disabled={!loaded || saving}>
+                <fieldset disabled={!loaded || saving || imageUploads>0}>
                   <legend>Chia sẻ thực tế được đồng ý công khai</legend>
                   <p>
                     Chỉ công khai lời nhận xét thật đã được đồng ý sử dụng. Có thể
@@ -661,7 +663,7 @@ export function AcademySiteEditor({ demo, courses, perform, notice }: any) {
                   </label>
                   {(value.testimonials || []).map((t: any, i: number) => (
                     <div className="academy-editor-row" key={i}>
-                      <label>Ảnh người chia sẻ (URL)<input value={t.Image||""} onChange={e=>changeRow("testimonials",i,"Image",e.target.value)}/></label>
+                      <WebsiteImage label="Ảnh người chia sẻ" value={t.Image||t.image||""} demo={demo} onBusy={n=>setImageUploads(v=>v+n)} onChange={url=>changeRow("testimonials",i,"Image",url)}/>
                       <label className="academy-check"><input type="checkbox" checked={!!t.Sample} onChange={e=>changeRow("testimonials",i,"Sample",e.target.checked)}/>Nội dung thử nghiệm — không công khai</label>
                       <label>
                         Tên hiển thị
@@ -781,10 +783,10 @@ export function AcademySiteEditor({ demo, courses, perform, notice }: any) {
                 open={section !== "tat-ca"}
               >
                 <summary>Bài viết & lịch khai giảng</summary>
-                <fieldset disabled={!loaded || saving}>
+                <fieldset disabled={!loaded || saving || imageUploads>0}>
                   <legend>Bài viết</legend>
                   {(value.posts || []).map((p: any, i: number) => (
-                    <div className="academy-editor-row" key={i}>
+                    <div className="academy-editor-row" key={i}><WebsiteImage label="Ảnh bài viết" value={p.Image||p.image||""} demo={demo} onBusy={n=>setImageUploads(v=>v+n)} onChange={url=>changeRow("posts",i,"Image",url)}/>
                       {[
                         [
                           "Slug",
@@ -792,7 +794,7 @@ export function AcademySiteEditor({ demo, courses, perform, notice }: any) {
                         ],
                         ["Title", "Tiêu đề"],
                         ["Summary", "Tóm tắt"],
- ["Image", "Ảnh bài viết (URL)"],
+
                         ["Body", "Nội dung"],
                       ].map(([key, label]) => (
                         <label key={key}>
@@ -868,8 +870,8 @@ export function AcademySiteEditor({ demo, courses, perform, notice }: any) {
                   </button>
                 </fieldset>
               </details>
-              <fieldset hidden={!visible("cau-hoi")} disabled={!loaded || saving}><legend>Câu hỏi thường gặp</legend><p>Tối đa 30 câu. Nội dung được hiển thị trên trang chủ và có thể sửa, thêm hoặc xóa.</p>{(value.faqs||[]).map((f:any,i:number)=><div className="academy-editor-row" key={i}><label>Câu hỏi<input aria-label="Câu hỏi" required maxLength={300} value={f.Question||""} onChange={e=>changeRow("faqs",i,"Question",e.target.value)}/></label><label>Trả lời<textarea aria-label="Trả lời" required maxLength={5000} value={f.Answer||""} onChange={e=>changeRow("faqs",i,"Answer",e.target.value)}/></label><button type="button" className="secondary" onClick={()=>setValue({...value,faqs:value.faqs.filter((_:any,n:number)=>n!==i)})}>Xóa câu hỏi</button></div>)}<button type="button" disabled={(value.faqs||[]).length>=30} onClick={()=>setValue({...value,faqs:[...(value.faqs||[]),{Question:"",Answer:""}]})}>Thêm câu hỏi</button></fieldset>
-              <button disabled={!loaded || saving}>
+              <fieldset hidden={!visible("cau-hoi")} disabled={!loaded || saving || imageUploads>0}><legend>Câu hỏi thường gặp</legend><p>Tối đa 30 câu. Nội dung được hiển thị trên trang chủ và có thể sửa, thêm hoặc xóa.</p>{(value.faqs||[]).map((f:any,i:number)=><div className="academy-editor-row" key={i}><label>Câu hỏi<input aria-label="Câu hỏi" required maxLength={300} value={f.Question||""} onChange={e=>changeRow("faqs",i,"Question",e.target.value)}/></label><label>Trả lời<textarea aria-label="Trả lời" required maxLength={5000} value={f.Answer||""} onChange={e=>changeRow("faqs",i,"Answer",e.target.value)}/></label><button type="button" className="secondary" onClick={()=>setValue({...value,faqs:value.faqs.filter((_:any,n:number)=>n!==i)})}>Xóa câu hỏi</button></div>)}<button type="button" disabled={(value.faqs||[]).length>=30} onClick={()=>setValue({...value,faqs:[...(value.faqs||[]),{Question:"",Answer:""}]})}>Thêm câu hỏi</button></fieldset>
+              <button disabled={!loaded || saving || imageUploads>0}>
                 {saving ? "Đang lưu…" : "Lưu website"}
               </button>
             </form>

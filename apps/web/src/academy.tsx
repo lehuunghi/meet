@@ -1,3 +1,5 @@
+import {ReceiptTransfer,InvoiceButton} from "./academy-invoice";
+import {BroadcastManager,AcademyMailCenter} from "./academy-communications";
 import { StudentLiveClasses } from "./student-live-classes";
 import { subjectArt } from "./subject-art";
 import { LearningDataCleanup } from "./academy-data-cleanup";
@@ -414,15 +416,17 @@ export function AcademyApp({
       }
     };
     void load();
-    const timer = setInterval(() => void load(), 60000);
+    const timer = setInterval(() => void load(), 15000);
+ const refresh=()=>void load();window.addEventListener("academy-notifications-changed",refresh);window.addEventListener("focus",refresh);
     return () => {
       active = false;
       clearInterval(timer);
+ window.removeEventListener("academy-notifications-changed",refresh);window.removeEventListener("focus",refresh);
     };
-  }, [user?.id, demo]);
+  }, [user?.id, demo,tab]);
   const readNotifications = async (ids: string[]) => {
     if (!ids.length) return;
-    if (!demo) await api("/academy/notifications/read", { ids });
+    if (!demo) for(let i=0;i<ids.length;i+=100) await api("/academy/notifications/read", { ids:ids.slice(i,i+100) });
     setNotifications((v) =>
       v.map((n) => (ids.includes(n.id) ? { ...n, read: true } : n)),
     );
@@ -704,6 +708,7 @@ export function AcademyApp({
       students: "accounts",
       finance: "finance",
       settings: "finance",
+ mail: "communications",
     } as Record<string, string>
   )[route.tab];
   const routeForbidden =
@@ -751,7 +756,7 @@ export function AcademyApp({
             ["courses", "Khóa học"], ["students", "Học viên"],
             ["orders", "Duyệt thanh toán"], ["finance", "Thu chi"],
             ["website", "Quản trị website"], ["accounts", "Tài khoản & phân quyền"],
-            ["settings", "Email & thanh toán"], ["notifications", "Thông báo"],
+            ["settings", "Email & thanh toán"], ["mail", "Nội dung & gửi email"], ["notifications", "Thông báo"],
             ["profile", "Tài khoản của bạn"],
           ] : staff ? [
             ["live", "Lớp học"], ["courses", "Kho bài giảng"],
@@ -776,6 +781,7 @@ export function AcademyApp({
                     students: "accounts",
                     finance: "finance",
                     settings: "finance",
+ mail: "communications",
                   } as Record<string, string>
                 )[id] ||
                 user.permissions.includes(
@@ -789,6 +795,7 @@ export function AcademyApp({
                       students: "accounts",
                       finance: "finance",
                       settings: "finance",
+ mail: "communications",
                     } as Record<string, string>
                   )[id],
                 ),
@@ -874,7 +881,9 @@ export function AcademyApp({
                                     ? "Lớp học và giáo viên"
                                     : tab === "accounts"
                                       ? "Tài khoản và phân quyền"
-                                      : tab === "settings"
+                                      : tab === "mail"
+ ? "Nội dung & gửi email"
+ : tab === "settings"
                                         ? "Cài đặt kinh doanh"
                                         : "Tài khoản của bạn"}
             </h1>
@@ -922,7 +931,9 @@ export function AcademyApp({
             )}
           </section>
         )}
-        {tab === "notifications" && (
+        {!routeForbidden && admin && tab==="mail" && <AcademyMailCenter demo={demo}/>}
+ {admin && tab==="notifications" && (user.permissions==null||user.permissions.includes("communications")) && <BroadcastManager demo={demo} onChanged={()=>window.dispatchEvent(new Event("academy-notifications-changed"))}/>}
+ {tab === "notifications" && (
           <AcademyNotificationList
             rows={notifications}
             error={notificationError}
@@ -1457,13 +1468,13 @@ function VipPanel({
         .then(setHistory)
         .catch(() => {});
   }, []);
+  const currentOrder=useRef(orderId);currentOrder.current=orderId;
   async function checkPayment() {
     if (demo) {
       notice("Bản minh họa không có thanh toán thật.");
       return;
     }
-    setHistory(await api("/academy/orders"));
-    if (orderId) setOrder(await api("/academy/orders/" + orderId));
+    const requested=orderId;const nextHistory=await api<any[]>("/academy/orders");const nextOrder=requested?await api("/academy/orders/"+requested):null;if(currentOrder.current!==requested)return;setHistory(nextHistory);if(nextOrder)setOrder(nextOrder);
     await refreshMembership?.();
   }
   useEffect(() => {
@@ -1546,10 +1557,10 @@ function VipPanel({
                 ? "Đã từ chối"
                 : order.status === "refunded"
                   ? "Đã hoàn tiền"
-                  : "Chờ thanh toán / đối soát"}
+                  : order.invoice_number ? "Đã xác nhận chuyển khoản — chờ đối soát" : "Chờ thanh toán / đối soát"}
           </p>
           {order.status !== "paid" &&
-            order.status !== "refunded" &&
+            order.status !== "refunded" && !order.invoice_number &&
             order.qr_url && (
               <img
                 className="academy-qr"
@@ -1557,49 +1568,12 @@ function VipPanel({
                 alt="QR chuyển khoản"
               />
             )}
-          {order.status === "pending" && order.checkout_url && (
+          {order.status === "pending" && !order.invoice_number && order.checkout_url && (
             <a href={order.checkout_url} target="_blank" rel="noopener">
               Mở trang thanh toán
             </a>
           )}
-          <p>
-            Ảnh biên lai đưa đơn vào hàng chờ duyệt, không tự kích hoạt VIP.
-          </p>
-          {order.status === "pending" && (
-            <label>
-              Đính kèm biên lai
-              <input
-                type="file"
-                accept="image/png,image/jpeg"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file)
-                    void perform(async () => {
-                      if (demo) {
-                        notice("Biên lai minh họa.");
-                        return;
-                      }
-                      const signed = await api("/academy/uploads", {
-                        kind: "receipts",
-                        type: file.type,
-                        size: file.size,
-                        order: order.id,
-                      });
-                      const response = await fetch(signed.url, {
-                        method: "PUT",
-                        headers: { "Content-Type": file.type },
-                        body: file,
-                      });
-                      if (!response.ok) throw Error("Tải biên lai thất bại");
-                      await api(`/academy/orders/${order.id}/receipt`, {
-                        key: signed.key,
-                      });
-                      notice("Đã gửi biên lai để đối soát.");
-                    });
-                }}
-              />
-            </label>
-          )}
+          <ReceiptTransfer key={order.id} order={order} demo={demo} onRefresh={checkPayment}/>
         </section>
       )}
       <div className="academy-actions">
@@ -1617,7 +1591,7 @@ function VipPanel({
           status:
             (
               {
-                pending: "Chờ thanh toán",
+                pending: row.invoice_number ? "Chờ đối soát" : "Chờ thanh toán",
                 review: "Chờ đối soát",
                 paid: "Đã thanh toán",
                 rejected: "Đã từ chối",
@@ -1626,12 +1600,12 @@ function VipPanel({
             )[row.status] || row.status,
         }))}
         actions={(row: any) => (
-          <a
+          <div className="academy-actions"><InvoiceButton orderId={row.id} number={row.invoice_number} demo={demo}/><a
             href={academyHref(orderPath(row.id))}
             onClick={(e) => academyClick(e, orderPath(row.id))}
           >
             Xem đơn
-          </a>
+          </a></div>
         )}
         columns={[
           ["code", "Mã đơn"],
@@ -1909,6 +1883,7 @@ function BusinessTable({ kind, demo, perform, notice }: any) {
           kind === "orders"
             ? (row: any) => (
                 <div className="academy-actions">
+ <InvoiceButton orderId={row.id} number={row.invoice_number} demo={demo}/>
                   <button
                     onClick={() =>
                       void perform(async () => {

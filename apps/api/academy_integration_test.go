@@ -461,6 +461,7 @@ func TestAcademyIntegration(t *testing.T) {
 	exerciseAcademyCleanup(t, a, db, request, cookie, admin, student, limited, other)
 	exerciseLiveDirectory(t, a, db, request, cookie)
 	exerciseWebsiteAssets(t, a, db, request, admin, student, other)
+	exerciseAcademyCommunications(t, a, db, request, cookie("ac-teacher", "academy-school", "teacher"), admin, student, limited, other)
 	bad := request("POST", "/api/academy/webhooks/payos", `{"success":true,"data":{"amount":1000},"signature":"00"}`, nil)
 	must(bad, 403)
 }

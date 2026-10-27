@@ -217,8 +217,8 @@ func (a *app) sendNextVerification(ctx context.Context) error {
 		return e
 	}
 	defer tx.Rollback()
-	var hash, email, encrypted string
-	e = tx.QueryRowContext(ctx, "SELECT l.token_hash,l.email,l.token_encrypted FROM academy_email_links l JOIN users u ON u.school_id=l.school_id AND u.id=l.user_id JOIN academy_profiles p ON p.school_id=l.school_id AND p.user_id=l.user_id WHERE l.sent_at IS NULL AND l.verified_at IS NULL AND l.expires_at>UTC_TIMESTAMP(6) AND l.next_attempt<=UTC_TIMESTAMP(6) AND u.active=TRUE AND u.email=l.email AND p.email_verified=FALSE ORDER BY l.next_attempt LIMIT 1 FOR UPDATE SKIP LOCKED").Scan(&hash, &email, &encrypted)
+	var hash, email, encrypted, school, name string
+	e = tx.QueryRowContext(ctx, "SELECT l.token_hash,l.email,l.token_encrypted,l.school_id,u.name FROM academy_email_links l JOIN users u ON u.school_id=l.school_id AND u.id=l.user_id JOIN academy_profiles p ON p.school_id=l.school_id AND p.user_id=l.user_id WHERE l.sent_at IS NULL AND l.verified_at IS NULL AND l.expires_at>UTC_TIMESTAMP(6) AND l.next_attempt<=UTC_TIMESTAMP(6) AND u.active=TRUE AND u.email=l.email AND p.email_verified=FALSE ORDER BY l.next_attempt LIMIT 1 FOR UPDATE SKIP LOCKED").Scan(&hash, &email, &encrypted, &school, &name)
 	if e == sql.ErrNoRows {
 		return nil
 	}
@@ -239,7 +239,12 @@ func (a *app) sendNextVerification(ctx context.Context) error {
 	if sender == nil {
 		sender = sendAcademyMail
 	}
-	if e = sender(email, "Xác thực email tài khoản học tập", "Tài khoản đã được tạo. Bấm liên kết sau để xác thực email (hiệu lực 24 giờ):\n\n"+strings.TrimRight(a.origin, "/")+"/dang-nhap#xac-thuc-email="+token+"\n\nKhông cần nhập mã. Nếu không đăng ký, vui lòng bỏ qua thư này."); e != nil {
+	t, err := a.academyTemplate(ctx, school, "verification")
+	if err != nil {
+		return err
+	}
+	values := map[string]string{"name": name, "email": email, "site_url": a.origin, "verification_link": strings.TrimRight(a.origin, "/") + "/dang-nhap#xac-thuc-email=" + token}
+	if e = sender(email, renderAcademyMail(t.Subject, values), renderAcademyMail(t.Body, values)); e != nil {
 		_, _ = a.db.ExecContext(ctx, "UPDATE academy_email_links SET error_code='SMTP_UNAVAILABLE' WHERE token_hash=?", hash)
 		return e
 	}

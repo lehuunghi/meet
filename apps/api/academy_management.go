@@ -179,6 +179,14 @@ func (a *app) accountDelete(w http.ResponseWriter, r *http.Request) {
 	if !strings.HasPrefix(avatar, "academy/avatars/"+u.School+"/"+id+"/") || strings.Contains(avatar, "..") {
 		avatar = ""
 	}
+	if _, e = tx.ExecContext(r.Context(), "UPDATE academy_mail_jobs SET status='cancelled',email='',subject='',body='' WHERE school_id=? AND user_id=? AND status<>'sending'", u.School, id); e != nil {
+		problem(w, 503, "Chưa thu hồi được email")
+		return
+	}
+	if _, e = tx.ExecContext(r.Context(), "UPDATE academy_invoices i JOIN academy_orders o ON o.school_id=i.school_id AND o.id=i.order_id SET i.buyer_name='Tài khoản đã xóa',i.buyer_email='' WHERE o.school_id=? AND o.user_id=?", u.School, id); e != nil {
+		problem(w, 503, "Chưa ẩn được hồ sơ hóa đơn")
+		return
+	}
 	cfg, _ := loadSettings()
 	queries := []string{"DELETE FROM account_security WHERE user_id=?", "DELETE FROM academy_memberships WHERE user_id=?", "DELETE FROM academy_live_memberships WHERE user_id=?", "DELETE FROM academy_profiles WHERE user_id=?", "DELETE FROM academy_registration_avatars WHERE user_id=?", "DELETE FROM academy_email_links WHERE user_id=?", "DELETE FROM enrollments WHERE user_id=?", "DELETE FROM course_assistants WHERE user_id=?"}
 	for _, q := range queries {

@@ -18,6 +18,7 @@ type academyNotification struct {
 
 func (a *app) academyNotifications(w http.ResponseWriter, r *http.Request) {
 	u := who(r)
+	w.Header().Set("Cache-Control", "private,no-store")
 	if r.Method == "POST" {
 		var in struct {
 			IDs []string `json:"ids"`
@@ -57,6 +58,14 @@ func (a *app) academyNotifications(w http.ResponseWriter, r *http.Request) {
 	out := []academyNotification{}
 	add := func(kind, id, title, detail, path string) {
 		out = append(out, academyNotification{ID: digest(kind + ":" + id), Title: title, Detail: detail, Path: path, Kind: kind})
+	}
+	broadcasts, e := a.workspaceRows(r.Context(), "SELECT id,title,body FROM academy_broadcasts WHERE school_id=? AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 100", u.School)
+	if e != nil {
+		problem(w, 503, "Chưa tải được thông báo chung")
+		return
+	}
+	for _, b := range broadcasts {
+		add("broadcast", fmt.Sprint(b["id"]), fmt.Sprint(b["title"]), fmt.Sprint(b["body"]), "/hoc/thong-bao?thong-bao="+fmt.Sprint(b["id"]))
 	}
 	if u.Role == "student" || u.Role == "teacher" || (u.Role == "admin" && permitted(u, "academic")) {
 		posts, e := a.workspaceRows(r.Context(), `SELECT p.id,p.title,c.id AS course_id,c.name AS course FROM course_announcements p JOIN courses c ON c.school_id=p.school_id AND c.id=p.course_id WHERE `+courseAccess+` AND p.created_at>UTC_TIMESTAMP()-INTERVAL 90 DAY ORDER BY p.created_at DESC LIMIT 15`, u.School, u.Role, u.Role, u.ID, u.Role, u.ID)

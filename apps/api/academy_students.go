@@ -31,7 +31,23 @@ func validStudentProfile(p studentProfile) bool {
 	phone := regexp.MustCompile(`^\+?[0-9]{9,15}$`)
 	return e == nil && dob.Before(time.Now()) && dob.After(time.Now().AddDate(-110, 0, 0)) && len(strings.TrimSpace(p.Name)) > 1 && len(p.Name) <= 200 && len(p.Address) > 3 && len(p.Address) <= 500 && len(p.School) > 1 && len(p.School) <= 200 && phone.MatchString(p.Phone) && phone.MatchString(p.Parent)
 }
+func mimeAcademyBase64(body string) string {
+	raw := base64.StdEncoding.EncodeToString([]byte(body))
+	var out strings.Builder
+	for len(raw) > 76 {
+		out.WriteString(raw[:76])
+		out.WriteString("\r\n")
+		raw = raw[76:]
+	}
+	out.WriteString(raw)
+	return out.String()
+}
 func sendAcademyMail(to, subject, body string) error {
+	recipient, err := mail.ParseAddress(to)
+	if err != nil || recipient.Address != to || strings.ContainsAny(to, "\r\n") {
+		return fmt.Errorf("Email người nhận không hợp lệ")
+	}
+
 	cfg, e := loadSettings()
 	if e != nil {
 		return e
@@ -73,7 +89,7 @@ func sendAcademyMail(to, subject, body string) error {
 	if e != nil {
 		return e
 	}
-	_, e = fmt.Fprintf(out, "From: %s\r\nTo: %s\r\nSubject: =?UTF-8?B?%s?=\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n%s\r\n", c.SMTPFrom, to, base64.StdEncoding.EncodeToString([]byte(subject)), base64.StdEncoding.EncodeToString([]byte(body)))
+	_, e = fmt.Fprintf(out, "From: %s\r\nTo: %s\r\nSubject: =?UTF-8?B?%s?=\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n%s\r\n", c.SMTPFrom, to, base64.StdEncoding.EncodeToString([]byte(subject)), mimeAcademyBase64(body))
 	if e != nil {
 		return e
 	}

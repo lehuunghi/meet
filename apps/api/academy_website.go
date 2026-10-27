@@ -383,6 +383,9 @@ func validWebsiteImage(raw string) bool {
 	if len(raw) > 2000 {
 		return false
 	}
+	if regexp.MustCompile(`^/api/academy/images/[a-f0-9]{32}$`).MatchString(raw) {
+		return true
+	}
 	if regexp.MustCompile(`^/images/[a-zA-Z0-9_-]+\.(webp|png|jpe?g|svg)$`).MatchString(raw) {
 		return true
 	}

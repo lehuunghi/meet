@@ -34,6 +34,11 @@ func (a *app) academyOrderDetail(w http.ResponseWriter, r *http.Request) {
 		qr = "https://img.vietqr.io/image/" + url.PathEscape(cfg.Commerce.BankBIN) + "-" + url.PathEscape(cfg.Commerce.BankAccount) + "-compact2.png?" + params.Encode()
 	}
 	out := map[string]any{"id": id, "code": code, "amount": amount, "status": status, "description": memo, "bank_account": cfg.Commerce.BankAccount, "bank_name": cfg.Commerce.BankName, "qr_url": qr}
+	var number string
+	var receipt bool
+	_ = a.db.QueryRowContext(r.Context(), "SELECT COALESCE(i.number,''),COALESCE(o.receipt_key,'')<>'' FROM academy_orders o LEFT JOIN academy_invoices i ON i.school_id=o.school_id AND i.order_id=o.id WHERE o.school_id=? AND o.user_id=? AND o.id=?", u.School, u.ID, id).Scan(&number, &receipt)
+	out["invoice_number"] = number
+	out["has_receipt"] = receipt
 	if status == "pending" {
 		var checkout string
 		if a.db.QueryRowContext(r.Context(), "SELECT checkout_url FROM academy_order_links WHERE school_id=? AND order_id=?", u.School, id).Scan(&checkout) == nil && validCheckoutURL(checkout) {

@@ -15,6 +15,7 @@ export const academyPaths: Record<string, string> = {
   students: "/quan-tri/hoc-vien",
   finance: "/quan-tri/thu-chi",
   settings: "/quan-tri/cai-dat",
+ mail: "/quan-tri/email",
 };
 export const subjectTabs: Record<string, string> = {
   stream: "bang-tin",
