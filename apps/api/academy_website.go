@@ -8,6 +8,7 @@ import (
 	"html/template"
 	"io"
 	"net/http"
+	"net/url"
 	"regexp"
 	"strings"
 )
@@ -20,6 +21,9 @@ type academyCoursePage struct {
 	PreviewLesson string `json:"preview_lesson"`
 }
 type academySite struct {
+	HeroImage        string                       `json:"hero_image"`
+	AboutImage       string                       `json:"about_image"`
+	FAQs             []academyFAQ                 `json:"faqs"`
 	About            string                       `json:"about"`
 	ContactEmail     string                       `json:"contact_email"`
 	ContactPhone     string                       `json:"contact_phone"`
@@ -39,10 +43,14 @@ type academySite struct {
 }
 type academyTeacher struct {
 	Name, Subject, Bio string
+	Image              string
+	Sample             bool
 	Published          *bool
 }
 type academyTestimonial struct {
 	Name, Text, Audience string
+	Image                string
+	Sample               bool
 	Rating               int
 	Published            *bool
 }
@@ -69,6 +77,7 @@ func (s academySite) PublicTestimonials() []academyTestimonial {
 
 type academyPost struct {
 	Slug, Title, Summary, Body string
+	Image                      string
 	Published                  bool
 }
 type webCourse struct {
@@ -337,4 +346,46 @@ func academySubjectArt(title string) string {
 		name = "english"
 	}
 	return "/images/" + name + ".svg"
+}
+
+type academyFAQ struct{ Question, Answer string }
+
+func validWebsiteImage(raw string) bool {
+	if raw == "" {
+		return true
+	}
+	if len(raw) > 2000 {
+		return false
+	}
+	if regexp.MustCompile(`^/images/[a-zA-Z0-9_-]+\.(webp|png|jpe?g|svg)$`).MatchString(raw) {
+		return true
+	}
+	u, e := url.Parse(raw)
+	return e == nil && u.Scheme == "https" && u.Hostname() != "" && u.User == nil
+}
+func validWebsiteMedia(site academySite) bool {
+	if !validWebsiteImage(site.HeroImage) || !validWebsiteImage(site.AboutImage) || len(site.FAQs) > 30 {
+		return false
+	}
+	for _, p := range site.Posts {
+		if !validWebsiteImage(p.Image) {
+			return false
+		}
+	}
+	for _, p := range site.Teachers {
+		if !validWebsiteImage(p.Image) {
+			return false
+		}
+	}
+	for _, p := range site.Testimonials {
+		if !validWebsiteImage(p.Image) {
+			return false
+		}
+	}
+	for _, f := range site.FAQs {
+		if strings.TrimSpace(f.Question) == "" || strings.TrimSpace(f.Answer) == "" || len(f.Question) > 300 || len(f.Answer) > 5000 {
+			return false
+		}
+	}
+	return true
 }

@@ -14,6 +14,7 @@ const cmsSections = [
   ["giao-vien", "Giáo viên"],
   ["cam-nhan", "Cảm nhận"],
   ["bai-viet", "Bài viết"],
+ ["cau-hoi", "Câu hỏi thường gặp"],
   ["lien-he", "Liên hệ"],
   ["chinh-sach", "Chính sách"],
   ["ngon-ngu", "Ngôn ngữ & câu chữ"],
@@ -93,6 +94,7 @@ export function AcademySiteEditor({ demo, courses, perform, notice }: any) {
       const parsed = rows[0] ? JSON.parse(rows[0].content) : null;
       if (parsed) {
         parsed.posts = (parsed.posts || []).map((p: any) => ({
+ ...p, Image:p.Image??p.image??"",
           Slug: p.Slug ?? p.slug ?? "",
           Title: p.Title ?? p.title ?? "",
           Summary: p.Summary ?? p.summary ?? "",
@@ -100,6 +102,7 @@ export function AcademySiteEditor({ demo, courses, perform, notice }: any) {
           Published: p.Published ?? p.published ?? false,
         }));
         parsed.testimonials = (parsed.testimonials || []).map((t: any) => ({
+ ...t, Image:t.Image??t.image??"", Sample:t.Sample??t.sample??false,
           Name: t.Name ?? t.name ?? "",
           Text: t.Text ?? t.text ?? "",
           Audience: t.Audience ?? t.audience ?? "",
@@ -383,6 +386,9 @@ export function AcademySiteEditor({ demo, courses, perform, notice }: any) {
                 {field("headline", "Tên nền tảng")}
                 {field("description", "Thông điệp giới thiệu", true)}
                 {field("about", "Giới thiệu đơn vị", true)}
+ {field("hero_image", "Ảnh banner trang chủ (URL)")}
+ {field("about_image", "Ảnh giới thiệu (URL)")}
+ <small>Dùng ảnh công khai HTTPS hoặc đường dẫn /images/. Có thể thay ảnh mẫu bằng ảnh thật của đơn vị.</small>
                 <label className="academy-check">
                   <input
                     type="checkbox"
@@ -546,6 +552,7 @@ export function AcademySiteEditor({ demo, courses, perform, notice }: any) {
                         ["Name", "Họ tên"],
                         ["Subject", "Môn phụ trách"],
                         ["Bio", "Kinh nghiệm & giới thiệu"],
+ ["Image", "Ảnh giáo viên (URL)"],
                       ].map(([key, label]) => (
                         <label key={key}>
                           {label}
@@ -555,6 +562,7 @@ export function AcademySiteEditor({ demo, courses, perform, notice }: any) {
                             value={t[key] ?? t[key.toLowerCase()] ?? ""}
                             onChange={(e) => {
                               const next = {
+ ...t,
                                 Name: t.Name ?? t.name ?? "",
                                 Subject: t.Subject ?? t.subject ?? "",
                                 Bio: t.Bio ?? t.bio ?? "",
@@ -589,6 +597,7 @@ export function AcademySiteEditor({ demo, courses, perform, notice }: any) {
                         />
                         Công khai hồ sơ giáo viên này
                       </label>
+                      <label className="academy-check"><input type="checkbox" checked={!!(t.Sample??t.sample)} onChange={e=>changeRow("teachers",i,"Sample",e.target.checked)}/>Hồ sơ mẫu / ảnh AI minh họa</label>
                       <button
                         type="button"
                         className="secondary"
@@ -629,7 +638,7 @@ export function AcademySiteEditor({ demo, courses, perform, notice }: any) {
                 <fieldset disabled={!loaded || saving}>
                   <legend>Chia sẻ thực tế được đồng ý công khai</legend>
                   <p>
-                    Chỉ đăng lời nhận xét thật đã được đồng ý sử dụng. Có thể
+                    Nội dung mẫu phải giữ nhãn minh họa. Với đánh giá thật, chỉ đăng lời nhận xét đã được đồng ý sử dụng. Có thể
                     dùng tên viết tắt; không nhập số điện thoại hoặc thông tin
                     riêng tư của học sinh.
                   </p>
@@ -648,6 +657,8 @@ export function AcademySiteEditor({ demo, courses, perform, notice }: any) {
                   </label>
                   {(value.testimonials || []).map((t: any, i: number) => (
                     <div className="academy-editor-row" key={i}>
+                      <label>Ảnh người chia sẻ (URL)<input value={t.Image||""} onChange={e=>changeRow("testimonials",i,"Image",e.target.value)}/></label>
+                      <label className="academy-check"><input type="checkbox" checked={!!t.Sample} onChange={e=>changeRow("testimonials",i,"Sample",e.target.checked)}/>Nội dung mẫu / ảnh AI minh họa</label>
                       <label>
                         Tên hiển thị
                         <input
@@ -721,7 +732,7 @@ export function AcademySiteEditor({ demo, courses, perform, notice }: any) {
                             )
                           }
                         />
-                        Công khai cảm nhận này — đã được người chia sẻ đồng ý
+                        {t.Sample ? "Công khai nội dung mẫu — có nhãn minh họa" : "Công khai cảm nhận này — đã được người chia sẻ đồng ý"}
                       </label>
                       <button
                         type="button"
@@ -777,6 +788,7 @@ export function AcademySiteEditor({ demo, courses, perform, notice }: any) {
                         ],
                         ["Title", "Tiêu đề"],
                         ["Summary", "Tóm tắt"],
+ ["Image", "Ảnh bài viết (URL)"],
                         ["Body", "Nội dung"],
                       ].map(([key, label]) => (
                         <label key={key}>
@@ -852,6 +864,7 @@ export function AcademySiteEditor({ demo, courses, perform, notice }: any) {
                   </button>
                 </fieldset>
               </details>
+              <fieldset hidden={!visible("cau-hoi")} disabled={!loaded || saving}><legend>Câu hỏi thường gặp</legend><p>Tối đa 30 câu. Nội dung được hiển thị trên trang chủ và có thể sửa, thêm hoặc xóa.</p>{(value.faqs||[]).map((f:any,i:number)=><div className="academy-editor-row" key={i}><label>Câu hỏi<input aria-label="Câu hỏi" required maxLength={300} value={f.Question||""} onChange={e=>changeRow("faqs",i,"Question",e.target.value)}/></label><label>Trả lời<textarea aria-label="Trả lời" required maxLength={5000} value={f.Answer||""} onChange={e=>changeRow("faqs",i,"Answer",e.target.value)}/></label><button type="button" className="secondary" onClick={()=>setValue({...value,faqs:value.faqs.filter((_:any,n:number)=>n!==i)})}>Xóa câu hỏi</button></div>)}<button type="button" disabled={(value.faqs||[]).length>=30} onClick={()=>setValue({...value,faqs:[...(value.faqs||[]),{Question:"",Answer:""}]})}>Thêm câu hỏi</button></fieldset>
               <button disabled={!loaded || saving}>
                 {saving ? "Đang lưu…" : "Lưu website"}
               </button>

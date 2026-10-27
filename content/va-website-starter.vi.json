@@ -1,0 +1,298 @@
+{
+  "description": "Học vững kiến thức lớp 10, 11, 12 với Toán, Vật lí, Hóa học, Ngữ văn và Tiếng Anh. Một không gian để học cùng giáo viên khi có lịch Live, ôn lại bài giảng đã công bố và chủ động theo dõi tiến độ của mình.",
+  "about": "VA Academy là không gian học tập trực tuyến dành cho học sinh THPT, tập trung vào năm môn Toán, Vật lí, Hóa học, Ngữ văn và Tiếng Anh. Chúng tôi hướng tới cách học rõ mục tiêu, hiểu bản chất và có thời gian nhìn lại sau mỗi chủ đề.\n\nHọc sinh chọn đúng khối lớp, tìm môn cần học và sử dụng bài giảng đang được xuất bản để củng cố kiến thức. Với lớp trực tuyến được phân công và gói có quyền Live, việc trao đổi với giáo viên diễn ra ngay trên trình duyệt.\n\nMỗi học sinh có nhịp học riêng. Vì vậy, VA khuyến khích bắt đầu từ phần còn thiếu, ghi lại câu hỏi và duy trì lịch học vừa sức. Website đang được hoàn thiện; hồ sơ, ảnh chân dung và cảm nhận có nhãn mẫu là nội dung minh họa để đơn vị bổ sung thông tin thật.",
+  "hero_image": "/images/va-online-learning-v1.webp",
+  "about_image": "/images/va-study-desk-v1.webp",
+  "faqs": [
+    {
+      "Question": "Tôi nên bắt đầu học tại VA như thế nào?",
+      "Answer": "Chọn khối lớp và môn cần học, xem phần giới thiệu khóa rồi đăng ký tài khoản với đầy đủ hồ sơ. Sau khi đăng nhập, mở Kho bài giảng để xem nội dung đang được công bố. Bạn có thể cập nhật thông tin cá nhân trong Hồ sơ học viên."
+    },
+    {
+      "Question": "Một gói VIP dùng được cho những khóa học nào?",
+      "Answer": "VIP áp dụng chung cho toàn bộ danh mục bài giảng đã xuất bản của trung tâm trong thời hạn gói, không cần mua lại cho từng môn. Quyền học Live phụ thuộc gói đã chọn và lớp học được phân công."
+    },
+    {
+      "Question": "Học thử và VIP khác nhau thế nào?",
+      "Answer": "Tài khoản miễn phí được chọn số bài học khác nhau mỗi tháng theo hạn mức hiển thị tại bảng giá; các bài đã chọn được xem lại trong tháng đó. VIP còn hiệu lực mở quyền xem toàn bộ bài giảng đã công bố. Hãy đọc quyền lợi hiển thị trên gói trước khi thanh toán."
+    },
+    {
+      "Question": "Khi nào tôi vào được lớp Live?",
+      "Answer": "Bạn cần gói có quyền Live còn hiệu lực và được gán vào lớp tương ứng. Mở khóa học đã liên kết rồi chọn lớp trực tuyến. Khi giáo viên chuẩn bị hoặc bắt đầu buổi học, trạng thái lớp được cập nhật trong không gian học tập."
+    },
+    {
+      "Question": "Vì sao khóa học chưa có video?",
+      "Answer": "Khóa học có thể được giới thiệu trước khi bài giảng được xuất bản. Phần giới thiệu chỉ hiển thị tiêu đề bài đã công bố; việc phát video yêu cầu đăng nhập và quyền học phù hợp. Trung tâm sẽ bổ sung nội dung theo kế hoạch giảng dạy."
+    },
+    {
+      "Question": "Tôi có phải cài ứng dụng riêng không?",
+      "Answer": "Có thể học bằng trình duyệt trên máy tính hoặc điện thoại. Khi sử dụng camera, micro hoặc chia sẻ màn hình, hãy cấp quyền theo thông báo của trình duyệt. Khả năng chia sẻ màn hình trên điện thoại phụ thuộc thiết bị và trình duyệt."
+    },
+    {
+      "Question": "Thanh toán xong thì gói được kích hoạt khi nào?",
+      "Answer": "Quyền VIP được mở sau khi giao dịch được hệ thống xác nhận hoặc quản trị duyệt. Đơn đang chờ chưa cấp quyền VIP. Bạn có thể xem trạng thái trong Gói học & thanh toán; giữ thông tin đơn và biên lai để gửi hỗ trợ khi cần."
+    },
+    {
+      "Question": "Phụ huynh có thể đồng hành cùng học sinh thế nào?",
+      "Answer": "Cùng con thống nhất mục tiêu vừa sức, kiểm tra lịch học và trao đổi định kỳ về nội dung cần hỗ trợ. Thông tin phụ huynh trong hồ sơ học sinh cần chính xác để phục vụ liên hệ khi cần thiết; không công khai thông tin riêng trong bình luận hoặc chat lớp."
+    }
+  ],
+  "teachers": [
+    {
+      "Name": "Giáo viên Toán",
+      "Subject": "Toán · Khối 10–12",
+      "Bio": "Hiểu bản chất, trình bày mạch lạc và luyện cách giải thay vì chỉ ghi nhớ công thức. Nội dung giới thiệu mẫu; tên, chuyên môn và kinh nghiệm thực tế sẽ được đơn vị cập nhật.",
+      "Image": "/images/teacher-math-v1.webp",
+      "Sample": true,
+      "Published": true
+    },
+    {
+      "Name": "Giáo viên Vật lí",
+      "Subject": "Vật lí · Khối 10–12",
+      "Bio": "Kết nối hiện tượng với mô hình, hiểu đại lượng và biết kiểm tra ý nghĩa của đáp số. Nội dung giới thiệu mẫu; tên, chuyên môn và kinh nghiệm thực tế sẽ được đơn vị cập nhật.",
+      "Image": "/images/teacher-physics-v1.webp",
+      "Sample": true,
+      "Published": true
+    },
+    {
+      "Name": "Giáo viên Hóa học",
+      "Subject": "Hóa học · Khối 10–12",
+      "Bio": "Sắp xếp kiến thức thành hệ thống, hiểu mối liên hệ giữa cấu tạo, tính chất và phản ứng. Nội dung giới thiệu mẫu; tên, chuyên môn và kinh nghiệm thực tế sẽ được đơn vị cập nhật.",
+      "Image": "/images/teacher-chemistry-v1.webp",
+      "Sample": true,
+      "Published": true
+    },
+    {
+      "Name": "Giáo viên Ngữ văn",
+      "Subject": "Ngữ văn · Khối 10–12",
+      "Bio": "Đọc sâu văn bản, tìm dẫn chứng phù hợp và xây dựng bài viết có quan điểm riêng, có căn cứ. Nội dung giới thiệu mẫu; tên, chuyên môn và kinh nghiệm thực tế sẽ được đơn vị cập nhật.",
+      "Image": "/images/teacher-literature-v1.webp",
+      "Sample": true,
+      "Published": true
+    },
+    {
+      "Name": "Giáo viên Tiếng Anh",
+      "Subject": "Tiếng Anh · Khối 10–12",
+      "Bio": "Phối hợp nghe, nói, đọc, viết; học từ vựng trong ngữ cảnh và duy trì luyện tập đều đặn. Nội dung giới thiệu mẫu; tên, chuyên môn và kinh nghiệm thực tế sẽ được đơn vị cập nhật.",
+      "Image": "/images/teacher-english-v1.webp",
+      "Sample": true,
+      "Published": true
+    }
+  ],
+  "testimonials": [
+    {
+      "Name": "Học sinh lớp 10 — mẫu",
+      "Audience": "student",
+      "Text": "Em thích một lộ trình rõ ràng: biết bài nào cần học, ghi lại phần chưa hiểu và chủ động ôn lại sau buổi học. Đây là lời chia sẻ mẫu để minh họa bố cục website.",
+      "Image": "/images/review-student-female-v1.webp",
+      "Rating": 0,
+      "Sample": true,
+      "Published": true
+    },
+    {
+      "Name": "Học sinh lớp 12 — mẫu",
+      "Audience": "student",
+      "Text": "Điều em mong ở một không gian học tập là dễ tìm môn, dễ theo dõi bài và dành nhiều thời gian hơn cho phần mình còn yếu. Nội dung này là mẫu, chưa phải đánh giá thực tế.",
+      "Image": "/images/review-student-male-v1.webp",
+      "Rating": 0,
+      "Sample": true,
+      "Published": true
+    },
+    {
+      "Name": "Phụ huynh — mẫu",
+      "Audience": "parent",
+      "Text": "Tôi mong có thể cùng con nhìn lại lịch học và trao đổi đều đặn về những nội dung cần hỗ trợ, thay vì chỉ hỏi kết quả cuối cùng. Đây là nội dung minh họa, sẽ được thay bằng chia sẻ thật.",
+      "Image": "/images/review-parent-v1.webp",
+      "Rating": 0,
+      "Sample": true,
+      "Published": true
+    }
+  ],
+  "posts": [
+    {
+      "Slug": "hoc-toan-hieu-ban-chat-truoc-khi-luyen-nhieu",
+      "Title": "Học Toán: hiểu một bài thật kỹ trước khi luyện nhiều",
+      "Summary": "Tách lời giải thành các bước nhỏ để biết mình hiểu ở đâu và đang vướng chỗ nào.",
+      "Body": "Bắt đầu từ câu hỏi của bài toán\nTrước khi tính, hãy viết ngắn gọn: đề cho gì, cần tìm gì và những điều kiện nào phải giữ. Việc này giúp tránh dùng một công thức chỉ vì thấy quen.\n\nTự giải thích từng bước\nKhi xem một lời giải, dừng lại trước mỗi phép biến đổi. Thử nói vì sao bước đó hợp lí. Nếu chưa giải thích được, quay về định nghĩa hoặc ví dụ đơn giản hơn.\n\nLuyện ít nhưng có đối chiếu\nChọn một nhóm bài cùng chủ đề, tự làm trước rồi mới xem hướng dẫn. Với mỗi lỗi, ghi lại nguyên nhân: đọc thiếu điều kiện, chọn sai phương pháp hay tính nhầm. Khi ôn lại, bắt đầu từ sổ lỗi này.\n\nHọc cùng VA\nChọn đúng khối lớp trong danh mục, đọc lộ trình của môn Toán và mở những bài giảng đang được công bố. Danh mục được giới thiệu trước không có nghĩa mọi video đã sẵn sàng; nội dung được bổ sung theo kế hoạch của trung tâm.",
+      "Image": "/images/article-math-v1.webp",
+      "Published": true
+    },
+    {
+      "Slug": "vat-li-tu-hien-tuong-den-mo-hinh",
+      "Title": "Vật lí: đi từ hiện tượng đến mô hình",
+      "Summary": "Đọc đồ thị, kiểm tra đơn vị và giải thích ý nghĩa của đáp số trước khi kết luận.",
+      "Body": "Mô tả điều đang xảy ra\nHãy bắt đầu bằng một câu diễn tả hiện tượng. Vật chuyển động ra sao, hệ đang trao đổi năng lượng hay những đại lượng nào thay đổi? Một hình phác thảo thường hữu ích hơn việc viết công thức ngay.\n\nChọn đúng đại lượng\nGhi kí hiệu, đơn vị và dữ kiện được biết. Với đồ thị, đọc tên trục và tỉ lệ trước khi suy ra mối quan hệ. Cùng một hình dạng đồ thị có thể mang ý nghĩa khác nếu các trục khác nhau.\n\nKiểm tra kết quả\nSau khi tính, đối chiếu đơn vị và xem độ lớn có hợp lí không. Trở lại câu hỏi ban đầu để giải thích đáp số bằng lời. Nếu chỉ có một con số mà chưa giải thích được, hãy xem lại mô hình đã chọn.\n\nÔn theo chủ đề\nTrong khóa Vật lí của khối đang học, xem phần còn thiếu, ghi một câu hỏi cụ thể và mang câu hỏi đó tới buổi trao đổi với giáo viên khi có lịch phù hợp.",
+      "Image": "/images/article-math-v1.webp",
+      "Published": true
+    },
+    {
+      "Slug": "hoa-hoc-hoc-bang-so-do-kien-thuc",
+      "Title": "Hóa học: hệ thống kiến thức bằng sơ đồ",
+      "Summary": "Kết nối cấu tạo, tính chất và phản ứng để học có hệ thống thay vì ghi nhớ rời rạc.",
+      "Body": "Gom kiến thức theo mối liên hệ\nVới mỗi nhóm chất, tạo một sơ đồ gồm cấu tạo, tính chất đặc trưng và phản ứng tiêu biểu. Mục tiêu là hiểu vì sao có tính chất đó, không chỉ ghi tên phản ứng.\n\nViết phương trình có kiểm tra\nKiểm tra chất tham gia, điều kiện phản ứng và sản phẩm. Sau khi cân bằng, đếm lại các nguyên tố. Khi giải bài tập, ghi rõ đơn vị và đại lượng đang sử dụng.\n\nPhân loại lỗi để ôn lại\nTách lỗi kiến thức, lỗi lập phương trình và lỗi tính toán. Mỗi nhóm cần cách sửa khác nhau. Có thể dùng một trang ghi chú riêng để theo dõi những dạng còn nhầm.\n\nHọc phù hợp với kế hoạch\nLộ trình khóa Hóa học tại VA là phần giới thiệu định hướng. Chủ đề và thứ tự bài giảng được điều chỉnh theo kế hoạch thực tế của giáo viên. Không tự thực hiện thí nghiệm nếu chưa có hướng dẫn và điều kiện phù hợp.",
+      "Image": "/images/va-study-desk-v1.webp",
+      "Published": true
+    },
+    {
+      "Slug": "ngu-van-tu-doc-hieu-den-bai-viet-co-quan-diem",
+      "Title": "Ngữ văn: từ đọc hiểu đến bài viết có quan điểm",
+      "Summary": "Dùng câu hỏi, dẫn chứng và lập luận để xây dựng bài viết của chính mình.",
+      "Body": "Đọc với một câu hỏi\nTrước khi đọc, chọn điều muốn tìm hiểu: nhân vật thay đổi thế nào, hình ảnh nào lặp lại hoặc người kể đang nhìn sự việc từ đâu. Gạch lại những chi tiết liên quan và ghi cảm nhận bằng lời của mình.\n\nTừ dẫn chứng đến luận điểm\nMột chi tiết chưa tự tạo thành một lập luận. Hãy giải thích chi tiết đó cho thấy điều gì, có liên hệ thế nào với ý chính và vì sao nó phù hợp với câu hỏi đang phân tích.\n\nViết nháp rồi sửa\nLập dàn ý ngắn, viết từng đoạn theo một mục tiêu rõ ràng, sau đó đọc lại để bỏ phần lặp hoặc thiếu căn cứ. Tránh học thuộc một bài mẫu để dùng cho mọi đề.\n\nGiữ tiếng nói riêng\nĐối chiếu hướng dẫn của giáo viên nhưng vẫn tự diễn đạt. Khi tham khảo tài liệu, ghi lại nguồn và tránh chép nguyên đoạn thay cho việc tự phân tích. Khóa Ngữ văn trên VA giúp tập trung nội dung theo từng khối lớp để việc ôn tập thuận tiện hơn.",
+      "Image": "/images/article-literature-v1.webp",
+      "Published": true
+    },
+    {
+      "Slug": "tieng-anh-hoc-deu-voi-nhung-buoc-nho",
+      "Title": "Tiếng Anh: duy trì bằng những bước nhỏ mỗi ngày",
+      "Summary": "Học từ trong ngữ cảnh, kết hợp nghe và sử dụng lại kiến thức vừa học.",
+      "Body": "Chọn một chủ đề gần gũi\nMột đoạn hội thoại ngắn, một bài đọc phù hợp hoặc một chủ đề đang học trên lớp là điểm bắt đầu tốt. Ghi lại một nhóm từ hữu ích thay vì một danh sách quá dài không có ngữ cảnh.\n\nNghe, đọc và dùng lại\nNghe để nắm ý, đọc lại phần chưa rõ rồi thử nói hoặc viết vài câu có dùng nhóm từ vừa học. Mục tiêu là sử dụng được trong tình huống, không chỉ nhận ra từ khi nhìn thấy.\n\nÔn lại trước khi học thêm\nDành một phần buổi học để nhớ lại kiến thức cũ mà không nhìn ghi chú. Sau đó mới đối chiếu và bổ sung phần còn thiếu. Điều chỉnh khối lượng để duy trì được lịch học.\n\nTheo dõi việc đã làm\nGhi lại nội dung đã nghe, đọc hoặc viết và một câu hỏi cần giải đáp. Trong khóa Tiếng Anh theo khối tại VA, đọc phần giới thiệu và chọn bài giảng đang được xuất bản phù hợp với nhu cầu hiện tại.",
+      "Image": "/images/article-english-v1.webp",
+      "Published": true
+    },
+    {
+      "Slug": "nhin-lai-tuan-hoc-bang-ba-cau-hoi",
+      "Title": "Nhìn lại một tuần học bằng ba câu hỏi",
+      "Summary": "Một cách tự tổng kết ngắn gọn để chọn việc cần làm tiếp theo.",
+      "Body": "Tuần này mình đã hiểu rõ hơn điều gì?\nChọn một nội dung cụ thể và thử tự giải thích. Có thể là một dạng bài, một khái niệm hoặc cách trình bày mà trước đây còn lúng túng. Ưu tiên ví dụ thực tế thay vì chỉ ghi đã học xong.\n\nPhần nào vẫn cần hỗ trợ?\nViết câu hỏi đủ rõ để giáo viên hoặc bạn học biết điểm đang vướng. Ví dụ: chưa hiểu vì sao dùng phương pháp này, chưa xác định được dữ kiện nào quan trọng hoặc chưa biết sửa một đoạn viết.\n\nTuần tới nên làm gì trước?\nChọn một vài việc vừa sức: xem lại một bài, hoàn thành bài tập được giao hoặc chuẩn bị câu hỏi cho buổi học. Không cần đặt quá nhiều việc cùng lúc.\n\nDùng công cụ để hỗ trợ\nLịch học, bài giảng và tiến độ trên VA là nơi đối chiếu việc học của mình. Dữ liệu được ghi nhận phụ thuộc nội dung đã công bố và lớp được phân công; hãy liên hệ kênh hỗ trợ nếu thông tin hiển thị chưa phù hợp.",
+      "Image": "/images/va-study-desk-v1.webp",
+      "Published": true
+    }
+  ],
+  "courses_by_title": {
+    "Toán – Lớp 10": {
+      "description": "Toán lớp 10: Hiểu bản chất, trình bày mạch lạc và luyện cách giải thay vì chỉ ghi nhớ công thức. Học theo chủ đề, ôn tập bằng bài giảng được công bố và theo dõi tiến độ trong tài khoản.",
+      "page": {
+        "audience": "Học sinh lớp 10 muốn củng cố kiến thức Toán, xây dựng cách học đều đặn và có lộ trình ôn tập rõ ràng. Có thể dùng để học lại phần còn thiếu hoặc chủ động chuẩn bị trước bài mới.",
+        "objectives": "Nhận diện dạng bài và điều kiện áp dụng\nTrình bày lời giải theo từng bước rõ ràng\nTự kiểm tra kết quả và ghi lại lỗi thường gặp",
+        "outline": "Tập hợp, mệnh đề và tư duy lập luận\nHàm số, đồ thị và các bài toán đại số\nVectơ và hình học tọa độ trong mặt phẳng\nThống kê, xác suất và vận dụng thực tế\nÔn tập theo chủ đề, tự kiểm tra và rút kinh nghiệm",
+        "schedule": "Lộ trình trên là gợi ý nội dung, được điều chỉnh theo kế hoạch của giáo viên. Bài giảng hiển thị khi trung tâm xuất bản. Lịch Live và nút vào lớp xuất hiện trong lớp được phân công; tham gia Live cần gói có quyền Live còn hiệu lực."
+      }
+    },
+    "Toán – Lớp 11": {
+      "description": "Toán lớp 11: Hiểu bản chất, trình bày mạch lạc và luyện cách giải thay vì chỉ ghi nhớ công thức. Học theo chủ đề, ôn tập bằng bài giảng được công bố và theo dõi tiến độ trong tài khoản.",
+      "page": {
+        "audience": "Học sinh lớp 11 muốn củng cố kiến thức Toán, xây dựng cách học đều đặn và có lộ trình ôn tập rõ ràng. Có thể dùng để học lại phần còn thiếu hoặc chủ động chuẩn bị trước bài mới.",
+        "objectives": "Nhận diện dạng bài và điều kiện áp dụng\nTrình bày lời giải theo từng bước rõ ràng\nTự kiểm tra kết quả và ghi lại lỗi thường gặp",
+        "outline": "Hàm số lượng giác và phương trình lượng giác\nDãy số, cấp số cộng và cấp số nhân\nGiới hạn, tính liên tục và đạo hàm\nHình học không gian và đọc hiểu số liệu\nÔn tập theo chủ đề, tự kiểm tra và rút kinh nghiệm",
+        "schedule": "Lộ trình trên là gợi ý nội dung, được điều chỉnh theo kế hoạch của giáo viên. Bài giảng hiển thị khi trung tâm xuất bản. Lịch Live và nút vào lớp xuất hiện trong lớp được phân công; tham gia Live cần gói có quyền Live còn hiệu lực."
+      }
+    },
+    "Toán – Lớp 12": {
+      "description": "Toán lớp 12: Hiểu bản chất, trình bày mạch lạc và luyện cách giải thay vì chỉ ghi nhớ công thức. Học theo chủ đề, ôn tập bằng bài giảng được công bố và theo dõi tiến độ trong tài khoản.",
+      "page": {
+        "audience": "Học sinh lớp 12 muốn củng cố kiến thức Toán, xây dựng cách học đều đặn và có lộ trình ôn tập rõ ràng. Có thể dùng để học lại phần còn thiếu hoặc chủ động chuẩn bị trước bài mới.",
+        "objectives": "Nhận diện dạng bài và điều kiện áp dụng\nTrình bày lời giải theo từng bước rõ ràng\nTự kiểm tra kết quả và ghi lại lỗi thường gặp",
+        "outline": "Khảo sát hàm số và ứng dụng đạo hàm\nNguyên hàm, tích phân và bài toán ứng dụng\nVectơ, tọa độ và hình học trong không gian\nThống kê, xác suất và luyện tập tổng hợp\nÔn tập theo chủ đề, tự kiểm tra và rút kinh nghiệm",
+        "schedule": "Lộ trình trên là gợi ý nội dung, được điều chỉnh theo kế hoạch của giáo viên. Bài giảng hiển thị khi trung tâm xuất bản. Lịch Live và nút vào lớp xuất hiện trong lớp được phân công; tham gia Live cần gói có quyền Live còn hiệu lực."
+      }
+    },
+    "Vật lí – Lớp 10": {
+      "description": "Vật lí lớp 10: Kết nối hiện tượng với mô hình, hiểu đại lượng và biết kiểm tra ý nghĩa của đáp số. Học theo chủ đề, ôn tập bằng bài giảng được công bố và theo dõi tiến độ trong tài khoản.",
+      "page": {
+        "audience": "Học sinh lớp 10 muốn củng cố kiến thức Vật lí, xây dựng cách học đều đặn và có lộ trình ôn tập rõ ràng. Có thể dùng để học lại phần còn thiếu hoặc chủ động chuẩn bị trước bài mới.",
+        "objectives": "Tóm tắt dữ kiện, đổi đơn vị và đọc đồ thị\nChọn mô hình phù hợp cho từng tình huống\nGiải thích hiện tượng trước khi tính toán",
+        "outline": "Chuyển động và mô tả bằng đồ thị\nLực, các định luật chuyển động và cân bằng\nCông, năng lượng và động lượng\nThực hành xử lí số liệu và bài toán vận dụng\nÔn tập theo chủ đề, tự kiểm tra và rút kinh nghiệm",
+        "schedule": "Lộ trình trên là gợi ý nội dung, được điều chỉnh theo kế hoạch của giáo viên. Bài giảng hiển thị khi trung tâm xuất bản. Lịch Live và nút vào lớp xuất hiện trong lớp được phân công; tham gia Live cần gói có quyền Live còn hiệu lực."
+      }
+    },
+    "Vật lí – Lớp 11": {
+      "description": "Vật lí lớp 11: Kết nối hiện tượng với mô hình, hiểu đại lượng và biết kiểm tra ý nghĩa của đáp số. Học theo chủ đề, ôn tập bằng bài giảng được công bố và theo dõi tiến độ trong tài khoản.",
+      "page": {
+        "audience": "Học sinh lớp 11 muốn củng cố kiến thức Vật lí, xây dựng cách học đều đặn và có lộ trình ôn tập rõ ràng. Có thể dùng để học lại phần còn thiếu hoặc chủ động chuẩn bị trước bài mới.",
+        "objectives": "Tóm tắt dữ kiện, đổi đơn vị và đọc đồ thị\nChọn mô hình phù hợp cho từng tình huống\nGiải thích hiện tượng trước khi tính toán",
+        "outline": "Dao động và cách đọc các đại lượng đặc trưng\nSóng và những hiện tượng thường gặp\nĐiện trường, điện thế và năng lượng điện\nDòng điện, mạch điện và bài toán tổng hợp\nÔn tập theo chủ đề, tự kiểm tra và rút kinh nghiệm",
+        "schedule": "Lộ trình trên là gợi ý nội dung, được điều chỉnh theo kế hoạch của giáo viên. Bài giảng hiển thị khi trung tâm xuất bản. Lịch Live và nút vào lớp xuất hiện trong lớp được phân công; tham gia Live cần gói có quyền Live còn hiệu lực."
+      }
+    },
+    "Vật lí – Lớp 12": {
+      "description": "Vật lí lớp 12: Kết nối hiện tượng với mô hình, hiểu đại lượng và biết kiểm tra ý nghĩa của đáp số. Học theo chủ đề, ôn tập bằng bài giảng được công bố và theo dõi tiến độ trong tài khoản.",
+      "page": {
+        "audience": "Học sinh lớp 12 muốn củng cố kiến thức Vật lí, xây dựng cách học đều đặn và có lộ trình ôn tập rõ ràng. Có thể dùng để học lại phần còn thiếu hoặc chủ động chuẩn bị trước bài mới.",
+        "objectives": "Tóm tắt dữ kiện, đổi đơn vị và đọc đồ thị\nChọn mô hình phù hợp cho từng tình huống\nGiải thích hiện tượng trước khi tính toán",
+        "outline": "Vật lí nhiệt và những quá trình biến đổi\nKhí lí tưởng và các mô hình mô tả\nTừ trường và cảm ứng điện từ\nVật lí hạt nhân và luyện tập ứng dụng\nÔn tập theo chủ đề, tự kiểm tra và rút kinh nghiệm",
+        "schedule": "Lộ trình trên là gợi ý nội dung, được điều chỉnh theo kế hoạch của giáo viên. Bài giảng hiển thị khi trung tâm xuất bản. Lịch Live và nút vào lớp xuất hiện trong lớp được phân công; tham gia Live cần gói có quyền Live còn hiệu lực."
+      }
+    },
+    "Hóa học – Lớp 10": {
+      "description": "Hóa học lớp 10: Sắp xếp kiến thức thành hệ thống, hiểu mối liên hệ giữa cấu tạo, tính chất và phản ứng. Học theo chủ đề, ôn tập bằng bài giảng được công bố và theo dõi tiến độ trong tài khoản.",
+      "page": {
+        "audience": "Học sinh lớp 10 muốn củng cố kiến thức Hóa học, xây dựng cách học đều đặn và có lộ trình ôn tập rõ ràng. Có thể dùng để học lại phần còn thiếu hoặc chủ động chuẩn bị trước bài mới.",
+        "objectives": "Đọc và cân bằng phương trình phản ứng\nLiên hệ cấu tạo với tính chất của chất\nLập sơ đồ kiến thức và giải bài tập có kiểm tra",
+        "outline": "Cấu tạo nguyên tử và bảng tuần hoàn\nLiên kết hóa học và cấu tạo chất\nPhản ứng oxi hóa – khử và năng lượng hóa học\nTốc độ phản ứng và kiến thức nhóm halogen\nÔn tập theo chủ đề, tự kiểm tra và rút kinh nghiệm",
+        "schedule": "Lộ trình trên là gợi ý nội dung, được điều chỉnh theo kế hoạch của giáo viên. Bài giảng hiển thị khi trung tâm xuất bản. Lịch Live và nút vào lớp xuất hiện trong lớp được phân công; tham gia Live cần gói có quyền Live còn hiệu lực."
+      }
+    },
+    "Hóa học – Lớp 11": {
+      "description": "Hóa học lớp 11: Sắp xếp kiến thức thành hệ thống, hiểu mối liên hệ giữa cấu tạo, tính chất và phản ứng. Học theo chủ đề, ôn tập bằng bài giảng được công bố và theo dõi tiến độ trong tài khoản.",
+      "page": {
+        "audience": "Học sinh lớp 11 muốn củng cố kiến thức Hóa học, xây dựng cách học đều đặn và có lộ trình ôn tập rõ ràng. Có thể dùng để học lại phần còn thiếu hoặc chủ động chuẩn bị trước bài mới.",
+        "objectives": "Đọc và cân bằng phương trình phản ứng\nLiên hệ cấu tạo với tính chất của chất\nLập sơ đồ kiến thức và giải bài tập có kiểm tra",
+        "outline": "Cân bằng hóa học và các yếu tố ảnh hưởng\nKiến thức trọng tâm về nitrogen, sulfur và hợp chất\nNhập môn hóa học hữu cơ và hydrocarbon\nHợp chất hữu cơ chứa oxygen và bài tập hệ thống\nÔn tập theo chủ đề, tự kiểm tra và rút kinh nghiệm",
+        "schedule": "Lộ trình trên là gợi ý nội dung, được điều chỉnh theo kế hoạch của giáo viên. Bài giảng hiển thị khi trung tâm xuất bản. Lịch Live và nút vào lớp xuất hiện trong lớp được phân công; tham gia Live cần gói có quyền Live còn hiệu lực."
+      }
+    },
+    "Hóa học – Lớp 12": {
+      "description": "Hóa học lớp 12: Sắp xếp kiến thức thành hệ thống, hiểu mối liên hệ giữa cấu tạo, tính chất và phản ứng. Học theo chủ đề, ôn tập bằng bài giảng được công bố và theo dõi tiến độ trong tài khoản.",
+      "page": {
+        "audience": "Học sinh lớp 12 muốn củng cố kiến thức Hóa học, xây dựng cách học đều đặn và có lộ trình ôn tập rõ ràng. Có thể dùng để học lại phần còn thiếu hoặc chủ động chuẩn bị trước bài mới.",
+        "objectives": "Đọc và cân bằng phương trình phản ứng\nLiên hệ cấu tạo với tính chất của chất\nLập sơ đồ kiến thức và giải bài tập có kiểm tra",
+        "outline": "Ester, lipid và carbohydrate\nHợp chất chứa nitrogen và vật liệu polymer\nĐiện hóa, kim loại và tính chất đặc trưng\nSơ đồ chuyển hóa và luyện tập tổng hợp\nÔn tập theo chủ đề, tự kiểm tra và rút kinh nghiệm",
+        "schedule": "Lộ trình trên là gợi ý nội dung, được điều chỉnh theo kế hoạch của giáo viên. Bài giảng hiển thị khi trung tâm xuất bản. Lịch Live và nút vào lớp xuất hiện trong lớp được phân công; tham gia Live cần gói có quyền Live còn hiệu lực."
+      }
+    },
+    "Ngữ văn – Lớp 10": {
+      "description": "Ngữ văn lớp 10: Đọc sâu văn bản, tìm dẫn chứng phù hợp và xây dựng bài viết có quan điểm riêng, có căn cứ. Học theo chủ đề, ôn tập bằng bài giảng được công bố và theo dõi tiến độ trong tài khoản.",
+      "page": {
+        "audience": "Học sinh lớp 10 muốn củng cố kiến thức Ngữ văn, xây dựng cách học đều đặn và có lộ trình ôn tập rõ ràng. Có thể dùng để học lại phần còn thiếu hoặc chủ động chuẩn bị trước bài mới.",
+        "objectives": "Đọc hiểu theo thể loại và bối cảnh văn bản\nXây dựng luận điểm, dẫn chứng và lập luận\nRèn viết, nói và lắng nghe qua từng chủ đề",
+        "outline": "Đọc hiểu truyện, thơ và văn bản theo thể loại\nNhận diện chi tiết, hình tượng và thông điệp\nViết đoạn văn và bài văn có bố cục rõ ràng\nLuyện nói, lắng nghe và phản hồi có căn cứ\nÔn tập theo chủ đề, tự kiểm tra và rút kinh nghiệm",
+        "schedule": "Lộ trình trên là gợi ý nội dung, được điều chỉnh theo kế hoạch của giáo viên. Bài giảng hiển thị khi trung tâm xuất bản. Lịch Live và nút vào lớp xuất hiện trong lớp được phân công; tham gia Live cần gói có quyền Live còn hiệu lực."
+      }
+    },
+    "Ngữ văn – Lớp 11": {
+      "description": "Ngữ văn lớp 11: Đọc sâu văn bản, tìm dẫn chứng phù hợp và xây dựng bài viết có quan điểm riêng, có căn cứ. Học theo chủ đề, ôn tập bằng bài giảng được công bố và theo dõi tiến độ trong tài khoản.",
+      "page": {
+        "audience": "Học sinh lớp 11 muốn củng cố kiến thức Ngữ văn, xây dựng cách học đều đặn và có lộ trình ôn tập rõ ràng. Có thể dùng để học lại phần còn thiếu hoặc chủ động chuẩn bị trước bài mới.",
+        "objectives": "Đọc hiểu theo thể loại và bối cảnh văn bản\nXây dựng luận điểm, dẫn chứng và lập luận\nRèn viết, nói và lắng nghe qua từng chủ đề",
+        "outline": "Đọc hiểu văn bản tự sự, trữ tình và kịch\nPhân tích điểm nhìn, ngôn ngữ và hình tượng\nNghị luận văn học, nghị luận xã hội và dẫn chứng\nThực hành viết, sửa bài và trình bày ý kiến\nÔn tập theo chủ đề, tự kiểm tra và rút kinh nghiệm",
+        "schedule": "Lộ trình trên là gợi ý nội dung, được điều chỉnh theo kế hoạch của giáo viên. Bài giảng hiển thị khi trung tâm xuất bản. Lịch Live và nút vào lớp xuất hiện trong lớp được phân công; tham gia Live cần gói có quyền Live còn hiệu lực."
+      }
+    },
+    "Ngữ văn – Lớp 12": {
+      "description": "Ngữ văn lớp 12: Đọc sâu văn bản, tìm dẫn chứng phù hợp và xây dựng bài viết có quan điểm riêng, có căn cứ. Học theo chủ đề, ôn tập bằng bài giảng được công bố và theo dõi tiến độ trong tài khoản.",
+      "page": {
+        "audience": "Học sinh lớp 12 muốn củng cố kiến thức Ngữ văn, xây dựng cách học đều đặn và có lộ trình ôn tập rõ ràng. Có thể dùng để học lại phần còn thiếu hoặc chủ động chuẩn bị trước bài mới.",
+        "objectives": "Đọc hiểu theo thể loại và bối cảnh văn bản\nXây dựng luận điểm, dẫn chứng và lập luận\nRèn viết, nói và lắng nghe qua từng chủ đề",
+        "outline": "Đọc hiểu và hệ thống hóa kiến thức theo thể loại\nPhân tích, so sánh và đánh giá tác phẩm\nXây dựng bài nghị luận với luận điểm rõ ràng\nLuyện đề, phân bổ thời gian và tự sửa bài\nÔn tập theo chủ đề, tự kiểm tra và rút kinh nghiệm",
+        "schedule": "Lộ trình trên là gợi ý nội dung, được điều chỉnh theo kế hoạch của giáo viên. Bài giảng hiển thị khi trung tâm xuất bản. Lịch Live và nút vào lớp xuất hiện trong lớp được phân công; tham gia Live cần gói có quyền Live còn hiệu lực."
+      }
+    },
+    "Tiếng Anh – Lớp 10": {
+      "description": "Tiếng Anh lớp 10: Phối hợp nghe, nói, đọc, viết; học từ vựng trong ngữ cảnh và duy trì luyện tập đều đặn. Học theo chủ đề, ôn tập bằng bài giảng được công bố và theo dõi tiến độ trong tài khoản.",
+      "page": {
+        "audience": "Học sinh lớp 10 muốn củng cố kiến thức Tiếng Anh, xây dựng cách học đều đặn và có lộ trình ôn tập rõ ràng. Có thể dùng để học lại phần còn thiếu hoặc chủ động chuẩn bị trước bài mới.",
+        "objectives": "Xây dựng vốn từ theo chủ đề và ngữ cảnh\nCủng cố ngữ pháp qua tình huống sử dụng\nRèn nghe, đọc và diễn đạt ý tưởng mạch lạc",
+        "outline": "Từ vựng về bản thân, gia đình và cộng đồng\nCủng cố cấu trúc câu và các điểm ngữ pháp nền tảng\nLuyện nghe – đọc theo tình huống quen thuộc\nThực hành nói – viết và tự kiểm tra\nÔn tập theo chủ đề, tự kiểm tra và rút kinh nghiệm",
+        "schedule": "Lộ trình trên là gợi ý nội dung, được điều chỉnh theo kế hoạch của giáo viên. Bài giảng hiển thị khi trung tâm xuất bản. Lịch Live và nút vào lớp xuất hiện trong lớp được phân công; tham gia Live cần gói có quyền Live còn hiệu lực."
+      }
+    },
+    "Tiếng Anh – Lớp 11": {
+      "description": "Tiếng Anh lớp 11: Phối hợp nghe, nói, đọc, viết; học từ vựng trong ngữ cảnh và duy trì luyện tập đều đặn. Học theo chủ đề, ôn tập bằng bài giảng được công bố và theo dõi tiến độ trong tài khoản.",
+      "page": {
+        "audience": "Học sinh lớp 11 muốn củng cố kiến thức Tiếng Anh, xây dựng cách học đều đặn và có lộ trình ôn tập rõ ràng. Có thể dùng để học lại phần còn thiếu hoặc chủ động chuẩn bị trước bài mới.",
+        "objectives": "Xây dựng vốn từ theo chủ đề và ngữ cảnh\nCủng cố ngữ pháp qua tình huống sử dụng\nRèn nghe, đọc và diễn đạt ý tưởng mạch lạc",
+        "outline": "Mở rộng từ vựng theo chủ đề đời sống và học tập\nLiên kết ý, cấu trúc câu và ngữ pháp vận dụng\nNghe – đọc tìm ý chính, chi tiết và suy luận\nNói – viết có bố cục và phản hồi để cải thiện\nÔn tập theo chủ đề, tự kiểm tra và rút kinh nghiệm",
+        "schedule": "Lộ trình trên là gợi ý nội dung, được điều chỉnh theo kế hoạch của giáo viên. Bài giảng hiển thị khi trung tâm xuất bản. Lịch Live và nút vào lớp xuất hiện trong lớp được phân công; tham gia Live cần gói có quyền Live còn hiệu lực."
+      }
+    },
+    "Tiếng Anh – Lớp 12": {
+      "description": "Tiếng Anh lớp 12: Phối hợp nghe, nói, đọc, viết; học từ vựng trong ngữ cảnh và duy trì luyện tập đều đặn. Học theo chủ đề, ôn tập bằng bài giảng được công bố và theo dõi tiến độ trong tài khoản.",
+      "page": {
+        "audience": "Học sinh lớp 12 muốn củng cố kiến thức Tiếng Anh, xây dựng cách học đều đặn và có lộ trình ôn tập rõ ràng. Có thể dùng để học lại phần còn thiếu hoặc chủ động chuẩn bị trước bài mới.",
+        "objectives": "Xây dựng vốn từ theo chủ đề và ngữ cảnh\nCủng cố ngữ pháp qua tình huống sử dụng\nRèn nghe, đọc và diễn đạt ý tưởng mạch lạc",
+        "outline": "Hệ thống từ vựng và ngữ pháp trọng tâm\nĐọc hiểu, liên kết thông tin và chiến lược làm bài\nNghe – nói – viết trong bối cảnh học tập và nghề nghiệp\nLuyện tập tổng hợp, quản lí thời gian và sửa lỗi\nÔn tập theo chủ đề, tự kiểm tra và rút kinh nghiệm",
+        "schedule": "Lộ trình trên là gợi ý nội dung, được điều chỉnh theo kế hoạch của giáo viên. Bài giảng hiển thị khi trung tâm xuất bản. Lịch Live và nút vào lớp xuất hiện trong lớp được phân công; tham gia Live cần gói có quyền Live còn hiệu lực."
+      }
+    }
+  }
+}

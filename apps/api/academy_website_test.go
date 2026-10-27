@@ -64,3 +64,29 @@ func TestSubjectArtworkDoesNotConfuseKhoaHocWithHoaHoc(t *testing.T) {
 		}
 	}
 }
+
+func TestWebsiteMediaSamplesAndFAQ(t *testing.T) {
+	yes := true
+	site := academySite{Headline: "VA", Published: true, HeroImage: "/images/va-online-learning-v1.webp", AboutImage: "/images/va-study-desk-v1.webp", FAQs: []academyFAQ{{Question: "VIP dùng cho khóa nào?", Answer: "Toàn bộ danh mục đã xuất bản."}}, Teachers: []academyTeacher{{Name: "Giáo viên mẫu", Image: "/images/teacher-math-v1.webp", Sample: true, Published: &yes}}, Testimonials: []academyTestimonial{{Name: "Học sinh mẫu", Text: "Nội dung minh họa", Image: "/images/review-student-male-v1.webp", Sample: true, Rating: 5, Published: &yes}}, Posts: []academyPost{{Slug: "bai-hoc", Title: "Bài học", Image: "/images/article-math-v1.webp", Published: true}}}
+	if !validWebsiteMedia(site) {
+		t.Fatal("valid media rejected")
+	}
+	var out bytes.Buffer
+	if e := academyWeb.Execute(&out, map[string]any{"Site": site, "Free": 4, "HasPosts": true}); e != nil {
+		t.Fatal(e)
+	}
+	for _, expected := range []string{"hero-photo", "about-editorial", "teacher-photo", "review-avatar", "post-cover", "VIP dùng cho khóa nào?", "Hồ sơ mẫu", "Chia sẻ mẫu"} {
+		if !strings.Contains(out.String(), expected) {
+			t.Fatal("missing media", expected)
+		}
+	}
+	if strings.Contains(out.String(), "5 / 5") {
+		t.Fatal("sample review presented as a real rating")
+	}
+	for _, bad := range []string{"javascript:alert(1)", "data:image/svg+xml,bad", "//tracking.example/face.jpg", "http://insecure.example/x.jpg", "https://user:pass@example.com/x.jpg", "/images/../private.png"} {
+		site.HeroImage = bad
+		if validWebsiteMedia(site) {
+			t.Fatal("unsafe image", bad)
+		}
+	}
+}

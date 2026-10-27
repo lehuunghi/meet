@@ -8,7 +8,7 @@ test('CMS menu has stable section URLs and preserves unsaved content between sec
  });
  await page.setViewportSize({width:1440,height:1000});await page.goto('/quan-tri/website');
  const nav=page.getByRole('navigation',{name:'Chuyên mục quản trị website'});
- await expect(nav.getByRole('link')).toHaveCount(10);await expect(page.getByLabel('Thông điệp giới thiệu',{exact:true})).not.toBeVisible();
+ await expect(nav.getByRole('link')).toHaveCount(11);await expect(page.getByLabel('Thông điệp giới thiệu',{exact:true})).not.toBeVisible();
  await nav.getByRole('link',{name:'Trang chủ & giới thiệu',exact:true}).click();await expect(page).toHaveURL(/muc=trang-chu/);
  await page.getByLabel('Thông điệp giới thiệu',{exact:true}).fill('Nháp giữ qua các mục');
  await nav.getByRole('link',{name:'Giáo viên',exact:true}).click();await expect(page.getByRole('button',{name:'Thêm hồ sơ giáo viên',exact:true})).toBeVisible();

@@ -368,6 +368,14 @@
     "area": "Giao diện chung"
   },
   {
+    "key": " hoá",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": " hóa",
+    "area": "Giao diện chung"
+  },
+  {
     "key": " học sinh",
     "area": "Giao diện chung"
   },
@@ -961,14 +969,6 @@
   },
   {
     "key": "Họ tên",
-    "area": "Giao diện chung"
-  },
-  {
-    "key": "hoá",
-    "area": "Giao diện chung"
-  },
-  {
-    "key": "hóa",
     "area": "Giao diện chung"
   },
   {
@@ -1805,10 +1805,6 @@
   },
   {
     "key": "Câu ",
-    "area": "Không gian học tập"
-  },
-  {
-    "key": "Câu hỏi",
     "area": "Không gian học tập"
   },
   {
@@ -2809,10 +2805,6 @@
   },
   {
     "key": "Thêm bài giảng",
-    "area": "Không gian học tập"
-  },
-  {
-    "key": "Thêm câu hỏi",
     "area": "Không gian học tập"
   },
   {
@@ -4160,6 +4152,26 @@
     "area": "Quản trị website"
   },
   {
+    "key": "Ảnh bài viết (URL)",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Ảnh banner trang chủ (URL)",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Ảnh giáo viên (URL)",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Ảnh giới thiệu (URL)",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Ảnh người chia sẻ (URL)",
+    "area": "Quản trị website"
+  },
+  {
     "key": "Bài học thử vẫn áp dụng hạn mức của tài khoản; không công khai đường dẫn lưu trữ video.",
     "area": "Quản trị website"
   },
@@ -4200,7 +4212,11 @@
     "area": "Quản trị website"
   },
   {
-    "key": "Chỉ đăng lời nhận xét thật đã được đồng ý sử dụng. Có thể dùng tên viết tắt; không nhập số điện thoại hoặc thông tin riêng tư của học sinh.",
+    "key": "Câu hỏi",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Câu hỏi thường gặp",
     "area": "Quản trị website"
   },
   {
@@ -4256,6 +4272,10 @@
     "area": "Quản trị website"
   },
   {
+    "key": "Công khai nội dung mẫu — có nhãn minh họa",
+    "area": "Quản trị website"
+  },
+  {
     "key": "Đã lưu khóa học. Biên tập mục tiêu, chương trình và lịch trong Website giới thiệu.",
     "area": "Quản trị website"
   },
@@ -4308,6 +4328,10 @@
     "area": "Quản trị website"
   },
   {
+    "key": "Dùng ảnh công khai HTTPS hoặc đường dẫn /images/. Có thể thay ảnh mẫu bằng ảnh thật của đơn vị.",
+    "area": "Quản trị website"
+  },
+  {
     "key": "Đường dẫn ngắn (chữ thường, số, dấu gạch ngang)",
     "area": "Quản trị website"
   },
@@ -4345,6 +4369,10 @@
   },
   {
     "key": "Hồ sơ giáo viên",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Hồ sơ mẫu / ảnh AI minh họa",
     "area": "Quản trị website"
   },
   {
@@ -4452,6 +4480,14 @@
     "area": "Quản trị website"
   },
   {
+    "key": "Nội dung mẫu / ảnh AI minh họa",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Nội dung mẫu phải giữ nhãn minh họa. Với đánh giá thật, chỉ đăng lời nhận xét đã được đồng ý sử dụng. Có thể dùng tên viết tắt; không nhập số điện thoại hoặc thông tin riêng tư của học sinh.",
+    "area": "Quản trị website"
+  },
+  {
     "key": "Nội dung website đang chỉnh",
     "area": "Quản trị website"
   },
@@ -4512,6 +4548,10 @@
     "area": "Quản trị website"
   },
   {
+    "key": "Thêm câu hỏi",
+    "area": "Quản trị website"
+  },
+  {
     "key": "Thêm hồ sơ giáo viên",
     "area": "Quản trị website"
   },
@@ -4544,11 +4584,19 @@
     "area": "Quản trị website"
   },
   {
+    "key": "Tối đa 30 câu. Nội dung được hiển thị trên trang chủ và có thể sửa, thêm hoặc xóa.",
+    "area": "Quản trị website"
+  },
+  {
     "key": "Tóm tắt",
     "area": "Quản trị website"
   },
   {
     "key": "Tổng quan",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Trả lời",
     "area": "Quản trị website"
   },
   {
@@ -4621,6 +4669,10 @@
   },
   {
     "key": "Xóa cảm nhận",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Xóa câu hỏi",
     "area": "Quản trị website"
   },
   {
@@ -5897,6 +5949,10 @@
   },
   {
     "key": "Họ tên học sinh",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "hóa",
     "area": "Thông báo hệ thống"
   },
   {
@@ -7508,6 +7564,14 @@
     "area": "Website công khai"
   },
   {
+    "key": "Ảnh AI minh họa",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Ảnh AI minh họa không gian học tập",
+    "area": "Website công khai"
+  },
+  {
     "key": "Bài giảng xem lại",
     "area": "Website công khai"
   },
@@ -7533,6 +7597,10 @@
   },
   {
     "key": "Bạn sẽ học được gì?",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Bắt đầu hành trình học tập",
     "area": "Website công khai"
   },
   {
@@ -7564,6 +7632,10 @@
     "area": "Website công khai"
   },
   {
+    "key": "CÁCH HỌC CÙNG VA",
+    "area": "Website công khai"
+  },
+  {
     "key": "Cảm nhận của học sinh & phụ huynh",
     "area": "Website công khai"
   },
@@ -7572,7 +7644,7 @@
     "area": "Website công khai"
   },
   {
-    "key": "Câu hỏi thường gặp",
+    "key": "Cần tìm khóa học phù hợp, kiểm tra quyền VIP hoặc hỗ trợ vào lớp? Hãy gửi tên tài khoản, môn học và mô tả vấn đề qua kênh liên hệ của VA.",
     "area": "Website công khai"
   },
   {
@@ -7581,6 +7653,10 @@
   },
   {
     "key": "Chi tiết →",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Chia sẻ mẫu · Chờ nội dung thật",
     "area": "Website công khai"
   },
   {
@@ -7684,6 +7760,14 @@
     "area": "Website công khai"
   },
   {
+    "key": "Góc học tập chủ động với sách và thiết bị số",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Góc nhìn của học sinh và phụ huynh. Nội dung minh họa được gắn nhãn mẫu.",
+    "area": "Website công khai"
+  },
+  {
     "key": "Gói học và quyền lợi",
     "area": "Website công khai"
   },
@@ -7704,7 +7788,15 @@
     "area": "Website công khai"
   },
   {
+    "key": "Hiểu kiến thức.",
+    "area": "Website công khai"
+  },
+  {
     "key": "Hồ sơ giáo viên đang được cập nhật",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Hồ sơ mẫu · Ảnh minh họa",
     "area": "Website công khai"
   },
   {
@@ -7840,6 +7932,10 @@
     "area": "Website công khai"
   },
   {
+    "key": "Minh họa học trực tuyến cùng giáo viên",
+    "area": "Website công khai"
+  },
+  {
     "key": "Minh họa không gian lớp học",
     "area": "Website công khai"
   },
@@ -7881,10 +7977,6 @@
   },
   {
     "key": "Nhìn rõ từng bước tiến",
-    "area": "Website công khai"
-  },
-  {
-    "key": "Những chia sẻ thực tế về hành trình học tập tại VA.",
     "area": "Website công khai"
   },
   {
@@ -7993,6 +8085,10 @@
   },
   {
     "key": "Vững bước mỗi ngày.",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Vững từng bước tiến.",
     "area": "Website công khai"
   },
   {

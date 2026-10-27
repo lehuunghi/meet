@@ -22,7 +22,7 @@ func (a *app) academySitePreview(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var site academySite
-	if len(in.Content) > 100000 || json.Unmarshal(in.Content, &site) != nil {
+	if len(in.Content) > 100000 || json.Unmarshal(in.Content, &site) != nil || !validWebsiteMedia(site) {
 		problem(w, 400, "Nội dung xem trước không hợp lệ")
 		return
 	}
