@@ -52,7 +52,6 @@ export function UILanguageEditor({ demo = false }: { demo?: boolean }) {
     visible = result.slice(page * 40, page * 40 + 40);
   return (
     <section className="academy-language-editor">
-      <h3>Ngôn ngữ & câu chữ</h3>
       <p>
         Đổi chữ giao diện chung ở trang giới thiệu, đăng ký, học viên, giáo
         viên, quản trị và phòng học. Nội dung riêng như tên khóa, bài viết và

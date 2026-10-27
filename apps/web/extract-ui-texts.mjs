@@ -84,7 +84,6 @@ fs.writeFileSync(
     2,
   ) + "\n",
 );
-console.log("Editable interface strings:", catalog.size);
 
 for (const file of fs
   .readdirSync("../api")
@@ -112,3 +111,5 @@ fs.writeFileSync(
     2,
   ) + "\n",
 );
+
+console.log("Editable interface strings:", catalog.size);

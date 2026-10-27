@@ -160,6 +160,10 @@ export function AcademyApp({
   const setTab = (id: string) => {
     if (goAcademy(academyPaths[id] || "/hoc")) setTabState(id);
   };
+  const [signupAvatarName, setSignupAvatarName] = useState("");
+  useEffect(() => {
+    if (authTab !== "register") setSignupAvatarName("");
+  }, [authTab]);
   const [notifications, setNotifications] = useState<any[]>([]),
     [notificationError, setNotificationError] = useState("");
   const safeIntent = (key: string) => {
@@ -618,12 +622,22 @@ export function AcademyApp({
                 </div>
                 <label>
                   Ảnh đại diện
-                  <input
-                    name="avatar"
-                    type="file"
-                    accept="image/png,image/jpeg"
-                    required
-                  />
+                  <span className="academy-file-picker">
+                    <input
+                      aria-label="Ảnh đại diện"
+                      name="avatar"
+                      type="file"
+                      accept="image/png,image/jpeg"
+                      required
+                      onChange={(e) =>
+                        setSignupAvatarName(e.target.files?.[0]?.name || "")
+                      }
+                    />
+                    <span className="academy-file-button" aria-hidden="true">
+                      Chọn ảnh
+                    </span>
+                    <small>{signupAvatarName || "Chưa chọn ảnh"}</small>
+                  </span>
                 </label>
                 <label className="academy-check">
                   <input type="checkbox" name="marketing_consent" />

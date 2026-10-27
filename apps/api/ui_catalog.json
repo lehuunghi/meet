@@ -1688,6 +1688,10 @@
     "area": "Không gian học tập"
   },
   {
+    "key": "Chọn ảnh",
+    "area": "Không gian học tập"
+  },
+  {
     "key": "Chọn bản ghi buổi học để đăng",
     "area": "Không gian học tập"
   },
@@ -1721,6 +1725,10 @@
   },
   {
     "key": "Chưa chấm",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Chưa chọn ảnh",
     "area": "Không gian học tập"
   },
   {

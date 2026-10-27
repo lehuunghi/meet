@@ -140,7 +140,12 @@ export function Accounts({ demo }: { demo: boolean }) {
                         {r.short_id} · {r.name}
                       </strong>
                       <small>
-                        {r.email} · {r.role}
+                        {r.email} ·{" "}
+                        {r.role === "admin"
+                          ? "Quản trị"
+                          : r.role === "teacher"
+                            ? "Giáo viên"
+                            : "Học sinh"}
                       </small>
                     </>
                   ) : (
