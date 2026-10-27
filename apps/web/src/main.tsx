@@ -20,6 +20,7 @@ import { ClassroomMedia } from "./media";
 import { captureDevices } from "./devices";
 import type { RoomRules } from "./room-moderation";
 
+import "../public/brand-tokens.css";
 import "./style.css";
 import "./meet-room.css";
 import "./attendance.css";
@@ -32,6 +33,7 @@ import { PasswordRecovery } from "./password-recovery";
 import { RecordingRecovery } from "./recording-recovery";
 import "./workspace.css";
 import "./learning.css";
+import "./brand-theme.css";
 import {
   RoleSwitcher,
   PreviewRoom,

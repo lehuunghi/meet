@@ -11,7 +11,7 @@
 }
 .room-people > div {
   padding: 15px;
-  border: 1px solid #e0e7d7;
+  border: 1px solid var(--brand-line);
   border-radius: 9px;
   display: grid;
   grid-template-columns: 44px 1fr;
@@ -51,7 +51,7 @@
 }
 .room-messages p {
   white-space: pre-wrap;
-  color: #335239;
+  color: var(--brand-ink);
   margin: 8px 0 0;
   font-size: 13px;
 }
@@ -73,7 +73,7 @@
 .prejoin video {
   width: 100%;
   border-radius: 12px;
-  background: #153e30;
+  background: var(--brand-navy);
   max-height: 320px;
 }
 .prejoin p {

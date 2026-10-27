@@ -99,8 +99,8 @@
   border: 1px solid #dadce0;
 }
 .aside-bottom button:hover {
-  background: #e8f0fe;
-  color: #174ea6;
+  background: var(--brand-blue-soft);
+  color: var(--brand-blue);
 }
 .aside-bottom .avatar {
   flex-shrink: 0;

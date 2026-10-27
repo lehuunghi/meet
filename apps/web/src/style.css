@@ -6,7 +6,7 @@
   gap: 18px;
   padding: 18px 20px;
   background: #fff;
-  border: 1px solid #dce5d5;
+  border: 1px solid var(--brand-line);
   border-radius: 10px;
   margin-bottom: 18px;
 }
@@ -32,15 +32,15 @@
   white-space: nowrap;
 }
 .preview-switch a.selected {
-  background: #184f40;
+  background: var(--brand-navy);
   color: white;
 }
 .record-thumb {
-  background: #eaf0df;
+  background: var(--brand-line);
   border-radius: 8px;
   padding: 20px 30px;
   font-size: 28px;
-  color: #758e4e;
+  color: var(--brand-muted);
 }
 .preview-classroom {
   display: grid;
@@ -48,7 +48,7 @@
   gap: 25px;
 }
 .preview-stage {
-  background: #e8eedc;
+  background: var(--brand-line);
   min-height: 350px;
   border-radius: 12px;
   padding: 25px;
@@ -61,15 +61,15 @@
 }
 .preview-stage p {
   font-size: 30px;
-  color: #527248;
+  color: var(--brand-muted);
 }
 .preview-stage small {
-  color: #718562;
+  color: var(--brand-muted);
   font-size: 11px;
 }
 .graph-symbol {
   font-size: 70px;
-  color: #88a465;
+  color: var(--brand-muted);
 }
 .preview-tiles {
   display: grid;
@@ -79,7 +79,7 @@
 }
 .preview-tiles article {
   padding: 20px 10px;
-  background: #184537;
+  background: var(--brand-navy);
   color: #fff;
   border-radius: 10px;
   text-align: center;
@@ -87,7 +87,7 @@
 .preview-tiles article > span {
   display: block;
   margin: 5px auto 15px;
-  background: #66846c;
+  background: var(--brand-text);
   border-radius: 50%;
   width: 50px;
   height: 50px;
@@ -100,7 +100,7 @@
 }
 .preview-tiles small {
   display: block;
-  color: #bed0bd;
+  color: var(--brand-blue-border);
   font-size: 9px;
   margin-top: 7px;
 }
@@ -116,10 +116,10 @@
   font-size: 10px;
   padding: 10px;
   background: #eff3e8;
-  color: #45633e;
+  color: var(--brand-muted);
 }
 .preview-tabs button.selected {
-  background: #184f40;
+  background: var(--brand-navy);
   color: #fff;
 }
 .preview-person {
@@ -160,7 +160,7 @@
 }
 :root {
   font-family: "Be Vietnam Pro", system-ui, sans-serif;
-  color: #243e37;
+  color: var(--brand-ink);
   background: #f6f8f5;
   font-synthesis: none;
   font-size: 14px;
@@ -182,7 +182,7 @@ a {
 }
 button {
   border: 0;
-  background: #184f40;
+  background: var(--brand-navy);
   color: white;
   border-radius: 8px;
   padding: 12px 18px;
@@ -190,7 +190,7 @@ button {
   font-weight: 600;
 }
 button:hover {
-  background: #286b58;
+  background: var(--brand-teal);
 }
 button:disabled {
   opacity: 0.45;
@@ -198,14 +198,14 @@ button:disabled {
 }
 .secondary {
   background: white;
-  color: #275845;
+  color: var(--brand-ink);
   border: 1px solid #dce5de;
 }
 .secondary:hover {
   background: #edf4ec;
 }
 a {
-  color: #2d6d54;
+  color: var(--brand-teal);
 }
 h1,
 h2,
@@ -249,11 +249,11 @@ aside {
   font-size: 29px;
   font-weight: 800;
   letter-spacing: -1px;
-  color: #184f40;
+  color: var(--brand-navy);
   display: inline-block;
 }
 .brand > span {
-  color: #b6ce8e;
+  color: var(--brand-muted);
   font-size: 12px;
   vertical-align: top;
 }
@@ -264,7 +264,7 @@ aside {
   margin: 44px 0 35px;
   padding: 15px 10px;
   background: #f7f8f4;
-  border: 1px solid #e6eade;
+  border: 1px solid var(--brand-line);
   border-radius: 9px;
 }
 .school strong {
@@ -278,11 +278,11 @@ aside {
   color: #869186;
 }
 .school-icon {
-  background: #e6eedc;
+  background: var(--brand-line);
   border-radius: 7px;
   padding: 10px;
   font-weight: 700;
-  color: #496b35;
+  color: var(--brand-muted);
 }
 .nav-label {
   color: #96a194;
@@ -306,8 +306,8 @@ nav button span {
   font-size: 18px;
 }
 nav button.active {
-  background: #edf3e5;
-  color: #24563f;
+  background: var(--brand-line);
+  color: var(--brand-teal);
 }
 nav button:hover {
   background: #f3f6ef;
@@ -330,8 +330,8 @@ nav button:hover {
 }
 .avatar {
   border-radius: 50%;
-  background: #efd9b8;
-  color: #796441;
+  background: var(--brand-amber-border);
+  color: var(--brand-muted);
   padding: 12px;
 }
 .shell > main {
@@ -351,7 +351,7 @@ header {
 }
 header b {
   margin: 0 16px;
-  color: #b7c1b0;
+  color: var(--brand-muted);
   font-weight: 400;
 }
 .today {
@@ -372,7 +372,7 @@ header b {
   font-weight: 600;
   letter-spacing: 2px;
   display: block;
-  color: #81976d;
+  color: var(--brand-muted);
   margin-bottom: 15px;
 }
 .heading p {
@@ -380,7 +380,7 @@ header b {
 }
 .leaf {
   font-size: 95px;
-  color: #9caf77;
+  color: var(--brand-muted);
   margin-right: 25px;
   font-weight: 400;
 }
@@ -392,7 +392,7 @@ header b {
 }
 .stats article {
   position: relative;
-  border: 1px solid #e0e7db;
+  border: 1px solid var(--brand-line);
   border-radius: 12px;
   background: #fff;
   padding: 25px;
@@ -401,10 +401,10 @@ header b {
   position: absolute;
   right: 22px;
   top: 24px;
-  background: #f1f5e9;
+  background: var(--brand-line);
   border-radius: 9px;
   padding: 12px;
-  color: #799356;
+  color: var(--brand-muted);
   font-size: 20px;
 }
 .stats strong {
@@ -419,7 +419,7 @@ header b {
 }
 .section {
   background: #fff;
-  border: 1px solid #e0e7db;
+  border: 1px solid var(--brand-line);
   border-radius: 12px;
   margin: 24px 0;
   padding: 28px;
@@ -441,7 +441,7 @@ header b {
   font-size: 10px;
   background: #f2f5ed;
   color: #78896d;
-  border: 1px solid #e4eadd;
+  border: 1px solid var(--brand-line);
   border-radius: 20px;
   padding: 8px 12px;
   display: inline-block;
@@ -468,7 +468,7 @@ header b {
 }
 .date-tile small {
   font-size: 8px;
-  color: #8b9b7e;
+  color: var(--brand-muted);
 }
 .meeting-info {
   flex: 1;
@@ -481,7 +481,7 @@ header b {
   padding: 0 9px;
 }
 .meeting-info small {
-  color: #9c7952;
+  color: var(--brand-muted);
   font-size: 10px;
 }
 .status {
@@ -491,7 +491,7 @@ header b {
   margin-bottom: 9px;
 }
 .status.live {
-  color: #37835a;
+  color: var(--brand-teal);
 }
 .meeting button {
   font-size: 11px;
@@ -520,9 +520,9 @@ select {
   margin-top: 8px;
   padding: 12px;
   background: #fafcf8;
-  border: 1px solid #dbe3d5;
+  border: 1px solid var(--brand-line);
   border-radius: 7px;
-  color: #294733;
+  color: var(--brand-ink);
 }
 .checkbox {
   display: flex;
@@ -545,7 +545,7 @@ footer span {
 }
 .banner {
   font-size: 12px;
-  background: #edf2df;
+  background: var(--brand-cyan-soft);
   border-radius: 8px;
   padding: 14px;
   margin-bottom: 20px;
@@ -555,8 +555,8 @@ footer span {
   float: right;
 }
 .error {
-  background: #fff1ee;
-  color: #a94336;
+  background: var(--brand-red-soft);
+  color: var(--brand-danger);
   border-radius: 7px;
   padding: 14px;
   font-size: 12px;
@@ -570,7 +570,7 @@ footer span {
 }
 .course-grid article {
   background: white;
-  border: 1px solid #e0e7db;
+  border: 1px solid var(--brand-line);
   padding: 25px;
   border-radius: 12px;
 }
@@ -582,7 +582,7 @@ footer span {
 }
 .course-icon {
   font-size: 35px;
-  color: #86a159;
+  color: var(--brand-muted);
   margin-right: 30px;
 }
 .login {
@@ -593,7 +593,7 @@ footer span {
 }
 .login-art {
   padding: 65px 70px;
-  background: #eaf0df;
+  background: var(--brand-line);
   position: relative;
   overflow: hidden;
 }
@@ -607,7 +607,7 @@ footer span {
 }
 .orb {
   font-size: 300px;
-  color: #a2b77b;
+  color: var(--brand-muted);
   margin: 0 0 0 150px;
   line-height: 1.1;
 }
@@ -656,7 +656,7 @@ footer span {
   gap: 18px;
 }
 .video-grid article {
-  background: #143c31;
+  background: var(--brand-navy);
   color: #fff;
   border-radius: 10px;
   overflow: hidden;

@@ -36,8 +36,8 @@
 }
 .classroom-shell nav :is(button, a[role="button"])[aria-current="page"],
 .academy-shell.classroom-shell nav :is(button, a[role="button"]).active {
-  background: #e8f0fe;
-  color: #1967d2;
+  background: var(--brand-blue-soft);
+  color: var(--brand-blue);
 }
 .classroom-shell > main,
 .academy-shell.classroom-shell > main {
@@ -135,7 +135,7 @@
 .classroom-subject-banner {
   position: relative;
   isolation: isolate;
-  background: var(--class-color, #1967d2);
+  background: var(--class-color, var(--brand-blue));
   color: white;
   overflow: hidden;
   padding: 22px 22px 28px;
@@ -200,8 +200,8 @@
   position: absolute;
   right: 20px;
   top: -24px;
-  background: #e8f0fe;
-  color: #1967d2;
+  background: var(--brand-blue-soft);
+  color: var(--brand-blue);
   width: 48px;
   height: 48px;
   display: grid;
@@ -230,13 +230,13 @@
   gap: 6px;
 }
 .classroom-state.is-live {
-  color: #137333;
+  color: var(--brand-teal);
 }
 .classroom-state.is-live:before {
   content: "";
   width: 7px;
   height: 7px;
-  background: #188038;
+  background: var(--brand-teal);
   border-radius: 50%;
 }
 .classroom-card > footer {
@@ -255,7 +255,7 @@
   box-shadow: none;
 }
 .classroom-workspace button:not(.secondary):not([role="tab"]) {
-  background: #1967d2;
+  background: var(--brand-blue);
   color: white;
   border: 1px solid transparent;
 }
@@ -267,7 +267,7 @@
 }
 .classroom-workspace .secondary {
   background: white;
-  color: #1967d2;
+  color: var(--brand-blue);
   border: 1px solid #dadce0;
 }
 .classroom-workspace .secondary:hover {
@@ -322,8 +322,8 @@
   border-bottom: 3px solid transparent;
 }
 .classroom-workspace .classroom-tabs :is(button, a)[aria-selected="true"] {
-  color: #1967d2;
-  border-bottom-color: #1967d2;
+  color: var(--brand-blue);
+  border-bottom-color: var(--brand-blue);
   background: #f8faff;
 }
 .classroom-stream {
@@ -385,8 +385,8 @@
   display: grid;
   place-items: center;
   border-radius: 50%;
-  background: #e8f0fe;
-  color: #1967d2;
+  background: var(--brand-blue-soft);
+  color: var(--brand-blue);
   font-size: 23px;
 }
 .classroom-empty {

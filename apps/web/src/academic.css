@@ -5,12 +5,12 @@
   margin: 24px 0;
 }
 .academic-tabs button {
-  background: #eaf0e2;
-  color: #47663e;
+  background: var(--brand-line);
+  color: var(--brand-muted);
   min-height: 46px;
 }
 .academic-tabs .active {
-  background: #184f40;
+  background: var(--brand-navy);
   color: #fff;
 }
 .academic-filters {
@@ -66,7 +66,7 @@
 .academic-paste textarea {
   width: 100%;
   font: 13px/1.8 inherit;
-  border: 1px solid #d9e3d0;
+  border: 1px solid var(--brand-line);
   padding: 12px;
   border-radius: 8px;
   margin: 12px 0;
@@ -129,7 +129,7 @@
   .academic-table tr {
     display: block;
     padding: 14px;
-    border: 1px solid #e0e7d7;
+    border: 1px solid var(--brand-line);
     border-radius: 9px;
   }
   .academic-table td {

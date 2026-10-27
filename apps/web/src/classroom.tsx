@@ -43,7 +43,7 @@ type Props = {
   renderLessons: (c: Subject) => ReactNode;
   renderClasswork?: (id: string) => ReactNode;
 };
-const colors = ["#1967d2", "#137e70", "#7543aa", "#b34a26", "#336b8c"];
+const colors = ["var(--brand-blue)", "var(--brand-teal)", "var(--brand-navy)", "var(--brand-blue-hover)", "var(--brand-text)"];
 const color = (id: string) =>
   colors[
     Array.from(id).reduce((n, c) => n + c.charCodeAt(0), 0) % colors.length

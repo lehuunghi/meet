@@ -1,15 +1,15 @@
 /* VA Academy — original design, no third-party assets or fonts. */
 :root {
   font-family: Inter, "Segoe UI", Arial, sans-serif;
-  color: #172b4d;
+  color: var(--brand-navy);
   background: #fff;
   font-synthesis: none;
   -webkit-font-smoothing: antialiased;
-  --blue: #1248c8;
-  --navy: #11264f;
-  --orange: #ff8a31;
-  --muted: #69788f;
-  --line: #e5eaf2;
+  --blue: var(--brand-blue);
+  --navy: var(--brand-navy);
+  --orange: var(--brand-amber);
+  --muted: var(--brand-muted);
+  --line: var(--brand-line);
 }
 * {
   box-sizing: border-box;
@@ -33,7 +33,7 @@ input {
 }
 a:focus-visible,
 summary:focus-visible {
-  outline: 3px solid #ffad64;
+  outline: 3px solid var(--brand-amber-border);
   outline-offset: 5px;
 }
 svg {
@@ -100,7 +100,7 @@ svg {
   font-size: 8px;
   letter-spacing: 1.8px;
   font-weight: 650;
-  color: #718099;
+  color: var(--brand-muted);
   margin-top: 4px;
 }
 .brand-mark {
@@ -168,11 +168,11 @@ svg {
 }
 .orange {
   background: var(--orange);
-  color: #11264f;
-  box-shadow: 0 8px 24px #f77d2520;
+  color: var(--brand-navy);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--brand-amber) 12.55%, transparent);
 }
 .orange:hover {
-  background: #ff9e53;
+  background: var(--brand-amber-border);
 }
 .light {
   background: #ffffff14;
@@ -180,15 +180,15 @@ svg {
   border: 1px solid #ffffff48;
 }
 .outline {
-  border: 1px solid #ced8eb;
+  border: 1px solid var(--brand-blue-border);
   color: var(--blue);
   background: #fff;
 }
 .hero {
   position: relative;
   background:
-    radial-gradient(ellipse at 85% 0%, #2873ef 0, transparent 52%),
-    linear-gradient(120deg, #143b9e, #1248c8 55%, #08297c);
+    radial-gradient(ellipse at 85% 0%, var(--brand-blue) 0, transparent 52%),
+    linear-gradient(120deg, var(--brand-blue-hover), var(--brand-blue) 55%, var(--brand-navy));
   color: #fff;
   overflow: hidden;
 }
@@ -228,7 +228,7 @@ svg {
 .hero-tag > span {
   width: 6px;
   height: 6px;
-  background: #ffb66a;
+  background: var(--brand-amber-border);
   border-radius: 50%;
 }
 .hero h1 {
@@ -241,11 +241,11 @@ svg {
 }
 .hero h1 em {
   font-style: normal;
-  color: #ffb66a;
+  color: var(--brand-amber-border);
 }
 .hero-copy > p {
   max-width: 455px;
-  color: #dce8ff;
+  color: var(--brand-blue-soft);
   font-size: 16px;
   line-height: 1.8;
   margin-bottom: 29px;
@@ -260,7 +260,7 @@ svg {
   flex-wrap: wrap;
   gap: 20px;
   font-size: 11px;
-  color: #d8e6ff;
+  color: var(--brand-blue-soft);
   margin-top: 24px;
 }
 .product-scene {
@@ -279,7 +279,7 @@ svg {
   overflow: hidden;
   background: #f4f7fc;
   color: var(--navy);
-  box-shadow: 0 28px 60px #00134740;
+  box-shadow: 0 28px 60px color-mix(in srgb, var(--brand-navy) 25.1%, transparent);
   border: 7px solid #ffffff28;
   transform: perspective(1300px) rotateY(-7deg) rotateX(2deg);
 }
@@ -291,11 +291,11 @@ svg {
   padding: 0 15px;
   background: #fff;
   font-size: 9px;
-  color: #738098;
-  border-bottom: 1px solid #e9edf5;
+  color: var(--brand-muted);
+  border-bottom: 1px solid var(--brand-line);
 }
 .window-dots {
-  color: #b7c7e5;
+  color: var(--brand-blue-border);
   font-size: 9px;
   letter-spacing: 3px;
 }
@@ -311,8 +311,8 @@ svg {
   flex-direction: column;
   gap: 27px;
   padding: 17px 0;
-  color: #8a9bb7;
-  border-right: 1px solid #ebeff7;
+  color: var(--brand-muted);
+  border-right: 1px solid var(--brand-blue-soft);
 }
 .preview-sidebar svg {
   width: 17px;
@@ -340,7 +340,7 @@ svg {
 .preview-heading small {
   font-size: 7px;
   letter-spacing: 1px;
-  color: #7a8aa2;
+  color: var(--brand-muted);
 }
 .preview-heading h3 {
   font-size: 15px;
@@ -349,8 +349,8 @@ svg {
   margin: 4px 0;
 }
 .preview-avatar {
-  background: #ffe7d5;
-  color: #a34d15;
+  background: var(--brand-amber-soft);
+  color: var(--brand-amber-text);
   border: 3px solid white;
   width: 30px;
   height: 30px;
@@ -362,7 +362,7 @@ svg {
 }
 .preview-lesson {
   position: relative;
-  background: linear-gradient(120deg, #1248c8, #4d7fed);
+  background: linear-gradient(120deg, var(--brand-blue), var(--brand-blue));
   border-radius: 11px;
   color: white;
   display: flex;
@@ -375,7 +375,7 @@ svg {
 .lesson-label {
   font-size: 7px;
   letter-spacing: 1px;
-  color: #dbe7ff;
+  color: var(--brand-blue-soft);
 }
 .preview-lesson h4 {
   font-size: 22px;
@@ -388,7 +388,7 @@ svg {
   align-items: center;
   gap: 5px;
   background: #fff;
-  color: #17439e;
+  color: var(--brand-blue-hover);
   font-size: 8px;
   font-weight: 700;
   border-radius: 5px;
@@ -411,7 +411,7 @@ svg {
   width: 65px;
   height: 85px;
   border-radius: 6px;
-  background: #ffb36b;
+  background: var(--brand-amber-border);
   transform: rotate(18deg);
   box-shadow: 8px 8px 0 #ffffff15;
 }
@@ -421,7 +421,7 @@ svg {
 }
 .book-art svg {
   position: relative;
-  color: #1248c8;
+  color: var(--brand-blue);
   width: 40px;
   height: 40px;
   transform: rotate(-10deg) translate(-10px, 0);
@@ -434,7 +434,7 @@ svg {
 }
 .preview-tools > div {
   background: #fff;
-  border: 1px solid #e8edf6;
+  border: 1px solid var(--brand-blue-soft);
   border-radius: 9px;
   padding: 12px;
   display: grid;
@@ -458,7 +458,7 @@ svg {
 }
 .preview-tools small {
   font-size: 7px;
-  color: #8490a5;
+  color: var(--brand-muted);
 }
 .floating-note {
   position: absolute;
@@ -471,8 +471,8 @@ svg {
   background: #fff;
   padding: 15px 20px;
   border-radius: 12px;
-  box-shadow: 0 10px 35px #081f652b;
-  border: 1px solid #e9edf6;
+  box-shadow: 0 10px 35px color-mix(in srgb, var(--brand-navy) 16.86%, transparent);
+  border: 1px solid var(--brand-blue-soft);
 }
 .floating-note strong {
   display: block;
@@ -486,7 +486,7 @@ svg {
   position: absolute;
   bottom: -52px;
   right: 0;
-  color: #bbd1ff;
+  color: var(--brand-blue-border);
   font-size: 8px;
   letter-spacing: 0.2px;
 }
@@ -499,29 +499,29 @@ svg {
   flex-shrink: 0;
 }
 .blue {
-  background: #eaf2ff;
-  color: #2863dc;
+  background: var(--brand-blue-soft);
+  color: var(--brand-blue);
 }
 .orange-icon {
-  background: #fff0e4;
-  color: #e68131;
+  background: var(--brand-amber-soft);
+  color: var(--brand-amber);
 }
 .violet {
-  background: #f2edff;
-  color: #9564da;
+  background: var(--brand-canvas);
+  color: var(--brand-blue);
 }
 .green {
-  background: #e4f7ef;
-  color: #27956c;
+  background: var(--brand-cyan-soft);
+  color: var(--brand-teal);
 }
 .capability-strip {
   position: relative;
   z-index: 2;
   margin-top: -43px;
   background: #fff;
-  border: 1px solid #e8edf5;
+  border: 1px solid var(--brand-line);
   border-radius: 16px;
-  box-shadow: 0 14px 45px #152a5b08;
+  box-shadow: 0 14px 45px color-mix(in srgb, var(--brand-navy) 3.14%, transparent);
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   padding: 27px 24px;
@@ -569,7 +569,7 @@ svg {
   margin: 0 0 16px;
 }
 .section-title h2 span {
-  color: #7789a3;
+  color: var(--brand-muted);
   font-weight: 550;
 }
 .section-title > p:last-child {
@@ -585,7 +585,7 @@ svg {
 }
 .feature-grid article {
   position: relative;
-  border: 1px solid #e6ecf5;
+  border: 1px solid var(--brand-blue-soft);
   border-radius: 15px;
   padding: 28px;
   background: #fff;
@@ -645,7 +645,7 @@ svg {
 }
 .course-card {
   border-radius: 15px;
-  border: 1px solid #e4eaf4;
+  border: 1px solid var(--brand-blue-soft);
   background: white;
   overflow: hidden;
   transition:
@@ -654,12 +654,12 @@ svg {
 }
 .course-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 15px 30px #1432620b;
+  box-shadow: 0 15px 30px color-mix(in srgb, var(--brand-navy) 4.31%, transparent);
 }
 .course-art {
   height: 170px;
   background:
-    radial-gradient(ellipse at 15% 20%, #678ae9, transparent 65%), #214cb1;
+    radial-gradient(ellipse at 15% 20%, var(--brand-blue-border), transparent 65%), var(--brand-blue);
   color: #fff;
   display: flex;
   align-items: center;
@@ -677,11 +677,11 @@ svg {
 }
 .course-card:nth-child(3n + 2) .course-art {
   background:
-    radial-gradient(ellipse at 15% 20%, #90c9c0, transparent 65%), #2e786c;
+    radial-gradient(ellipse at 15% 20%, var(--brand-blue-border), transparent 65%), var(--brand-teal);
 }
 .course-card:nth-child(3n + 3) .course-art {
   background:
-    radial-gradient(ellipse at 15% 20%, #d0b1e9, transparent 65%), #765297;
+    radial-gradient(ellipse at 15% 20%, var(--brand-blue-border), transparent 65%), var(--brand-text);
 }
 .course-art svg {
   height: 48px;
@@ -697,7 +697,7 @@ svg {
 }
 .card-category {
   display: block;
-  color: #6280ac;
+  color: var(--brand-muted);
   font-size: 9px;
   font-weight: 800;
   letter-spacing: 1.3px;
@@ -726,7 +726,7 @@ svg {
   padding-top: 17px;
   margin-top: 22px;
   font-size: 11px;
-  color: #5b708e;
+  color: var(--brand-muted);
 }
 .course-bottom a {
   width: 32px;
@@ -734,13 +734,13 @@ svg {
   border-radius: 50%;
   display: grid;
   place-items: center;
-  background: #edf3ff;
+  background: var(--brand-canvas);
   color: var(--blue);
   font-size: 20px;
 }
 .empty-state {
   grid-column: 1/-1;
-  border: 1px dashed #cddaf0;
+  border: 1px dashed var(--brand-blue-border);
   border-radius: 14px;
   padding: 35px;
   display: flex;
@@ -772,7 +772,7 @@ svg {
 }
 .price-card {
   position: relative;
-  border: 1px solid #dde5f2;
+  border: 1px solid var(--brand-blue-soft);
   border-radius: 17px;
   padding: 35px;
   display: flex;
@@ -801,10 +801,10 @@ svg {
   padding: 15px 0 0;
   margin: 0 0 20px;
   list-style: none;
-  border-top: 1px solid #e7edf7;
+  border-top: 1px solid var(--brand-blue-soft);
   width: 100%;
   font-size: 12px;
-  color: #50647f;
+  color: var(--brand-muted);
 }
 .check-list li {
   position: relative;
@@ -814,7 +814,7 @@ svg {
   content: "✓";
   position: absolute;
   left: 0;
-  color: #2c916c;
+  color: var(--brand-teal);
   font-weight: 700;
 }
 .price-card .plan-note {
@@ -825,22 +825,22 @@ svg {
   margin-top: auto;
 }
 .price-card.premium {
-  background: linear-gradient(150deg, #183f9c, #10295f);
+  background: linear-gradient(150deg, var(--brand-blue-hover), var(--brand-navy));
   color: white;
   border-color: transparent;
 }
 .premium .card-category {
-  color: #ffc18c;
+  color: var(--brand-amber-border);
 }
 .premium > p {
-  color: #c4d3f0;
+  color: var(--brand-blue-border);
 }
 .premium .check-list {
-  color: #e1eaff;
+  color: var(--brand-blue-soft);
   border-color: #ffffff24;
 }
 .premium .check-list li:before {
-  color: #ffb66a;
+  color: var(--brand-amber-border);
 }
 .coming-plan {
   background: #f5f8fe;
@@ -862,7 +862,7 @@ svg {
 .quote-card,
 .post-card {
   padding: 28px;
-  border: 1px solid #e5eaf4;
+  border: 1px solid var(--brand-blue-soft);
   border-radius: 14px;
   background: white;
 }
@@ -872,8 +872,8 @@ svg {
   display: grid;
   place-items: center;
   border-radius: 50%;
-  background: #edf2fc;
-  color: #6387c9;
+  background: var(--brand-blue-soft);
+  color: var(--brand-blue);
   margin-bottom: 20px;
 }
 .teacher-card h3 {
@@ -889,21 +889,21 @@ svg {
   color: var(--muted);
 }
 .quote-mark {
-  color: #f09b56;
+  color: var(--brand-amber);
   font-size: 65px;
   line-height: 1;
 }
 .quote-card blockquote {
   margin: 0 0 20px;
   font-size: 14px;
-  color: #50647e;
+  color: var(--brand-muted);
 }
 .quote-card strong {
   font-size: 13px;
 }
 .rating {
   font-size: 11px;
-  color: #996326;
+  color: var(--brand-amber-text);
 }
 .post-card .text-link {
   display: block;
@@ -919,7 +919,7 @@ svg {
   min-width: 0;
 }
 .faq-list details {
-  border-bottom: 1px solid #e5ebf5;
+  border-bottom: 1px solid var(--brand-blue-soft);
   padding: 17px 0;
 }
 .faq-list summary {
@@ -948,7 +948,7 @@ svg {
 }
 .cta-banner {
   background:
-    radial-gradient(ellipse at 95% 0%, #3975e9, transparent 55%), #143eaa;
+    radial-gradient(ellipse at 95% 0%, var(--brand-blue), transparent 55%), var(--brand-blue);
   color: #fff;
   border-radius: 20px;
   padding: 45px 50px;
@@ -959,7 +959,7 @@ svg {
   margin-bottom: 80px;
 }
 .cta-banner .eyebrow {
-  color: #c0d5ff;
+  color: var(--brand-blue-border);
   font-size: 9px;
 }
 .cta-banner h2 {
@@ -970,7 +970,7 @@ svg {
 }
 .cta-banner p:last-child {
   font-size: 12px;
-  color: #d8e4fd;
+  color: var(--brand-blue-soft);
   margin: 0;
 }
 .cta-banner .button {
@@ -1005,9 +1005,9 @@ svg {
   grid-column: 1/-1;
   margin: 0;
   padding-top: 24px;
-  border-top: 1px solid #e7ecf5;
+  border-top: 1px solid var(--brand-blue-soft);
   font-size: 10px;
-  color: #7b8da7;
+  color: var(--brand-muted);
   display: flex;
   justify-content: space-between;
   gap: 20px;
@@ -1040,7 +1040,7 @@ svg {
 }
 .article + .site-footer {
   padding-top: 30px;
-  border-top: 1px solid #e7ecf5;
+  border-top: 1px solid var(--brand-blue-soft);
 }
 @media (max-width: 1100px) {
   .nav-links {
@@ -1551,14 +1551,14 @@ svg {
 }
 .course-page-hero > div > p {
   white-space: pre-line;
-  color: #536984;
+  color: var(--brand-muted);
   font-size: 16px;
   line-height: 1.9;
 }
 .course-enrollment {
   padding: 26px;
   background: #f5f8ff;
-  border: 1px solid #dae5f7;
+  border: 1px solid var(--brand-blue-soft);
   border-radius: 14px;
   display: grid;
   gap: 15px;
@@ -1572,12 +1572,12 @@ svg {
 }
 .course-enrollment p {
   font-size: 14px;
-  color: #536984;
+  color: var(--brand-muted);
   margin: 0;
 }
 .course-enrollment > a:not(.button) {
   font-size: 14px;
-  color: #174cc4;
+  color: var(--brand-blue);
 }
 .course-page-sections {
   max-width: 800px;
@@ -1585,7 +1585,7 @@ svg {
 }
 .course-page-sections section {
   padding: 25px 0;
-  border-top: 1px solid #e3e9f2;
+  border-top: 1px solid var(--brand-line);
 }
 .course-page-sections h2 {
   font-size: 24px;
@@ -1593,20 +1593,20 @@ svg {
 }
 .course-page-sections li {
   padding: 6px 0;
-  color: #536984;
+  color: var(--brand-muted);
   font-size: 15px;
   line-height: 1.9;
 }
 .plain-content {
   white-space: pre-line;
   line-height: 1.9;
-  color: #536984;
+  color: var(--brand-muted);
 }
 .support-section {
   display: grid;
   grid-template-columns: 1.2fr 1fr;
   gap: 70px;
-  border-top: 1px solid #e3e9f2;
+  border-top: 1px solid var(--brand-line);
 }
 .support-section h2 {
   font-size: 30px;
@@ -1616,7 +1616,7 @@ svg {
 }
 .support-section a {
   display: block;
-  color: #174cc4;
+  color: var(--brand-blue);
   overflow-wrap: anywhere;
 }
 .support-section p {
@@ -1644,20 +1644,20 @@ svg {
   display: flex;
   align-items: center;
   gap: 12px;
-  color: #33445b;
+  color: var(--brand-ink);
   font-size: 17px;
 }
 .classroom-product-nav > span {
   margin-left: auto;
   border-radius: 50%;
-  background: #e8efff;
-  color: #1967d2;
+  background: var(--brand-blue-soft);
+  color: var(--brand-blue);
   font-size: 11px;
   padding: 8px;
 }
 .classroom-product > p {
   font-size: 11px;
-  color: #6d7c93;
+  color: var(--brand-muted);
   margin: 20px 0;
 }
 .classroom-product-cards {
@@ -1666,23 +1666,23 @@ svg {
   gap: 12px;
 }
 .classroom-product-cards article {
-  border: 1px solid #dfe5f0;
+  border: 1px solid var(--brand-line);
   border-radius: 8px;
   overflow: hidden;
   background: #fff;
   min-width: 0;
 }
 .classroom-product-cards article > div {
-  background: #1967d2;
+  background: var(--brand-blue);
   padding: 16px 12px;
   color: #fff;
   min-height: 95px;
 }
 .classroom-product-cards article:nth-child(2) > div {
-  background: #137e70;
+  background: var(--brand-teal);
 }
 .classroom-product-cards article:nth-child(3) > div {
-  background: #7543aa;
+  background: var(--brand-blue);
 }
 .classroom-product-cards small {
   font-size: 7px;
@@ -1698,27 +1698,27 @@ svg {
 .classroom-product-cards p {
   font-size: 10px;
   padding: 8px 12px;
-  color: #536984;
+  color: var(--brand-muted);
   min-height: 35px;
 }
 .classroom-product-cards article > span {
   font-size: 9px;
   display: block;
-  border-top: 1px solid #e3e9f2;
+  border-top: 1px solid var(--brand-line);
   padding: 10px;
-  color: #536984;
+  color: var(--brand-muted);
 }
 .classroom-product-tabs {
   display: flex;
   gap: 20px;
-  border-bottom: 1px solid #dce4f1;
+  border-bottom: 1px solid var(--brand-blue-soft);
   margin-top: 22px;
   font-size: 11px;
-  color: #536984;
+  color: var(--brand-muted);
   padding: 12px 0;
 }
 .classroom-product-tabs span:first-child {
-  color: #1967d2;
+  color: var(--brand-blue);
 }
 .product-scene .scene-caption {
   position: static;
@@ -1740,11 +1740,11 @@ svg {
   .site-mobile-menu summary {
     cursor: pointer;
     list-style: none;
-    border: 1px solid #dce4f2;
+    border: 1px solid var(--brand-blue-soft);
     padding: 8px 11px;
     border-radius: 7px;
     font-size: 12px;
-    color: #1c4076;
+    color: var(--brand-blue-hover);
   }
   .site-mobile-menu > div {
     position: absolute;
@@ -1752,8 +1752,8 @@ svg {
     right: 0;
     min-width: 190px;
     background: #fff;
-    box-shadow: 0 10px 35px #203b6326;
-    border: 1px solid #e0e7f3;
+    box-shadow: 0 10px 35px color-mix(in srgb, var(--brand-navy) 14.9%, transparent);
+    border: 1px solid var(--brand-blue-soft);
     border-radius: 10px;
     padding: 8px;
     z-index: 20;
@@ -1762,7 +1762,7 @@ svg {
     display: block;
     padding: 11px 13px;
     font-size: 14px;
-    color: #274d82;
+    color: var(--brand-blue-hover);
   }
   .site-header .nav-auth .button {
     display: none;
@@ -1884,7 +1884,7 @@ svg {
 .grade-course-heading > div > span {
   font-size: 12px;
   color: var(--muted);
-  background: #e8eefb;
+  background: var(--brand-blue-soft);
   padding: 5px 10px;
   border-radius: 20px;
 }
@@ -1905,7 +1905,7 @@ svg {
   scroll-padding: 1px;
   padding: 2px 0 12px;
   scrollbar-width: thin;
-  scrollbar-color: #a9badb transparent;
+  scrollbar-color: var(--brand-blue-border) transparent;
 }
 .grade-course-row:focus-visible {
   outline: 2px solid var(--blue);
@@ -2013,14 +2013,14 @@ svg {
   }
 }
 
-.course-lesson-outline li { overflow-wrap: anywhere; padding: 10px 4px; border-bottom: 1px solid #e8edf5; }
+.course-lesson-outline li { overflow-wrap: anywhere; padding: 10px 4px; border-bottom: 1px solid var(--brand-line); }
 .course-lesson-outline ol { padding-left: 24px; }
 
 .course-art.course-art-image{padding:0;overflow:hidden}.course-art-image img{width:100%;height:100%;object-fit:cover;display:block}.hero-learning-art{display:block;width:100%;height:auto;border-radius:0}.course-detail-art{display:block;width:min(100%,400px);height:auto;border-radius:16px;margin-bottom:20px}
 
-.hero .product-photo{display:block;margin:0;transform:rotate(1deg)}.hero-photo{display:block;width:100%;height:auto;aspect-ratio:3/2;object-fit:cover;border-radius:20px;box-shadow:0 22px 60px #08286c40}.product-photo figcaption{font-size:11px;color:#d3e1ff;margin-top:12px;text-align:center}
-.about-editorial{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center}.about-editorial h2{font-size:clamp(28px,3.5vw,42px);line-height:1.2;letter-spacing:-1px}.about-editorial h2 span{color:#71809c}.about-editorial p.plain-content{line-height:1.8;color:#56647a;font-size:15px}.about-editorial figure{margin:0}.about-editorial img{width:100%;height:auto;aspect-ratio:4/3;object-fit:cover;border-radius:20px}.about-editorial figcaption{font-size:11px;color:#7d8999;margin-top:8px}
-.teacher-photo{width:100%;height:auto;aspect-ratio:3/2;object-fit:cover;border-radius:12px;margin-bottom:14px}.sample-content-label{display:inline-block;font-size:10px;letter-spacing:.02em;line-height:1.5;padding:5px 8px;border-radius:6px;background:#fff4df;color:#8e641f;margin-bottom:12px}.review-avatar{display:block;width:64px;height:64px;border-radius:50%;object-fit:cover;margin:4px 0 12px}.post-cover-link{display:block;margin-bottom:16px}.post-cover{width:100%;height:auto;aspect-ratio:16/10;object-fit:cover;border-radius:10px}.article-cover{display:block;width:100%;height:auto;max-height:500px;object-fit:cover;border-radius:18px;margin:24px 0 32px}
+.hero .product-photo{display:block;margin:0;transform:rotate(1deg)}.hero-photo{display:block;width:100%;height:auto;aspect-ratio:3/2;object-fit:cover;border-radius:20px;box-shadow:0 22px 60px color-mix(in srgb, var(--brand-navy) 25.1%, transparent)}.product-photo figcaption{font-size:11px;color:var(--brand-blue-soft);margin-top:12px;text-align:center}
+.about-editorial{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center}.about-editorial h2{font-size:clamp(28px,3.5vw,42px);line-height:1.2;letter-spacing:-1px}.about-editorial h2 span{color:var(--brand-muted)}.about-editorial p.plain-content{line-height:1.8;color:var(--brand-muted);font-size:15px}.about-editorial figure{margin:0}.about-editorial img{width:100%;height:auto;aspect-ratio:4/3;object-fit:cover;border-radius:20px}.about-editorial figcaption{font-size:11px;color:var(--brand-muted);margin-top:8px}
+.teacher-photo{width:100%;height:auto;aspect-ratio:3/2;object-fit:cover;border-radius:12px;margin-bottom:14px}.sample-content-label{display:inline-block;font-size:10px;letter-spacing:.02em;line-height:1.5;padding:5px 8px;border-radius:6px;background:var(--brand-amber-soft);color:var(--brand-amber-text);margin-bottom:12px}.review-avatar{display:block;width:64px;height:64px;border-radius:50%;object-fit:cover;margin:4px 0 12px}.post-cover-link{display:block;margin-bottom:16px}.post-cover{width:100%;height:auto;aspect-ratio:16/10;object-fit:cover;border-radius:10px}.article-cover{display:block;width:100%;height:auto;max-height:500px;object-fit:cover;border-radius:18px;margin:24px 0 32px}
 @media(max-width:700px){.hero .product-photo{display:block;margin-top:28px;transform:none}.hero-photo{border-radius:14px}.about-editorial{grid-template-columns:1fr;gap:24px}.about-editorial figure{grid-row:1}.about-editorial p.plain-content{font-size:14px}.about-editorial img{aspect-ratio:3/2}.teacher-photo{max-height:260px}.article-cover{border-radius:10px}.quote-card .sample-content-label{font-size:10px}}
 
 /* Mobile card strips: one full card plus half of the next, without page overflow. */
@@ -2036,16 +2036,36 @@ svg {
  }
  .cards:is(.pricing-grid,.teacher-grid,.testimonial-grid,.posts-grid):has(> :only-child){grid-auto-columns:100%}
  .cards:is(.pricing-grid,.teacher-grid,.testimonial-grid,.posts-grid)>article{min-width:0;scroll-snap-align:start;overflow-wrap:anywhere;padding:20px}
- .cards:is(.pricing-grid,.teacher-grid,.testimonial-grid,.posts-grid):focus-visible{outline:2px solid #3562dc;outline-offset:4px}
+ .cards:is(.pricing-grid,.teacher-grid,.testimonial-grid,.posts-grid):focus-visible{outline:2px solid var(--brand-blue);outline-offset:4px}
  .pricing-grid .price{font-size:clamp(24px,7vw,32px);letter-spacing:-1px}
  .pricing-grid .price-card h3{font-size:20px}
  .pricing-grid .price-card .button{width:100%;min-width:0;padding-inline:10px;box-sizing:border-box;font-size:12px}
  .teacher-grid .teacher-photo{border-radius:9px}
  .teacher-grid .teacher-card h3{font-size:17px}
- .mobile-card-hint:has(+ .cards > article:nth-of-type(2)){display:block;text-align:right;font-size:11px;color:#6b7890;margin:0 0 10px}
+ .mobile-card-hint:has(+ .cards > article:nth-of-type(2)){display:block;text-align:right;font-size:11px;color:var(--brand-muted);margin:0 0 10px}
 }
 
-.website-logo{display:block;max-width:160px;max-height:64px;width:auto;height:auto;object-fit:contain;flex-shrink:0}.site-header .website-logo{max-height:46px;max-width:140px}.news-pagination{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:24px;align-items:center}.news-pagination a{display:inline-flex;align-items:center;justify-content:center;min-width:38px;min-height:38px;padding:8px 12px;border:1px solid #dce4ef;border-radius:8px;text-decoration:none;color:#254e8f;font-size:13px}.news-pagination a[aria-current=page]{background:#194bc0;color:white;border-color:#194bc0}.news-pagination a:hover{box-shadow:0 0 0 2px #e4ebfb}.news-pagination span{padding:6px;color:#7a879d}
+.website-logo{display:block;max-width:160px;max-height:64px;width:auto;height:auto;object-fit:contain;flex-shrink:0}.site-header .website-logo{max-height:46px;max-width:140px}.news-pagination{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:24px;align-items:center}.news-pagination a{display:inline-flex;align-items:center;justify-content:center;min-width:38px;min-height:38px;padding:8px 12px;border:1px solid var(--brand-line);border-radius:8px;text-decoration:none;color:var(--brand-blue-hover);font-size:13px}.news-pagination a[aria-current=page]{background:var(--brand-blue);color:white;border-color:var(--brand-blue)}.news-pagination a:hover{box-shadow:0 0 0 2px var(--brand-blue-soft)}.news-pagination span{padding:6px;color:var(--brand-muted)}
 @media(min-width:1101px){.posts-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}@media(min-width:801px) and (max-width:1100px){.posts-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:560px){.site-header .website-logo{max-width:84px;max-height:36px}.news-pagination{gap:5px}.news-pagination a{font-size:12px;padding:7px 9px;min-width:34px}}
 
 #tin-tuc{scroll-margin-top:88px}
+/* Shared VA brand identity. Cyan is an accent; amber actions retain dark readable ink. */
+:root {--blue:var(--brand-blue);--navy:var(--brand-navy);--orange:var(--brand-amber);--muted:var(--brand-muted);--line:var(--brand-line);color:var(--brand-ink);accent-color:var(--brand-blue)}
+.hero {background:radial-gradient(ellipse at 90% 5%,color-mix(in srgb,var(--brand-cyan) 32%,transparent),transparent 55%),linear-gradient(120deg,var(--brand-navy),var(--brand-blue) 64%,var(--brand-blue-hover))}
+.hero h1 em,.hero-tag > span {color:var(--brand-amber)}
+.hero-tag > span {background:var(--brand-amber)}
+.hero-copy > p,.hero-benefits {color:#E2ECFF}
+.primary {background:var(--brand-blue);color:var(--brand-white)}
+.primary:hover {background:var(--brand-blue-hover)}
+.orange {background:var(--brand-amber);color:var(--brand-navy);box-shadow:0 8px 24px color-mix(in srgb,var(--brand-amber) 20%,transparent)}
+.orange:hover {background:var(--brand-amber-hover)}
+.button.outline {color:var(--brand-blue);border-color:var(--brand-blue-border)}
+.button.outline:hover {background:var(--brand-blue-soft)}
+.tool-icon.orange-icon {background:var(--brand-amber-soft);color:var(--brand-amber-text)}
+.tool-icon:is(.green,.violet) {background:var(--brand-cyan-soft);color:var(--brand-teal)}
+.eyebrow {color:var(--brand-blue)}
+.cta-banner {background:radial-gradient(ellipse at 100% 0,color-mix(in srgb,var(--brand-cyan) 24%,transparent),transparent 70%),var(--brand-navy)}
+.cta-banner .eyebrow {color:var(--brand-cyan-light)}
+.news-pagination a[aria-current="page"] {background:var(--brand-blue);color:var(--brand-white);border-color:var(--brand-blue)}
+a:focus-visible,summary:focus-visible {outline:3px solid var(--brand-blue);outline-offset:4px}
+.hero a:focus-visible,.cta-banner a:focus-visible {outline-color:var(--brand-cyan-light)}

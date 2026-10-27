@@ -10,7 +10,7 @@
   -webkit-overflow-scrolling: touch;
 }
 .comparison-scroll:focus-visible {
-  outline: 2px solid #34775d;
+  outline: 2px solid var(--brand-text);
   outline-offset: 3px;
 }
 .comparison-scroll table.comparison-table {
@@ -23,7 +23,7 @@
   margin: 0;
   font-size: 12px;
   line-height: 1.45;
-  color: #344c40;
+  color: var(--brand-ink);
   overflow: visible;
 }
 .comparison-scroll .comparison-table thead {

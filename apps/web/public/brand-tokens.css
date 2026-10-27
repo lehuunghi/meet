@@ -1,0 +1,30 @@
+/* VA identity: shared by public pages, learning portals and Meet. */
+:root {
+ --brand-blue: #0B4ED8;
+ --brand-blue-hover: #083CAD;
+ --brand-blue-light: #A6C8FF;
+ --brand-cyan: #00C2E8;
+ --brand-cyan-light: #A6F0FF;
+ --brand-teal: #006F86;
+ --brand-amber: #FFAA1D;
+ --brand-amber-hover: #F29A08;
+ --brand-amber-text: #865000;
+ --brand-red: #FF4D4F;
+ --brand-danger: #C52835;
+ --brand-danger-light: #FFB3B7;
+ --brand-navy: #102A56;
+ --brand-ink: #162B49;
+ --brand-text: #324861;
+ --brand-muted: #526680;
+ --brand-white: #FFFFFF;
+ --brand-canvas: #F5F8FE;
+ --brand-line: #DCE6F3;
+ --brand-blue-soft: #EAF1FF;
+ --brand-cyan-soft: #E5F9FD;
+ --brand-amber-soft: #FFF5E2;
+ --brand-red-soft: #FFF0F1;
+ --brand-blue-border: #B8CDF8;
+ --brand-cyan-border: #A6E5F0;
+ --brand-amber-border: #F6D49A;
+ --brand-red-border: #F2BFC5;
+}

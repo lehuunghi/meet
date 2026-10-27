@@ -47,7 +47,7 @@
   font-size: 16px;
 }
 .report-context > strong span {
-  color: #9aa98a;
+  color: var(--brand-muted);
   margin: 0 10px;
 }
 .report-context small {
@@ -60,7 +60,7 @@
 }
 .attendance-summary article {
   padding: 17px;
-  border: 1px solid #e4eadd;
+  border: 1px solid var(--brand-line);
   border-radius: 9px;
 }
 .attendance-summary strong {
@@ -96,13 +96,13 @@
   display: inline-block;
   border-radius: 15px;
   padding: 5px 9px;
-  background: #f5f1e8;
-  color: #8d7959;
+  background: var(--brand-line);
+  color: var(--brand-muted);
   font-size: 11px;
 }
 .report-badge.connected {
-  background: #eaf3e5;
-  color: #3c7048;
+  background: var(--brand-line);
+  color: var(--brand-muted);
 }
 .report-pagination {
   display: flex;
@@ -143,7 +143,7 @@ select:focus-visible,
 button:focus-visible,
 a:focus-visible,
 input:focus-visible {
-  outline: 3px solid #88a969;
+  outline: 3px solid var(--brand-blue-border);
   outline-offset: 3px;
 }
 @media (max-width: 900px) {

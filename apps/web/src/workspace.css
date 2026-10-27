@@ -6,7 +6,7 @@
   font-size: 14px;
   --workspace-line: #e3e7ed;
   --workspace-muted: #5f6368;
-  --workspace-blue: #0b57d0;
+  --workspace-blue: var(--brand-blue);
 }
 body {
   color: #202124;
@@ -18,38 +18,38 @@ textarea {
   font-family: inherit;
 }
 button {
-  background: #0b57d0;
+  background: var(--brand-blue);
   border-radius: 6px;
   padding: 9px 16px;
   min-height: 36px;
   font-weight: 500;
 }
 button:hover {
-  background: #0842a0;
+  background: var(--brand-blue-hover);
 }
 a {
-  color: #0b57d0;
+  color: var(--brand-blue);
 }
 button:focus-visible,
 a:focus-visible,
 summary:focus-visible {
-  outline: 2px solid #0b57d0;
+  outline: 2px solid var(--brand-blue);
   outline-offset: 3px;
 }
 input:focus,
 select:focus,
 textarea:focus {
-  outline: 2px solid #0b57d0;
+  outline: 2px solid var(--brand-blue);
   outline-offset: -1px;
-  border-color: #0b57d0;
+  border-color: var(--brand-blue);
 }
 .secondary {
-  color: #0b57d0;
+  color: var(--brand-blue);
   background: #fff;
   border-color: #dadce0;
 }
 .secondary:hover {
-  background: #f0f5ff;
+  background: var(--brand-canvas);
 }
 h1 {
   font-size: 26px;
@@ -103,7 +103,7 @@ textarea {
   letter-spacing: -0.7px;
 }
 .brand > span {
-  color: #4285f4;
+  color: var(--brand-blue);
 }
 .shell > aside > .brand {
   margin-left: 16px;
@@ -117,8 +117,8 @@ textarea {
   gap: 10px;
 }
 .school-icon {
-  background: #e8f0fe;
-  color: #1967d2;
+  background: var(--brand-blue-soft);
+  color: var(--brand-blue);
   padding: 9px;
   border-radius: 6px;
 }
@@ -157,15 +157,15 @@ textarea {
   color: #5f6368;
 }
 .shell nav button:hover {
-  background: #e9eef6;
+  background: var(--brand-blue-soft);
 }
 .shell nav button.active {
-  background: #d3e3fd;
-  color: #041e49;
+  background: var(--brand-blue-soft);
+  color: var(--brand-navy);
   font-weight: 600;
 }
 .shell nav button.active span {
-  color: #1967d2;
+  color: var(--brand-blue);
 }
 .aside-bottom {
   padding: 16px 8px 0;
@@ -182,8 +182,8 @@ textarea {
   font-size: 12px;
 }
 .avatar {
-  background: #d3e3fd;
-  color: #174ea6;
+  background: var(--brand-blue-soft);
+  color: var(--brand-blue);
   padding: 10px;
 }
 .shell > main > header {
@@ -240,15 +240,15 @@ textarea {
   font-size: 12px;
 }
 .preview-switch a.selected {
-  background: #e8f0fe;
-  color: #174ea6;
+  background: var(--brand-blue-soft);
+  color: var(--brand-blue);
   font-weight: 600;
 }
 .banner {
   padding: 10px 12px;
-  background: #eaf1fb;
-  color: #345478;
-  border: 1px solid #d3e3fd;
+  background: var(--brand-blue-soft);
+  color: var(--brand-muted);
+  border: 1px solid var(--brand-blue-soft);
   border-radius: 6px;
   font-size: 12px;
   margin-bottom: 16px;
@@ -299,8 +299,8 @@ textarea {
 .stats article > span {
   top: 16px;
   right: 16px;
-  background: #e8f0fe;
-  color: #1967d2;
+  background: var(--brand-blue-soft);
+  color: var(--brand-blue);
   padding: 9px;
   font-size: 18px;
 }
@@ -334,7 +334,7 @@ textarea {
   margin-bottom: 6px;
 }
 .status.live {
-  color: #137333;
+  color: var(--brand-teal);
 }
 .meeting button {
   font-size: 12px;
@@ -350,7 +350,7 @@ textarea {
   padding: 20px;
   border-color: #e3e7ed;
   border-radius: 10px;
-  border-top: 3px solid #4285f4;
+  border-top: 3px solid var(--brand-blue);
 }
 .course-grid h2 {
   margin-top: 18px;
@@ -359,7 +359,7 @@ textarea {
   font-size: 12px;
 }
 .course-icon {
-  color: #1967d2;
+  color: var(--brand-blue);
   font-size: 28px;
 }
 .academic-tabs {
@@ -372,8 +372,8 @@ textarea {
   min-height: 36px;
 }
 .academic-tabs button.active {
-  background: #d3e3fd;
-  color: #174ea6;
+  background: var(--brand-blue-soft);
+  color: var(--brand-blue);
 }
 .academic-paste,
 .scope-filter-details,
@@ -410,7 +410,7 @@ th {
   background: #fafbfc;
 }
 .comparison-scroll .comparison-table tbody tr:hover td {
-  background: #edf3fd;
+  background: var(--brand-canvas);
 }
 .comparison-scroll .comparison-table td {
   color: #3c4043;
@@ -440,7 +440,7 @@ th {
   padding: 16px;
 }
 .login-art {
-  background: #eef4fd;
+  background: var(--brand-canvas);
   padding: 48px;
 }
 .login-art h1 {
@@ -449,14 +449,14 @@ th {
   font-weight: 500;
 }
 .login-art .orb {
-  color: #c2d7f9;
+  color: var(--brand-blue-border);
 }
 .login form {
   width: min(360px, 100%);
   padding: 32px;
 }
 .login .eyebrow {
-  color: #1967d2;
+  color: var(--brand-blue);
   letter-spacing: 1px;
 }
 footer {
