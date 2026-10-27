@@ -211,6 +211,9 @@ func (a *app) routes() http.Handler {
 	m.HandleFunc("POST /api/meetings/{id}/controls", a.auth(a.roomControl))
 	m.HandleFunc("POST /api/meetings/{id}/moderate", a.auth(a.moderateMember))
 	m.HandleFunc("GET /api/attendance/report", a.auth(a.attendanceReport))
+	// Shared learning reports are available in both school and academy deployments.
+	m.HandleFunc("GET /api/academy/admin/data-cleanup", a.auth(a.academyCleanup))
+	m.HandleFunc("POST /api/academy/admin/data-cleanup", a.auth(a.academyCleanup))
 	m.HandleFunc("GET /api/recordings", a.auth(a.recordingLibrary))
 	m.HandleFunc("GET /api/attendance/policy", a.auth(a.attendancePolicy))
 	m.HandleFunc("POST /api/attendance/policy", a.auth(a.attendancePolicy))

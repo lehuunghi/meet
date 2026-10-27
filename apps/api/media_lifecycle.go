@@ -267,6 +267,11 @@ func (a *app) mediaCleanupLoop(ctx context.Context) {
 		if e := a.cleanupMedia(job); e != nil && ctx.Err() == nil {
 			slog.Error("media cleanup cycle failed")
 		}
+		if _, err := os.Stat(configPath("maintenance")); os.IsNotExist(err) {
+			if e := a.cleanupDeletedMedia(job); e != nil && ctx.Err() == nil {
+				slog.Error("recording object deletion pending")
+			}
+		}
 		cancel()
 		select {
 		case <-ctx.Done():

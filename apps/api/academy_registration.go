@@ -254,7 +254,6 @@ func (a *app) academyVerificationMailLoop(ctx context.Context) {
 			jobCtx, cancel := context.WithTimeout(ctx, 40*time.Second)
 			_ = a.sendNextVerification(jobCtx)
 			_ = a.cleanupDeletedAvatar(jobCtx)
- _ = a.cleanupDeletedMedia(jobCtx)
 			_, _ = a.db.ExecContext(jobCtx, "DELETE FROM academy_email_links WHERE expires_at<UTC_TIMESTAMP()-INTERVAL 7 DAY")
 			cancel()
 		}
