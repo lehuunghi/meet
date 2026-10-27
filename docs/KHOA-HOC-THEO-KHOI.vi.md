@@ -4,6 +4,8 @@ VA có 15 khóa: Toán, Ngữ văn, Tiếng Anh, Vật lí, Hóa học cho mỗi
 
 Đây là danh mục giới thiệu, chưa có giáo viên được gán, video giả hay lịch Live giả. Quản trị bổ sung học liệu và gán môn Live phù hợp trước khi tổ chức dạy.
 
+Từ phiên bản 0.13.5, trang chủ chia riêng Khối 10, 11, 12, mỗi khối một hàng theo thứ tự Toán, Vật lí, Hóa học, Ngữ văn, Tiếng Anh. Máy tính hiển thị đủ năm môn cùng hàng. Điện thoại hiển thị 2,5 thẻ và vuốt ngang để xem tiếp; cuộn nằm trong từng hàng, không kéo tràn toàn trang. Các khóa chưa nhận diện được khối được giữ trong mục Khóa học khác. Việc sắp xếp không đổi ID hoặc đường dẫn khóa học.
+
 ## Quản lý tại VA
 
 Vào **Quản lý nội dung** tại `/quan-tri/noi-dung`. Chọn khóa để sửa, bỏ chọn **Xuất bản** nếu muốn ngừng hiển thị. Phần Website giới thiệu cho phép sửa mục tiêu, nội dung và lịch theo từng khóa.

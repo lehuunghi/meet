@@ -208,6 +208,7 @@ test("website editor preserves existing content, sends revision and edits course
   await page
     .getByRole("button", { name: "Quản trị website", exact: true })
     .click();
+  await page.getByRole("link", {name:"Tất cả nội dung",exact:true}).click();
   await page.getByText("Liên hệ & chính sách", { exact: true }).click();
   await page
     .getByLabel("Email liên hệ", { exact: true })

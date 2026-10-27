@@ -117,6 +117,11 @@ jobs:
       - name: Verify preinstalled Chrome
         run: google-chrome --version
       - run: npx playwright test
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: apps/api/go.mod
+          cache-dependency-path: apps/api/go.sum
+      - run: node ../../control/test_grade_layout.cjs
       - run: sudo apt-get update && sudo apt-get install -y python3-cryptography
       - run: node ../../control/test_ui.cjs
       - run: node ../../control/test_features_ui.cjs

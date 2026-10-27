@@ -1,11 +1,32 @@
 import { useEffect, useState, useRef } from "react";
 import { api } from "./api";
+import { useAcademyRoute, goAcademy, academyHref } from "./academy-route";
 import {
   confirmFormReload,
   markFormClean,
   markFormDirty,
 } from "./form-guard-core";
+const cmsSections = [
+  ["tong-quan", "Tổng quan"],
+  ["trang-chu", "Trang chủ & giới thiệu"],
+  ["khoa-hoc", "Trang khóa học"],
+  ["giao-vien", "Giáo viên"],
+  ["cam-nhan", "Cảm nhận"],
+  ["bai-viet", "Bài viết"],
+  ["lien-he", "Liên hệ"],
+  ["chinh-sach", "Chính sách"],
+  ["tat-ca", "Tất cả nội dung"],
+];
 export function AcademySiteEditor({ demo, courses, perform, notice }: any) {
+  useAcademyRoute();
+  const requested =
+    new URLSearchParams(location.search).get("muc") || "tong-quan";
+  const section = cmsSections.some(([id]) => id === requested)
+    ? requested
+    : "tong-quan";
+  const visible = (key: string) => section === key || section === "tat-ca";
+  const chooseSection = (key: string) =>
+    goAcademy("/quan-tri/website?muc=" + key, true);
   const formRef = useRef<HTMLFormElement>(null);
   const savedValue = useRef(
     JSON.stringify({ headline: "", description: "", published: false }),
@@ -155,529 +176,657 @@ export function AcademySiteEditor({ demo, courses, perform, notice }: any) {
         để trống sẽ được ẩn. Có thể bật sẵn mục giáo viên và cảm nhận; từng hồ
         sơ mới được giữ nháp đến khi anh/chị chọn công khai.
       </p>
-      <div className="academy-website-toolbar">
-        <span>
-          {value.published
-            ? "Website đang công khai"
-            : "Website đang ở chế độ nháp"}
-        </span>
-        <button
-          type="button"
-          disabled={!loaded || previewBusy || saving}
-          onClick={() => void preview()}
+      <div className="academy-cms-layout">
+        <nav
+          className="academy-cms-nav"
+          aria-label="Chuyên mục quản trị website"
         >
-          {previewBusy ? "Đang dựng bản xem trước…" : "Xem trước toàn website"}
-        </button>
-        <a href="/" target="_blank" rel="noopener">
-          Mở website đang công khai ↗
-        </a>
-        <button
-          type="button"
-          onClick={() =>
-            formRef.current
-              ?.querySelectorAll("details")
-              .forEach((d) => (d.open = true))
-          }
-        >
-          Mở tất cả các mục
-        </button>
-        <button
-          type="button"
-          onClick={() =>
-            formRef.current
-              ?.querySelectorAll("details")
-              .forEach((d) => (d.open = false))
-          }
-        >
-          Thu gọn các mục
-        </button>
-      </div>
-      <p>
-        Thêm, sửa hoặc xóa nội dung rồi bấm Lưu website để áp dụng. Bản xem
-        trước hiển thị nội dung đang chỉnh, kể cả bản nháp; không tự lưu hoặc
-        công khai.
-      </p>
-      {error && (
-        <p className="error" role="alert">
-          {error}{" "}
-          <button
-            onClick={() => {
-              if (confirmFormReload(formRef.current)) void load();
-            }}
-          >
-            Tải lại nội dung
-          </button>
-        </p>
-      )}
-      <button
-        type="button"
-        className="secondary"
-        disabled={demo || saving}
-        onClick={() => {
-          if (confirmFormReload(formRef.current)) void load();
-        }}
-      >
-        Tải lại nội dung website đã lưu
-      </button>
-      <form
-        ref={formRef}
-        onSubmit={(e) => {
-          e.preventDefault();
-          if (!loaded || saving) return;
-          setSaving(true);
-          void perform(async () => {
-            if (!demo) {
-              const out = await api("/academy/site", {
-                content: value,
-                revision,
-              });
-              setRevision(out.revision);
-              savedValue.current = JSON.stringify(value);
-              markFormClean(formRef.current);
-            }
-            notice(
-              demo
-                ? "Website minh họa, chưa lưu máy chủ."
-                : "Đã lưu website và nội dung khóa học.",
-            );
-          }).finally(() => setSaving(false));
-        }}
-      >
-        <fieldset disabled={!loaded || saving}>
-          <legend>Thương hiệu & giới thiệu</legend>
-          {field("headline", "Tên nền tảng")}
-          {field("description", "Thông điệp giới thiệu", true)}
-          {field("about", "Giới thiệu đơn vị", true)}
-          <label className="academy-check">
-            <input
-              type="checkbox"
-              checked={!!value.published}
-              onChange={(e) =>
-                setValue({ ...value, published: e.target.checked })
-              }
-            />
-            Xuất bản website
-          </label>
-        </fieldset>
-        <details>
-          <summary>Liên hệ & chính sách</summary>
-          <fieldset disabled={!loaded || saving}>
-            <legend>Thông tin hỗ trợ</legend>
-            {field("contact_email", "Email liên hệ")}
-            {field("contact_phone", "Số điện thoại hỗ trợ")}
-            {field("address", "Địa chỉ", true)}
-            {field("terms", "Điều khoản sử dụng", true)}
-            {field("privacy", "Chính sách bảo mật", true)}
-            {field("refund", "Thanh toán & hoàn phí", true)}
-            <div className="academy-website-toolbar">
-              {[
-                ["terms", "Điều khoản"],
-                ["privacy", "Bảo mật"],
-                ["refund", "Thanh toán"],
-              ].map(([key, label]) => (
-                <button
-                  key={key}
-                  type="button"
-                  disabled={!loaded || previewBusy}
-                  onClick={() => void preview({ policy: key })}
-                >
-                  Xem đầy đủ {label}
-                </button>
-              ))}
-            </div>
-          </fieldset>
-        </details>
-        <details>
-          <summary>Trang chi tiết khóa học</summary>
-          <label>
-            Chọn khóa học để biên tập
-            <select
-              value={selected}
-              onChange={(e) => setSelected(e.target.value)}
+          <strong>WEBSITE</strong>
+          {cmsSections.map(([id, label]) => (
+            <a
+              key={id}
+              href={academyHref("/quan-tri/website?muc=" + id)}
+              aria-current={section === id ? "page" : undefined}
+              onClick={(e) => {
+                if (
+                  e.button !== 0 ||
+                  e.ctrlKey ||
+                  e.metaKey ||
+                  e.shiftKey ||
+                  e.altKey
+                )
+                  return;
+                e.preventDefault();
+                chooseSection(id);
+              }}
             >
-              <option value="">Chọn khóa học</option>
-              {courses.map((c: any) => (
-                <option value={c.id} key={c.id}>
-                  {c.title}
+              {label}
+            </a>
+          ))}
+        </nav>
+        <div className="academy-cms-main">
+          <label className="academy-cms-mobile-menu">
+            Chuyên mục quản trị
+            <select
+              value={section}
+              onChange={(e) => chooseSection(e.target.value)}
+            >
+              {cmsSections.map(([id, label]) => (
+                <option key={id} value={id}>
+                  {label}
                 </option>
               ))}
             </select>
           </label>
-          {selected && (
-            <fieldset disabled={!loaded || saving}>
-              <legend>Nội dung khóa học</legend>
-              {[
-                ["audience", "Đối tượng học"],
-                ["objectives", "Mục tiêu · mỗi dòng một mục"],
-                ["outline", "Chương trình · mỗi dòng một phần"],
-                ["schedule", "Lịch học & hình thức học"],
-              ].map(([key, label]) => (
-                <label key={key}>
-                  {label}
-                  <textarea
-                    rows={4}
-                    maxLength={10000}
-                    value={page[key] || ""}
-                    onChange={(e) => changePage(key, e.target.value)}
-                  />
-                </label>
-              ))}
-              <label>
-                Bài học xem thử sau đăng nhập
-                <select
-                  value={page.preview_lesson || ""}
-                  onChange={(e) => changePage("preview_lesson", e.target.value)}
-                >
-                  <option value="">Không chọn bài học thử</option>
-                  {lessons
-                    .filter((l) => l.status === "ready")
-                    .map((l) => (
-                      <option value={l.id} key={l.id}>
-                        {l.title}
-                      </option>
-                    ))}
-                </select>
-              </label>
-              <small>
-                Bài học thử vẫn áp dụng hạn mức của tài khoản; không công khai
-                đường dẫn lưu trữ video.
-              </small>
-              <a href={"/khoa-hoc/" + selected} target="_blank" rel="noopener">
-                Xem trang công khai ↗
-              </a>
+          <h3 className="academy-cms-title">
+            {cmsSections.find(([id]) => id === section)?.[1]}
+          </h3>
+          <div className="academy-website-toolbar">
+            <span>
+              {value.published
+                ? "Website đang công khai"
+                : "Website đang ở chế độ nháp"}
+            </span>
+            <button
+              type="button"
+              disabled={!loaded || previewBusy || saving}
+              onClick={() => void preview()}
+            >
+              {previewBusy
+                ? "Đang dựng bản xem trước…"
+                : "Xem trước toàn website"}
+            </button>
+            <a href="/" target="_blank" rel="noopener">
+              Mở website đang công khai ↗
+            </a>
+            {section === "tat-ca" && (
               <button
                 type="button"
-                disabled={previewBusy}
-                onClick={() => void preview({ course: selected })}
+                onClick={() =>
+                  formRef.current
+                    ?.querySelectorAll("details")
+                    .forEach((d) => (d.open = true))
+                }
               >
-                Xem trước trang khóa học
+                Mở tất cả các mục
               </button>
+            )}
+            {section === "tat-ca" && (
               <button
                 type="button"
-                className="secondary"
+                onClick={() =>
+                  formRef.current
+                    ?.querySelectorAll("details")
+                    .forEach((d) => (d.open = false))
+                }
+              >
+                Thu gọn các mục
+              </button>
+            )}
+          </div>
+          <p>
+            Thêm, sửa hoặc xóa nội dung rồi bấm Lưu website để áp dụng. Bản xem
+            trước hiển thị nội dung đang chỉnh, kể cả bản nháp; không tự lưu
+            hoặc công khai.
+          </p>
+          {error && (
+            <p className="error" role="alert">
+              {error}{" "}
+              <button
                 onClick={() => {
-                  if (
-                    confirm(
-                      "Xóa phần giới thiệu chi tiết của khóa này? Bản ghi khóa học và bài giảng được giữ nguyên.",
-                    )
-                  ) {
-                    const pages = { ...value.course_pages };
-                    delete pages[selected];
-                    setValue({ ...value, course_pages: pages });
-                  }
+                  if (confirmFormReload(formRef.current)) void load();
                 }}
               >
-                Xóa nội dung giới thiệu khóa này
+                Tải lại nội dung
               </button>
-            </fieldset>
+            </p>
           )}
-        </details>
-        <details>
-          <summary>Hồ sơ giáo viên</summary>
-          <fieldset disabled={!loaded || saving}>
-            <legend>Giáo viên giới thiệu công khai</legend>
-            <label className="academy-check">
-              <input
-                type="checkbox"
-                checked={!!value.show_teachers}
-                onChange={(e) =>
-                  setValue({ ...value, show_teachers: e.target.checked })
+          <button
+            type="button"
+            className="secondary"
+            disabled={demo || saving}
+            onClick={() => {
+              if (confirmFormReload(formRef.current)) void load();
+            }}
+          >
+            Tải lại nội dung website đã lưu
+          </button>
+          <form
+            ref={formRef}
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!loaded || saving) return;
+              setSaving(true);
+              void perform(async () => {
+                if (!demo) {
+                  const out = await api("/academy/site", {
+                    content: value,
+                    revision,
+                  });
+                  setRevision(out.revision);
+                  savedValue.current = JSON.stringify(value);
+                  markFormClean(formRef.current);
                 }
-              />
-              Hiện mục giáo viên tiêu biểu kể cả khi đang cập nhật
-            </label>
-            {(value.teachers || []).map((t: any, i: number) => (
-              <div className="academy-editor-row" key={i}>
-                {[
-                  ["Name", "Họ tên"],
-                  ["Subject", "Môn phụ trách"],
-                  ["Bio", "Kinh nghiệm & giới thiệu"],
-                ].map(([key, label]) => (
-                  <label key={key}>
-                    {label}
-                    <textarea
-                      maxLength={5000}
-                      value={t[key] ?? t[key.toLowerCase()] ?? ""}
-                      onChange={(e) => {
-                        const next = {
-                          Name: t.Name ?? t.name ?? "",
-                          Subject: t.Subject ?? t.subject ?? "",
-                          Bio: t.Bio ?? t.bio ?? "",
-                          Published: t.Published ?? t.published ?? true,
-                          [key]: e.target.value,
-                        };
-                        setValue({
-                          ...value,
-                          teachers: value.teachers.map((v: any, n: number) =>
-                            n === i ? next : v,
-                          ),
-                        });
-                      }}
-                    />
+                notice(
+                  demo
+                    ? "Website minh họa, chưa lưu máy chủ."
+                    : "Đã lưu website và nội dung khóa học.",
+                );
+              }).finally(() => setSaving(false));
+            }}
+          >
+            {section === "tong-quan" && (
+              <section className="academy-cms-overview">
+                <p>
+                  Chọn một chuyên mục bên trái để quản lý. Thay đổi được giữ khi
+                  chuyển mục; bấm Lưu website để áp dụng toàn bộ.
+                </p>
+                <div className="academy-cms-stats">
+                  {[
+                    ["khoa-hoc", "Trang khóa học", courses.length],
+                    [
+                      "giao-vien",
+                      "Hồ sơ giáo viên",
+                      (value.teachers || []).length,
+                    ],
+                    ["cam-nhan", "Cảm nhận", (value.testimonials || []).length],
+                    ["bai-viet", "Bài viết", (value.posts || []).length],
+                  ].map(([id, label, count]) => (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => chooseSection(String(id))}
+                    >
+                      <strong>{count}</strong>
+                      <span>{label}</span>
+                    </button>
+                  ))}
+                </div>
+                <p>
+                  <strong>
+                    {value.published ? "Đang công khai" : "Đang giữ nháp"}
+                  </strong>{" "}
+                  ·{" "}
+                  {
+                    (value.posts || []).filter(
+                      (p: any) => p.Published ?? p.published,
+                    ).length
+                  }{" "}
+                  bài viết công khai. Giáo viên và cảm nhận mới luôn bắt đầu ở
+                  chế độ nháp.
+                </p>
+              </section>
+            )}
+            <fieldset
+              hidden={!visible("trang-chu")}
+              disabled={!loaded || saving}
+            >
+              <legend>Thương hiệu & giới thiệu</legend>
+              {field("headline", "Tên nền tảng")}
+              {field("description", "Thông điệp giới thiệu", true)}
+              {field("about", "Giới thiệu đơn vị", true)}
+              <label className="academy-check">
+                <input
+                  type="checkbox"
+                  checked={!!value.published}
+                  onChange={(e) =>
+                    setValue({ ...value, published: e.target.checked })
+                  }
+                />
+                Xuất bản website
+              </label>
+            </fieldset>
+            <details
+              hidden={!visible("lien-he") && !visible("chinh-sach")}
+              open={section !== "tat-ca"}
+            >
+              <summary>Liên hệ & chính sách</summary>
+              <fieldset disabled={!loaded || saving}>
+                <legend>Thông tin hỗ trợ</legend>
+                <div hidden={!visible("lien-he")}>
+                  {field("contact_email", "Email liên hệ")}
+                  {field("contact_phone", "Số điện thoại hỗ trợ")}
+                  {field("address", "Địa chỉ", true)}
+                </div>
+                <div hidden={!visible("chinh-sach")}>
+                  {field("terms", "Điều khoản sử dụng", true)}
+                  {field("privacy", "Chính sách bảo mật", true)}
+                  {field("refund", "Thanh toán & hoàn phí", true)}
+                  <div className="academy-website-toolbar">
+                    {[
+                      ["terms", "Điều khoản"],
+                      ["privacy", "Bảo mật"],
+                      ["refund", "Thanh toán"],
+                    ].map(([key, label]) => (
+                      <button
+                        key={key}
+                        type="button"
+                        disabled={!loaded || previewBusy}
+                        onClick={() => void preview({ policy: key })}
+                      >
+                        Xem đầy đủ {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </fieldset>
+            </details>
+            <details hidden={!visible("khoa-hoc")} open={section !== "tat-ca"}>
+              <summary>Trang chi tiết khóa học</summary>
+              <label>
+                Chọn khóa học để biên tập
+                <select
+                  value={selected}
+                  onChange={(e) => setSelected(e.target.value)}
+                >
+                  <option value="">Chọn khóa học</option>
+                  {courses.map((c: any) => (
+                    <option value={c.id} key={c.id}>
+                      {c.title}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              {selected && (
+                <fieldset disabled={!loaded || saving}>
+                  <legend>Nội dung khóa học</legend>
+                  {[
+                    ["audience", "Đối tượng học"],
+                    ["objectives", "Mục tiêu · mỗi dòng một mục"],
+                    ["outline", "Chương trình · mỗi dòng một phần"],
+                    ["schedule", "Lịch học & hình thức học"],
+                  ].map(([key, label]) => (
+                    <label key={key}>
+                      {label}
+                      <textarea
+                        rows={4}
+                        maxLength={10000}
+                        value={page[key] || ""}
+                        onChange={(e) => changePage(key, e.target.value)}
+                      />
+                    </label>
+                  ))}
+                  <label>
+                    Bài học xem thử sau đăng nhập
+                    <select
+                      value={page.preview_lesson || ""}
+                      onChange={(e) =>
+                        changePage("preview_lesson", e.target.value)
+                      }
+                    >
+                      <option value="">Không chọn bài học thử</option>
+                      {lessons
+                        .filter((l) => l.status === "ready")
+                        .map((l) => (
+                          <option value={l.id} key={l.id}>
+                            {l.title}
+                          </option>
+                        ))}
+                    </select>
                   </label>
-                ))}
+                  <small>
+                    Bài học thử vẫn áp dụng hạn mức của tài khoản; không công
+                    khai đường dẫn lưu trữ video.
+                  </small>
+                  <a
+                    href={"/khoa-hoc/" + selected}
+                    target="_blank"
+                    rel="noopener"
+                  >
+                    Xem trang công khai ↗
+                  </a>
+                  <button
+                    type="button"
+                    disabled={previewBusy}
+                    onClick={() => void preview({ course: selected })}
+                  >
+                    Xem trước trang khóa học
+                  </button>
+                  <button
+                    type="button"
+                    className="secondary"
+                    onClick={() => {
+                      if (
+                        confirm(
+                          "Xóa phần giới thiệu chi tiết của khóa này? Bản ghi khóa học và bài giảng được giữ nguyên.",
+                        )
+                      ) {
+                        const pages = { ...value.course_pages };
+                        delete pages[selected];
+                        setValue({ ...value, course_pages: pages });
+                      }
+                    }}
+                  >
+                    Xóa nội dung giới thiệu khóa này
+                  </button>
+                </fieldset>
+              )}
+            </details>
+            <details hidden={!visible("giao-vien")} open={section !== "tat-ca"}>
+              <summary>Hồ sơ giáo viên</summary>
+              <fieldset disabled={!loaded || saving}>
+                <legend>Giáo viên giới thiệu công khai</legend>
                 <label className="academy-check">
                   <input
                     type="checkbox"
-                    checked={t.Published ?? t.published ?? true}
+                    checked={!!value.show_teachers}
+                    onChange={(e) =>
+                      setValue({ ...value, show_teachers: e.target.checked })
+                    }
+                  />
+                  Hiện mục giáo viên tiêu biểu kể cả khi đang cập nhật
+                </label>
+                {(value.teachers || []).map((t: any, i: number) => (
+                  <div className="academy-editor-row" key={i}>
+                    {[
+                      ["Name", "Họ tên"],
+                      ["Subject", "Môn phụ trách"],
+                      ["Bio", "Kinh nghiệm & giới thiệu"],
+                    ].map(([key, label]) => (
+                      <label key={key}>
+                        {label}
+                        <textarea
+                        aria-label={label}
+                          maxLength={5000}
+                          value={t[key] ?? t[key.toLowerCase()] ?? ""}
+                          onChange={(e) => {
+                            const next = {
+                              Name: t.Name ?? t.name ?? "",
+                              Subject: t.Subject ?? t.subject ?? "",
+                              Bio: t.Bio ?? t.bio ?? "",
+                              Published: t.Published ?? t.published ?? true,
+                              [key]: e.target.value,
+                            };
+                            setValue({
+                              ...value,
+                              teachers: value.teachers.map(
+                                (v: any, n: number) => (n === i ? next : v),
+                              ),
+                            });
+                          }}
+                        />
+                      </label>
+                    ))}
+                    <label className="academy-check">
+                      <input
+                        type="checkbox"
+                        checked={t.Published ?? t.published ?? true}
+                        onChange={(e) =>
+                          setValue({
+                            ...value,
+                            teachers: value.teachers.map((v: any, n: number) =>
+                              n === i
+                                ? { ...v, Published: e.target.checked }
+                                : v,
+                            ),
+                          })
+                        }
+                      />
+                      Công khai hồ sơ giáo viên này
+                    </label>
+                    <button
+                      type="button"
+                      className="secondary"
+                      onClick={() =>
+                        setValue({
+                          ...value,
+                          teachers: value.teachers.filter(
+                            (_: any, n: number) => n !== i,
+                          ),
+                        })
+                      }
+                    >
+                      Xóa giáo viên giới thiệu
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={() =>
+                    setValue({
+                      ...value,
+                      teachers: [
+                        ...(value.teachers || []),
+                        { Name: "", Subject: "", Bio: "", Published: false },
+                      ],
+                    })
+                  }
+                >
+                  Thêm hồ sơ giáo viên
+                </button>
+              </fieldset>
+            </details>
+            <details hidden={!visible("cam-nhan")} open={section !== "tat-ca"}>
+              <summary>Cảm nhận học sinh & phụ huynh</summary>
+              <fieldset disabled={!loaded || saving}>
+                <legend>Chia sẻ thực tế được đồng ý công khai</legend>
+                <p>
+                  Chỉ đăng lời nhận xét thật đã được đồng ý sử dụng. Có thể dùng
+                  tên viết tắt; không nhập số điện thoại hoặc thông tin riêng tư
+                  của học sinh.
+                </p>
+                <label className="academy-check">
+                  <input
+                    type="checkbox"
+                    checked={!!value.show_testimonials}
                     onChange={(e) =>
                       setValue({
                         ...value,
-                        teachers: value.teachers.map((v: any, n: number) =>
-                          n === i ? { ...v, Published: e.target.checked } : v,
-                        ),
+                        show_testimonials: e.target.checked,
                       })
                     }
                   />
-                  Công khai hồ sơ giáo viên này
+                  Hiện mục cảm nhận kể cả khi đang cập nhật
                 </label>
-                <button
-                  type="button"
-                  className="secondary"
-                  onClick={() =>
-                    setValue({
-                      ...value,
-                      teachers: value.teachers.filter(
-                        (_: any, n: number) => n !== i,
-                      ),
-                    })
-                  }
-                >
-                  Xóa giáo viên giới thiệu
-                </button>
-              </div>
-            ))}
-            <button
-              type="button"
-              onClick={() =>
-                setValue({
-                  ...value,
-                  teachers: [
-                    ...(value.teachers || []),
-                    { Name: "", Subject: "", Bio: "", Published: false },
-                  ],
-                })
-              }
-            >
-              Thêm hồ sơ giáo viên
-            </button>
-          </fieldset>
-        </details>
-        <details>
-          <summary>Cảm nhận học sinh & phụ huynh</summary>
-          <fieldset disabled={!loaded || saving}>
-            <legend>Chia sẻ thực tế được đồng ý công khai</legend>
-            <p>
-              Chỉ đăng lời nhận xét thật đã được đồng ý sử dụng. Có thể dùng tên
-              viết tắt; không nhập số điện thoại hoặc thông tin riêng tư của học
-              sinh.
-            </p>
-            <label className="academy-check">
-              <input
-                type="checkbox"
-                checked={!!value.show_testimonials}
-                onChange={(e) =>
-                  setValue({ ...value, show_testimonials: e.target.checked })
-                }
-              />
-              Hiện mục cảm nhận kể cả khi đang cập nhật
-            </label>
-            {(value.testimonials || []).map((t: any, i: number) => (
-              <div className="academy-editor-row" key={i}>
-                <label>
-                  Tên hiển thị
-                  <input
-                    maxLength={200}
-                    value={t.Name}
-                    onChange={(e) =>
-                      changeRow("testimonials", i, "Name", e.target.value)
-                    }
-                  />
-                </label>
-                <label>
-                  Người chia sẻ
-                  <select
-                    value={t.Audience}
-                    onChange={(e) =>
-                      changeRow("testimonials", i, "Audience", e.target.value)
-                    }
-                  >
-                    <option value="">Chưa chọn</option>
-                    <option value="student">Học sinh</option>
-                    <option value="parent">Phụ huynh</option>
-                  </select>
-                </label>
-                <label>
-                  Nội dung cảm nhận
-                  <textarea
-                    rows={4}
-                    maxLength={5000}
-                    value={t.Text}
-                    onChange={(e) =>
-                      changeRow("testimonials", i, "Text", e.target.value)
-                    }
-                  />
-                </label>
-                <label>
-                  Điểm đánh giá (không bắt buộc)
-                  <select
-                    value={t.Rating}
-                    onChange={(e) =>
-                      changeRow(
-                        "testimonials",
-                        i,
-                        "Rating",
-                        Number(e.target.value),
-                      )
-                    }
-                  >
-                    <option value={0}>Không hiển thị điểm</option>
-                    {[1, 2, 3, 4, 5].map((n) => (
-                      <option key={n} value={n}>
-                        {n} / 5
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className="academy-check">
-                  <input
-                    type="checkbox"
-                    checked={t.Published}
-                    onChange={(e) =>
-                      changeRow(
-                        "testimonials",
-                        i,
-                        "Published",
-                        e.target.checked,
-                      )
-                    }
-                  />
-                  Công khai cảm nhận này — đã được người chia sẻ đồng ý
-                </label>
-                <button
-                  type="button"
-                  className="secondary"
-                  onClick={() =>
-                    setValue({
-                      ...value,
-                      testimonials: value.testimonials.filter(
-                        (_: any, n: number) => n !== i,
-                      ),
-                    })
-                  }
-                >
-                  Xóa cảm nhận
-                </button>
-              </div>
-            ))}
-            <button
-              type="button"
-              onClick={() =>
-                setValue({
-                  ...value,
-                  testimonials: [
-                    ...(value.testimonials || []),
-                    {
-                      Name: "",
-                      Text: "",
-                      Audience: "student",
-                      Rating: 0,
-                      Published: false,
-                    },
-                  ],
-                })
-              }
-            >
-              Thêm cảm nhận
-            </button>
-          </fieldset>
-        </details>
-        <details>
-          <summary>Bài viết & lịch khai giảng</summary>
-          <fieldset disabled={!loaded || saving}>
-            <legend>Bài viết</legend>
-            {(value.posts || []).map((p: any, i: number) => (
-              <div className="academy-editor-row" key={i}>
-                {[
-                  ["Slug", "Đường dẫn ngắn (chữ thường, số, dấu gạch ngang)"],
-                  ["Title", "Tiêu đề"],
-                  ["Summary", "Tóm tắt"],
-                  ["Body", "Nội dung"],
-                ].map(([key, label]) => (
-                  <label key={key}>
-                    {label}
-                    <textarea
-                      maxLength={20000}
-                      value={p[key] ?? p[key.toLowerCase()] ?? ""}
-                      onChange={(e) =>
-                        changeRow("posts", i, key, e.target.value)
+                {(value.testimonials || []).map((t: any, i: number) => (
+                  <div className="academy-editor-row" key={i}>
+                    <label>
+                      Tên hiển thị
+                      <input
+                        maxLength={200}
+                        value={t.Name}
+                        onChange={(e) =>
+                          changeRow("testimonials", i, "Name", e.target.value)
+                        }
+                      />
+                    </label>
+                    <label>
+                      Người chia sẻ
+                      <select
+                        value={t.Audience}
+                        onChange={(e) =>
+                          changeRow(
+                            "testimonials",
+                            i,
+                            "Audience",
+                            e.target.value,
+                          )
+                        }
+                      >
+                        <option value="">Chưa chọn</option>
+                        <option value="student">Học sinh</option>
+                        <option value="parent">Phụ huynh</option>
+                      </select>
+                    </label>
+                    <label>
+                      Nội dung cảm nhận
+                      <textarea
+                        rows={4}
+                        maxLength={5000}
+                        value={t.Text}
+                        onChange={(e) =>
+                          changeRow("testimonials", i, "Text", e.target.value)
+                        }
+                      />
+                    </label>
+                    <label>
+                      Điểm đánh giá (không bắt buộc)
+                      <select
+                        value={t.Rating}
+                        onChange={(e) =>
+                          changeRow(
+                            "testimonials",
+                            i,
+                            "Rating",
+                            Number(e.target.value),
+                          )
+                        }
+                      >
+                        <option value={0}>Không hiển thị điểm</option>
+                        {[1, 2, 3, 4, 5].map((n) => (
+                          <option key={n} value={n}>
+                            {n} / 5
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="academy-check">
+                      <input
+                        type="checkbox"
+                        checked={t.Published}
+                        onChange={(e) =>
+                          changeRow(
+                            "testimonials",
+                            i,
+                            "Published",
+                            e.target.checked,
+                          )
+                        }
+                      />
+                      Công khai cảm nhận này — đã được người chia sẻ đồng ý
+                    </label>
+                    <button
+                      type="button"
+                      className="secondary"
+                      onClick={() =>
+                        setValue({
+                          ...value,
+                          testimonials: value.testimonials.filter(
+                            (_: any, n: number) => n !== i,
+                          ),
+                        })
                       }
-                    />
-                  </label>
+                    >
+                      Xóa cảm nhận
+                    </button>
+                  </div>
                 ))}
-                <label className="academy-check">
-                  <input
-                    type="checkbox"
-                    checked={!!(p.Published ?? p.published)}
-                    onChange={(e) =>
-                      changeRow("posts", i, "Published", e.target.checked)
-                    }
-                  />
-                  Xuất bản bài viết
-                </label>
                 <button
                   type="button"
-                  disabled={previewBusy}
-                  onClick={() => void preview({ post: i })}
-                >
-                  Xem đầy đủ bài viết
-                </button>
-                <button
-                  type="button"
-                  className="secondary"
-                  onClick={() => {
-                    if (
-                      !confirm(
-                        "Xóa bài viết này khỏi nội dung website? Bấm Lưu website để áp dụng.",
-                      )
-                    )
-                      return;
+                  onClick={() =>
                     setValue({
                       ...value,
-                      posts: value.posts.filter((_: any, n: number) => n !== i),
-                    });
-                  }}
+                      testimonials: [
+                        ...(value.testimonials || []),
+                        {
+                          Name: "",
+                          Text: "",
+                          Audience: "student",
+                          Rating: 0,
+                          Published: false,
+                        },
+                      ],
+                    })
+                  }
                 >
-                  Xóa bài viết
+                  Thêm cảm nhận
                 </button>
-              </div>
-            ))}
-            <button
-              type="button"
-              onClick={() =>
-                setValue({
-                  ...value,
-                  posts: [
-                    ...(value.posts || []),
-                    {
-                      Slug: "",
-                      Title: "",
-                      Summary: "",
-                      Body: "",
-                      Published: false,
-                    },
-                  ],
-                })
-              }
-            >
-              Thêm bài viết
+              </fieldset>
+            </details>
+            <details hidden={!visible("bai-viet")} open={section !== "tat-ca"}>
+              <summary>Bài viết & lịch khai giảng</summary>
+              <fieldset disabled={!loaded || saving}>
+                <legend>Bài viết</legend>
+                {(value.posts || []).map((p: any, i: number) => (
+                  <div className="academy-editor-row" key={i}>
+                    {[
+                      [
+                        "Slug",
+                        "Đường dẫn ngắn (chữ thường, số, dấu gạch ngang)",
+                      ],
+                      ["Title", "Tiêu đề"],
+                      ["Summary", "Tóm tắt"],
+                      ["Body", "Nội dung"],
+                    ].map(([key, label]) => (
+                      <label key={key}>
+                        {label}
+                        <textarea
+                        aria-label={label}
+                          maxLength={20000}
+                          value={p[key] ?? p[key.toLowerCase()] ?? ""}
+                          onChange={(e) =>
+                            changeRow("posts", i, key, e.target.value)
+                          }
+                        />
+                      </label>
+                    ))}
+                    <label className="academy-check">
+                      <input
+                        type="checkbox"
+                        checked={!!(p.Published ?? p.published)}
+                        onChange={(e) =>
+                          changeRow("posts", i, "Published", e.target.checked)
+                        }
+                      />
+                      Xuất bản bài viết
+                    </label>
+                    <button
+                      type="button"
+                      disabled={previewBusy}
+                      onClick={() => void preview({ post: i })}
+                    >
+                      Xem đầy đủ bài viết
+                    </button>
+                    <button
+                      type="button"
+                      className="secondary"
+                      onClick={() => {
+                        if (
+                          !confirm(
+                            "Xóa bài viết này khỏi nội dung website? Bấm Lưu website để áp dụng.",
+                          )
+                        )
+                          return;
+                        setValue({
+                          ...value,
+                          posts: value.posts.filter(
+                            (_: any, n: number) => n !== i,
+                          ),
+                        });
+                      }}
+                    >
+                      Xóa bài viết
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={() =>
+                    setValue({
+                      ...value,
+                      posts: [
+                        ...(value.posts || []),
+                        {
+                          Slug: "",
+                          Title: "",
+                          Summary: "",
+                          Body: "",
+                          Published: false,
+                        },
+                      ],
+                    })
+                  }
+                >
+                  Thêm bài viết
+                </button>
+              </fieldset>
+            </details>
+            <button disabled={!loaded || saving}>
+              {saving ? "Đang lưu…" : "Lưu website"}
             </button>
-          </fieldset>
-        </details>
-        <button disabled={!loaded || saving}>
-          {saving ? "Đang lưu…" : "Lưu website"}
-        </button>
-      </form>
+          </form>
+        </div>
+      </div>
       <dialog
         ref={previewRef}
         className="academy-website-preview"

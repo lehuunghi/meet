@@ -1860,3 +1860,155 @@ svg {
     font-size: 14px;
   }
 }
+.grade-course-group {
+  margin-top: 32px;
+  min-width: 0;
+}
+.grade-course-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.grade-course-heading > div {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.grade-course-heading h3 {
+  margin: 0;
+  font-size: 24px;
+  letter-spacing: -0.6px;
+}
+.grade-course-heading > div > span {
+  font-size: 12px;
+  color: var(--muted);
+  background: #e8eefb;
+  padding: 5px 10px;
+  border-radius: 20px;
+}
+.grade-swipe-hint {
+  display: none;
+  margin: 0;
+  font-size: 11px;
+  color: var(--muted);
+}
+.grade-course-row {
+  grid-template-columns: none;
+  grid-auto-flow: column;
+  grid-auto-columns: calc((100% - 64px) / 5);
+  gap: 16px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+  scroll-padding: 1px;
+  padding: 2px 0 12px;
+  scrollbar-width: thin;
+  scrollbar-color: #a9badb transparent;
+}
+.grade-course-row:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 5px;
+  border-radius: 12px;
+}
+.grade-course-row .course-card {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  scroll-snap-align: start;
+}
+.grade-course-row .course-art {
+  height: 108px;
+  flex-shrink: 0;
+}
+.grade-course-row .course-art svg {
+  height: 32px;
+  width: 32px;
+}
+.grade-course-row .course-art > span {
+  font-size: 7px;
+  letter-spacing: 1px;
+}
+.grade-course-row .card-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 16px;
+  min-width: 0;
+}
+.grade-course-row h4 {
+  font-size: 19px;
+  line-height: 1.35;
+  margin: 0 0 10px;
+  letter-spacing: -0.3px;
+}
+.grade-course-row .card-content > p {
+  font-size: 12px;
+  line-height: 1.7;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.grade-course-row .course-bottom {
+  margin-top: auto;
+  padding-top: 14px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+.grade-course-row .course-bottom > a {
+  font-size: 12px;
+  white-space: normal;
+}
+@media (max-width: 800px) {
+  .grade-course-row {
+    grid-auto-columns: calc((100% - 24px) / 2.5);
+    gap: 12px;
+  }
+  .grade-course-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .grade-course-heading h3 {
+    font-size: 22px;
+  }
+  .grade-swipe-hint {
+    display: block;
+  }
+  .grade-course-row .course-art {
+    height: 76px;
+  }
+  .grade-course-row .course-art svg {
+    height: 26px;
+    width: 26px;
+  }
+  .grade-course-row .course-art > span {
+    display: none;
+  }
+  .grade-course-row .card-content {
+    padding: 12px;
+  }
+  .grade-course-row h4 {
+    font-size: 15px;
+    min-height: 22px;
+    margin-bottom: 5px;
+  }
+  .grade-course-row .card-content > p {
+    -webkit-line-clamp: 2;
+    font-size: 11px;
+    line-height: 1.55;
+  }
+  .grade-course-row .course-bottom {
+    padding-top: 10px;
+    margin-top: 12px;
+  }
+  .grade-course-row .course-bottom > a {
+    font-size: 11px;
+  }
+  .grade-course-row .course-bottom > span {
+    display: none;
+  }
+}

@@ -151,7 +151,7 @@ test("website reload protects checkbox-only edits", async ({ page }) => {
     }
     await r.fulfill({ json: data });
   });
-  await page.goto("/quan-tri/website");
+  await page.goto("/quan-tri/website?muc=tat-ca");
   const published = page.getByLabel("Xuất bản website", { exact: true });
   await expect(published).toBeChecked();
   await published.uncheck();

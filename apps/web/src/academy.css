@@ -1678,6 +1678,106 @@
   display: inline-block;
   margin: 10px 0;
 }
+.academy-cms-layout {
+  display: grid;
+  grid-template-columns: 190px minmax(0, 1fr);
+  gap: 24px;
+  margin-top: 24px;
+  align-items: start;
+}
+.academy-cms-nav {
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 20px;
+  background: #172b4d;
+  border-radius: 10px;
+  padding: 12px;
+  gap: 3px;
+}
+.academy-cms-nav strong {
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  color: #9cacc5;
+  padding: 10px;
+}
+.academy-cms-nav a {
+  font-size: 13px;
+  color: #dbe5f6;
+  text-decoration: none;
+  padding: 11px 12px;
+  border-radius: 6px;
+}
+.academy-cms-nav a:hover {
+  background: #ffffff10;
+}
+.academy-cms-nav a[aria-current="page"] {
+  background: #2872df;
+  color: white;
+  font-weight: 650;
+}
+.academy-cms-main {
+  min-width: 0;
+}
+.academy-cms-main [hidden] {
+  display: none !important;
+}
+.academy-cms-title {
+  font-size: 20px;
+  margin: 0 0 16px;
+}
+.academy-cms-mobile-menu {
+  display: none !important;
+}
+.academy-cms-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin: 20px 0;
+}
+.academy-cms-stats button {
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: #f5f8fd !important;
+  color: #243956 !important;
+  border: 1px solid #e0e8f4 !important;
+  padding: 20px !important;
+}
+.academy-cms-stats strong {
+  font-size: 26px;
+}
+.academy-cms-stats span {
+  font-size: 13px;
+}
+.academy-cms-main form > button:last-child {
+  position: sticky;
+  bottom: 12px;
+  z-index: 2;
+  box-shadow: 0 4px 16px #172b4d20;
+}
+@media (max-width: 900px) {
+  .academy-cms-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+  .academy-cms-nav {
+    display: none;
+  }
+  .academy-cms-mobile-menu {
+    display: flex !important;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .academy-cms-stats {
+    gap: 10px;
+  }
+  .academy-cms-stats button {
+    padding: 14px !important;
+  }
+}
 .academy-site-editor fieldset,
 .classroom-community fieldset {
   min-width: 0;

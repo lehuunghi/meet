@@ -71,8 +71,8 @@ type academyPost struct {
 	Published                  bool
 }
 type webCourse struct {
-	ID, Title, Description, Teacher string
-	Page                            academyCoursePage
+	ID, Title, Description, Teacher, Subject string
+	Page                                     academyCoursePage
 }
 type webPlan struct {
 	ID    string
@@ -85,7 +85,7 @@ type webPlan struct {
 //go:embed academy_site.html
 var academySiteHTML string
 
-var academyWeb = template.Must(template.New("site").Funcs(template.FuncMap{"lines": func(s string) []string {
+var academyWeb = template.Must(template.New("site").Funcs(template.FuncMap{"courseGroups": academyCourseGroups, "lines": func(s string) []string {
 	out := []string{}
 	for _, v := range strings.Split(s, "\n") {
 		if v = strings.TrimSpace(v); v != "" {
@@ -152,7 +152,7 @@ func (a *app) academyWebsite(w http.ResponseWriter, r *http.Request) {
 	courses := []webCourse{}
 	plans := []webPlan{}
 	if site.Published {
-		rows, e := a.db.QueryContext(r.Context(), "SELECT id,title,description,teacher_name FROM academy_courses WHERE school_id=? AND published=TRUE ORDER BY created_at DESC LIMIT 24", school)
+		rows, e := a.db.QueryContext(r.Context(), "SELECT id,title,description,teacher_name FROM academy_courses WHERE school_id=? AND published=TRUE ORDER BY created_at DESC LIMIT 200", school)
 		if e != nil {
 			problem(w, 503, "Chưa tải được nội dung")
 			return

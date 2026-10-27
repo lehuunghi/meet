@@ -7,7 +7,7 @@ test('website is separate, previews unsaved content privately and protects struc
   if(path==='/api/academy/site'&&r.request().method()==='POST'){saves++;return r.fulfill({json:{revision:'saved'}})}
   return r.fulfill({json:path==='/api/me'?{id:'owner',role:'admin',name:'VA'}:path==='/api/public-config'?{platform_mode:'academy'}:path==='/api/academy/site'?[{content:JSON.stringify({headline:'VA',description:'Đã lưu',published:true,posts:[{Title:'Bài thật',Slug:'bai-that',Body:'Nội dung',Published:true}]}),revision:'original'}]:[]});
  });
- await page.setViewportSize({width:390,height:844});await page.goto('/quan-tri/website');
+ await page.setViewportSize({width:390,height:844});await page.goto('/quan-tri/website?muc=tat-ca');
  await expect(page.getByRole('heading',{name:'Quản trị nội dung website',exact:true})).toBeVisible();
  await expect(page.getByRole('heading',{name:'Tạo & sửa khóa học',exact:true})).toHaveCount(0);
  await page.getByLabel('Thông điệp giới thiệu',{exact:true}).fill('Nội dung chưa lưu');

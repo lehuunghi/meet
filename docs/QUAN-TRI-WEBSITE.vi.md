@@ -4,6 +4,10 @@ Từ phiên bản 0.13.4, **Quản trị website** có đường dẫn cố đ�
 
 ## Các nhóm nội dung
 
+Từ phiên bản 0.13.5, menu chuyên mục ở bên trái giống cách tổ chức một hệ quản trị website: Tổng quan; Trang chủ & giới thiệu; Trang khóa học; Giáo viên; Cảm nhận; Bài viết; Liên hệ; Chính sách; Tất cả nội dung. Điện thoại dùng hộp **Chuyên mục quản trị** để chọn nhanh, không ép hai cột vào màn hình nhỏ.
+
+Mỗi chuyên mục có URL cố định như `/quan-tri/website?muc=bai-viet` hoặc `?muc=giao-vien`, có thể mở trực tiếp và tải lại. Chuyển chuyên mục giữ nguyên bản đang chỉnh và không tự lưu; rời khỏi quản trị website vẫn có cảnh báo chưa lưu. Menu thay thế mục hiện tại trong lịch sử trình duyệt để không tạo một chuỗi dài chỉ vì đổi biểu mẫu.
+
 - Thương hiệu, thông điệp, giới thiệu và trạng thái xuất bản website.
 - Liên hệ và nội dung các trang chính sách.
 - Trang giới thiệu chi tiết từng khóa học: đối tượng, mục tiêu, chương trình, lịch, bài xem thử được chọn.
@@ -12,6 +16,8 @@ Từ phiên bản 0.13.4, **Quản trị website** có đường dẫn cố đ�
 - Bài viết: thêm, sửa nội dung đầy đủ, xóa, đặt đường dẫn và nháp/công khai từng bài.
 
 **Mở tất cả các mục** để đọc/chỉnh toàn bộ biểu mẫu; **Thu gọn các mục** để xem gọn hơn. Xóa nội dung trong biểu mẫu chỉ áp dụng sau khi bấm **Lưu website**. Xóa phần giới thiệu khóa tại đây không xóa bản ghi khóa hoặc học liệu; xóa khóa nằm ở phần quản lý khóa học riêng.
+
+Hai nút mở/thu gọn được đặt ở chuyên mục **Tất cả nội dung**. Các chuyên mục riêng chỉ hiện nhóm đang chọn. Nút Lưu website áp dụng bản nội dung đang chỉnh của tất cả các mục, kèm kiểm tra phiên bản để tránh ghi đè quản trị khác.
 
 ## Xem đầy đủ trước khi lưu
 
