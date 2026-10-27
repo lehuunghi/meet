@@ -1,6 +1,6 @@
 # Ngày giờ và đăng bài giảng từ video lớp học
 
-Phiên bản 0.14.0, schema 10. Chức năng đăng video dành cho quản trị có quyền quản lý nội dung.
+Phiên bản 0.14.1, schema 10. Chức năng đăng video dành cho quản trị có quyền quản lý nội dung.
 
 ## Ngày giờ thống nhất
 
@@ -45,3 +45,7 @@ Tham khảo tính năng sao chép và điều kiện ETag của R2: [Cloudflare 
 - **Sửa bài giảng** cho phép sửa tên, chủ đề, ghi chú, thời lượng và công khai/nháp; dùng kiểm tra phiên bản để tránh ghi đè.
 - Học sinh chỉ thấy bài công khai, theo thứ tự đã lưu, kèm chủ đề và ghi chú. Quyền VIP/hạn mức xem vẫn áp dụng như cũ.
 - Nguồn sao chép lỗi hoặc chưa hoàn tất không được công khai. Chức năng không tự đăng bất kỳ video thực tế nào cho đến khi quản trị chọn và xác nhận nguồn/khóa đích.
+
+## Danh sách bài giảng ngoài khóa học
+
+Trang giới thiệu `/khoa-hoc/{id}` tự hiển thị tiêu đề các bài đã công khai theo thứ tự đã lưu. Không hiển thị bài nháp, ghi chú, mã bài hay đường dẫn video; từng tiêu đề là văn bản, không bấm để phát được. Khách phải đăng nhập vào khu vực học tập và đáp ứng quyền xem hiện có để xem video. Khi chưa có bài công khai, trang hiển thị thông báo đang cập nhật; không cần nhập lại danh sách trong Quản trị website.

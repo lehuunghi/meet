@@ -73,6 +73,7 @@ type academyPost struct {
 type webCourse struct {
 	ID, Title, Description, Teacher, Subject string
 	Page                                     academyCoursePage
+	LessonTitles                             []string
 }
 type webPlan struct {
 	ID    string
@@ -193,6 +194,11 @@ func (a *app) academyWebsite(w http.ResponseWriter, r *http.Request) {
 				c.Page.PreviewLesson = ""
 			}
 		}
+		c.LessonTitles, e = a.publicLessonTitles(r, school, c.ID)
+		if e != nil {
+			problem(w, 503, "Chưa tải được danh sách bài giảng")
+			return
+		}
 		course = &c
 		canonical = a.origin + "/khoa-hoc/" + c.ID
 	}
@@ -274,4 +280,22 @@ func (a *app) academySitemap(w http.ResponseWriter, r *http.Request) {
 func (a *app) academyRobots(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	_, _ = w.Write([]byte("User-agent: *\nDisallow: /api/\nDisallow: /hoc\nSitemap: " + strings.TrimRight(a.origin, "/") + "/sitemap.xml\n"))
+}
+
+// Public outlines contain titles only; playback identifiers and storage data stay authenticated.
+func (a *app) publicLessonTitles(r *http.Request, school, course string) ([]string, error) {
+	rows, err := a.db.QueryContext(r.Context(), "SELECT title FROM academy_lessons WHERE school_id=? AND course_id=? AND status='ready' ORDER BY position,created_at,id", school, course)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	titles := []string{}
+	for rows.Next() {
+		var title string
+		if err = rows.Scan(&title); err != nil {
+			return nil, err
+		}
+		titles = append(titles, title)
+	}
+	return titles, rows.Err()
 }

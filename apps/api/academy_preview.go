@@ -107,6 +107,11 @@ func (a *app) academySitePreview(w http.ResponseWriter, r *http.Request) {
 			problem(w, 404, "Không tìm thấy khóa học của đơn vị")
 			return
 		}
+		chosen.LessonTitles, e = a.publicLessonTitles(r, u.School, chosen.ID)
+		if e != nil {
+			problem(w, 503, "Chưa tải được danh sách bài giảng")
+			return
+		}
 		chosen.Page.PreviewLesson = ""
 		data["Course"] = chosen
 	}

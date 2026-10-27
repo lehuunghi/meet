@@ -2012,3 +2012,6 @@ svg {
     display: none;
   }
 }
+
+.course-lesson-outline li { overflow-wrap: anywhere; padding: 10px 4px; border-bottom: 1px solid #e8edf5; }
+.course-lesson-outline ol { padding-left: 24px; }

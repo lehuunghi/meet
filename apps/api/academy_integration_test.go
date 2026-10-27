@@ -441,6 +441,21 @@ func TestAcademyIntegration(t *testing.T) {
 	must(request("POST", "/api/academy/courses/copy-course/lesson-order", orderBody, limited), 200)
 	must(request("POST", "/api/academy/courses/copy-course/lesson-order", orderBody, limited), 409)
 	must(request("POST", "/api/academy/courses/copy-course/lesson-order", `{"ids":["copy-manual","copy-manual"],"expected":["copy-manual","`+copyID+`"]}`, limited), 400)
+	// Anonymous course outlines expose only published lesson titles in saved order.
+	exec("INSERT INTO academy_lessons(id,school_id,course_id,title,object_key,bucket,status) VALUES('outline-draft','academy-school','copy-course','PRIVATE-DRAFT-TITLE','PRIVATE-OBJECT-KEY','test-bucket','draft')")
+	publicOutline := request("GET", "/khoa-hoc/copy-course", "", nil)
+	must(publicOutline, 200)
+	html := publicOutline.Body.String()
+	for _, secret := range []string{"PRIVATE-DRAFT-TITLE", "PRIVATE-OBJECT-KEY", "Ghi chú mới", copyID, "copy-recording", "copy-manual"} {
+		if strings.Contains(html, secret) {
+			t.Fatal("public outline exposed private lesson data", secret)
+		}
+	}
+	if !strings.Contains(html, "Danh sách bài giảng") || !strings.Contains(html, "Bài đã sửa") || strings.Index(html, "Bài sau") > strings.Index(html, "Bài đã sửa") {
+		t.Fatal("public outline omitted or reordered ready lessons")
+	}
+	must(request("GET", "/api/academy/courses/copy-course/lessons", "", nil), 401)
+	must(request("POST", "/api/academy/lessons/"+copyID+"/play", "{}", nil), 401)
 	bad := request("POST", "/api/academy/webhooks/payos", `{"success":true,"data":{"amount":1000},"signature":"00"}`, nil)
 	must(bad, 403)
 }
