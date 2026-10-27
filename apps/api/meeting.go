@@ -32,6 +32,9 @@ func (a *app) access(w http.ResponseWriter, r *http.Request, manage bool) (meeti
 		problem(w, 403, "Teacher required")
 		return m, false
 	}
+	if m.Status != "ended" && !a.liveClassState(w, r, m.CourseID) {
+		return m, false
+	}
 	if !a.academyLiveGate(w, r) {
 		return m, false
 	}
@@ -72,6 +75,9 @@ func (a *app) createMeeting(w http.ResponseWriter, r *http.Request) {
 	}
 	if in.Title == "" || len(in.Title) > 200 || in.Starts.IsZero() {
 		problem(w, 400, "Title and start time required")
+		return
+	}
+	if !a.liveClassState(w, r, in.Course) {
 		return
 	}
 	id := uid()
@@ -127,6 +133,17 @@ func (a *app) meetingState(w http.ResponseWriter, r *http.Request) {
 	if in.Status == "live" && !assigned.Valid {
 		problem(w, 409, "Phân công giáo viên trước khi bắt đầu buổi học")
 		return
+	}
+	if in.Status == "live" {
+		var subject string
+		if tx.QueryRowContext(r.Context(), "SELECT course_id FROM meetings WHERE school_id=? AND id=?", u.School, r.PathValue("id")).Scan(&subject) != nil {
+			problem(w, 404, "Không tìm thấy buổi học")
+			return
+		}
+		if e = a.lockActiveClass(tx, r, subject); e != nil {
+			problem(w, 409, "Lớp đã ngưng hoặc đã xóa")
+			return
+		}
 	}
 	res, e := tx.ExecContext(r.Context(), "UPDATE meetings SET status=? WHERE school_id=? AND id=? AND status=?", in.Status, u.School, r.PathValue("id"), from)
 	if e != nil {

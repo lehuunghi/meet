@@ -252,3 +252,13 @@ CREATE TABLE IF NOT EXISTS academy_registration_avatars (
  school_id CHAR(36) NOT NULL,user_id CHAR(36) NOT NULL,media_type VARCHAR(30) NOT NULL,image_data MEDIUMBLOB NOT NULL,
  PRIMARY KEY(school_id,user_id),FOREIGN KEY(school_id,user_id) REFERENCES users(school_id,id)
 );
+
+CREATE TABLE IF NOT EXISTS class_controls (
+ school_id CHAR(36) NOT NULL,class_id CHAR(36) NOT NULL,state ENUM('active','suspended','deleted') NOT NULL DEFAULT 'active',revision INT NOT NULL DEFAULT 1,
+ PRIMARY KEY(school_id,class_id),FOREIGN KEY(school_id,class_id) REFERENCES classes(school_id,id)
+);
+
+CREATE TABLE IF NOT EXISTS academy_live_memberships (
+ school_id CHAR(36) NOT NULL,user_id CHAR(36) NOT NULL,expires_at DATETIME(6) NOT NULL,
+ PRIMARY KEY(school_id,user_id),FOREIGN KEY(school_id,user_id) REFERENCES users(school_id,id)
+);

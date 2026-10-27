@@ -79,6 +79,10 @@ func (a *app) prepareCourse(w http.ResponseWriter, r *http.Request) {
 		problem(w, 404, "Không tìm thấy môn đã phân công")
 		return
 	}
+	if e = a.lockActiveClass(tx, r, r.PathValue("id")); e != nil {
+		problem(w, 409, "Lớp đã ngưng hoặc đã xóa; không thể chuẩn bị dạy")
+		return
+	}
 	var id string
 	e = tx.QueryRowContext(r.Context(), "SELECT id FROM meetings WHERE school_id=? AND course_id=? AND status IN ('live','scheduled') ORDER BY (status='live') DESC,starts_at ASC LIMIT 1", u.School, r.PathValue("id")).Scan(&id)
 	if e == sql.ErrNoRows {

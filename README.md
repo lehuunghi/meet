@@ -1,3 +1,5 @@
+> v0.16.0: [Quản lý lớp/giáo viên, quyền VIP chung và kết nối khóa học với Live](docs/LOP-GIAO-VIEN-VA-KHOA-HOC.vi.md).
+
 > v0.15.1: [Ngôn ngữ, gói VIP, tài khoản và đăng ký bằng liên kết email](docs/NGON-NGU-VIP-TAI-KHOAN.vi.md). [Đăng bài giảng từ video lớp học và ngày giờ Việt Nam](docs/BAI-GIANG-TU-BAN-GHI.vi.md).
 
 > v0.7.0: [Giao diện theo lớp/môn, điểm danh & video, chuẩn bị dạy và link phòng 6 ký tự](docs/GIAO-DIEN-LOP-MON-v0.7.vi.md).

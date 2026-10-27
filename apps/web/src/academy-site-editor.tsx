@@ -912,6 +912,30 @@ export function AcademyCourseEditor({
   const [value, setValue] = useState<any>(empty),
     [busy, setBusy] = useState(false),
     [deleteConfirm, setDeleteConfirm] = useState("");
+  const [liveSubjects, setLiveSubjects] = useState<any[]>([]);
+  useEffect(() => {
+    let active = true;
+    void (
+      demo
+        ? Promise.resolve([
+            {
+              id: "demo-academic-math",
+              class_name: "10A1",
+              name: "Toán",
+              teacher: "Giáo viên minh họa",
+              class_state: "active",
+            },
+          ])
+        : api("/catalog")
+    )
+      .then((v) => {
+        if (active) setLiveSubjects(v);
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, [demo]);
   const savedCourse = courses.find((c: any) => c.id === value.id);
   return (
     <section className="academy-section">
@@ -966,7 +990,6 @@ export function AcademyCourseEditor({
           ["title", "Tên khóa học"],
           ["description", "Giới thiệu khóa học"],
           ["teacher", "Giáo viên hiển thị"],
-          ["academic_course_id", "ID môn học Live (nếu có)"],
         ].map(([key, label]) => (
           <label key={key}>
             {label}
@@ -988,6 +1011,49 @@ export function AcademyCourseEditor({
             )}
           </label>
         ))}
+        <label>
+          Lớp & môn trực tuyến liên kết
+          <select
+            value={value.academic_course_id}
+            onChange={(e) => {
+              const subject = liveSubjects.find((v) => v.id === e.target.value);
+              setValue({
+                ...value,
+                academic_course_id: e.target.value,
+                teacher: subject?.teacher_id ? subject.teacher : value.teacher,
+              });
+            }}
+          >
+            <option value="">Chỉ video / chưa liên kết lớp Live</option>
+            {value.academic_course_id &&
+              !liveSubjects.some((v) => v.id === value.academic_course_id) && (
+                <option value={value.academic_course_id}>
+                  Liên kết đã lưu
+                </option>
+              )}
+            {liveSubjects.map((subject) => (
+              <option
+                key={subject.id}
+                value={subject.id}
+                disabled={
+                  subject.class_state === "deleted" &&
+                  value.academic_course_id !== subject.id
+                }
+              >
+                {subject.class_name} · {subject.name} · {subject.teacher}
+                {subject.class_state === "suspended"
+                  ? " · Tạm ngưng"
+                  : subject.class_state === "deleted"
+                    ? " · Đã xóa"
+                    : ""}
+              </option>
+            ))}
+          </select>
+        </label>
+        <p>
+          Học sinh mở lớp Live ngay từ khóa học; giáo viên mở kho bài giảng ngay
+          trong lớp. Chỉ liên kết lớp/môn phù hợp nội dung khóa học.
+        </p>
         {value.description && value.title === value.description && (
           <p>
             Giới thiệu nên mô tả nội dung và lợi ích cụ thể, tránh lặp lại tên

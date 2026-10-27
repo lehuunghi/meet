@@ -19,6 +19,12 @@ func (a *app) courseCommunity(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if r.Method == "POST" {
+		var deleted int
+		if a.db.QueryRowContext(r.Context(), "SELECT COUNT(*) FROM class_controls WHERE school_id=? AND class_id=? AND state='deleted'", u.School, class).Scan(&deleted) != nil || deleted > 0 {
+			problem(w, 409, "Lớp đã xóa; chỉ được xem lịch sử")
+			return
+		}
+
 		if !manage {
 			problem(w, 403, "Giáo viên phụ trách mới được đăng thông báo")
 			return

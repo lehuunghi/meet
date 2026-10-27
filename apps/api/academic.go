@@ -86,6 +86,13 @@ func (a *app) teacherImport(w http.ResponseWriter, r *http.Request) {
 func (a *app) classID(r *http.Request) (string, error) {
 	var id string
 	e := a.db.QueryRowContext(r.Context(), "SELECT id FROM classes WHERE school_id=? AND (id=? OR short_id=?)", who(r).School, r.PathValue("id"), r.PathValue("id")).Scan(&id)
+	if e == nil && r.Method != "GET" {
+		var state string
+		e = a.db.QueryRowContext(r.Context(), "SELECT COALESCE((SELECT state FROM class_controls cc WHERE cc.school_id=cl.school_id AND cc.class_id=cl.id),'active') FROM classes cl WHERE cl.school_id=? AND cl.id=?", who(r).School, id).Scan(&state)
+		if e == nil && state == "deleted" {
+			e = fmt.Errorf("Lớp đã xóa; chỉ được xem lịch sử")
+		}
+	}
 	return id, e
 }
 func (a *app) classStudents(w http.ResponseWriter, r *http.Request) {
@@ -344,7 +351,7 @@ func (a *app) assignTeachers(w http.ResponseWriter, r *http.Request) {
 	for _, v := range in.Rows {
 		var course string
 		var rev int
-		e = tx.QueryRowContext(r.Context(), "SELECT id,revision FROM courses WHERE school_id=? AND (id=? OR short_id=?) FOR UPDATE", school, v.Course, v.Course).Scan(&course, &rev)
+		e = tx.QueryRowContext(r.Context(), "SELECT id,revision FROM courses WHERE school_id=? AND (id=? OR short_id=?) AND NOT EXISTS(SELECT 1 FROM class_controls cc WHERE cc.school_id=courses.school_id AND cc.class_id=courses.class_id AND cc.state='deleted') FOR UPDATE", school, v.Course, v.Course).Scan(&course, &rev)
 		if e != nil {
 			problem(w, 404, "Không tìm thấy môn")
 			return

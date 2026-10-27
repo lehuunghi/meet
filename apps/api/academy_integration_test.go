@@ -456,6 +456,7 @@ func TestAcademyIntegration(t *testing.T) {
 	}
 	must(request("GET", "/api/academy/courses/copy-course/lessons", "", nil), 401)
 	must(request("POST", "/api/academy/lessons/"+copyID+"/play", "{}", nil), 401)
+	exerciseAcademyClassroom(t, a, db, request, cookie, admin, student, other)
 	exerciseAcademyManagement(t, a, db, request, cookie, admin, student, limited, other)
 	bad := request("POST", "/api/academy/webhooks/payos", `{"success":true,"data":{"amount":1000},"signature":"00"}`, nil)
 	must(bad, 403)

@@ -54,13 +54,13 @@ func (a *app) catalog(w http.ResponseWriter, r *http.Request) {
 	u := who(r)
 	a.query(w, r, `SELECT c.id,c.short_id,c.revision,
 (SELECT lm.id FROM meetings lm WHERE lm.school_id=c.school_id AND lm.course_id=c.id AND lm.status IN ('live','scheduled') ORDER BY (lm.status='live') DESC,lm.starts_at ASC LIMIT 1) AS ready_meeting_id,
-(SELECT lm.status FROM meetings lm WHERE lm.school_id=c.school_id AND lm.course_id=c.id AND lm.status IN ('live','scheduled') ORDER BY (lm.status='live') DESC,lm.starts_at ASC LIMIT 1) AS ready_status,(SELECT COUNT(*) FROM meetings lm WHERE lm.school_id=c.school_id AND lm.course_id=c.id) AS lesson_count,COALESCE((SELECT JSON_ARRAYAGG(ca.user_id) FROM course_assistants ca WHERE ca.school_id=c.school_id AND ca.course_id=c.id),JSON_ARRAY()) AS assistant_ids,c.name,c.class_id,cl.name AS class_name,c.teacher_id,COALESCE(u.name,'Chưa phân công') AS teacher FROM courses c JOIN classes cl ON cl.id=c.class_id AND cl.school_id=c.school_id LEFT JOIN users u ON u.id=c.teacher_id AND u.school_id=c.school_id WHERE c.school_id=? AND (?='admin' OR (?='teacher' AND EXISTS(SELECT 1 FROM users assigned WHERE assigned.id=? AND assigned.school_id=c.school_id AND (assigned.id=c.teacher_id OR EXISTS(SELECT 1 FROM course_assistants ca WHERE ca.school_id=c.school_id AND ca.course_id=c.id AND ca.user_id=assigned.id)))) OR (?='student' AND EXISTS(SELECT 1 FROM enrollments e WHERE e.school_id=c.school_id AND e.class_id=c.class_id AND e.user_id=?))) ORDER BY c.name LIMIT 1000`, u.School, u.Role, u.Role, u.ID, u.Role, u.ID)
+(SELECT lm.status FROM meetings lm WHERE lm.school_id=c.school_id AND lm.course_id=c.id AND lm.status IN ('live','scheduled') ORDER BY (lm.status='live') DESC,lm.starts_at ASC LIMIT 1) AS ready_status,(SELECT COUNT(*) FROM meetings lm WHERE lm.school_id=c.school_id AND lm.course_id=c.id) AS lesson_count,COALESCE((SELECT JSON_ARRAYAGG(ca.user_id) FROM course_assistants ca WHERE ca.school_id=c.school_id AND ca.course_id=c.id),JSON_ARRAY()) AS assistant_ids,c.name,c.class_id,cl.name AS class_name,COALESCE((SELECT state FROM class_controls cc WHERE cc.school_id=c.school_id AND cc.class_id=c.class_id),'active') AS class_state,c.teacher_id,COALESCE(u.name,'Chưa phân công') AS teacher FROM courses c JOIN classes cl ON cl.id=c.class_id AND cl.school_id=c.school_id LEFT JOIN users u ON u.id=c.teacher_id AND u.school_id=c.school_id WHERE c.school_id=? AND (?='admin' OR (?='teacher' AND EXISTS(SELECT 1 FROM users assigned WHERE assigned.id=? AND assigned.school_id=c.school_id AND (assigned.id=c.teacher_id OR EXISTS(SELECT 1 FROM course_assistants ca WHERE ca.school_id=c.school_id AND ca.course_id=c.id AND ca.user_id=assigned.id)))) OR (?='student' AND EXISTS(SELECT 1 FROM enrollments e WHERE e.school_id=c.school_id AND e.class_id=c.class_id AND e.user_id=?))) ORDER BY c.name LIMIT 1000`, u.School, u.Role, u.Role, u.ID, u.Role, u.ID)
 }
 func (a *app) users(w http.ResponseWriter, r *http.Request) {
 	if !admin(w, r) {
 		return
 	}
-	a.query(w, r, "SELECT id,short_id,student_code,revision,email,name,role,active FROM users WHERE school_id=? AND NOT EXISTS(SELECT 1 FROM account_deletions d WHERE d.school_id=users.school_id AND d.user_id=users.id) ORDER BY name LIMIT 1000", who(r).School)
+	a.query(w, r, "SELECT u.id,u.short_id,u.student_code,u.revision,u.email,u.name,u.role,u.active,COALESCE(uc.state,IF(u.active,'active','disabled')) AS state FROM users u LEFT JOIN user_controls uc ON uc.user_id=u.id WHERE u.school_id=? AND NOT EXISTS(SELECT 1 FROM account_deletions d WHERE d.school_id=u.school_id AND d.user_id=u.id) ORDER BY name LIMIT 1000", who(r).School)
 }
 func (a *app) createClass(w http.ResponseWriter, r *http.Request) {
 	if !admin(w, r) {
@@ -117,7 +117,7 @@ func (a *app) createCourse(w http.ResponseWriter, r *http.Request) {
 	}
 	school := who(r).School
 	var class, teacher string
-	if a.db.QueryRowContext(r.Context(), "SELECT id FROM classes WHERE school_id=? AND (id=? OR short_id=?)", school, in.Class, in.Class).Scan(&class) != nil {
+	if a.db.QueryRowContext(r.Context(), "SELECT id FROM classes WHERE school_id=? AND (id=? OR short_id=?) AND NOT EXISTS(SELECT 1 FROM class_controls cc WHERE cc.school_id=classes.school_id AND cc.class_id=classes.id AND cc.state='deleted')", school, in.Class, in.Class).Scan(&class) != nil {
 		problem(w, 404, "Không tìm thấy lớp")
 		return
 	}
@@ -156,7 +156,7 @@ func (a *app) enroll(w http.ResponseWriter, r *http.Request) {
 	}
 	u := who(r)
 	var resolvedClass, resolvedUser string
-	if a.db.QueryRowContext(r.Context(), "SELECT id FROM classes WHERE school_id=? AND (id=? OR short_id=?)", u.School, in.Class, in.Class).Scan(&resolvedClass) != nil || a.db.QueryRowContext(r.Context(), "SELECT id FROM users WHERE school_id=? AND role='student' AND active=TRUE AND (id=? OR short_id=?)", u.School, in.User, in.User).Scan(&resolvedUser) != nil {
+	if a.db.QueryRowContext(r.Context(), "SELECT id FROM classes WHERE school_id=? AND (id=? OR short_id=?) AND NOT EXISTS(SELECT 1 FROM class_controls cc WHERE cc.school_id=classes.school_id AND cc.class_id=classes.id AND cc.state='deleted')", u.School, in.Class, in.Class).Scan(&resolvedClass) != nil || a.db.QueryRowContext(r.Context(), "SELECT id FROM users WHERE school_id=? AND role='student' AND active=TRUE AND (id=? OR short_id=?)", u.School, in.User, in.User).Scan(&resolvedUser) != nil {
 		problem(w, 404, "Không tìm thấy lớp/học sinh")
 		return
 	}

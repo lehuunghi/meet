@@ -105,6 +105,8 @@ func (a *app) academyRoutes(m *http.ServeMux) {
 	member("POST /api/academy/orders/{order}/receipt", a.academyReceipt)
 	member("POST /api/academy/uploads", a.academyFileUpload)
 	member("POST /api/academy/courses/{course}/enroll", a.academyEnroll)
+	member("GET /api/academy/courses/{course}/classroom", a.academyClassroom)
+	member("GET /api/academy/classrooms/{subject}/courses", a.academyClassCourses)
 	member("GET /api/academy/courses/{course}/lessons", a.academyLessons)
 	member("POST /api/academy/courses/{course}/lessons", a.academyLessonUpload)
 	member("POST /api/academy/courses/{course}/recordings", a.academyRecordingImport)

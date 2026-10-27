@@ -364,6 +364,10 @@
     "area": "Giao diện chung"
   },
   {
+    "key": " học sinh",
+    "area": "Giao diện chung"
+  },
+  {
     "key": " kết quả. Nhập thêm để thu hẹp danh sách.",
     "area": "Giao diện chung"
   },
@@ -381,6 +385,10 @@
   },
   {
     "key": " môn ",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": " môn · ",
     "area": "Giao diện chung"
   },
   {
@@ -696,6 +704,10 @@
     "area": "Giao diện chung"
   },
   {
+    "key": "Đã cập nhật trạng thái giáo viên.",
+    "area": "Giao diện chung"
+  },
+  {
     "key": "Đã có trường trong hệ thống. Thêm trường tiếp theo bằng lệnh bootstrap trong tài liệu.",
     "area": "Giao diện chung"
   },
@@ -772,7 +784,15 @@
     "area": "Giao diện chung"
   },
   {
+    "key": "Đã xóa / lưu lịch sử",
+    "area": "Giao diện chung"
+  },
+  {
     "key": "Đã xóa dòng môn",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Đã xóa giáo viên và gỡ phân công.",
     "area": "Giao diện chung"
   },
   {
@@ -781,6 +801,10 @@
   },
   {
     "key": "Đang chạy",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Đang hoạt động",
     "area": "Giao diện chung"
   },
   {
@@ -797,6 +821,10 @@
   },
   {
     "key": "Đang lưu dữ liệu. Bạn vẫn muốn rời trang?",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Đang ngưng dạy",
     "area": "Giao diện chung"
   },
   {
@@ -924,6 +952,10 @@
     "area": "Giao diện chung"
   },
   {
+    "key": "Hiện lớp đã xóa để đối chiếu lịch sử",
+    "area": "Giao diện chung"
+  },
+  {
     "key": "Họ tên",
     "area": "Giao diện chung"
   },
@@ -941,6 +973,10 @@
   },
   {
     "key": "hướng dẫn cập nhật",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Hủy sửa lớp",
     "area": "Giao diện chung"
   },
   {
@@ -1028,6 +1064,14 @@
     "area": "Giao diện chung"
   },
   {
+    "key": "Kích hoạt giáo viên",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Kích hoạt lớp",
+    "area": "Giao diện chung"
+  },
+  {
     "key": "Kiểm tra bản mới",
     "area": "Giao diện chung"
   },
@@ -1060,6 +1104,10 @@
     "area": "Giao diện chung"
   },
   {
+    "key": "Lớp đã xóa — chỉ xem lịch sử. Video trong khóa học vẫn giữ nguyên.",
+    "area": "Giao diện chung"
+  },
+  {
     "key": "Lớp học",
     "area": "Giao diện chung"
   },
@@ -1084,7 +1132,15 @@
     "area": "Giao diện chung"
   },
   {
+    "key": "Lưu hoặc bỏ các dòng đang sửa trước khi ngưng hoặc xóa giáo viên.",
+    "area": "Giao diện chung"
+  },
+  {
     "key": "Lưu hoặc bỏ thay đổi trước khi đổi lớp.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Lưu lớp",
     "area": "Giao diện chung"
   },
   {
@@ -1156,6 +1212,14 @@
     "area": "Giao diện chung"
   },
   {
+    "key": "Môn / học sinh",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Môn & danh sách lớp",
+    "area": "Giao diện chung"
+  },
+  {
     "key": "Môn học",
     "area": "Giao diện chung"
   },
@@ -1173,6 +1237,14 @@
   },
   {
     "key": "Nâng cấp dữ liệu",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Ngưng giáo viên",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Ngưng lớp",
     "area": "Giao diện chung"
   },
   {
@@ -1197,6 +1269,10 @@
   },
   {
     "key": "Nhập App Secret",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Nhập đúng tên lớp để xóa và giữ lịch sử: ",
     "area": "Giao diện chung"
   },
   {
@@ -1264,6 +1340,10 @@
     "area": "Giao diện chung"
   },
   {
+    "key": "Quản lý lớp học",
+    "area": "Giao diện chung"
+  },
+  {
     "key": "R2 Access Key ID",
     "area": "Giao diện chung"
   },
@@ -1316,6 +1396,14 @@
     "area": "Giao diện chung"
   },
   {
+    "key": "Sửa lớp",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Sửa tên, tạm ngưng, kích hoạt lại hoặc xóa lớp. Xóa giữ lịch sử và video khóa học; lớp còn buổi đang học phải kết thúc buổi trước.",
+    "area": "Giao diện chung"
+  },
+  {
     "key": "SV0123",
     "area": "Giao diện chung"
   },
@@ -1345,6 +1433,10 @@
   },
   {
     "key": "Tắt phản chiếu hình của tôi",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Tên lớp mới",
     "area": "Giao diện chung"
   },
   {
@@ -1424,6 +1516,10 @@
     "area": "Giao diện chung"
   },
   {
+    "key": "Trạng thái / thao tác",
+    "area": "Giao diện chung"
+  },
+  {
     "key": "Trình duyệt chưa hỗ trợ camera/micro hoặc trang chưa được mở qua HTTPS. Có thể chọn vào lớp không dùng camera/micro.",
     "area": "Giao diện chung"
   },
@@ -1473,6 +1569,18 @@
   },
   {
     "key": "Xóa dòng môn",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Xóa giáo viên",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Xóa giáo viên sẽ thu hồi đăng nhập và gỡ phân công, giữ lịch sử. Nhập đúng email: ",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Xóa lớp",
     "area": "Giao diện chung"
   },
   {
@@ -1824,10 +1932,6 @@
     "area": "Không gian học tập"
   },
   {
-    "key": "Đã đăng ký lớp. Mở mục Lớp học để xem lịch.",
-    "area": "Không gian học tập"
-  },
-  {
     "key": "Đã đọc",
     "area": "Không gian học tập"
   },
@@ -1901,10 +2005,6 @@
   },
   {
     "key": "Đăng ký học thử",
-    "area": "Không gian học tập"
-  },
-  {
-    "key": "Đăng ký lớp Live",
     "area": "Không gian học tập"
   },
   {
@@ -2085,10 +2185,6 @@
   },
   {
     "key": "Giao bài tập",
-    "area": "Không gian học tập"
-  },
-  {
-    "key": "Giáo viên minh họa",
     "area": "Không gian học tập"
   },
   {
@@ -2500,6 +2596,10 @@
     "area": "Không gian học tập"
   },
   {
+    "key": "Quyền học Live đến: ",
+    "area": "Không gian học tập"
+  },
+  {
     "key": "Quyền xem video",
     "area": "Không gian học tập"
   },
@@ -2733,14 +2833,6 @@
   },
   {
     "key": "Tiếp tục khóa học đã chọn",
-    "area": "Không gian học tập"
-  },
-  {
-    "key": "Toán",
-    "area": "Không gian học tập"
-  },
-  {
-    "key": "Toán nền tảng",
     "area": "Không gian học tập"
   },
   {
@@ -3092,6 +3184,10 @@
     "area": "Phòng học & hệ thống"
   },
   {
+    "key": "Bài giảng & bài tập",
+    "area": "Phòng học & hệ thống"
+  },
+  {
     "key": "Bấm biểu tượng mic/camera để bật, hoặc vào lớp không dùng thiết bị.",
     "area": "Phòng học & hệ thống"
   },
@@ -3304,6 +3400,10 @@
     "area": "Phòng học & hệ thống"
   },
   {
+    "key": "Đã kết nối khóa học với lớp trực tuyến.",
+    "area": "Phòng học & hệ thống"
+  },
+  {
     "key": "Đã kết thúc",
     "area": "Phòng học & hệ thống"
   },
@@ -3353,6 +3453,10 @@
   },
   {
     "key": "Đang kết nối…",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Đăng ký & mở lớp Live",
     "area": "Phòng học & hệ thống"
   },
   {
@@ -3468,7 +3572,15 @@
     "area": "Phòng học & hệ thống"
   },
   {
+    "key": "Giáo viên minh họa",
+    "area": "Phòng học & hệ thống"
+  },
+  {
     "key": "Giáo viên yêu cầu tắt mic",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Gói hiện tại chưa có Live",
     "area": "Phòng học & hệ thống"
   },
   {
@@ -3505,6 +3617,14 @@
   },
   {
     "key": "Khảo sát trong buổi học",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Khóa học & bài giảng",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Khóa học video — chưa liên kết lớp trực tuyến.",
     "area": "Phòng học & hệ thống"
   },
   {
@@ -3552,11 +3672,27 @@
     "area": "Phòng học & hệ thống"
   },
   {
+    "key": "Lớp đã xóa",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Lớp đang ngưng",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Lớp đang tạm ngưng",
+    "area": "Phòng học & hệ thống"
+  },
+  {
     "key": "LỚP HỌC",
     "area": "Phòng học & hệ thống"
   },
   {
     "key": "Lớp học & môn học",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Lớp trực tuyến: ",
     "area": "Phòng học & hệ thống"
   },
   {
@@ -3609,6 +3745,14 @@
   },
   {
     "key": "Mở khảo sát",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Mở lớp giảng dạy",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Mở lớp trực tuyến",
     "area": "Phòng học & hệ thống"
   },
   {
@@ -3816,11 +3960,19 @@
     "area": "Phòng học & hệ thống"
   },
   {
+    "key": "Toán",
+    "area": "Phòng học & hệ thống"
+  },
+  {
     "key": "Toán học",
     "area": "Phòng học & hệ thống"
   },
   {
     "key": "Toàn màn hình",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Toán nền tảng",
     "area": "Phòng học & hệ thống"
   },
   {
@@ -3840,7 +3992,15 @@
     "area": "Phòng học & hệ thống"
   },
   {
+    "key": "Video bài giảng vẫn xem theo quyền của gói VIP. Chọn gói có Live để vào lớp trực tuyến.",
+    "area": "Phòng học & hệ thống"
+  },
+  {
     "key": "Xác thực →",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Xem bài giảng",
     "area": "Phòng học & hệ thống"
   },
   {
@@ -3874,6 +4034,14 @@
   {
     "key": "Yêu cầu tắt mic áp dụng trên ứng dụng; học sinh có thể bật lại. Không có thao tác tự bật mic/camera của người khác.",
     "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": " · Đã xóa",
+    "area": "Quản trị website"
+  },
+  {
+    "key": " · Tạm ngưng",
+    "area": "Quản trị website"
   },
   {
     "key": "Bài học thử vẫn áp dụng hạn mức của tài khoản; không công khai đường dẫn lưu trữ video.",
@@ -3917,6 +4085,10 @@
   },
   {
     "key": "Chỉ đăng lời nhận xét thật đã được đồng ý sử dụng. Có thể dùng tên viết tắt; không nhập số điện thoại hoặc thông tin riêng tư của học sinh.",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Chỉ video / chưa liên kết lớp Live",
     "area": "Quản trị website"
   },
   {
@@ -4064,7 +4236,7 @@
     "area": "Quản trị website"
   },
   {
-    "key": "ID môn học Live (nếu có)",
+    "key": "Học sinh mở lớp Live ngay từ khóa học; giáo viên mở kho bài giảng ngay trong lớp. Chỉ liên kết lớp/môn phù hợp nội dung khóa học.",
     "area": "Quản trị website"
   },
   {
@@ -4097,6 +4269,14 @@
   },
   {
     "key": "Liên hệ & chính sách",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Liên kết đã lưu",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Lớp & môn trực tuyến liên kết",
     "area": "Quản trị website"
   },
   {
@@ -4396,10 +4576,6 @@
     "area": "Tài khoản & phân quyền"
   },
   {
-    "key": "Đang hoạt động",
-    "area": "Tài khoản & phân quyền"
-  },
-  {
     "key": "Điểm danh",
     "area": "Tài khoản & phân quyền"
   },
@@ -4688,10 +4864,6 @@
     "area": "Thông báo hệ thống"
   },
   {
-    "key": "Cần gói VIP có Live",
-    "area": "Thông báo hệ thống"
-  },
-  {
     "key": "Cần quyền học bài tập",
     "area": "Thông báo hệ thống"
   },
@@ -4828,7 +5000,15 @@
     "area": "Thông báo hệ thống"
   },
   {
+    "key": "Chưa có quyền quản lý nội dung",
+    "area": "Thông báo hệ thống"
+  },
+  {
     "key": "Chưa có trung tâm",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa đăng ký được lớp",
     "area": "Thông báo hệ thống"
   },
   {
@@ -4865,6 +5045,10 @@
   },
   {
     "key": "Chưa đọc được thứ tự",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa đọc được trạng thái lớp",
     "area": "Thông báo hệ thống"
   },
   {
@@ -4932,11 +5116,19 @@
     "area": "Thông báo hệ thống"
   },
   {
+    "key": "Chưa kiểm tra được buổi đang học",
+    "area": "Thông báo hệ thống"
+  },
+  {
     "key": "Chưa kiểm tra được dữ liệu liên quan",
     "area": "Thông báo hệ thống"
   },
   {
     "key": "Chưa kiểm tra được email",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa kiểm tra được lớp liên kết",
     "area": "Thông báo hệ thống"
   },
   {
@@ -4969,6 +5161,14 @@
   },
   {
     "key": "Chưa lưu được hồ sơ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa lưu được lớp",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa lưu được lớp; kiểm tra tên trùng",
     "area": "Thông báo hệ thống"
   },
   {
@@ -5488,6 +5688,10 @@
     "area": "Thông báo hệ thống"
   },
   {
+    "key": "Gói VIP hiện tại chưa có quyền học Live",
+    "area": "Thông báo hệ thống"
+  },
+  {
     "key": "Gửi chậm lại",
     "area": "Thông báo hệ thống"
   },
@@ -5640,6 +5844,10 @@
     "area": "Thông báo hệ thống"
   },
   {
+    "key": "Khóa học chưa liên kết lớp trực tuyến",
+    "area": "Thông báo hệ thống"
+  },
+  {
     "key": "Khóa học khác",
     "area": "Thông báo hệ thống"
   },
@@ -5721,10 +5929,6 @@
   },
   {
     "key": "Không có quyền thực hiện",
-    "area": "Thông báo hệ thống"
-  },
-  {
-    "key": "Không đăng ký được lớp",
     "area": "Thông báo hệ thống"
   },
   {
@@ -5865,6 +6069,10 @@
   },
   {
     "key": "Không ký được phần tải",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không liên kết mới với lớp đã xóa",
     "area": "Thông báo hệ thống"
   },
   {
@@ -6088,6 +6296,10 @@
     "area": "Thông báo hệ thống"
   },
   {
+    "key": "Không tìm thấy buổi học",
+    "area": "Thông báo hệ thống"
+  },
+  {
     "key": "Không tìm thấy buổi trong lớp/môn",
     "area": "Thông báo hệ thống"
   },
@@ -6129,6 +6341,10 @@
   },
   {
     "key": "Không tìm thấy lớp",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không tìm thấy lớp của khóa học",
     "area": "Thông báo hệ thống"
   },
   {
@@ -6240,6 +6456,10 @@
     "area": "Thông báo hệ thống"
   },
   {
+    "key": "Liên kết lớp đã thay đổi; tải lại khóa học",
+    "area": "Thông báo hệ thống"
+  },
+  {
     "key": "Liên kết sai hoặc đã hết hạn",
     "area": "Thông báo hệ thống"
   },
@@ -6249,6 +6469,38 @@
   },
   {
     "key": "Loại nền tảng không hợp lệ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Lớp còn buổi đang học; kết thúc buổi trước khi ngưng hoặc xóa lớp",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Lớp đã ngưng hoặc đã xóa",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Lớp đã ngưng hoặc đã xóa; không thể chuẩn bị dạy",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Lớp đã ngưng hoặc đã xóa; không thể mở lớp trực tuyến",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Lớp đã ngưng hoặc đã xóa; không thể vào lớp trực tuyến",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Lớp đã ngưng hoặc đã xóa; video khóa học vẫn xem theo quyền VIP",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Lớp đã thay đổi; tải lại trước khi lưu",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Lớp đã xóa; chỉ được xem lịch sử",
     "area": "Thông báo hệ thống"
   },
   {
@@ -6421,6 +6673,10 @@
   },
   {
     "key": "Nhập đúng tên khóa học để xác nhận xóa vĩnh viễn",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Nhập đúng tên lớp để xác nhận xóa",
     "area": "Thông báo hệ thống"
   },
   {
@@ -6657,6 +6913,10 @@
   },
   {
     "key": "Teacher required",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Tên hoặc trạng thái lớp không hợp lệ",
     "area": "Thông báo hệ thống"
   },
   {

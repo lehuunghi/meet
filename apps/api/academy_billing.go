@@ -159,7 +159,8 @@ func (a *app) payOrder(r *http.Request, school, id, ref, reviewer string, amount
 		return e
 	}
 	var previous time.Time
-	e = tx.QueryRowContext(r.Context(), "SELECT expires_at FROM academy_memberships WHERE school_id=? AND user_id=?", school, user).Scan(&previous)
+	var previousLive bool
+	e = tx.QueryRowContext(r.Context(), "SELECT expires_at,live_enabled FROM academy_memberships WHERE school_id=? AND user_id=?", school, user).Scan(&previous, &previousLive)
 	if e != nil && e != sql.ErrNoRows {
 		return e
 	}
@@ -167,11 +168,27 @@ func (a *app) payOrder(r *http.Request, school, id, ref, reviewer string, amount
 	if e = tx.QueryRowContext(r.Context(), "SELECT UTC_TIMESTAMP(6)").Scan(&now); e != nil {
 		return e
 	}
+	var liveUntil time.Time
+	e = tx.QueryRowContext(r.Context(), "SELECT expires_at FROM academy_live_memberships WHERE school_id=? AND user_id=?", school, user).Scan(&liveUntil)
+	if e != nil && e != sql.ErrNoRows {
+		return e
+	}
+	if e == sql.ErrNoRows && previousLive {
+		liveUntil = previous
+	}
+	if live {
+		liveUntil = extendVIP(now, liveUntil, days)
+	} else if liveUntil.IsZero() {
+		liveUntil = now
+	}
 	until := extendVIP(now, previous, days)
 	if _, e = tx.ExecContext(r.Context(), "UPDATE academy_orders SET status='paid',provider_ref=?,reviewer=NULLIF(?,''),paid_at=? WHERE school_id=? AND id=?", ref, reviewer, now, school, id); e != nil {
 		return e
 	}
-	if _, e = tx.ExecContext(r.Context(), "INSERT INTO academy_memberships(school_id,user_id,expires_at,live_enabled) VALUES(?,?,?,?) ON DUPLICATE KEY UPDATE expires_at=VALUES(expires_at),live_enabled=VALUES(live_enabled)", school, user, until, live); e != nil {
+	if _, e = tx.ExecContext(r.Context(), "INSERT INTO academy_memberships(school_id,user_id,expires_at,live_enabled) VALUES(?,?,?,?) ON DUPLICATE KEY UPDATE expires_at=VALUES(expires_at),live_enabled=VALUES(live_enabled)", school, user, until, liveUntil.After(now)); e != nil {
+		return e
+	}
+	if _, e = tx.ExecContext(r.Context(), "INSERT INTO academy_live_memberships(school_id,user_id,expires_at) VALUES(?,?,?) ON DUPLICATE KEY UPDATE expires_at=VALUES(expires_at)", school, user, liveUntil); e != nil {
 		return e
 	}
 	return tx.Commit()

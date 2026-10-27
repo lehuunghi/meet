@@ -160,3 +160,5 @@
     width: 100%;
   }
 }
+
+.academic-panels { border: 0; padding: 0; margin: 0; min-inline-size: 0; }

@@ -227,12 +227,29 @@ func (a *app) academyCourseSave(w http.ResponseWriter, r *http.Request) {
 	if in.ID == "" {
 		in.ID = uid()
 	}
+	var owner string
+	if err := a.db.QueryRowContext(r.Context(), "SELECT school_id FROM academy_courses WHERE id=?", in.ID).Scan(&owner); err == nil && owner != u.School {
+		problem(w, 404, "Không tìm thấy khóa học")
+		return
+	}
 	var academic any
 	if in.Academic != "" {
 		var n int
 		if a.db.QueryRowContext(r.Context(), "SELECT COUNT(*) FROM courses WHERE school_id=? AND id=?", u.School, in.Academic).Scan(&n) != nil || n != 1 {
 			problem(w, 400, "Môn học không thuộc trung tâm")
 			return
+		}
+		var state string
+		if a.db.QueryRowContext(r.Context(), "SELECT COALESCE(cc.state,'active') FROM courses c LEFT JOIN class_controls cc ON cc.school_id=c.school_id AND cc.class_id=c.class_id WHERE c.school_id=? AND c.id=?", u.School, in.Academic).Scan(&state) != nil {
+			problem(w, 503, "Chưa kiểm tra được lớp liên kết")
+			return
+		}
+		if state == "deleted" {
+			var current string
+			if a.db.QueryRowContext(r.Context(), "SELECT COALESCE(academic_course_id,'') FROM academy_courses WHERE school_id=? AND id=?", u.School, in.ID).Scan(&current) != nil || current != in.Academic {
+				problem(w, 409, "Không liên kết mới với lớp đã xóa")
+				return
+			}
 		}
 		academic = in.Academic
 	}
@@ -255,11 +272,11 @@ func (a *app) academyTeaching(w http.ResponseWriter, r *http.Request) {
 }
 func (a *app) academyMe(w http.ResponseWriter, r *http.Request) {
 	u := who(r)
-	a.query(w, r, "SELECT u.id,u.name,u.email,p.dob,p.address,p.school_name,p.phone,p.parent_phone,p.avatar_key,p.marketing_consent,p.email_verified,(COALESCE(p.avatar_key,'')<>'' OR EXISTS(SELECT 1 FROM academy_registration_avatars av WHERE av.school_id=u.school_id AND av.user_id=u.id)) AS registration_avatar,m.expires_at,m.live_enabled FROM users u LEFT JOIN academy_profiles p ON p.school_id=u.school_id AND p.user_id=u.id LEFT JOIN academy_memberships m ON m.school_id=u.school_id AND m.user_id=u.id WHERE u.school_id=? AND u.id=?", u.School, u.ID)
+	a.query(w, r, "SELECT u.id,u.name,u.email,p.dob,p.address,p.school_name,p.phone,p.parent_phone,p.avatar_key,p.marketing_consent,p.email_verified,(COALESCE(p.avatar_key,'')<>'' OR EXISTS(SELECT 1 FROM academy_registration_avatars av WHERE av.school_id=u.school_id AND av.user_id=u.id)) AS registration_avatar,m.expires_at,CASE WHEN lm.expires_at>UTC_TIMESTAMP(6) THEN lm.expires_at ELSE NULL END AS live_expires_at,(m.expires_at>UTC_TIMESTAMP(6) AND COALESCE(lm.expires_at,IF(m.live_enabled,m.expires_at,NULL))>UTC_TIMESTAMP(6)) AS live_enabled FROM users u LEFT JOIN academy_profiles p ON p.school_id=u.school_id AND p.user_id=u.id LEFT JOIN academy_memberships m ON m.school_id=u.school_id AND m.user_id=u.id LEFT JOIN academy_live_memberships lm ON lm.school_id=u.school_id AND lm.user_id=u.id WHERE u.school_id=? AND u.id=?", u.School, u.ID)
 }
 func (a *app) hasVIP(ctx context.Context, school, user string, live bool) bool {
 	var n int
-	e := a.db.QueryRowContext(ctx, "SELECT COUNT(*) FROM academy_memberships WHERE school_id=? AND user_id=? AND expires_at>UTC_TIMESTAMP(6) AND (?=FALSE OR live_enabled=TRUE)", school, user, live).Scan(&n)
+	e := a.db.QueryRowContext(ctx, "SELECT COUNT(*) FROM academy_memberships m LEFT JOIN academy_live_memberships lm ON lm.school_id=m.school_id AND lm.user_id=m.user_id WHERE m.school_id=? AND m.user_id=? AND m.expires_at>UTC_TIMESTAMP(6) AND (?=FALSE OR COALESCE(lm.expires_at,IF(m.live_enabled,m.expires_at,NULL))>UTC_TIMESTAMP(6))", school, user, live).Scan(&n)
 	return e == nil && n == 1
 }
 func (a *app) academyLiveGate(w http.ResponseWriter, r *http.Request) bool {
@@ -268,19 +285,6 @@ func (a *app) academyLiveGate(w http.ResponseWriter, r *http.Request) bool {
 		return false
 	}
 	return true
-}
-func (a *app) academyEnroll(w http.ResponseWriter, r *http.Request) {
-	u := who(r)
-	if u.Role != "student" || !a.hasVIP(r.Context(), u.School, u.ID, true) {
-		problem(w, 402, "Cần gói VIP có Live")
-		return
-	}
-	_, e := a.db.ExecContext(r.Context(), "INSERT IGNORE INTO enrollments(school_id,class_id,user_id) SELECT ?,c.class_id,? FROM academy_courses ac JOIN courses c ON c.school_id=ac.school_id AND c.id=ac.academic_course_id WHERE ac.school_id=? AND ac.id=? AND ac.published=TRUE", u.School, u.ID, u.School, r.PathValue("course"))
-	if e != nil {
-		problem(w, 400, "Không đăng ký được lớp")
-		return
-	}
-	send(w, 200, map[string]bool{"ok": true})
 }
 func (a *app) academyLists(w http.ResponseWriter, r *http.Request) {
 	u := who(r)

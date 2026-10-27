@@ -180,7 +180,7 @@ func (a *app) accountDelete(w http.ResponseWriter, r *http.Request) {
 		avatar = ""
 	}
 	cfg, _ := loadSettings()
-	queries := []string{"DELETE FROM account_security WHERE user_id=?", "DELETE FROM academy_memberships WHERE user_id=?", "DELETE FROM academy_profiles WHERE user_id=?", "DELETE FROM academy_registration_avatars WHERE user_id=?", "DELETE FROM academy_email_links WHERE user_id=?", "DELETE FROM enrollments WHERE user_id=?", "DELETE FROM course_assistants WHERE user_id=?"}
+	queries := []string{"DELETE FROM account_security WHERE user_id=?", "DELETE FROM academy_memberships WHERE user_id=?", "DELETE FROM academy_live_memberships WHERE user_id=?", "DELETE FROM academy_profiles WHERE user_id=?", "DELETE FROM academy_registration_avatars WHERE user_id=?", "DELETE FROM academy_email_links WHERE user_id=?", "DELETE FROM enrollments WHERE user_id=?", "DELETE FROM course_assistants WHERE user_id=?"}
 	for _, q := range queries {
 		if _, e = tx.ExecContext(r.Context(), q, id); e != nil {
 			problem(w, 503, "Chưa thu hồi được tài khoản")

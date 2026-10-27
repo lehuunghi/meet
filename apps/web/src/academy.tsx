@@ -1,3 +1,4 @@
+import { CourseClassroomLink } from "./academy-classroom-links";
 import { useUITexts } from "./ui-language-hook";
 import { AcademyVIPPlans } from "./academy-vip-plans";
 import { registrationAvatarData } from "./registration-avatar";
@@ -1121,7 +1122,13 @@ export function AcademyApp({
           />
         )}
         {!routeForbidden && admin && tab === "academic" && (
-          <AcademicAdmin demo={demo} onChange={refresh} />
+          <AcademicAdmin
+            demo={demo}
+            onChange={refresh}
+            canManageAccounts={
+              user.permissions == null || user.permissions.includes("accounts")
+            }
+          />
         )}
         {!routeForbidden && admin && tab === "accounts" && (
           <Accounts demo={demo} />
@@ -1285,20 +1292,14 @@ function CourseCard({
               Gói học & quyền lợi
             </button>
           )}
-          {course.academic_course_id && (
-            <button
-              onClick={() =>
-                void perform(async () => {
-                  if (!demo)
-                    await api(`/academy/courses/${course.id}/enroll`, {});
-                  onNotice("Đã đăng ký lớp. Mở mục Lớp học để xem lịch.");
-                })
-              }
-            >
-              Đăng ký lớp Live
-            </button>
-          )}
         </div>
+        <CourseClassroomLink
+          course={course}
+          demo={demo}
+          role={staff ? "teacher" : "student"}
+          perform={perform}
+          notice={onNotice}
+        />
         {open && (
           <div>
             {!lessons.length ? (
@@ -1650,6 +1651,9 @@ function ProfilePanel({ demo, profile, user, perform, refresh, notice }: any) {
     <section className="academy-section">
       <h2>Hồ sơ học viên</h2>
       <p>Email: {profile.email || user.email || "—"}</p>
+      {profile.live_expires_at && (
+        <p>Quyền học Live đến: {vnDateTime(profile.live_expires_at)}</p>
+      )}
       <p>
         {profile.email_verified
           ? "Email đã xác thực"

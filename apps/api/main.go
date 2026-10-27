@@ -199,12 +199,8 @@ func (a *app) routes() http.Handler {
 	m.HandleFunc("POST /api/enrollments", a.auth(a.enroll))
 	m.HandleFunc("POST /api/import", a.auth(a.importUsers))
 	m.HandleFunc("GET /api/users", a.auth(a.users))
-	m.HandleFunc("GET /api/classes", a.auth(func(w http.ResponseWriter, r *http.Request) {
-		if !admin(w, r) {
-			return
-		}
-		a.query(w, r, "SELECT id,short_id,name FROM classes WHERE school_id=? ORDER BY name LIMIT 1000", who(r).School)
-	}))
+	m.HandleFunc("GET /api/classes", a.auth(a.classList))
+	m.HandleFunc("POST /api/classes/{id}/manage", a.auth(a.classManage))
 	m.HandleFunc("GET /api/audit", a.auth(a.auditReport))
 	m.HandleFunc("GET /api/meetings", a.auth(a.meetings))
 	m.HandleFunc("GET /api/meetings/{id}", a.auth(func(w http.ResponseWriter, r *http.Request) {
@@ -311,7 +307,10 @@ func migrate(db *sql.DB) error {
 	if e = migrateV4(c); e != nil {
 		return e
 	}
-	_, e = c.ExecContext(context.Background(), "INSERT IGNORE INTO schema_migrations VALUES(6),(7),(8),(9),(10),(11)")
+	if _, e = c.ExecContext(context.Background(), "INSERT IGNORE INTO academy_live_memberships(school_id,user_id,expires_at) SELECT school_id,user_id,expires_at FROM academy_memberships WHERE live_enabled=TRUE"); e != nil {
+		return e
+	}
+	_, e = c.ExecContext(context.Background(), "INSERT IGNORE INTO schema_migrations VALUES(6),(7),(8),(9),(10),(11),(12)")
 	return e
 }
 func main() {

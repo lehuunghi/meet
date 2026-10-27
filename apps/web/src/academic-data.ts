@@ -6,6 +6,8 @@ export type AccountDraft = {
   name: string;
   password: string;
   revision: number;
+  active?: boolean;
+  state?: string;
   dirty?: boolean;
   key?: string;
 };

@@ -2163,3 +2163,7 @@
  .academy-language-editor td+td { padding-top: 0; }
  .academy-language-editor textarea { min-width: 0; }
 }
+
+.academy-class-link { margin: 14px 0; padding: 12px; border: 1px solid #e0e7f2; border-radius: 8px; background: #f7f9fd; display: flex; gap: 10px; flex-direction: column; align-items: flex-start; }
+.classroom-course-links { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 16px 0; padding: 14px; background: #f3f7ff; border-radius: 8px; }
+.classroom-course-links a { overflow-wrap: anywhere; }

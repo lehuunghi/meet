@@ -1,4 +1,5 @@
-import {vnDateTime} from "./date-format";
+import { ClassroomCourseLinks } from "./academy-classroom-links";
+import { vnDateTime } from "./date-format";
 import { useState, type ReactNode } from "react";
 import "./classroom.css";
 import {
@@ -16,6 +17,7 @@ type Subject = {
   class_name: string;
   teacher: string;
   lesson_count?: number;
+  class_state?: string;
   ready_meeting_id?: string;
   ready_status?: string;
 };
@@ -311,11 +313,13 @@ export function ClassroomCourses(p: Props) {
                     <span
                       className={"classroom-state " + (live ? "is-live" : "")}
                     >
-                      {live
-                        ? "Đang học"
-                        : m
-                          ? "Giáo viên đang chuẩn bị"
-                          : "Chưa bắt đầu"}
+                      {c.class_state && c.class_state !== "active"
+                        ? "Lớp đang ngưng"
+                        : live
+                          ? "Đang học"
+                          : m
+                            ? "Giáo viên đang chuẩn bị"
+                            : "Chưa bắt đầu"}
                     </span>
                     <p>
                       {c.lesson_count ??
@@ -326,20 +330,35 @@ export function ClassroomCourses(p: Props) {
                   </div>
                   <footer>
                     {p.role === "student" ? (
-                      <button disabled={!live} onClick={() => p.onOpen(m)}>
-                        {live ? "Vào lớp học" : "Đang chờ"}
+                      <button
+                        disabled={
+                          !live ||
+                          (!!c.class_state && c.class_state !== "active")
+                        }
+                        onClick={() => p.onOpen(m)}
+                      >
+                        {c.class_state && c.class_state !== "active"
+                          ? "Lớp đang ngưng"
+                          : live
+                            ? "Vào lớp học"
+                            : "Đang chờ"}
                       </button>
                     ) : (
                       p.canTeach && (
                         <button
-                          disabled={!!p.busy}
+                          disabled={
+                            !!p.busy ||
+                            (!!c.class_state && c.class_state !== "active")
+                          }
                           onClick={() => p.onPrepare(c)}
                         >
-                          {p.busy === c.id
-                            ? "Đang chuẩn bị…"
-                            : m
-                              ? "Vào phòng dạy"
-                              : "Chuẩn bị dạy"}
+                          {c.class_state && c.class_state !== "active"
+                            ? "Lớp đang ngưng"
+                            : p.busy === c.id
+                              ? "Đang chuẩn bị…"
+                              : m
+                                ? "Vào phòng dạy"
+                                : "Chuẩn bị dạy"}
                         </button>
                       )
                     )}
@@ -384,6 +403,13 @@ export function ClassroomCourses(p: Props) {
             <p>{current.teacher || "Chưa phân công giáo viên"}</p>
             <div className="classroom-cover-lines" />
           </div>
+          {p.routed && (
+            <ClassroomCourseLinks
+              subject={current.id}
+              demo={p.demo}
+              role={p.role}
+            />
+          )}
           <div
             className="classroom-tabs"
             role="tablist"
@@ -476,7 +502,11 @@ export function ClassroomCourses(p: Props) {
                   </p>
                   {p.role === "student" ? (
                     <button
-                      disabled={active(current)?.status !== "live"}
+                      disabled={
+                        active(current)?.status !== "live" ||
+                        (!!current.class_state &&
+                          current.class_state !== "active")
+                      }
                       onClick={() => p.onOpen(active(current))}
                     >
                       {active(current)?.status === "live"
@@ -486,7 +516,11 @@ export function ClassroomCourses(p: Props) {
                   ) : (
                     p.canTeach && (
                       <button
-                        disabled={!!p.busy}
+                        disabled={
+                          !!p.busy ||
+                          (!!current.class_state &&
+                            current.class_state !== "active")
+                        }
                         onClick={() => p.onPrepare(current)}
                       >
                         {active(current) ? "Vào phòng dạy" : "Chuẩn bị dạy"}
@@ -516,10 +550,7 @@ export function ClassroomCourses(p: Props) {
                         <div>
                           <strong>{m.title}</strong>
                           <p>
-                            {m.starts_at
-                              ? vnDateTime(m.starts_at)
-                              : ""}{" "}
-                            ·{" "}
+                            {m.starts_at ? vnDateTime(m.starts_at) : ""} ·{" "}
                             {m.status === "live"
                               ? "Đang học"
                               : m.status === "scheduled"
