@@ -1,3 +1,4 @@
+import {vnDateTime} from "./date-format";
 import { useState, type ReactNode } from "react";
 import "./classroom.css";
 import {
@@ -516,7 +517,7 @@ export function ClassroomCourses(p: Props) {
                           <strong>{m.title}</strong>
                           <p>
                             {m.starts_at
-                              ? new Date(m.starts_at).toLocaleString("vi-VN")
+                              ? vnDateTime(m.starts_at)
                               : ""}{" "}
                             ·{" "}
                             {m.status === "live"

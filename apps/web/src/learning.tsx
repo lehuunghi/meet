@@ -1,3 +1,5 @@
+import {vnDateTime} from "./date-format";
+import {VNMonthInput} from './date-input';
 import { useEffect, useRef, useState } from "react";
 import { ClassroomCourses } from "./classroom";
 import type { ReactNode } from "react";
@@ -211,12 +213,11 @@ export function LearningWorkspace({
       {routed && reports && (
         <label className="learning-filter">
           Tháng báo cáo
-          <input
-            type="month"
+          <VNMonthInput
             value={q.get("thang") || ""}
-            onChange={(e) =>
+            onValueChange={(value) =>
               reportQuery({
-                thang: e.target.value,
+                thang: value,
                 buoi: null,
                 video: null,
                 "thong-ke": null,
@@ -499,7 +500,7 @@ function CourseLessons({
             {lessons.map((m) => (
               <tr key={m.id}>
                 <td>{m.title}</td>
-                <td>{new Date(m.starts_at).toLocaleString("vi-VN")}</td>
+                <td>{vnDateTime(m.starts_at)}</td>
                 <td>
                   {m.status === "live"
                     ? "Đang học"

@@ -1,3 +1,4 @@
+import {vnDateTime} from "./date-format";
 import { useEffect, useState } from "react";
 import { api } from "./api";
 import {
@@ -56,7 +57,7 @@ export function RecordingRecovery({
         <article key={job.id}>
           <strong>{job.title}</strong>
           <p>
-            {new Date(job.created).toLocaleString("vi-VN")} ·{" "}
+            {vnDateTime(job.created)} ·{" "}
             {Math.round(job.bytes / 1048576)} MB · {job.uploaded} phần đã tải
           </p>
           <div className="recovery-actions">

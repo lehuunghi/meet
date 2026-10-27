@@ -1,3 +1,5 @@
+import { vnTime } from "./date-format";
+import { vnDate, vnDateTime } from "./date-format";
 import { ClassSubjectPicker } from "./class-subject-picker";
 import { useEffect, useState } from "react";
 import { AttendancePolicy, LessonTiming } from "./attendance-admin";
@@ -224,13 +226,7 @@ export function AttendanceReport({
         : role === "teacher"
           ? "Chỉ xem các lớp và môn bạn được phân công giảng dạy."
           : "Chỉ xem lớp được phân học và kết quả của riêng bạn.";
-  const time = (v: string | null) =>
-    v
-      ? new Intl.DateTimeFormat("vi-VN", {
-          dateStyle: "short",
-          timeStyle: "short",
-        }).format(new Date(v))
-      : "Chưa ghi nhận";
+  const time = (v: string | null) => (v ? vnDateTime(v) : "Chưa ghi nhận");
   return (
     <section
       className="section attendance-report"
@@ -312,8 +308,7 @@ export function AttendanceReport({
                         <option value="">Tất cả buổi đã bắt đầu</option>
                         {lessons.map((l) => (
                           <option key={l.id} value={l.id}>
-                            {new Date(l.starts_at).toLocaleDateString("vi-VN")}{" "}
-                            · {l.title}
+                            {vnDate(l.starts_at)} · {l.title}
                           </option>
                         ))}
                       </select>
@@ -482,11 +477,7 @@ export function AttendanceReport({
                                   )}
                                   {!meeting && (
                                     <td className="date-col">
-                                      {r.starts_at
-                                        ? new Date(
-                                            r.starts_at,
-                                          ).toLocaleDateString("vi-VN")
-                                        : "—"}
+                                      {r.starts_at ? vnDate(r.starts_at) : "—"}
                                     </td>
                                   )}
                                   {!course && (
@@ -499,27 +490,13 @@ export function AttendanceReport({
                                     className="clock-col"
                                     title={time(r.joined_at)}
                                   >
-                                    {r.joined_at
-                                      ? new Date(
-                                          r.joined_at,
-                                        ).toLocaleTimeString("vi-VN", {
-                                          hour: "2-digit",
-                                          minute: "2-digit",
-                                        })
-                                      : "—"}
+                                    {r.joined_at ? vnTime(r.joined_at) : "—"}
                                   </td>
                                   <td
                                     className="clock-col"
                                     title={time(r.last_seen)}
                                   >
-                                    {r.last_seen
-                                      ? new Date(
-                                          r.last_seen,
-                                        ).toLocaleTimeString("vi-VN", {
-                                          hour: "2-digit",
-                                          minute: "2-digit",
-                                        })
-                                      : "—"}
+                                    {r.last_seen ? vnTime(r.last_seen) : "—"}
                                   </td>
                                   <td className="numeric-col">
                                     {duration(r.seconds)}

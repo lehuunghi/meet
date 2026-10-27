@@ -1,3 +1,4 @@
+import {vnDateTime} from "./date-format";
 import { useEffect, useState } from "react";
 import { api } from "./api";
 export function AcademyToday({ demo, role, onMeeting, onCourse }: any) {
@@ -94,7 +95,7 @@ export function AcademyToday({ demo, role, onMeeting, onCourse }: any) {
                 <small>
                   {m.status === "live"
                     ? "Đang diễn ra"
-                    : new Date(m.starts_at).toLocaleString("vi-VN")}
+                    : vnDateTime(m.starts_at)}
                 </small>
                 <button
                   disabled={role === "student" && m.status !== "live"}
@@ -119,7 +120,7 @@ export function AcademyToday({ demo, role, onMeeting, onCourse }: any) {
                 <strong>{t.title}</strong>
                 <p>{t.course}</p>
                 <small>
-                  {new Date(t.due_at).toLocaleString("vi-VN")}
+                  {vnDateTime(t.due_at)}
                   {new Date(t.due_at) < new Date() ? " · Đã quá hạn" : ""}
                 </small>
                 {role === "teacher" && (

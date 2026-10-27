@@ -11,22 +11,22 @@ import (
 
 func (a *app) academyLessons(w http.ResponseWriter, r *http.Request) {
 	u := who(r)
-	a.query(w, r, "SELECT l.id,l.title,l.duration_seconds,l.position,l.status,COALESCE(p.seconds,0) AS progress_seconds,COALESCE(p.completed,FALSE) AS completed FROM academy_lessons l JOIN academy_courses c ON c.school_id=l.school_id AND c.id=l.course_id LEFT JOIN academy_progress p ON p.school_id=l.school_id AND p.lesson_id=l.id AND p.user_id=? WHERE l.school_id=? AND l.course_id=? AND (c.published=TRUE OR ?='admin') AND (l.status='ready' OR ?='admin') ORDER BY l.position,l.created_at", u.ID, u.School, r.PathValue("course"), u.Role, u.Role)
+	a.query(w, r, "SELECT l.id,l.title,l.duration_seconds,l.position,l.status,COALESCE(d.chapter,'') AS chapter,COALESCE(d.notes,'') AS notes,COALESCE(d.import_state,'none') AS import_state,COALESCE(d.error_code,'') AS error_code,COALESCE(d.revision,0) AS revision,d.source_recording_id,COALESCE(p.seconds,0) AS progress_seconds,COALESCE(p.completed,FALSE) AS completed FROM academy_lessons l JOIN academy_courses c ON c.school_id=l.school_id AND c.id=l.course_id LEFT JOIN academy_lesson_details d ON d.school_id=l.school_id AND d.lesson_id=l.id LEFT JOIN academy_progress p ON p.school_id=l.school_id AND p.lesson_id=l.id AND p.user_id=? WHERE l.school_id=? AND l.course_id=? AND (c.published=TRUE OR ?='admin') AND (l.status='ready' OR ?='admin') ORDER BY l.position,l.created_at,l.id", u.ID, u.School, r.PathValue("course"), u.Role, u.Role)
 }
 func (a *app) academyLessonUpload(w http.ResponseWriter, r *http.Request) {
 	if !a.businessAdmin(w, r, "content") {
 		return
 	}
 	var in struct {
-		ID          string `json:"id"`
-		Title, Type string
-		Size        int64
-		Duration    int `json:"duration_seconds"`
+		ID                          string `json:"id"`
+		Title, Type, Chapter, Notes string
+		Size                        int64
+		Duration                    int `json:"duration_seconds"`
 	}
 	if !decode(w, r, &in) {
 		return
 	}
-	if in.Title == "" || len(in.Title) > 200 || in.Size < 1 || in.Size > 1<<30 || in.Duration < 1 || in.Duration > 28800 || (in.Type != "video/mp4" && in.Type != "video/webm") {
+	if in.Title == "" || len(in.Title) > 200 || len(in.Chapter) > 200 || len(in.Notes) > 20000 || in.Size < 1 || in.Size > 1<<30 || in.Duration < 1 || in.Duration > 28800 || (in.Type != "video/mp4" && in.Type != "video/webm") {
 		problem(w, 400, "Video tối đa 1 GiB, MP4/WebM và thời lượng hợp lệ")
 		return
 	}
@@ -58,13 +58,34 @@ func (a *app) academyLessonUpload(w http.ResponseWriter, r *http.Request) {
 		problem(w, 502, "Không cấp được link tải")
 		return
 	}
-	if _, e = a.db.ExecContext(r.Context(), "INSERT INTO academy_lessons(id,school_id,course_id,title,object_key,bucket,duration_seconds) VALUES(?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE id=id", id, u.School, r.PathValue("course"), in.Title, key, store.Bucket, in.Duration); e != nil {
+	tx, e := a.db.BeginTx(r.Context(), nil)
+	if e != nil {
+		problem(w, 503, "Chưa lưu được bài giảng")
+		return
+	}
+	defer tx.Rollback()
+	var locked string
+	course := r.PathValue("course")
+	if tx.QueryRowContext(r.Context(), "SELECT id FROM academy_courses WHERE school_id=? AND id=? FOR UPDATE", u.School, course).Scan(&locked) != nil {
+		problem(w, 404, "Không thấy khóa học")
+		return
+	}
+	var position int
+	if tx.QueryRowContext(r.Context(), "SELECT COALESCE(MAX(position),0)+1 FROM academy_lessons WHERE school_id=? AND course_id=?", u.School, course).Scan(&position) != nil {
+		problem(w, 503, "Chưa sắp được thứ tự bài giảng")
+		return
+	}
+	if _, e = tx.ExecContext(r.Context(), "INSERT INTO academy_lessons(id,school_id,course_id,title,object_key,bucket,duration_seconds,position) VALUES(?,?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE id=id", id, u.School, course, in.Title, key, store.Bucket, in.Duration, position); e != nil {
 		problem(w, 500, "Không tạo được bài giảng")
 		return
 	}
 	var own int
-	if a.db.QueryRowContext(r.Context(), "SELECT COUNT(*) FROM academy_lessons WHERE id=? AND school_id=? AND course_id=?", id, u.School, r.PathValue("course")).Scan(&own) != nil || own != 1 {
+	if tx.QueryRowContext(r.Context(), "SELECT COUNT(*) FROM academy_lessons WHERE id=? AND school_id=? AND course_id=?", id, u.School, course).Scan(&own) != nil || own != 1 {
 		problem(w, 409, "Upload ID conflict")
+		return
+	}
+	if _, e = tx.ExecContext(r.Context(), "INSERT IGNORE INTO academy_lesson_details(school_id,lesson_id,course_id,chapter,notes) VALUES(?,?,?,?,?)", u.School, id, course, in.Chapter, in.Notes); e != nil || tx.Commit() != nil {
+		problem(w, 503, "Chưa lưu được ghi chú")
 		return
 	}
 	send(w, 201, map[string]any{"id": id, "url": result.URL, "content_type": in.Type})

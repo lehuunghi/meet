@@ -15,7 +15,7 @@ func exportAttendance(w http.ResponseWriter, r *http.Request, rows []map[string]
 	defer f.Close()
 	sheet := "Điểm danh"
 	f.SetSheetName("Sheet1", sheet)
-	cols := []struct{ key, title string }{{"class_name", "Lớp"}, {"course", "Môn học"}, {"meeting_title", "Buổi học"}, {"lesson_start", "Giờ vào chung (UTC)"}, {"lesson_end", "Giờ ra chung (UTC)"}, {"name", "Họ tên học sinh"}, {"email", "Email"}, {"joined_at", "Vào lớp (UTC)"}, {"last_seen", "Ra lớp / ghi nhận cuối (UTC)"}, {"seconds", "Giây kết nối"}, {"attendance_result", "Kết quả"}}
+	cols := []struct{ key, title string }{{"class_name", "Lớp"}, {"course", "Môn học"}, {"meeting_title", "Buổi học"}, {"lesson_start", "Giờ vào chung (VN)"}, {"lesson_end", "Giờ ra chung (VN)"}, {"name", "Họ tên học sinh"}, {"email", "Email"}, {"joined_at", "Vào lớp (VN)"}, {"last_seen", "Ra lớp / ghi nhận cuối (VN)"}, {"seconds", "Giây kết nối"}, {"attendance_result", "Kết quả"}}
 	style, _ := f.NewStyle(&excelize.Style{Font: &excelize.Font{Family: "Arial", Size: 11}})
 	f.SetColStyle(sheet, "A:K", style)
 	f.SetColWidth(sheet, "A", "K", 26)
@@ -29,6 +29,9 @@ func exportAttendance(w http.ResponseWriter, r *http.Request, rows []map[string]
 			v := ""
 			if row[c.key] != nil {
 				v = fmt.Sprint(row[c.key])
+				if c.key == "lesson_start" || c.key == "lesson_end" || c.key == "joined_at" || c.key == "last_seen" {
+					v = vietnamDateText(row[c.key], false)
+				}
 			}
 			f.SetCellStr(sheet, cell, v)
 		}

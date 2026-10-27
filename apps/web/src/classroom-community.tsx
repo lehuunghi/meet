@@ -1,3 +1,4 @@
+import {vnDateTime} from "./date-format";
 import { useEffect, useState } from "react";
 import { api } from "./api";
 export function ClassroomCommunity({
@@ -146,7 +147,7 @@ export function ClassroomCommunity({
             {data.announcements.map((a: any) => (
               <article className="classroom-announcement" key={a.id}>
                 <small>
-                  {a.author} · {new Date(a.created_at).toLocaleString("vi-VN")}
+                  {a.author} · {vnDateTime(a.created_at)}
                 </small>
                 <h4>{a.title}</h4>
                 <p>{a.body}</p>

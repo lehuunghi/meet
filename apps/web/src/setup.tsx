@@ -1,3 +1,4 @@
+import {vnDateTime} from "./date-format";
 import { useEffect, useState } from "react";
 import { SystemUpdates } from "./updates";
 import { api } from "./api";
@@ -486,9 +487,7 @@ export function Setup() {
                       <p>
                         Đã kiểm tra bản sao gần nhất:{" "}
                         <code>{backupStatus.object_key}</code> ·{" "}
-                        {new Date(backupStatus.timestamp * 1000).toLocaleString(
-                          "vi-VN",
-                        )}
+                        {vnDateTime(backupStatus.timestamp * 1000)}
                       </p>
                     ) : (
                       <p>

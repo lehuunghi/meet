@@ -1,3 +1,4 @@
+import { vnDate, vnDateTime } from "./date-format";
 import { useEffect, useRef, useState } from "react";
 import { api } from "./api";
 import { ClassSubjectPicker, type ScopedCourse } from "./class-subject-picker";
@@ -150,11 +151,7 @@ export function RecordingLibrary({
       if (seq === playRequest.current) setOpening(false);
     }
   }
-  const time = (value: string) =>
-    new Date(value).toLocaleString("vi-VN", {
-      dateStyle: "short",
-      timeStyle: "short",
-    });
+  const time = (value: string) => vnDateTime(value);
   return (
     <section
       className="section recording-library"
@@ -312,11 +309,7 @@ export function RecordingLibrary({
                                 {r.meeting_title}
                               </strong>
                             </td>
-                            <td className="date-col">
-                              {new Date(r.starts_at).toLocaleDateString(
-                                "vi-VN",
-                              )}
-                            </td>
+                            <td className="date-col">{vnDate(r.starts_at)}</td>
                             {!course && (
                               <>
                                 <td>{r.class_name || "—"}</td>
@@ -328,9 +321,7 @@ export function RecordingLibrary({
                               MB
                             </td>
                             <td className="date-col" title={time(r.expires_at)}>
-                              {new Date(r.expires_at).toLocaleDateString(
-                                "vi-VN",
-                              )}
+                              {vnDate(r.expires_at)}
                             </td>
                             <td>
                               <button

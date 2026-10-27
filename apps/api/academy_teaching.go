@@ -262,6 +262,9 @@ func (a *app) academyExport(w http.ResponseWriter, r *http.Request) {
 			if b, ok := v.([]byte); ok {
 				text = string(b)
 			}
+			if cols[i] == "Ngày sinh" || cols[i] == "Hết hạn VIP" || cols[i] == "Ngày thu" {
+				text = vietnamDateText(v, cols[i] == "Ngày sinh")
+			}
 			_ = f.SetCellStr("Sheet1", cell, text)
 		}
 		n++

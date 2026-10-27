@@ -1,3 +1,4 @@
+import {vnTime} from "./date-format";
 import { useEffect, useRef, useState } from "react";
 import { api } from "./api";
 import "./room-tools.css";
@@ -255,10 +256,7 @@ export function RoomTools({
               <article key={m.id}>
                 <strong>{m.name}</strong>
                 <small>
-                  {new Date(m.created_at).toLocaleTimeString("vi-VN", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
+                  {vnTime(m.created_at)}
                 </small>
                 <p>{m.content}</p>
               </article>

@@ -24,7 +24,7 @@ test("registration keeps the selected course across two steps and requires a del
   await expect(page.getByRole("status")).toContainText("Bước 2/2");
   for (const [name, value] of [
     ["Họ tên", "Nguyễn An"],
-    ["Ngày sinh", "2010-01-01"],
+    ["Ngày sinh", "01/01/2010"],
     ["Địa chỉ", "Hà Nội"],
     ["Trường đang học", "Trường thử"],
     ["Số điện thoại", "0901234567"],

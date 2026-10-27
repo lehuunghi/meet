@@ -1,3 +1,4 @@
+import {vnDateTime} from "./date-format";
 import { useEffect, useState } from "react";
 import { api } from "./api";
 const permissions = [
@@ -85,7 +86,7 @@ export function Accounts({ demo }: { demo: boolean }) {
           <strong>Liên kết khôi phục dùng một lần</strong>
           <p>
             Chỉ giao trực tiếp cho đúng chủ tài khoản. Hết hạn lúc{" "}
-            {new Date(recovery.expires_at).toLocaleString("vi-VN")}. Không gửi
+            {vnDateTime(recovery.expires_at)}. Không gửi
             vào nhóm chung.
           </p>
           <input

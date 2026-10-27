@@ -309,7 +309,7 @@ func migrate(db *sql.DB) error {
 	if e = migrateV4(c); e != nil {
 		return e
 	}
-	_, e = c.ExecContext(context.Background(), "INSERT IGNORE INTO schema_migrations VALUES(6),(7),(8),(9)")
+	_, e = c.ExecContext(context.Background(), "INSERT IGNORE INTO schema_migrations VALUES(6),(7),(8),(9),(10)")
 	return e
 }
 func main() {
@@ -361,6 +361,7 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 	go a.retentionLoop(ctx)
+	go a.academyRecordingImportLoop(ctx)
 	go a.mediaCleanupLoop(ctx)
 	go func() {
 		<-ctx.Done()

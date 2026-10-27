@@ -1,3 +1,4 @@
+import {vnDateTime} from "./date-format";
 import { useEffect, useState } from "react";
 import { api } from "./api";
 type Entry = {
@@ -115,7 +116,7 @@ export function AuditLog({ demo }: { demo: boolean }) {
                   {row.actor_name}
                   <small>{row.actor_code}</small>
                 </td>
-                <td>{new Date(row.at).toLocaleString("vi-VN")}</td>
+                <td>{vnDateTime(row.at)}</td>
                 <td>{row.action}</td>
                 <td>{row.target}</td>
               </tr>

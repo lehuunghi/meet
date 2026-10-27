@@ -563,6 +563,29 @@
   </main>
   <dialog id="modal"></dialog>
   <script>
+    function controlDate(value, withTime = false) {
+      const d = new Date(value);
+      if (!Number.isFinite(d.getTime())) return "—";
+      const parts = new Intl.DateTimeFormat("en-GB", {
+        timeZone: "Asia/Ho_Chi_Minh",
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hourCycle: "h23",
+      }).formatToParts(d);
+      const v = (key) => parts.find((p) => p.type === key)?.value || "";
+      return (
+        v("day") +
+        "/" +
+        v("month") +
+        "/" +
+        v("year") +
+        (withTime ? " " + v("hour") + ":" + v("minute") : "")
+      );
+    }
+
     const $ = (s) => document.querySelector(s),
       esc = (v) =>
         String(v ?? "").replace(
@@ -1526,7 +1549,7 @@
             "<td>" +
             esc(key.label) +
             "</td><td>" +
-            new Date(key.expires * 1000).toLocaleDateString("vi-VN") +
+            controlDate(key.expires * 1000) +
             "</td><td>" +
             esc(
               key.revoked
@@ -2279,7 +2302,7 @@
             (job.progress || [])
               .map(
                 (e) =>
-                  new Date(e.at * 1000).toLocaleTimeString("vi-VN") +
+                  controlDate(e.at * 1000,true) +
                   "  " +
                   e.percent +
                   "%  " +
@@ -2332,7 +2355,7 @@
           ? "<p>" +
             items.length +
             " bản gần nhất. Danh sách ghi nhận lúc " +
-            new Date(latest.created * 1000).toLocaleString("vi-VN") +
+            controlDate(latest.created * 1000, true) +
             ".</p>"
           : "<p>Chưa có danh sách. Bấm Đọc danh sách từ VPS. Nếu chưa có bản sao lưu, tạo Backup ngay trước.</p>";
         if (!items.length) return;
@@ -2345,7 +2368,7 @@
                   '<option value="' +
                   esc(v.object_key) +
                   '">' +
-                  esc(v.modified) +
+                  esc(controlDate(v.modified, true)) +
                   " · " +
                   (v.bytes / 1024 / 1024).toFixed(2) +
                   " MB · " +
@@ -2433,7 +2456,7 @@
         rows
           .map(
             (j) =>
-              `<tr data-job="${esc(j.id)}"><td>${new Date(j.created * 1000).toLocaleString("vi-VN")}</td><td>${esc(j.action)}</td><td>${esc(j.state)}</td><td>${esc(jobMessage(JSON.parse(j.result).code))}</td><td>${jobBar(j)}</td></tr>`,
+              `<tr data-job="${esc(j.id)}"><td>${controlDate(j.created * 1000, true)}</td><td>${esc(j.action)}</td><td>${esc(j.state)}</td><td>${esc(jobMessage(JSON.parse(j.result).code))}</td><td>${jobBar(j)}</td></tr>`,
           )
           .join("") +
         "</table></div>";
@@ -2538,7 +2561,7 @@
         rows
           .map(
             (r) =>
-              `<tr><td>${new Date(r.at * 1000).toLocaleString("vi-VN")}</td><td>${esc(r.actor)}</td><td>${esc(r.action)}</td><td>${esc(r.target)}</td></tr>`,
+              `<tr><td>${controlDate(r.at * 1000, true)}</td><td>${esc(r.actor)}</td><td>${esc(r.action)}</td><td>${esc(r.target)}</td></tr>`,
           )
           .join("") +
         "</table></div>";

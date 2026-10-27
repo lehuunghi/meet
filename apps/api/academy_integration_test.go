@@ -7,6 +7,7 @@ import (
 	"fmt"
 	mysql "github.com/go-sql-driver/mysql"
 	"github.com/redis/go-redis/v9"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -351,6 +352,95 @@ func TestAcademyIntegration(t *testing.T) {
 	}
 	must(request("POST", "/api/academy/site/preview", `{"content":{},"course":"ac-course"}`, other), 404)
 	must(request("POST", "/api/academy/site/preview", `{"content":{},"post":9}`, admin), 400)
+	// Real SQL queue/revision/order transactions with a deterministic S3 provider.
+	exec("INSERT INTO academy_courses(id,school_id,title,description,published) VALUES('copy-course','academy-school','Video lớp','Thử',TRUE)")
+	exec("INSERT INTO recordings(id,school_id,meeting_id,owner_id,object_key,bucket,status,size_bytes,expires_at) VALUES('copy-recording','academy-school','ac-meeting','ac-admin','recordings/academy-school/ac-meeting/copy.webm','test-bucket','ready',100,UTC_TIMESTAMP()+INTERVAL 2 DAY)")
+	copyBody := `{"recording_id":"copy-recording","title":"Bài từ lớp","chapter":"Chương 1","notes":"Ghi chú tiếng Việt","duration_seconds":600,"published":true}`
+	must(request("POST", "/api/academy/courses/copy-course/recordings", copyBody, student), 403)
+	must(request("POST", "/api/academy/courses/copy-course/recordings", copyBody, other), 404)
+	queued := request("POST", "/api/academy/courses/copy-course/recordings", copyBody, limited)
+	must(queued, 202)
+	var queuedData map[string]string
+	_ = json.Unmarshal(queued.Body.Bytes(), &queuedData)
+	copyID := queuedData["id"]
+	repeated := request("POST", "/api/academy/courses/copy-course/recordings", copyBody, limited)
+	must(repeated, 200)
+	var repeatedData map[string]string
+	_ = json.Unmarshal(repeated.Body.Bytes(), &repeatedData)
+	if repeatedData["id"] != copyID {
+		t.Fatal("duplicate import created a second lesson")
+	}
+	listed := request("GET", "/api/academy/courses/copy-course/lessons", "", student)
+	must(listed, 200)
+	if strings.Contains(listed.Body.String(), copyID) {
+		t.Fatal("unfinished copy was published")
+	}
+	copied := false
+	copyCalls := 0
+	a.client.Transport = testTransport(func(r *http.Request) (*http.Response, error) {
+		status := 200
+		body := ""
+		headers := http.Header{}
+		length := int64(0)
+		switch {
+		case r.Method == "HEAD" && strings.Contains(r.URL.Path, "academy/vod/") && !copied:
+			status = 404
+		case r.Method == "HEAD":
+			headers.Set("Content-Type", "video/webm")
+			headers.Set("Content-Length", "100")
+			headers.Set("ETag", `"copy-etag"`)
+			length = 100
+		case r.Method == "PUT":
+			if r.Header.Get("X-Amz-Copy-Source-If-Match") != `"copy-etag"` {
+				t.Fatal("copy did not pin source ETag")
+			}
+			copied = true
+			copyCalls++
+			body = `<CopyObjectResult><ETag>"copy-etag"</ETag><LastModified>2026-10-27T00:00:00Z</LastModified></CopyObjectResult>`
+			headers.Set("Content-Type", "application/xml")
+			length = int64(len(body))
+		default:
+			return nil, fmt.Errorf("unexpected copy provider operation %s", r.Method)
+		}
+		return &http.Response{StatusCode: status, Header: headers, Body: io.NopCloser(strings.NewReader(body)), ContentLength: length, Request: r}, nil
+	})
+	job, err := a.claimAcademyCopy(ctx)
+	if err != nil || job == nil {
+		t.Fatal("copy job not claimable", err)
+	}
+	if err = a.copyAcademyRecording(ctx, job); err != nil {
+		t.Fatal(err)
+	}
+	listed = request("GET", "/api/academy/courses/copy-course/lessons", "", student)
+	must(listed, 200)
+	if !strings.Contains(listed.Body.String(), "Ghi chú tiếng Việt") || !strings.Contains(listed.Body.String(), copyID) {
+		t.Fatal("verified copy or notes not visible")
+	}
+	// Process crash after the provider commits: resume the destination even if the original expires.
+	exec("UPDATE academy_lessons SET status='draft',size_bytes=0 WHERE id=?", copyID)
+	exec("UPDATE academy_lesson_details SET import_state='copying',lease_until=UTC_TIMESTAMP()-INTERVAL 1 MINUTE WHERE lesson_id=?", copyID)
+	exec("UPDATE recordings SET expires_at=UTC_TIMESTAMP()-INTERVAL 1 DAY WHERE id='copy-recording'")
+	job, err = a.claimAcademyCopy(ctx)
+	if err != nil || job == nil {
+		t.Fatal("interrupted copy not reclaimed", err)
+	}
+	if err = a.copyAcademyRecording(ctx, job); err != nil {
+		t.Fatal(err)
+	}
+	if copyCalls != 1 {
+		t.Fatal("verified destination copied twice")
+	}
+	var rev int
+	_ = db.QueryRow("SELECT revision FROM academy_lesson_details WHERE lesson_id=?", copyID).Scan(&rev)
+	editBody := fmt.Sprintf(`{"title":"Bài đã sửa","chapter":"Chương 2","notes":"Ghi chú mới","published":true,"revision":%d}`, rev)
+	must(request("POST", "/api/academy/lessons/"+copyID+"/edit", editBody, other), 404)
+	must(request("POST", "/api/academy/lessons/"+copyID+"/edit", editBody, limited), 200)
+	must(request("POST", "/api/academy/lessons/"+copyID+"/edit", editBody, limited), 409)
+	exec("INSERT INTO academy_lessons(id,school_id,course_id,title,object_key,bucket,status,size_bytes,position) VALUES('copy-manual','academy-school','copy-course','Bài sau','academy/vod/test/manual.webm','test-bucket','ready',100,2)")
+	orderBody := fmt.Sprintf(`{"ids":["copy-manual","%s"],"expected":["%s","copy-manual"]}`, copyID, copyID)
+	must(request("POST", "/api/academy/courses/copy-course/lesson-order", orderBody, limited), 200)
+	must(request("POST", "/api/academy/courses/copy-course/lesson-order", orderBody, limited), 409)
+	must(request("POST", "/api/academy/courses/copy-course/lesson-order", `{"ids":["copy-manual","copy-manual"],"expected":["copy-manual","`+copyID+`"]}`, limited), 400)
 	bad := request("POST", "/api/academy/webhooks/payos", `{"success":true,"data":{"amount":1000},"signature":"00"}`, nil)
 	must(bad, 403)
 }

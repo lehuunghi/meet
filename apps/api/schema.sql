@@ -183,6 +183,16 @@ CREATE TABLE IF NOT EXISTS academy_monthly_usage (
  school_id CHAR(36) NOT NULL,user_id CHAR(36) NOT NULL,period CHAR(7) NOT NULL,used INT NOT NULL DEFAULT 0,
  PRIMARY KEY(school_id,user_id,period),FOREIGN KEY(school_id,user_id) REFERENCES users(school_id,id)
 );
+CREATE TABLE IF NOT EXISTS academy_lesson_details (
+ school_id CHAR(36) NOT NULL,lesson_id CHAR(36) NOT NULL,course_id CHAR(36) NOT NULL,
+ chapter VARCHAR(200) NOT NULL DEFAULT '',notes TEXT NOT NULL,source_recording_id CHAR(36) NULL,
+ import_state ENUM('none','queued','copying','ready','failed') NOT NULL DEFAULT 'none',
+ desired_published BOOLEAN NOT NULL DEFAULT TRUE,storage_account VARCHAR(64) NOT NULL DEFAULT '',lease VARCHAR(64) NULL,lease_until DATETIME(6) NULL,
+ attempts INT NOT NULL DEFAULT 0,error_code VARCHAR(50) NOT NULL DEFAULT '',revision INT NOT NULL DEFAULT 1,
+ PRIMARY KEY(school_id,lesson_id),UNIQUE KEY ald_source(school_id,course_id,source_recording_id),
+ FOREIGN KEY(school_id,lesson_id) REFERENCES academy_lessons(school_id,id),
+ FOREIGN KEY(school_id,course_id) REFERENCES academy_courses(school_id,id)
+);
 CREATE TABLE IF NOT EXISTS academy_views (
  school_id CHAR(36) NOT NULL,user_id CHAR(36) NOT NULL,period CHAR(7) NOT NULL,lesson_id CHAR(36) NOT NULL,
  PRIMARY KEY(school_id,user_id,period,lesson_id),FOREIGN KEY(school_id,user_id) REFERENCES users(school_id,id),FOREIGN KEY(school_id,lesson_id) REFERENCES academy_lessons(school_id,id)

@@ -1,3 +1,6 @@
+import { vnDate, vnDateTime, vnDateCell } from "./date-format";
+import { VNDateInput } from "./date-input";
+import { AcademyLessonEditor } from "./academy-lesson-editor";
 import React, { useEffect, useRef, useState } from "react";
 import { api } from "./api";
 import { PreviewRoom } from "./preview";
@@ -585,11 +588,19 @@ export function AcademyApp({
                   ].map(([key, label, type]) => (
                     <label key={key}>
                       {label}
-                      <input
-                        name={key}
-                        type={type}
-                        required={signupStep === 1}
-                      />
+                      {type === "date" ? (
+                        <VNDateInput
+                          name={key}
+                          label={label}
+                          required={signupStep === 1}
+                        />
+                      ) : (
+                        <input
+                          name={key}
+                          type={type}
+                          required={signupStep === 1}
+                        />
+                      )}
                     </label>
                   ))}
                 </div>
@@ -961,7 +972,7 @@ export function AcademyApp({
                   {staff
                     ? "Theo phân công"
                     : vip
-                      ? new Date(profile.expires_at).toLocaleDateString("vi-VN")
+                      ? vnDate(profile.expires_at)
                       : "Chưa đăng ký"}
                 </strong>
               </article>
@@ -1278,7 +1289,7 @@ function CourseCard({
                   </tr>
                 </thead>
                 <tbody>
-                  {lessons.map((l) => (
+                  {lessons.map((l, index) => (
                     <tr
                       key={l.id}
                       className={
@@ -1286,7 +1297,20 @@ function CourseCard({
                       }
                     >
                       <td>
-                        {l.title}
+                        <strong>
+                          {index + 1}. {l.title}
+                        </strong>
+                        {l.chapter && (
+                          <small className="academy-lesson-chapter">
+                            {l.chapter}
+                          </small>
+                        )}
+                        {l.notes && (
+                          <details>
+                            <summary>Ghi chú bài giảng</summary>
+                            <p className="academy-lesson-notes">{l.notes}</p>
+                          </details>
+                        )}
                         {l.id === focusLesson && (
                           <small> · Bài bạn đã chọn</small>
                         )}
@@ -1677,15 +1701,24 @@ function ProfilePanel({ demo, profile, user, perform, refresh, notice }: any) {
         ].map(([key, label, type]) => (
           <label key={key}>
             {label}
-            <input
-              name={key}
-              type={type}
-              defaultValue={String(profile[key] || "").slice(
-                0,
-                type === "date" ? 10 : 500,
-              )}
-              required
-            />
+            {type === "date" ? (
+              <VNDateInput
+                name={key}
+                label={label}
+                defaultValue={String(profile[key] || "").slice(0, 10)}
+                required
+              />
+            ) : (
+              <input
+                name={key}
+                type={type}
+                defaultValue={String(profile[key] || "").slice(
+                  0,
+                  type === "date" ? 10 : 500,
+                )}
+                required
+              />
+            )}
           </label>
         ))}
         <label className="academy-check">
@@ -1757,7 +1790,7 @@ function DataTable({ rows, columns, actions }: any) {
           {rows.map((row: any, i: number) => (
             <tr key={row.id || i}>
               {columns.map(([key]: any) => (
-                <td key={key}>{row[key] == null ? "—" : String(row[key])}</td>
+                <td key={key}>{vnDateCell(row[key], key)}</td>
               ))}
               {actions && <td>{actions(row)}</td>}
             </tr>
@@ -1850,7 +1883,7 @@ function BusinessTable({ kind, demo, perform, notice }: any) {
           </label>
           <label>
             Ngày chi
-            <input name="paid_on" type="date" required />
+            <VNDateInput name="paid_on" required />
           </label>
           <button>Lưu khoản chi</button>
         </form>
@@ -1951,6 +1984,12 @@ function BusinessTable({ kind, demo, perform, notice }: any) {
 function ManagePanel({ demo, courses, perform, refresh, notice }: any) {
   return (
     <div className="academy-admin-grid">
+      <AcademyLessonEditor
+        demo={demo}
+        courses={courses}
+        perform={perform}
+        notice={notice}
+      />
       <AcademyCourseEditor
         demo={demo}
         courses={courses}
@@ -2021,6 +2060,8 @@ function ManagePanel({ demo, courses, perform, refresh, notice }: any) {
                 duration_seconds: Number(v.duration),
                 size: file.size,
                 type: file.type,
+                chapter: v.chapter,
+                notes: v.notes,
               });
               const response = await fetch(out.url, {
                 method: "PUT",
@@ -2046,6 +2087,14 @@ function ManagePanel({ demo, courses, perform, refresh, notice }: any) {
           <label>
             Tên bài giảng
             <input name="title" required />
+          </label>
+          <label>
+            Chương / chủ đề
+            <input name="chapter" maxLength={200} />
+          </label>
+          <label>
+            Ghi chú cho học sinh
+            <textarea name="notes" rows={4} maxLength={20000} />
           </label>
           <label>
             Thời lượng giây
@@ -2118,7 +2167,7 @@ function Assignments({ course, demo, staff, perform, preferred = "" }: any) {
             </label>
             <label>
               Hạn nộp
-              <input name="due" type="datetime-local" required />
+              <VNDateInput name="due" dateTime required />
             </label>
             {questions.map((q, i) => (
               <fieldset key={q.id}>
@@ -2216,8 +2265,7 @@ function Assignments({ course, demo, staff, perform, preferred = "" }: any) {
             </a>
           </h4>
           <p>
-            Hạn: {new Date(row.due_at).toLocaleString("vi-VN")} · Điểm:{" "}
-            {row.score ?? "Chưa chấm"}
+            Hạn: {vnDateTime(row.due_at)} · Điểm: {row.score ?? "Chưa chấm"}
           </p>
           {row.feedback && <p>{row.feedback}</p>}
           {staff ? (

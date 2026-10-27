@@ -1,4 +1,6 @@
+import { vnTime } from "./date-format";
 import { useEffect, useState } from "react";
+import { VNDateInput } from "./date-input";
 import { api } from "./api";
 export function AttendancePolicy({ demo }: { demo: boolean }) {
   const [p, setP] = useState({
@@ -77,12 +79,6 @@ export function LessonTiming({
     [message, setMessage] = useState(""),
     [busy, setBusy] = useState(false),
     [loading, setLoading] = useState(false);
-  const local = (s: string) => {
-    const d = new Date(s);
-    return new Date(d.getTime() - d.getTimezoneOffset() * 60000)
-      .toISOString()
-      .slice(0, 16);
-  };
   useEffect(() => {
     let active = true;
     setMessage("");
@@ -162,16 +158,7 @@ export function LessonTiming({
       <summary>
         Khung giờ điểm danh chung
         {window
-          ? " · " +
-            new Date(window.starts_at).toLocaleTimeString("vi-VN", {
-              hour: "2-digit",
-              minute: "2-digit",
-            }) +
-            " – " +
-            new Date(window.ends_at).toLocaleTimeString("vi-VN", {
-              hour: "2-digit",
-              minute: "2-digit",
-            })
+          ? " · " + vnTime(window.starts_at) + " – " + vnTime(window.ends_at)
           : ""}
       </summary>
       <p>
@@ -192,20 +179,20 @@ export function LessonTiming({
           >
             <label>
               Giờ vào chung
-              <input
+              <VNDateInput
+                dateTime
                 name="start"
-                type="datetime-local"
-                defaultValue={local(window.starts_at)}
+                defaultValue={window.starts_at}
                 required
                 disabled={busy}
               />
             </label>
             <label>
               Giờ ra chung
-              <input
+              <VNDateInput
+                dateTime
                 name="end"
-                type="datetime-local"
-                defaultValue={local(window.ends_at)}
+                defaultValue={window.ends_at}
                 required
                 disabled={busy}
               />

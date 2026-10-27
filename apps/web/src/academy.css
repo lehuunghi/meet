@@ -1778,6 +1778,39 @@
     padding: 14px !important;
   }
 }
+.academy-lesson-editor {
+  grid-column: 1/-1;
+}
+.academy-lesson-editor video {
+  display: block;
+  width: 100%;
+  max-height: 360px;
+  margin: 16px 0;
+  background: #10213a;
+  border-radius: 10px;
+}
+.academy-lesson-editor table {
+  min-width: 640px;
+}
+.academy-lesson-editor td {
+  vertical-align: top;
+}
+.academy-lesson-notes {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 1.7;
+}
+.academy-lesson-chapter {
+  display: block;
+  color: #527097;
+  margin-top: 4px;
+}
+.academy-lesson-edit-form {
+  padding: 20px;
+  border: 1px solid #dbe5f2;
+  border-radius: 10px;
+  margin-top: 20px;
+}
 .academy-site-editor fieldset,
 .classroom-community fieldset {
   min-width: 0;
