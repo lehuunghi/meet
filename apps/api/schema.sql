@@ -262,3 +262,12 @@ CREATE TABLE IF NOT EXISTS academy_live_memberships (
  school_id CHAR(36) NOT NULL,user_id CHAR(36) NOT NULL,expires_at DATETIME(6) NOT NULL,
  PRIMARY KEY(school_id,user_id),FOREIGN KEY(school_id,user_id) REFERENCES users(school_id,id)
 );
+
+CREATE TABLE IF NOT EXISTS attendance_report_deletions (
+ school_id CHAR(36) NOT NULL,meeting_id CHAR(36) NOT NULL,deleted_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+ PRIMARY KEY(school_id,meeting_id),FOREIGN KEY(school_id,meeting_id) REFERENCES meetings(school_id,id)
+);
+CREATE TABLE IF NOT EXISTS media_delete_queue (
+ id CHAR(36) PRIMARY KEY,school_id CHAR(36) NOT NULL,storage_account VARCHAR(64) NOT NULL,bucket VARCHAR(100) NOT NULL,object_key VARCHAR(500) NOT NULL,recording_id CHAR(36) NOT NULL DEFAULT '',
+ created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),completed_at DATETIME(6) NULL,KEY media_pending(completed_at,created_at)
+);

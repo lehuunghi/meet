@@ -1,3 +1,4 @@
+import { DeleteLearningData } from "./academy-data-cleanup";
 import { vnDate, vnDateTime } from "./date-format";
 import { useEffect, useRef, useState } from "react";
 import { api } from "./api";
@@ -324,6 +325,7 @@ export function RecordingLibrary({
                               {vnDate(r.expires_at)}
                             </td>
                             <td>
+                              {role === "admin" && <DeleteLearningData kind="videos" label="Xóa video" scope={{recording_id:r.id}} demo={demo} onDeleted={()=>{playRequest.current++;setPlayer(null);setRows(v=>v.filter(x=>x.id!==r.id))}}/>}
                               <button
                                 className="secondary"
                                 disabled={opening}

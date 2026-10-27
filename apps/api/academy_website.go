@@ -107,7 +107,7 @@ func (t localizedWebsite) Execute(w io.Writer, data any) error {
 	return c.Execute(w, data)
 }
 
-var academyWeb = localizedWebsite{template.Must(template.New("site").Funcs(template.FuncMap{"ui": func(s string) string { return s }, "courseGroups": academyCourseGroups, "lines": func(s string) []string {
+var academyWeb = localizedWebsite{template.Must(template.New("site").Funcs(template.FuncMap{"ui": func(s string) string { return s }, "courseGroups": academyCourseGroups, "subjectArt": academySubjectArt, "lines": func(s string) []string {
 	out := []string{}
 	for _, v := range strings.Split(s, "\n") {
 		if v = strings.TrimSpace(v); v != "" {
@@ -319,4 +319,22 @@ func (a *app) publicLessonTitles(r *http.Request, school, course string) ([]stri
 		titles = append(titles, title)
 	}
 	return titles, rows.Err()
+}
+
+func academySubjectArt(title string) string {
+	name := "learning"
+	t := strings.ToLower(title)
+	switch {
+	case strings.Contains(t, "toán"):
+		name = "math"
+	case strings.Contains(t, "vật l") || strings.Contains(t, "lý"):
+		name = "physics"
+	case strings.Contains(t, "hóa") || strings.Contains(t, "hoá"):
+		name = "chemistry"
+	case strings.Contains(t, "văn"):
+		name = "literature"
+	case strings.Contains(t, "anh"):
+		name = "english"
+	}
+	return "/images/" + name + ".svg"
 }

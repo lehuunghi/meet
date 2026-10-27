@@ -2015,3 +2015,5 @@ svg {
 
 .course-lesson-outline li { overflow-wrap: anywhere; padding: 10px 4px; border-bottom: 1px solid #e8edf5; }
 .course-lesson-outline ol { padding-left: 24px; }
+
+.course-art.course-art-image{padding:0;overflow:hidden}.course-art-image img{width:100%;height:100%;object-fit:cover;display:block}.hero-learning-art{display:block;width:100%;height:auto;border-radius:0}.course-detail-art{display:block;width:min(100%,400px);height:auto;border-radius:16px;margin-bottom:20px}

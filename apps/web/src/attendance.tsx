@@ -1,3 +1,4 @@
+import { DeleteLearningData } from "./academy-data-cleanup";
 import { vnTime } from "./date-format";
 import { vnDate, vnDateTime } from "./date-format";
 import { ClassSubjectPicker } from "./class-subject-picker";
@@ -336,6 +337,7 @@ export function AttendanceReport({
               {role === "admin" && (
                 <>
                   <AttendancePolicy demo={demo} />
+ {meeting && <DeleteLearningData kind="attendance" label="Xóa điểm danh buổi này" scope={{meeting_id:meeting}} demo={demo} onDeleted={()=>setRevision(v=>v+1)}/>}
                   {
                     <LessonTiming
                       meeting={meeting}

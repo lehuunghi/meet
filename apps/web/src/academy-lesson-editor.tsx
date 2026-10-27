@@ -1,3 +1,4 @@
+import { DeleteLearningData } from "./academy-data-cleanup";
 import { useEffect, useRef, useState } from "react";
 import { api } from "./api";
 import { vnDateTime } from "./date-format";
@@ -444,6 +445,7 @@ export function AcademyLessonEditor({ demo, courses, perform, notice }: any) {
                         >
                           Sửa bài giảng
                         </button>
+                        <DeleteLearningData kind="videos" label="Xóa bài giảng" scope={{lesson_id:l.id}} demo={demo} onDeleted={async()=>{setEdit(null);await refresh()}}/>
                         {l.import_state === "failed" && (
                           <button
                             type="button"

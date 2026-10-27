@@ -1,3 +1,4 @@
+import { DeleteLearningData } from "./academy-data-cleanup";
 import {vnDateTime} from "./date-format";
 import {VNMonthInput} from './date-input';
 import { useEffect, useRef, useState } from "react";
@@ -558,7 +559,7 @@ function CourseLessons({
         </button>
       </div>
       {videoLesson && (
-        <LessonVideos key={videoLesson} meeting={videoLesson} demo={demo} />
+        <LessonVideos key={videoLesson} meeting={videoLesson} demo={demo} role={role} />
       )}
       {detail !== null && (
         <AttendanceReport
@@ -575,7 +576,7 @@ function CourseLessons({
     </div>
   );
 }
-function LessonVideos({ meeting, demo }: { meeting: string; demo: boolean }) {
+function LessonVideos({ meeting, demo, role }: { meeting: string; demo: boolean; role:string }) {
   const [rows, setRows] = useState<any[]>([]),
     [error, setError] = useState(""),
     [player, setPlayer] = useState(""),
@@ -630,6 +631,7 @@ function LessonVideos({ meeting, demo }: { meeting: string; demo: boolean }) {
   return (
     <section className="learning-videos">
       <h4>Video của buổi học</h4>
+ {role === "admin" && rows.length > 0 && <DeleteLearningData kind="videos" label="Xóa video buổi này" scope={{meeting_id:meeting}} demo={demo} onDeleted={()=>{generation.current++;setRows([]);setPlayer("")}}/>}
       {error && (
         <p className="error" role="alert">
           {error}

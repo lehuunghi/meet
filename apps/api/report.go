@@ -62,7 +62,7 @@ func (a *app) renderAttendance(w http.ResponseWriter, r *http.Request, course, c
  FROM courses c JOIN classes cl ON cl.id=c.class_id AND cl.school_id=c.school_id
  JOIN enrollments e ON e.school_id=c.school_id AND e.class_id=c.class_id
  JOIN users u ON u.id=e.user_id AND u.school_id=e.school_id AND u.role='student'
- JOIN meetings m ON m.school_id=c.school_id AND m.course_id=c.id AND m.status IN ('live','ended')
+ JOIN meetings m ON m.school_id=c.school_id AND m.course_id=c.id AND m.status IN ('live','ended') AND NOT EXISTS(SELECT 1 FROM attendance_report_deletions ad WHERE ad.school_id=m.school_id AND ad.meeting_id=m.id)
  LEFT JOIN presence p ON p.school_id=m.school_id AND p.meeting_id=m.id AND p.user_id=u.id
  LEFT JOIN meeting_timings mt ON mt.school_id=m.school_id AND mt.meeting_id=m.id
  LEFT JOIN attendance_policies policy ON policy.school_id=c.school_id

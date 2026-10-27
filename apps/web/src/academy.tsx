@@ -1,3 +1,5 @@
+import { subjectArt } from "./subject-art";
+import { LearningDataCleanup } from "./academy-data-cleanup";
 import { CourseClassroomLink } from "./academy-classroom-links";
 import { useUITexts } from "./ui-language-hook";
 import { AcademyVIPPlans } from "./academy-vip-plans";
@@ -742,33 +744,23 @@ export function AcademyApp({
           </div>
         </div>
         <nav id="academy-navigation" aria-label="Danh mục học tập">
-          {[
-            ...(admin
-              ? [
-                  ["courses", "Khóa học"],
-                  ["live", "Lớp học trực tiếp"],
-                ]
-              : [
-                  ["live", "Lớp học"],
-                  ["courses", "Kho bài giảng"],
-                ]),
-            ["reports", "Điểm danh & bản ghi"],
-            ["notifications", "Thông báo"],
-            ...(!staff ? [["vip", "Gói học & thanh toán"]] : []),
-            ["profile", staff ? "Tài khoản của bạn" : "Hồ sơ học viên"],
-            ...(admin
-              ? [
-                  ["manage", "Quản lý nội dung"],
-                  ["website", "Quản trị website"],
-                  ["academic", "Lớp & giáo viên"],
-                  ["accounts", "Tài khoản & phân quyền"],
-                  ["orders", "Duyệt thanh toán"],
-                  ["students", "Học viên"],
-                  ["finance", "Thu chi"],
-                  ["settings", "Email & thanh toán"],
-                ]
-              : []),
-          ]
+          {(admin ? [
+            ["live", "Lớp học trực tiếp"], ["academic", "Lớp & giáo viên"],
+            ["reports", "Điểm danh & bản ghi"], ["manage", "Quản lý nội dung"],
+            ["courses", "Khóa học"], ["students", "Học viên"],
+            ["orders", "Duyệt thanh toán"], ["finance", "Thu chi"],
+            ["website", "Quản trị website"], ["accounts", "Tài khoản & phân quyền"],
+            ["settings", "Email & thanh toán"], ["notifications", "Thông báo"],
+            ["profile", "Tài khoản của bạn"],
+          ] : staff ? [
+            ["live", "Lớp học"], ["courses", "Kho bài giảng"],
+            ["reports", "Điểm danh & bản ghi"], ["notifications", "Thông báo"],
+            ["profile", "Tài khoản của bạn"],
+          ] : [
+            ["live", "Lớp học"], ["courses", "Kho bài giảng"],
+            ["reports", "Điểm danh & bản ghi"], ["vip", "Gói học & thanh toán"],
+            ["notifications", "Thông báo"], ["profile", "Hồ sơ học viên"],
+          ])
             .filter(
               ([id]) =>
                 !admin ||
@@ -1037,6 +1029,7 @@ export function AcademyApp({
             )}
           </>
         )}
+        {admin && tab === "reports" && (user.permissions == null || ["attendance","recordings","content"].every(p=>user.permissions.includes(p))) && <LearningDataCleanup demo={demo} />}
         {!routeBusy &&
           !routeError &&
           !route.invalid &&
@@ -1254,8 +1247,7 @@ function CourseCard({
       id={"course-" + course.id}
     >
       <div className="academy-course-art">
-        <span>◈</span>
-        <small>KHÓA HỌC</small>
+        <img src={subjectArt(course.title)} alt="" width={400} height={260} loading="lazy" decoding="async"/>
       </div>
       <div className="academy-course-body">
         <h2>{course.title}</h2>
@@ -1649,7 +1641,7 @@ function VipPanel({
 function ProfilePanel({ demo, profile, user, perform, refresh, notice }: any) {
   return (
     <section className="academy-section">
-      <h2>Hồ sơ học viên</h2>
+      <h2>{user.role === "student" ? "Hồ sơ học viên" : "Tài khoản của bạn"}</h2>
       <p>Email: {profile.email || user.email || "—"}</p>
       {profile.live_expires_at && (
         <p>Quyền học Live đến: {vnDateTime(profile.live_expires_at)}</p>
@@ -1694,7 +1686,7 @@ function ProfilePanel({ demo, profile, user, perform, refresh, notice }: any) {
           ["school_name", "Trường đang học", "text"],
           ["phone", "Điện thoại", "tel"],
           ["parent_phone", "Điện thoại phụ huynh", "tel"],
-        ].map(([key, label, type]) => (
+        ].filter(([key]) => user.role === "student" || !["school_name", "parent_phone"].includes(key)).map(([key, label, type]) => (
           <label key={key}>
             {label}
             {type === "date" ? (

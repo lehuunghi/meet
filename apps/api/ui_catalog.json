@@ -348,6 +348,10 @@
     "area": "Điểm danh"
   },
   {
+    "key": "Xóa điểm danh buổi này",
+    "area": "Điểm danh"
+  },
+  {
     "key": "Xuất Excel (.xlsx, tiếng Việt)",
     "area": "Điểm danh"
   },
@@ -960,6 +964,14 @@
     "area": "Giao diện chung"
   },
   {
+    "key": "hoá",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "hóa",
+    "area": "Giao diện chung"
+  },
+  {
     "key": "hoặc mở liên kết riêng mà bộ cài hiển thị. Phiên cấu hình có hiệu lực 15 phút.",
     "area": "Giao diện chung"
   },
@@ -1145,6 +1157,10 @@
   },
   {
     "key": "Lưu phân công",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "lý",
     "area": "Giao diện chung"
   },
   {
@@ -1500,6 +1516,10 @@
     "area": "Giao diện chung"
   },
   {
+    "key": "toán",
+    "area": "Giao diện chung"
+  },
+  {
     "key": "Tối đa 100 dòng mỗi lượt",
     "area": "Giao diện chung"
   },
@@ -1549,6 +1569,14 @@
   },
   {
     "key": "Ứng dụng chặn tải khi hết hạn và chạy tác vụ dọn mỗi giờ; R2 có thể xóa vật lý trễ hơn mốc hết hạn.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "văn",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "vật l",
     "area": "Giao diện chung"
   },
   {
@@ -1616,7 +1644,23 @@
     "area": "Không gian học tập"
   },
   {
+    "key": " bài giảng · ",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": " bản ghi · ",
+    "area": "Không gian học tập"
+  },
+  {
     "key": " đ · ",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": " dòng điểm danh · ",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": " file R2 chờ xóa",
     "area": "Không gian học tập"
   },
   {
@@ -1773,6 +1817,10 @@
   },
   {
     "key": "Chế độ minh họa không thay đổi gói thật.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Chỉ quản trị có đủ quyền được xóa. Kết thúc các buổi đang học và đợi sao chép video hoàn tất trước khi thực hiện.",
     "area": "Không gian học tập"
   },
   {
@@ -1984,7 +2032,15 @@
     "area": "Không gian học tập"
   },
   {
+    "key": "Đã xóa dữ liệu minh họa.",
+    "area": "Không gian học tập"
+  },
+  {
     "key": "Đã xóa gói khỏi danh mục; giữ lịch sử và quyền VIP đã cấp.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Đã xóa. File video được dọn khỏi R2 tự động.",
     "area": "Không gian học tập"
   },
   {
@@ -2041,6 +2097,10 @@
   },
   {
     "key": "Đăng video vào khóa học",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Đang xóa…",
     "area": "Không gian học tập"
   },
   {
@@ -2280,6 +2340,10 @@
     "area": "Không gian học tập"
   },
   {
+    "key": "Hủy",
+    "area": "Không gian học tập"
+  },
+  {
     "key": "Hủy sửa",
     "area": "Không gian học tập"
   },
@@ -2301,10 +2365,6 @@
   },
   {
     "key": "Khóa học",
-    "area": "Không gian học tập"
-  },
-  {
-    "key": "KHÓA HỌC",
     "area": "Không gian học tập"
   },
   {
@@ -2377,6 +2437,10 @@
   },
   {
     "key": "Kích hoạt VIP",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Kiểm tra trạng thái",
     "area": "Không gian học tập"
   },
   {
@@ -2516,6 +2580,10 @@
     "area": "Không gian học tập"
   },
   {
+    "key": "Nhập XÓA để xác nhận",
+    "area": "Không gian học tập"
+  },
+  {
     "key": "Nội dung chi",
     "area": "Không gian học tập"
   },
@@ -2553,6 +2621,10 @@
   },
   {
     "key": "QR chuyển khoản",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Quản lý dữ liệu điểm danh & video",
     "area": "Không gian học tập"
   },
   {
@@ -2948,6 +3020,10 @@
     "area": "Không gian học tập"
   },
   {
+    "key": "Xác nhận xóa",
+    "area": "Không gian học tập"
+  },
+  {
     "key": "Xem",
     "area": "Không gian học tập"
   },
@@ -2984,11 +3060,47 @@
     "area": "Không gian học tập"
   },
   {
+    "key": "XÓA",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Xóa bài giảng",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Xóa bài giảng, video và tiến độ xem liên quan. Giữ bản ghi lớp học gốc.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Xóa bản ghi lớp học đã chọn. Bản sao đã đăng riêng thành bài giảng vẫn được giữ lại.",
+    "area": "Không gian học tập"
+  },
+  {
     "key": "Xóa câu",
     "area": "Không gian học tập"
   },
   {
     "key": "Xóa gói",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Xóa tất cả bản ghi lớp học và bài giảng video. Giữ khóa học, lớp, tài khoản và quyền VIP.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Xóa tất cả điểm danh",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Xóa tất cả video",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Xóa toàn bộ điểm danh, bản ghi và bài giảng video. Giữ khóa học, lớp, tài khoản và quyền VIP.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Xóa toàn bộ kết quả và lịch sử ra/vào của phạm vi đã chọn. Báo cáo đã xóa sẽ không còn hiển thị.",
     "area": "Không gian học tập"
   },
   {
@@ -3117,6 +3229,10 @@
   },
   {
     "key": "Xem video buổi học",
+    "area": "Lớp học & môn học"
+  },
+  {
+    "key": "Xóa video buổi này",
     "area": "Lớp học & môn học"
   },
   {
@@ -4888,6 +5004,10 @@
     "area": "Thông báo hệ thống"
   },
   {
+    "key": "Cấu hình R2 không khớp video; kiểm tra trước khi xóa",
+    "area": "Thông báo hệ thống"
+  },
+  {
     "key": "Câu hỏi không hợp lệ",
     "area": "Thông báo hệ thống"
   },
@@ -4933,6 +5053,10 @@
   },
   {
     "key": "Chọn ảnh đại diện PNG/JPEG hợp lệ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chọn điểm danh hoặc video",
     "area": "Thông báo hệ thống"
   },
   {
@@ -5009,6 +5133,18 @@
   },
   {
     "key": "Chưa đăng ký được lớp",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa đọc được bài giảng",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa đọc được bản ghi",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa đọc được cấu hình",
     "area": "Thông báo hệ thống"
   },
   {
@@ -5104,11 +5240,23 @@
     "area": "Thông báo hệ thống"
   },
   {
+    "key": "Chưa hoàn tất xóa",
+    "area": "Thông báo hệ thống"
+  },
+  {
     "key": "Chưa hoàn tất xóa khóa học",
     "area": "Thông báo hệ thống"
   },
   {
+    "key": "Chưa hoàn tất xóa; dữ liệu chưa thay đổi",
+    "area": "Thông báo hệ thống"
+  },
+  {
     "key": "Chưa kết nối dịch vụ cập nhật trên VPS. Xem hướng dẫn bật dịch vụ.",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa khóa được khóa học",
     "area": "Thông báo hệ thống"
   },
   {
@@ -5117,6 +5265,10 @@
   },
   {
     "key": "Chưa kiểm tra được buổi đang học",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa kiểm tra được buổi học",
     "area": "Thông báo hệ thống"
   },
   {
@@ -5324,6 +5476,10 @@
     "area": "Thông báo hệ thống"
   },
   {
+    "key": "Chưa thể xóa",
+    "area": "Thông báo hệ thống"
+  },
+  {
     "key": "Chưa thể xóa khóa học",
     "area": "Thông báo hệ thống"
   },
@@ -5365,6 +5521,10 @@
   },
   {
     "key": "Commit failed",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Còn buổi đang học; kết thúc buổi trước khi xóa dữ liệu",
     "area": "Thông báo hệ thống"
   },
   {
@@ -5413,6 +5573,10 @@
   },
   {
     "key": "Đã tạo session kiểm tra; cần thử cuộc gọi hai phía để nghiệm thu media",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Đã xóa dữ liệu. File R2 được dọn tự động; kiểm tra số file chờ để xác nhận hoàn tất.",
     "area": "Thông báo hệ thống"
   },
   {
@@ -5489,6 +5653,10 @@
   },
   {
     "key": "Đợi 30 giây trước khi gửi lại",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Đợi sao chép bài giảng hoàn tất rồi xóa",
     "area": "Thông báo hệ thống"
   },
   {
@@ -5732,10 +5900,6 @@
     "area": "Thông báo hệ thống"
   },
   {
-    "key": "hóa",
-    "area": "Thông báo hệ thống"
-  },
-  {
     "key": "hoá học",
     "area": "Thông báo hệ thống"
   },
@@ -5929,6 +6093,10 @@
   },
   {
     "key": "Không có quyền thực hiện",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không có quyền xóa dữ liệu này",
     "area": "Thông báo hệ thống"
   },
   {
@@ -6228,6 +6396,10 @@
     "area": "Thông báo hệ thống"
   },
   {
+    "key": "Không thấy buổi học",
+    "area": "Thông báo hệ thống"
+  },
+  {
     "key": "Không thấy đơn",
     "area": "Thông báo hệ thống"
   },
@@ -6237,6 +6409,10 @@
   },
   {
     "key": "Không thấy khóa học",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không thấy video",
     "area": "Thông báo hệ thống"
   },
   {
@@ -6528,10 +6704,6 @@
     "area": "Thông báo hệ thống"
   },
   {
-    "key": "lý",
-    "area": "Thông báo hệ thống"
-  },
-  {
     "key": "Mã cài đặt không đúng",
     "area": "Thông báo hệ thống"
   },
@@ -6693,6 +6865,10 @@
   },
   {
     "key": "Nhập tiêu đề và nội dung thông báo hợp lệ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Nhập XÓA để xác nhận đúng phạm vi",
     "area": "Thông báo hệ thống"
   },
   {
@@ -7004,10 +7180,6 @@
     "area": "Thông báo hệ thống"
   },
   {
-    "key": "toán",
-    "area": "Thông báo hệ thống"
-  },
-  {
     "key": "Tối đa 10 khảo sát mỗi buổi",
     "area": "Thông báo hệ thống"
   },
@@ -7076,10 +7248,6 @@
     "area": "Thông báo hệ thống"
   },
   {
-    "key": "văn",
-    "area": "Thông báo hệ thống"
-  },
-  {
     "key": "Vào buổi học trước khi dùng phản ứng",
     "area": "Thông báo hệ thống"
   },
@@ -7121,6 +7289,10 @@
   },
   {
     "key": "Video tối đa 1 GiB, MP4/WebM và thời lượng hợp lệ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Video vừa tạo còn liên kết tải lên; đợi 20 phút sau khi tạo rồi xóa",
     "area": "Thông báo hệ thống"
   },
   {
@@ -7308,6 +7480,10 @@
     "area": "Video & ghi hình"
   },
   {
+    "key": "Xóa video",
+    "area": "Video & ghi hình"
+  },
+  {
     "key": "· Không gian học tập trực tuyến.",
     "area": "Website công khai"
   },
@@ -7381,10 +7557,6 @@
   },
   {
     "key": "BƯỚC TIẾP THEO BẮT ĐẦU TỪ HÔM NAY",
-    "area": "Website công khai"
-  },
-  {
-    "key": "Buổi học · Bài tập · Video",
     "area": "Website công khai"
   },
   {
@@ -7544,14 +7716,6 @@
     "area": "Website công khai"
   },
   {
-    "key": "Học cùng giáo viên. Chủ động theo dõi bài học.",
-    "area": "Website công khai"
-  },
-  {
-    "key": "HỌC CÙNG VA",
-    "area": "Website công khai"
-  },
-  {
     "key": "Học để tiến xa hơn.",
     "area": "Website công khai"
   },
@@ -7617,10 +7781,6 @@
   },
   {
     "key": "Không gian học tập của bạn",
-    "area": "Website công khai"
-  },
-  {
-    "key": "KHÔNG GIAN LỚP HỌC",
     "area": "Website công khai"
   },
   {
@@ -7700,10 +7860,6 @@
     "area": "Website công khai"
   },
   {
-    "key": "Môn học của bạn",
-    "area": "Website công khai"
-  },
-  {
     "key": "Một tài khoản để kết nối, học tập và theo dõi hành trình của mình.",
     "area": "Website công khai"
   },
@@ -7729,10 +7885,6 @@
   },
   {
     "key": "Những chia sẻ thực tế về hành trình học tập tại VA.",
-    "area": "Website công khai"
-  },
-  {
-    "key": "Nội dung được phân công",
     "area": "Website công khai"
   },
   {
@@ -7829,10 +7981,6 @@
   },
   {
     "key": "Tương tác trong lớp Live",
-    "area": "Website công khai"
-  },
-  {
-    "key": "VA",
     "area": "Website công khai"
   },
   {

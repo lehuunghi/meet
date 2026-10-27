@@ -87,11 +87,20 @@ func (a *app) academyProfile(w http.ResponseWriter, r *http.Request) {
 	if !decode(w, r, &in) {
 		return
 	}
-	if !validStudentProfile(in) {
+	u := who(r)
+	valid := validStudentProfile(in)
+	if u.Role != "student" {
+		in.School = ""
+		in.Parent = ""
+		staff := in
+		staff.School = "N/A"
+		staff.Parent = "0900000000"
+		valid = validStudentProfile(staff)
+	}
+	if !valid {
 		problem(w, 400, "Hồ sơ không hợp lệ")
 		return
 	}
-	u := who(r)
 	prefix := "academy/avatars/" + u.School + "/" + u.ID + "/"
 	if in.Avatar != "" && !strings.HasPrefix(in.Avatar, prefix) {
 		problem(w, 400, "Ảnh không thuộc tài khoản")
