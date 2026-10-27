@@ -1,8 +1,15 @@
 import { useEffect, useState, useRef } from "react";
 import { api } from "./api";
-import { confirmFormReload, markFormClean } from "./form-guard-core";
+import {
+  confirmFormReload,
+  markFormClean,
+  markFormDirty,
+} from "./form-guard-core";
 export function AcademySiteEditor({ demo, courses, perform, notice }: any) {
   const formRef = useRef<HTMLFormElement>(null);
+  const savedValue = useRef(
+    JSON.stringify({ headline: "", description: "", published: false }),
+  );
   const [reloadSerial, setReloadSerial] = useState(0);
   useEffect(() => {
     markFormClean(formRef.current);
@@ -18,6 +25,37 @@ export function AcademySiteEditor({ demo, courses, perform, notice }: any) {
     [saving, setSaving] = useState(false),
     [selected, setSelected] = useState(""),
     [lessons, setLessons] = useState<any[]>([]);
+  useEffect(() => {
+    if (loaded) {
+      if (JSON.stringify(value) !== savedValue.current)
+        markFormDirty(formRef.current);
+      else markFormClean(formRef.current);
+    }
+  }, [value, loaded]);
+  const [previewHTML, setPreviewHTML] = useState(""),
+    [previewBusy, setPreviewBusy] = useState(false),
+    [previewWidth, setPreviewWidth] = useState("100%");
+  const previewRef = useRef<HTMLDialogElement>(null);
+  async function preview(target: any = {}) {
+    if (previewBusy) return;
+    setPreviewBusy(true);
+    try {
+      if (demo) {
+        notice("Xem trước nội dung thật cần tài khoản quản trị.");
+        return;
+      }
+      const result = await api("/academy/site/preview", {
+        content: value,
+        ...target,
+      });
+      setPreviewHTML(result.html);
+      previewRef.current?.showModal();
+    } catch (e) {
+      notice((e as Error).message);
+    } finally {
+      setPreviewBusy(false);
+    }
+  }
   async function load() {
     setLoaded(false);
     setError("");
@@ -40,7 +78,13 @@ export function AcademySiteEditor({ demo, courses, perform, notice }: any) {
           Published: t.Published ?? t.published ?? true,
         }));
       }
-      setValue(parsed || { headline: "", description: "", published: false });
+      const actual = parsed || {
+        headline: "",
+        description: "",
+        published: false,
+      };
+      savedValue.current = JSON.stringify(actual);
+      setValue(actual);
       setRevision(rows[0]?.revision || "");
       setLoaded(true);
       setReloadSerial((n) => n + 1);
@@ -70,6 +114,7 @@ export function AcademySiteEditor({ demo, courses, perform, notice }: any) {
       {label}
       {multiline ? (
         <textarea
+          aria-label={label}
           rows={5}
           maxLength={20000}
           value={value[key] || ""}
@@ -77,6 +122,7 @@ export function AcademySiteEditor({ demo, courses, perform, notice }: any) {
         />
       ) : (
         <input
+          aria-label={label}
           type={key === "contact_email" ? "email" : "text"}
           maxLength={500}
           value={value[key] || ""}
@@ -108,6 +154,48 @@ export function AcademySiteEditor({ demo, courses, perform, notice }: any) {
         Nội dung công khai chỉ xuất hiện khi website được xuất bản. Các trường
         để trống sẽ được ẩn. Có thể bật sẵn mục giáo viên và cảm nhận; từng hồ
         sơ mới được giữ nháp đến khi anh/chị chọn công khai.
+      </p>
+      <div className="academy-website-toolbar">
+        <span>
+          {value.published
+            ? "Website đang công khai"
+            : "Website đang ở chế độ nháp"}
+        </span>
+        <button
+          type="button"
+          disabled={!loaded || previewBusy || saving}
+          onClick={() => void preview()}
+        >
+          {previewBusy ? "Đang dựng bản xem trước…" : "Xem trước toàn website"}
+        </button>
+        <a href="/" target="_blank" rel="noopener">
+          Mở website đang công khai ↗
+        </a>
+        <button
+          type="button"
+          onClick={() =>
+            formRef.current
+              ?.querySelectorAll("details")
+              .forEach((d) => (d.open = true))
+          }
+        >
+          Mở tất cả các mục
+        </button>
+        <button
+          type="button"
+          onClick={() =>
+            formRef.current
+              ?.querySelectorAll("details")
+              .forEach((d) => (d.open = false))
+          }
+        >
+          Thu gọn các mục
+        </button>
+      </div>
+      <p>
+        Thêm, sửa hoặc xóa nội dung rồi bấm Lưu website để áp dụng. Bản xem
+        trước hiển thị nội dung đang chỉnh, kể cả bản nháp; không tự lưu hoặc
+        công khai.
       </p>
       {error && (
         <p className="error" role="alert">
@@ -144,6 +232,8 @@ export function AcademySiteEditor({ demo, courses, perform, notice }: any) {
                 revision,
               });
               setRevision(out.revision);
+              savedValue.current = JSON.stringify(value);
+              markFormClean(formRef.current);
             }
             notice(
               demo
@@ -179,6 +269,22 @@ export function AcademySiteEditor({ demo, courses, perform, notice }: any) {
             {field("terms", "Điều khoản sử dụng", true)}
             {field("privacy", "Chính sách bảo mật", true)}
             {field("refund", "Thanh toán & hoàn phí", true)}
+            <div className="academy-website-toolbar">
+              {[
+                ["terms", "Điều khoản"],
+                ["privacy", "Bảo mật"],
+                ["refund", "Thanh toán"],
+              ].map(([key, label]) => (
+                <button
+                  key={key}
+                  type="button"
+                  disabled={!loaded || previewBusy}
+                  onClick={() => void preview({ policy: key })}
+                >
+                  Xem đầy đủ {label}
+                </button>
+              ))}
+            </div>
           </fieldset>
         </details>
         <details>
@@ -239,6 +345,30 @@ export function AcademySiteEditor({ demo, courses, perform, notice }: any) {
               <a href={"/khoa-hoc/" + selected} target="_blank" rel="noopener">
                 Xem trang công khai ↗
               </a>
+              <button
+                type="button"
+                disabled={previewBusy}
+                onClick={() => void preview({ course: selected })}
+              >
+                Xem trước trang khóa học
+              </button>
+              <button
+                type="button"
+                className="secondary"
+                onClick={() => {
+                  if (
+                    confirm(
+                      "Xóa phần giới thiệu chi tiết của khóa này? Bản ghi khóa học và bài giảng được giữ nguyên.",
+                    )
+                  ) {
+                    const pages = { ...value.course_pages };
+                    delete pages[selected];
+                    setValue({ ...value, course_pages: pages });
+                  }
+                }}
+              >
+                Xóa nội dung giới thiệu khóa này
+              </button>
             </fieldset>
           )}
         </details>
@@ -497,13 +627,26 @@ export function AcademySiteEditor({ demo, courses, perform, notice }: any) {
                 </label>
                 <button
                   type="button"
+                  disabled={previewBusy}
+                  onClick={() => void preview({ post: i })}
+                >
+                  Xem đầy đủ bài viết
+                </button>
+                <button
+                  type="button"
                   className="secondary"
-                  onClick={() =>
+                  onClick={() => {
+                    if (
+                      !confirm(
+                        "Xóa bài viết này khỏi nội dung website? Bấm Lưu website để áp dụng.",
+                      )
+                    )
+                      return;
                     setValue({
                       ...value,
                       posts: value.posts.filter((_: any, n: number) => n !== i),
-                    })
-                  }
+                    });
+                  }}
                 >
                   Xóa bài viết
                 </button>
@@ -535,6 +678,38 @@ export function AcademySiteEditor({ demo, courses, perform, notice }: any) {
           {saving ? "Đang lưu…" : "Lưu website"}
         </button>
       </form>
+      <dialog
+        ref={previewRef}
+        className="academy-website-preview"
+        aria-label="Xem trước website"
+      >
+        <div className="academy-website-toolbar">
+          <strong>Bản xem trước riêng — chưa lưu</strong>
+          <label>
+            Thiết bị
+            <select
+              value={previewWidth}
+              onChange={(e) => setPreviewWidth(e.target.value)}
+            >
+              <option value="100%">Máy tính</option>
+              <option value="390px">Điện thoại</option>
+            </select>
+          </label>
+          <button type="button" onClick={() => previewRef.current?.close()}>
+            Đóng bản xem trước
+          </button>
+        </div>
+        <div
+          className="academy-website-preview-frame"
+          data-device={previewWidth === "390px" ? "mobile" : "desktop"}
+        >
+          <iframe
+            title="Nội dung website đang chỉnh"
+            sandbox=""
+            srcDoc={previewHTML}
+          />
+        </div>
+      </dialog>
     </section>
   );
 }

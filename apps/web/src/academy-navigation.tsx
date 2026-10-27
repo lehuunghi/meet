@@ -46,6 +46,7 @@ export function AcademyBreadcrumbs({ route, courses, classrooms, title }: any) {
             profile: "Tài khoản",
             notifications: "Thông báo",
             manage: "Quản lý nội dung",
+            website: "Quản trị website",
             academic: "Lớp & giáo viên",
             accounts: "Tài khoản & phân quyền",
             orders: "Duyệt thanh toán",

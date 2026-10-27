@@ -1,6 +1,6 @@
 # Danh mục khóa học VA theo khối
 
-VA đã tạo 18 khóa: Toán, Ngữ văn, Tiếng Anh, Vật lí, Hóa học, Sinh học cho mỗi khối 10, 11, 12. Tên khóa có khối lớp để dễ tìm và đối chiếu. Mỗi khóa có phần giới thiệu, đối tượng, mục tiêu, phương pháp học và trạng thái chuẩn bị học liệu.
+VA có 15 khóa: Toán, Ngữ văn, Tiếng Anh, Vật lí, Hóa học cho mỗi khối 10, 11, 12. Ba khóa Sinh học đã được xóa theo lựa chọn của quản trị. Tên khóa có khối lớp để dễ tìm và đối chiếu. Mỗi khóa có phần giới thiệu, đối tượng, mục tiêu, phương pháp học và trạng thái chuẩn bị học liệu.
 
 Đây là danh mục giới thiệu, chưa có giáo viên được gán, video giả hay lịch Live giả. Quản trị bổ sung học liệu và gán môn Live phù hợp trước khi tổ chức dạy.
 

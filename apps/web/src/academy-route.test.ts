@@ -10,6 +10,7 @@ describe("stable academy links", () => {
       ["/hoc/thanh-toan/order-1", "orderId", "order-1"],
       ["/abc123", "roomCode", "abc123"],
       ["/quan-tri/tai-khoan", "tab", "accounts"],
+      ["/quan-tri/website", "tab", "website"],
     ])
       expect((readAcademyRoute(path) as any)[key]).toBe(value);
     expect(readAcademyRoute("/hoc/unknown").invalid).toBe(true);

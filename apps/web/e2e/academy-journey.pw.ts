@@ -206,7 +206,7 @@ test("website editor preserves existing content, sends revision and edits course
   });
   await page.goto("/hoc");
   await page
-    .getByRole("button", { name: "Quản lý nội dung", exact: true })
+    .getByRole("button", { name: "Quản trị website", exact: true })
     .click();
   await page.getByText("Liên hệ & chính sách", { exact: true }).click();
   await page

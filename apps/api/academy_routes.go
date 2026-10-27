@@ -86,6 +86,7 @@ func (a *app) academyRoutes(m *http.ServeMux) {
 	member("POST /api/academy/profile/verify-email", a.academyVerifyEmail)
 	member("GET /api/academy/site", a.academyAdmin)
 	member("POST /api/academy/site", a.academyAdmin)
+	member("POST /api/academy/site/preview", a.academySitePreview)
 	member("GET /api/academy/admin/{kind}", a.academyLists)
 	member("POST /api/academy/courses", a.academyCourseSave)
 	member("POST /api/academy/courses/{course}/delete", a.academyCourseDelete)

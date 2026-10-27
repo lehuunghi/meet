@@ -1697,6 +1697,51 @@
   padding: 14px 0;
   border-bottom: 1px solid #e3e9f2;
 }
+.academy-website-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0;
+}
+.academy-website-toolbar label {
+  margin: 0;
+  min-width: 120px;
+}
+.academy-website-toolbar span {
+  font-size: 13px;
+  color: var(--muted);
+}
+.academy-website-preview {
+  width: min(1440px, 96vw);
+  max-width: 96vw;
+  height: 94vh;
+  max-height: 94vh;
+  padding: 18px;
+  border: 1px solid #dce3ed;
+  border-radius: 16px;
+}
+.academy-website-preview::backdrop {
+  background: #15254488;
+}
+.academy-website-preview-frame {
+  height: calc(100% - 110px);
+  min-height: 300px;
+  overflow: auto;
+  background: #edf1f7;
+  display: flex;
+  justify-content: center;
+}
+.academy-website-preview-frame iframe {
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  border: 0;
+  background: white;
+}
+.academy-website-preview-frame[data-device="mobile"] iframe {
+  width: 390px;
+}
 .academy-site-editor summary {
   cursor: pointer;
   font-size: 14px;

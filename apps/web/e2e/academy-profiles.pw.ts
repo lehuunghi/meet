@@ -6,7 +6,7 @@ test('public profile editor keeps new content in draft and preserves publication
   if(path==='/api/academy/site'&&r.request().method()==='POST'){saved=r.request().postDataJSON();return r.fulfill({json:{ok:true,revision:'next'}})}
   return r.fulfill({json:path==='/api/me'?{id:'admin',role:'admin',name:'VA'}:path==='/api/public-config'?{platform_mode:'academy'}:path==='/api/academy/site'?[{content:JSON.stringify({headline:'VA',published:true,teachers:[],testimonials:[]}),revision:'initial'}]:[]});
  });
- await page.setViewportSize({width:390,height:844});await page.goto('/quan-tri/noi-dung');
+ await page.setViewportSize({width:390,height:844});await page.goto('/quan-tri/website');
  await page.getByText('Hồ sơ giáo viên',{exact:true}).click();
  await page.getByLabel('Hiện mục giáo viên tiêu biểu kể cả khi đang cập nhật').check();
  await page.getByRole('button',{name:'Thêm hồ sơ giáo viên',exact:true}).click();

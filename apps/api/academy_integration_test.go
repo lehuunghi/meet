@@ -338,6 +338,19 @@ func TestAcademyIntegration(t *testing.T) {
 	must(request("POST", "/api/academy/site", `{"revision":"`+profileRows[0]["revision"]+`","content":{"published":true,"testimonials":[{"Name":"","Text":"","Audience":"parent","Published":true}]}}`, admin), 400)
 	must(request("POST", "/api/academy/site", `{"revision":"`+profileRows[0]["revision"]+`","content":{"published":true,"testimonials":[{"Name":"Minh họa","Text":"Thử","Rating":6,"Published":true}]}}`, admin), 400)
 
+	previewBody := `{"content":{"headline":"PRIVATE-PREVIEW-HEADLINE","published":false,"posts":[{"Title":"Bài nháp riêng","Body":"PRIVATE-PREVIEW-BODY","Published":false}]},"post":0}`
+	must(request("POST", "/api/academy/site/preview", previewBody, student), 403)
+	preview := request("POST", "/api/academy/site/preview", previewBody, limited)
+	must(preview, 200)
+	if !strings.Contains(preview.Body.String(), "PRIVATE-PREVIEW-BODY") || preview.Header().Get("Cache-Control") != "no-store" {
+		t.Fatal("private preview missing or cacheable")
+	}
+	profileSite = request("GET", "/api/academy/site", "", admin)
+	if strings.Contains(profileSite.Body.String(), "PRIVATE-PREVIEW-") {
+		t.Fatal("preview persisted unsaved content")
+	}
+	must(request("POST", "/api/academy/site/preview", `{"content":{},"course":"ac-course"}`, other), 404)
+	must(request("POST", "/api/academy/site/preview", `{"content":{},"post":9}`, admin), 400)
 	bad := request("POST", "/api/academy/webhooks/payos", `{"success":true,"data":{"amount":1000},"signature":"00"}`, nil)
 	must(bad, 403)
 }

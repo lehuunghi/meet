@@ -8,6 +8,7 @@ export const academyPaths: Record<string, string> = {
   profile: "/hoc/tai-khoan",
   notifications: "/hoc/thong-bao",
   manage: "/quan-tri/noi-dung",
+  website: "/quan-tri/website",
   academic: "/quan-tri/lop-hoc",
   accounts: "/quan-tri/tai-khoan",
   orders: "/quan-tri/thanh-toan",

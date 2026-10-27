@@ -664,6 +664,7 @@ export function AcademyApp({
   const routePermission = (
     {
       manage: "content",
+      website: "content",
       academic: "academic",
       accounts: "accounts",
       orders: "finance",
@@ -728,6 +729,7 @@ export function AcademyApp({
             ...(admin
               ? [
                   ["manage", "Quản lý nội dung"],
+                  ["website", "Quản trị website"],
                   ["academic", "Lớp & giáo viên"],
                   ["accounts", "Tài khoản & phân quyền"],
                   ["orders", "Duyệt thanh toán"],
@@ -744,6 +746,7 @@ export function AcademyApp({
                 !(
                   {
                     manage: "content",
+                    website: "content",
                     academic: "academic",
                     accounts: "accounts",
                     orders: "finance",
@@ -756,6 +759,7 @@ export function AcademyApp({
                   (
                     {
                       manage: "content",
+                      website: "content",
                       academic: "academic",
                       accounts: "accounts",
                       orders: "finance",
@@ -828,26 +832,28 @@ export function AcademyApp({
                   : tab === "orders"
                     ? "Đối soát thanh toán"
                     : tab === "manage"
-                      ? "Nội dung và khóa học"
-                      : tab === "finance"
-                        ? "Thu chi trung tâm"
-                        : tab === "students"
-                          ? "Học viên"
-                          : tab === "live"
-                            ? admin
-                              ? "Lớp học trực tiếp"
-                              : "Lớp học của tôi"
-                            : tab === "notifications"
-                              ? "Thông báo"
-                              : tab === "reports"
-                                ? "Điểm danh & bản ghi"
-                                : tab === "academic"
-                                  ? "Lớp học và giáo viên"
-                                  : tab === "accounts"
-                                    ? "Tài khoản và phân quyền"
-                                    : tab === "settings"
-                                      ? "Cài đặt kinh doanh"
-                                      : "Tài khoản của bạn"}
+                      ? "Khóa học, bài giảng và gói học"
+                      : tab === "website"
+                        ? "Quản trị nội dung website"
+                        : tab === "finance"
+                          ? "Thu chi trung tâm"
+                          : tab === "students"
+                            ? "Học viên"
+                            : tab === "live"
+                              ? admin
+                                ? "Lớp học trực tiếp"
+                                : "Lớp học của tôi"
+                              : tab === "notifications"
+                                ? "Thông báo"
+                                : tab === "reports"
+                                  ? "Điểm danh & bản ghi"
+                                  : tab === "academic"
+                                    ? "Lớp học và giáo viên"
+                                    : tab === "accounts"
+                                      ? "Tài khoản và phân quyền"
+                                      : tab === "settings"
+                                        ? "Cài đặt kinh doanh"
+                                        : "Tài khoản của bạn"}
             </h1>
           </div>
           <span className="academy-badge">
@@ -1073,6 +1079,14 @@ export function AcademyApp({
         )}
         {!routeForbidden && admin && tab === "settings" && (
           <AcademySettings demo={demo} />
+        )}
+        {!routeForbidden && admin && tab === "website" && (
+          <AcademySiteEditor
+            demo={demo}
+            courses={courses}
+            perform={perform}
+            notice={setNotice}
+          />
         )}
         {!routeForbidden && admin && tab === "academic" && (
           <AcademicAdmin demo={demo} onChange={refresh} />
@@ -2049,12 +2063,6 @@ function ManagePanel({ demo, courses, perform, refresh, notice }: any) {
           <button>Tải và xuất bản</button>
         </form>
       </section>
-      <AcademySiteEditor
-        demo={demo}
-        courses={courses}
-        perform={perform}
-        notice={notice}
-      />
     </div>
   );
 }

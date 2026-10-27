@@ -54,6 +54,9 @@ export function markFormClean(form: HTMLFormElement | null) {
   baselines.set(form, values(form));
   dirty.delete(form);
 }
+export function markFormDirty(form: HTMLFormElement | null) {
+  if (form) dirty.add(form);
+}
 export function submittingForm() {
   const f = active;
   if (!f || pending.has(f)) return () => {};
