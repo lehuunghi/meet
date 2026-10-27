@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-test("registration keeps the selected course across two steps and requires a deliberate final submission", async ({
+test("registration requires the complete profile and avatar, preserves course intent and uses no email code", async ({
   page,
 }) => {
   let registered: any = null;
@@ -19,9 +19,11 @@ test("registration keeps the selected course across two steps and requires a del
   await page.goto("/hoc?register=1&course=course-one");
   await page.getByLabel("Email", { exact: true }).fill("learner@example.test");
   await page.getByLabel("Mật khẩu", { exact: true }).fill("password123");
-  await page.getByRole("button", { name: "Tiếp tục", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Tạo tài khoản", exact: true })
+    .click();
   expect(registered).toBeNull();
-  await expect(page.getByRole("status")).toContainText("Bước 2/2");
+  await expect(page.getByRole("alert")).toContainText("điền đầy đủ");
   for (const [name, value] of [
     ["Họ tên", "Nguyễn An"],
     ["Ngày sinh", "01/01/2010"],
@@ -29,22 +31,31 @@ test("registration keeps the selected course across two steps and requires a del
     ["Trường đang học", "Trường thử"],
     ["Số điện thoại", "0901234567"],
     ["Số điện thoại phụ huynh", "0912345678"],
-    ["Mã xác thực email", "123456"],
   ])
     await page.getByLabel(name, { exact: true }).fill(value);
-  await page.getByRole("button", { name: "← Quay lại tài khoản" }).click();
-  await expect(page.getByLabel("Email", { exact: true })).toHaveValue(
-    "learner@example.test",
-  );
-  await page.getByRole("button", { name: "Tiếp tục", exact: true }).click();
-  await expect(page.getByLabel("Họ tên", { exact: true })).toHaveValue(
-    "Nguyễn An",
-  );
+  await expect(
+    page.getByLabel("Mã xác thực email", { exact: true }),
+  ).toHaveCount(0);
+  const avatar = await page.evaluate(() => {
+    const c = document.createElement("canvas");
+    c.width = 2;
+    c.height = 2;
+    return c.toDataURL("image/png").split(",")[1];
+  });
+  await page
+    .getByLabel("Ảnh đại diện", { exact: true })
+    .setInputFiles({
+      name: "avatar.png",
+      mimeType: "image/png",
+      buffer: Buffer.from(avatar, "base64"),
+    });
   await page
     .getByRole("button", { name: "Tạo tài khoản", exact: true })
     .click();
   await expect.poll(() => registered?.profile.name).toBe("Nguyễn An");
   expect(registered.email).toBe("learner@example.test");
+  expect(registered.avatar_data.length).toBeGreaterThan(10);
+  expect(registered.code).toBeUndefined();
   expect(new URL(page.url()).searchParams.get("next")).toBe(
     "/hoc/khoa-hoc/course-one",
   );
@@ -208,7 +219,9 @@ test("website editor preserves existing content, sends revision and edits course
   await page
     .getByRole("button", { name: "Quản trị website", exact: true })
     .click();
-  await page.getByRole("link", {name:"Tất cả nội dung",exact:true}).click();
+  await page
+    .getByRole("link", { name: "Tất cả nội dung", exact: true })
+    .click();
   await page.getByText("Liên hệ & chính sách", { exact: true }).click();
   await page
     .getByLabel("Email liên hệ", { exact: true })

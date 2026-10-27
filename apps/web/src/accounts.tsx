@@ -1,4 +1,4 @@
-import {vnDateTime} from "./date-format";
+import { vnDateTime } from "./date-format";
 import { useEffect, useState } from "react";
 import { api } from "./api";
 const permissions = [
@@ -86,8 +86,7 @@ export function Accounts({ demo }: { demo: boolean }) {
           <strong>Liên kết khôi phục dùng một lần</strong>
           <p>
             Chỉ giao trực tiếp cho đúng chủ tài khoản. Hết hạn lúc{" "}
-            {vnDateTime(recovery.expires_at)}. Không gửi
-            vào nhóm chung.
+            {vnDateTime(recovery.expires_at)}. Không gửi vào nhóm chung.
           </p>
           <input
             aria-label="Liên kết khôi phục"
@@ -258,6 +257,33 @@ export function Accounts({ demo }: { demo: boolean }) {
                         Cấp lại mật khẩu
                       </button>
                     )}
+                  {!(r.role === "admin" && r.permissions === null) && (
+                    <button
+                      disabled={busy}
+                      onClick={() => {
+                        if (!r.id) {
+                          setRows(rows.filter((_, n) => n !== i));
+                          return;
+                        }
+                        const confirm = window.prompt(
+                          "Xóa tài khoản sẽ thu hồi đăng nhập và xóa hồ sơ cá nhân; giữ lịch sử học/thanh toán. Nhập đúng email: " +
+                            r.email,
+                        );
+                        if (confirm !== r.email) return;
+                        setBusy(true);
+                        setError("");
+                        void api(`/accounts/${r.id}/delete`, {
+                          confirm,
+                          revision: r.revision || 0,
+                        })
+                          .then(load)
+                          .catch((e) => setError(e.message))
+                          .finally(() => setBusy(false));
+                      }}
+                    >
+                      Xóa tài khoản
+                    </button>
+                  )}
                   <button
                     disabled={
                       busy || (r.role === "admin" && r.permissions === null)

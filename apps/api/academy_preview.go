@@ -87,7 +87,7 @@ func (a *app) academySitePreview(w http.ResponseWriter, r *http.Request) {
 	if free == 0 {
 		free = 4
 	}
-	data := map[string]any{"Site": site, "Courses": courses, "Plans": plans, "Free": free, "Canonical": a.origin + "/", "HasPosts": hasPosts}
+	data := map[string]any{"UITexts": a.uiTexts(r.Context(), u.School), "Site": site, "Courses": courses, "Plans": plans, "Free": free, "Canonical": a.origin + "/", "HasPosts": hasPosts}
 	if in.Post != nil {
 		if *in.Post < 0 || *in.Post >= len(site.Posts) {
 			problem(w, 400, "Không tìm thấy bài viết trong bản nháp")

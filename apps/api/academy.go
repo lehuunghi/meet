@@ -253,39 +253,9 @@ func (a *app) academyTeaching(w http.ResponseWriter, r *http.Request) {
 	}
 	a.query(w, r, "SELECT ac.id,ac.title,ac.description,ac.teacher_name,ac.academic_course_id FROM academy_courses ac JOIN courses c ON c.school_id=ac.school_id AND c.id=ac.academic_course_id WHERE ac.school_id=? AND (c.teacher_id=? OR EXISTS(SELECT 1 FROM course_assistants ca WHERE ca.school_id=c.school_id AND ca.course_id=c.id AND ca.user_id=?)) ORDER BY ac.title", u.School, u.ID, u.ID)
 }
-func (a *app) academyPlanSave(w http.ResponseWriter, r *http.Request) {
-	if !a.businessAdmin(w, r, "finance") {
-		return
-	}
-	var in struct {
-		ID, Name string
-		Price    int64 `json:"price_vnd"`
-		Days     int
-		Live     bool `json:"live_enabled"`
-		Active   bool
-	}
-	if !decode(w, r, &in) {
-		return
-	}
-	if in.Name == "" || len(in.Name) > 160 || in.Price < 1000 || in.Price > 1000000000 || in.Days < 1 || in.Days > 3650 {
-		problem(w, 400, "Gói học không hợp lệ")
-		return
-	}
-	u := who(r)
-	if in.ID == "" {
-		in.ID = uid()
-	}
-	_, e := a.db.ExecContext(r.Context(), "INSERT INTO academy_plans(id,school_id,name,price_vnd,days,live_enabled,active) VALUES(?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE name=IF(school_id=VALUES(school_id),VALUES(name),name),price_vnd=IF(school_id=VALUES(school_id),VALUES(price_vnd),price_vnd),days=IF(school_id=VALUES(school_id),VALUES(days),days),live_enabled=IF(school_id=VALUES(school_id),VALUES(live_enabled),live_enabled),active=IF(school_id=VALUES(school_id),VALUES(active),active)", in.ID, u.School, in.Name, in.Price, in.Days, in.Live, in.Active)
-	if e != nil {
-		problem(w, 400, "Không lưu được gói")
-		return
-	}
-	a.audit(r, "academy.plan.save", in.ID)
-	send(w, 200, map[string]string{"id": in.ID})
-}
 func (a *app) academyMe(w http.ResponseWriter, r *http.Request) {
 	u := who(r)
-	a.query(w, r, "SELECT u.id,u.name,u.email,p.dob,p.address,p.school_name,p.phone,p.parent_phone,p.avatar_key,p.marketing_consent,p.email_verified,m.expires_at,m.live_enabled FROM users u LEFT JOIN academy_profiles p ON p.school_id=u.school_id AND p.user_id=u.id LEFT JOIN academy_memberships m ON m.school_id=u.school_id AND m.user_id=u.id WHERE u.school_id=? AND u.id=?", u.School, u.ID)
+	a.query(w, r, "SELECT u.id,u.name,u.email,p.dob,p.address,p.school_name,p.phone,p.parent_phone,p.avatar_key,p.marketing_consent,p.email_verified,(COALESCE(p.avatar_key,'')<>'' OR EXISTS(SELECT 1 FROM academy_registration_avatars av WHERE av.school_id=u.school_id AND av.user_id=u.id)) AS registration_avatar,m.expires_at,m.live_enabled FROM users u LEFT JOIN academy_profiles p ON p.school_id=u.school_id AND p.user_id=u.id LEFT JOIN academy_memberships m ON m.school_id=u.school_id AND m.user_id=u.id WHERE u.school_id=? AND u.id=?", u.School, u.ID)
 }
 func (a *app) hasVIP(ctx context.Context, school, user string, live bool) bool {
 	var n int
@@ -325,7 +295,7 @@ func (a *app) academyLists(w http.ResponseWriter, r *http.Request) {
 		if !a.businessAdmin(w, r, "finance") {
 			return
 		}
-		a.query(w, r, "SELECT * FROM academy_plans WHERE school_id=? ORDER BY price_vnd", u.School)
+		a.query(w, r, "SELECT p.*,COALESCE(c.revision,0) AS revision FROM academy_plans p LEFT JOIN academy_plan_controls c ON c.school_id=p.school_id AND c.plan_id=p.id WHERE p.school_id=? AND c.deleted_at IS NULL ORDER BY p.price_vnd", u.School)
 	case "orders":
 		if !a.businessAdmin(w, r, "finance") {
 			return
@@ -335,7 +305,7 @@ func (a *app) academyLists(w http.ResponseWriter, r *http.Request) {
 		if !a.businessAdmin(w, r, "accounts") {
 			return
 		}
-		a.query(w, r, "SELECT u.id,u.name,u.email,p.dob,p.phone,p.parent_phone,p.school_name,p.address,p.marketing_consent,m.expires_at FROM users u LEFT JOIN academy_profiles p ON p.school_id=u.school_id AND p.user_id=u.id LEFT JOIN academy_memberships m ON m.school_id=u.school_id AND m.user_id=u.id WHERE u.school_id=? AND u.role='student' ORDER BY u.name LIMIT 1000", u.School)
+		a.query(w, r, "SELECT u.id,u.name,u.email,p.dob,p.phone,p.parent_phone,p.school_name,p.address,p.marketing_consent,m.expires_at FROM users u LEFT JOIN academy_profiles p ON p.school_id=u.school_id AND p.user_id=u.id LEFT JOIN academy_memberships m ON m.school_id=u.school_id AND m.user_id=u.id WHERE u.school_id=? AND u.role='student' AND NOT EXISTS(SELECT 1 FROM account_deletions d WHERE d.user_id=u.id AND d.school_id=u.school_id) ORDER BY u.name LIMIT 1000", u.School)
 	default:
 		problem(w, 404, "Danh sách không tồn tại")
 	}

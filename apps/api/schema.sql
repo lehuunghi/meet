@@ -228,3 +228,27 @@ CREATE TABLE IF NOT EXISTS academy_notification_reads (
  school_id CHAR(36) NOT NULL,user_id CHAR(36) NOT NULL,notification_id CHAR(64) NOT NULL,read_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
  PRIMARY KEY(school_id,user_id,notification_id),FOREIGN KEY(school_id,user_id) REFERENCES users(school_id,id)
 );
+
+CREATE TABLE IF NOT EXISTS account_deletions (
+ school_id CHAR(36) NOT NULL,user_id CHAR(36) NOT NULL,deleted_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+ avatar_key VARCHAR(500) NOT NULL DEFAULT '',storage_account VARCHAR(64) NOT NULL DEFAULT '',bucket VARCHAR(100) NOT NULL DEFAULT '',avatar_deleted BOOLEAN NOT NULL DEFAULT FALSE,
+ PRIMARY KEY(school_id,user_id),FOREIGN KEY(school_id,user_id) REFERENCES users(school_id,id)
+);
+CREATE TABLE IF NOT EXISTS academy_plan_controls (
+ school_id CHAR(36) NOT NULL,plan_id CHAR(36) NOT NULL,revision INT NOT NULL DEFAULT 1,deleted_at DATETIME(6) NULL,
+ PRIMARY KEY(school_id,plan_id),FOREIGN KEY(school_id,plan_id) REFERENCES academy_plans(school_id,id)
+);
+CREATE TABLE IF NOT EXISTS academy_ui_texts (
+ school_id CHAR(36) PRIMARY KEY,revision INT NOT NULL DEFAULT 1,content JSON NOT NULL,FOREIGN KEY(school_id) REFERENCES schools(id)
+);
+CREATE TABLE IF NOT EXISTS academy_email_links (
+ token_hash CHAR(64) PRIMARY KEY,school_id CHAR(36) NOT NULL,user_id CHAR(36) NOT NULL,email VARCHAR(190) NOT NULL,
+ token_encrypted TEXT NOT NULL,expires_at DATETIME(6) NOT NULL,verified_at DATETIME(6) NULL,sent_at DATETIME(6) NULL,
+ next_attempt DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),attempts INT NOT NULL DEFAULT 0,error_code VARCHAR(40) NOT NULL DEFAULT '',
+ KEY mail_due(sent_at,next_attempt),FOREIGN KEY(school_id,user_id) REFERENCES users(school_id,id)
+);
+
+CREATE TABLE IF NOT EXISTS academy_registration_avatars (
+ school_id CHAR(36) NOT NULL,user_id CHAR(36) NOT NULL,media_type VARCHAR(30) NOT NULL,image_data MEDIUMBLOB NOT NULL,
+ PRIMARY KEY(school_id,user_id),FOREIGN KEY(school_id,user_id) REFERENCES users(school_id,id)
+);

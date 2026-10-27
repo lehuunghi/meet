@@ -1,3 +1,6 @@
+import { useUITexts } from "./ui-language";
+import { AcademyVIPPlans } from "./academy-vip-plans";
+import { registrationAvatarData } from "./registration-avatar";
 import { vnDate, vnDateTime, vnDateCell } from "./date-format";
 import { VNDateInput } from "./date-input";
 import { AcademyLessonEditor } from "./academy-lesson-editor";
@@ -105,6 +108,7 @@ export function AcademyApp({
 }: {
   RoomComponent: React.ComponentType<any>;
 }) {
+  useUITexts();
   const route = useAcademyRoute();
   useAcademyFormGuard();
   const [routeBusy, setRouteBusy] = useState(false),
@@ -164,8 +168,7 @@ export function AcademyApp({
   };
   const [intentCourse, setIntentCourse] = useState(safeIntent("course")),
     [intentLesson, setIntentLesson] = useState(safeIntent("lesson")),
-    [intentTasks, setIntentTasks] = useState(false),
-    [signupStep, setSignupStep] = useState(0);
+    [intentTasks, setIntentTasks] = useState(false);
   const intentPlan = safeIntent("goi") || safeIntent("plan");
   const showCourse = (id: string, lesson = "", tasks = false) => {
     const path = lesson
@@ -199,6 +202,24 @@ export function AcademyApp({
         .then((v) => setFreeQuota(v.free_videos || 4))
         .catch(() => {});
     }
+  }, []);
+  const verificationStarted = useRef(false);
+  useEffect(() => {
+    const token = new URLSearchParams(location.hash.slice(1)).get(
+      "xac-thuc-email",
+    );
+    if (!token || verificationStarted.current) return;
+    verificationStarted.current = true;
+    history.replaceState(
+      history.state,
+      "",
+      location.pathname + location.search,
+    );
+    void api("/academy/verify-email-link", { token })
+      .then(() =>
+        setNotice("Email đã xác thực. Anh/chị có thể đăng nhập để học."),
+      )
+      .catch((e) => setError(e.message));
   }, []);
   const perform = async (fn: () => Promise<void>) => {
     setError("");
@@ -476,7 +497,6 @@ export function AcademyApp({
             <button
               onClick={() => {
                 if (goAcademy("/dang-ky" + (location.search || ""))) {
-                  setSignupStep(0);
                   setChallenge("");
                 }
               }}
@@ -490,13 +510,6 @@ export function AcademyApp({
             </p>
           )}
           {notice && <p role="status">{notice}</p>}
-          {authTab === "register" && (
-            <p className="academy-signup-steps" role="status">
-              {signupStep === 0
-                ? "Bước 1/2 · Tài khoản"
-                : "Bước 2/2 · Hồ sơ và xác thực email"}
-            </p>
-          )}
           {(intentCourse || intentPlan) && (
             <p className="academy-intent-notice">
               Đăng nhập hoặc tạo tài khoản để tiếp tục{" "}
@@ -505,12 +518,11 @@ export function AcademyApp({
             </p>
           )}
           <form
+            onInvalidCapture={() =>
+              setError("Vui lòng điền đầy đủ và kiểm tra các ô được đánh dấu.")
+            }
             onSubmit={(e) => {
               e.preventDefault();
-              if (authTab === "register" && signupStep === 0) {
-                setSignupStep(1);
-                return;
-              }
               const v = Object.fromEntries(new FormData(e.currentTarget));
               void perform(async () => {
                 if (authTab === "login") {
@@ -529,7 +541,7 @@ export function AcademyApp({
                   await api("/academy/register", {
                     email: v.email,
                     password: v.password,
-                    code: v.code,
+                    avatar_data: await registrationAvatarData(v.avatar as File),
                     profile: {
                       name: v.name,
                       dob: v.dob,
@@ -541,21 +553,22 @@ export function AcademyApp({
                     },
                   });
                   setAuthTab("login");
-                  setSignupStep(0);
-                  setNotice("Đăng ký thành công. Anh/chị có thể đăng nhập.");
+                  setNotice(
+                    "Tài khoản đã tạo. Hệ thống sẽ gửi link xác thực qua email; bấm link một lần, không cần nhập mã. Anh/chị có thể đăng nhập ngay.",
+                  );
                   goAcademy("/dang-nhap" + location.search, true);
                 }
               });
             }}
           >
             {!challenge && (
-              <div hidden={authTab === "register" && signupStep === 1}>
+              <div>
                 <label>
                   Email
                   <input
                     name="email"
                     type="email"
-                    required={authTab !== "register" || signupStep === 0}
+                    required
                     autoComplete="email"
                   />
                 </label>
@@ -565,7 +578,7 @@ export function AcademyApp({
                     name="password"
                     type="password"
                     minLength={6}
-                    required={authTab !== "register" || signupStep === 0}
+                    required
                     autoComplete={
                       authTab === "register"
                         ? "new-password"
@@ -576,7 +589,7 @@ export function AcademyApp({
               </div>
             )}
             {authTab === "register" && (
-              <div hidden={signupStep === 0}>
+              <div>
                 <div className="academy-form-grid">
                   {[
                     ["name", "Họ tên", "text"],
@@ -589,44 +602,27 @@ export function AcademyApp({
                     <label key={key}>
                       {label}
                       {type === "date" ? (
-                        <VNDateInput
-                          name={key}
-                          label={label}
-                          required={signupStep === 1}
-                        />
+                        <VNDateInput name={key} label={label} required />
                       ) : (
                         <input
                           name={key}
                           type={type}
-                          required={signupStep === 1}
+                          pattern={
+                            type === "tel" ? "[+]?[0-9]{9,15}" : undefined
+                          }
+                          required
                         />
                       )}
                     </label>
                   ))}
                 </div>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    const f = e.currentTarget.form!;
-                    void perform(async () => {
-                      await api("/academy/email-code", {
-                        email: (
-                          f.elements.namedItem("email") as HTMLInputElement
-                        ).value,
-                      });
-                      setNotice("Đã gửi mã email. Mã có hiệu lực 10 phút.");
-                    });
-                  }}
-                >
-                  Gửi mã xác thực email
-                </button>
                 <label>
-                  Mã xác thực email
+                  Ảnh đại diện
                   <input
-                    name="code"
-                    inputMode="numeric"
-                    pattern="[0-9]{6}"
-                    required={signupStep === 1}
+                    name="avatar"
+                    type="file"
+                    accept="image/png,image/jpeg"
+                    required
                   />
                 </label>
                 <label className="academy-check">
@@ -634,8 +630,9 @@ export function AcademyApp({
                   Tôi muốn nhận lịch khai giảng và ưu đãi.
                 </label>
                 <small>
-                  Thêm ảnh đại diện trong hồ sơ sau khi đăng nhập. Email OTP xác
-                  thực email; số điện thoại chưa được xác thực qua SMS/Zalo.
+                  Điền đầy đủ tất cả thông tin bắt buộc. Sau khi tạo tài khoản,
+                  kiểm tra hộp thư và bấm liên kết để xác thực email. Không cần
+                  nhập mã.
                 </small>
               </div>
             )}
@@ -650,21 +647,28 @@ export function AcademyApp({
                 />
               </label>
             )}
-            {authTab === "register" && signupStep === 1 && (
+            {authTab === "login" && !challenge && (
               <button
                 type="button"
                 className="secondary"
-                onClick={() => setSignupStep(0)}
+                onClick={(e) => {
+                  const input = e.currentTarget.form?.elements.namedItem(
+                    "email",
+                  ) as HTMLInputElement;
+                  if (!input?.reportValidity()) return;
+                  void perform(async () => {
+                    const v = await api("/academy/verification-link", {
+                      email: input.value,
+                    });
+                    setNotice(v.message);
+                  });
+                }}
               >
-                ← Quay lại tài khoản
+                Gửi lại liên kết xác thực email
               </button>
             )}
             <button className="academy-primary">
-              {authTab === "register"
-                ? signupStep === 0
-                  ? "Tiếp tục"
-                  : "Tạo tài khoản"
-                : "Đăng nhập"}
+              {authTab === "register" ? "Tạo tài khoản" : "Đăng nhập"}
             </button>
           </form>
         </main>
@@ -1081,6 +1085,9 @@ export function AcademyApp({
         )}
         {!routeForbidden && admin && tab === "manage" && (
           <ManagePanel
+            canFinance={
+              user.permissions == null || user.permissions.includes("finance")
+            }
             demo={demo}
             courses={courses}
             perform={perform}
@@ -1104,6 +1111,9 @@ export function AcademyApp({
         )}
         {!routeForbidden && admin && tab === "accounts" && (
           <Accounts demo={demo} />
+        )}
+        {!routeForbidden && admin && tab === "orders" && (
+          <AcademyVIPPlans demo={demo} />
         )}
         {!routeForbidden &&
           admin &&
@@ -1626,50 +1636,18 @@ function ProfilePanel({ demo, profile, user, perform, refresh, notice }: any) {
     <section className="academy-section">
       <h2>Hồ sơ học viên</h2>
       <p>Email: {profile.email || user.email || "—"}</p>
-      {!profile.email_verified && (
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            const code = new FormData(e.currentTarget).get("code");
-            void perform(async () => {
-              if (!demo) {
-                await api("/academy/profile/verify-email", { code });
-                await refresh();
-              }
-              notice("Đã xác thực email.");
-            });
-          }}
-        >
-          <p>Lưu hồ sơ bên dưới rồi xác thực email trước khi mua gói học.</p>
-          <button
-            type="button"
-            onClick={() =>
-              void perform(async () => {
-                if (!demo)
-                  await api("/academy/email-code", {
-                    email: profile.email || user.email,
-                  });
-                notice(
-                  demo
-                    ? "Mã xác thực minh họa."
-                    : "Đã gửi mã xác thực qua email.",
-                );
-              })
-            }
-          >
-            Gửi mã email
-          </button>
-          <label>
-            Mã xác thực
-            <input
-              name="code"
-              inputMode="numeric"
-              autoComplete="one-time-code"
-              required
-            />
-          </label>
-          <button>Xác thực email</button>
-        </form>
+      <p>
+        {profile.email_verified
+          ? "Email đã xác thực"
+          : "Email đang chờ xác thực qua liên kết trong hộp thư."}
+      </p>
+      {profile.registration_avatar && (
+        <img
+          src="/api/academy/profile/avatar"
+          alt="Ảnh đại diện của bạn"
+          width={80}
+          height={80}
+        />
       )}
       <form
         className="academy-form-grid"
@@ -1981,7 +1959,14 @@ function BusinessTable({ kind, demo, perform, notice }: any) {
     </section>
   );
 }
-function ManagePanel({ demo, courses, perform, refresh, notice }: any) {
+function ManagePanel({
+  demo,
+  courses,
+  perform,
+  refresh,
+  notice,
+  canFinance,
+}: any) {
   return (
     <div className="academy-admin-grid">
       <AcademyLessonEditor
@@ -1997,51 +1982,7 @@ function ManagePanel({ demo, courses, perform, refresh, notice }: any) {
         refresh={refresh}
         notice={notice}
       />
-      <section className="academy-section">
-        <h2>Tạo gói VIP</h2>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            const v: any = Object.fromEntries(new FormData(e.currentTarget));
-            void perform(async () => {
-              if (!demo)
-                await api("/academy/plans", {
-                  name: v.name,
-                  price_vnd: Number(v.price_vnd),
-                  days: Number(v.days),
-                  live_enabled: v.live_enabled === "on",
-                  active: true,
-                });
-              await refresh();
-              notice(demo ? "Gói giá minh họa." : "Đã lưu gói giá.");
-            });
-          }}
-        >
-          <label>
-            Tên gói
-            <input name="name" required />
-          </label>
-          <label>
-            Giá VND
-            <input name="price_vnd" type="number" min="1000" required />
-          </label>
-          <label>
-            Số ngày
-            <input
-              name="days"
-              type="number"
-              min="1"
-              defaultValue="30"
-              required
-            />
-          </label>
-          <label className="academy-check">
-            <input name="live_enabled" type="checkbox" />
-            Có quyền học Live
-          </label>
-          <button>Lưu gói</button>
-        </form>
-      </section>
+      {canFinance && <AcademyVIPPlans demo={demo} />}
       <section className="academy-section">
         <h2>Thêm bài giảng</h2>
         <form

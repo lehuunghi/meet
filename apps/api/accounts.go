@@ -52,7 +52,7 @@ func (a *app) accounts(w http.ResponseWriter, r *http.Request) {
 	if !admin(w, r) {
 		return
 	}
-	a.query(w, r, "SELECT u.id,u.short_id,u.email,u.name,u.role,u.active,u.revision,COALESCE(c.state,IF(u.active,'active','disabled')) AS state,c.permissions FROM users u LEFT JOIN user_controls c ON c.user_id=u.id WHERE u.school_id=? ORDER BY u.role,u.name LIMIT 1000", who(r).School)
+	a.query(w, r, "SELECT u.id,u.short_id,u.email,u.name,u.role,u.active,u.revision,COALESCE(c.state,IF(u.active,'active','disabled')) AS state,c.permissions FROM users u LEFT JOIN user_controls c ON c.user_id=u.id WHERE u.school_id=? AND NOT EXISTS(SELECT 1 FROM account_deletions d WHERE d.school_id=u.school_id AND d.user_id=u.id) ORDER BY u.role,u.name LIMIT 1000", who(r).School)
 }
 func (a *app) accountSave(w http.ResponseWriter, r *http.Request) {
 	if !admin(w, r) {
@@ -120,7 +120,7 @@ func (a *app) accountSave(w http.ResponseWriter, r *http.Request) {
 		var role string
 		var rev int
 		var grants []byte
-		if tx.QueryRowContext(r.Context(), "SELECT u.role,u.revision,c.permissions FROM users u LEFT JOIN user_controls c ON c.user_id=u.id WHERE u.school_id=? AND u.id=? FOR UPDATE", actor.School, id).Scan(&role, &rev, &grants) != nil {
+		if tx.QueryRowContext(r.Context(), "SELECT u.role,u.revision,c.permissions FROM users u LEFT JOIN user_controls c ON c.user_id=u.id WHERE u.school_id=? AND u.id=? AND NOT EXISTS(SELECT 1 FROM account_deletions d WHERE d.school_id=u.school_id AND d.user_id=u.id) FOR UPDATE", actor.School, id).Scan(&role, &rev, &grants) != nil {
 			problem(w, 404, "Không tìm thấy tài khoản")
 			return
 		}

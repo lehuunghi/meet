@@ -60,7 +60,7 @@ func (a *app) users(w http.ResponseWriter, r *http.Request) {
 	if !admin(w, r) {
 		return
 	}
-	a.query(w, r, "SELECT id,short_id,student_code,revision,email,name,role,active FROM users WHERE school_id=? ORDER BY name LIMIT 1000", who(r).School)
+	a.query(w, r, "SELECT id,short_id,student_code,revision,email,name,role,active FROM users WHERE school_id=? AND NOT EXISTS(SELECT 1 FROM account_deletions d WHERE d.school_id=users.school_id AND d.user_id=users.id) ORDER BY name LIMIT 1000", who(r).School)
 }
 func (a *app) createClass(w http.ResponseWriter, r *http.Request) {
 	if !admin(w, r) {
@@ -156,7 +156,7 @@ func (a *app) enroll(w http.ResponseWriter, r *http.Request) {
 	}
 	u := who(r)
 	var resolvedClass, resolvedUser string
-	if a.db.QueryRowContext(r.Context(), "SELECT id FROM classes WHERE school_id=? AND (id=? OR short_id=?)", u.School, in.Class, in.Class).Scan(&resolvedClass) != nil || a.db.QueryRowContext(r.Context(), "SELECT id FROM users WHERE school_id=? AND role='student' AND (id=? OR short_id=?)", u.School, in.User, in.User).Scan(&resolvedUser) != nil {
+	if a.db.QueryRowContext(r.Context(), "SELECT id FROM classes WHERE school_id=? AND (id=? OR short_id=?)", u.School, in.Class, in.Class).Scan(&resolvedClass) != nil || a.db.QueryRowContext(r.Context(), "SELECT id FROM users WHERE school_id=? AND role='student' AND active=TRUE AND (id=? OR short_id=?)", u.School, in.User, in.User).Scan(&resolvedUser) != nil {
 		problem(w, 404, "Không tìm thấy lớp/học sinh")
 		return
 	}

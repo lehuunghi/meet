@@ -2142,3 +2142,9 @@
   outline: 2px solid #1967d2;
   outline-offset: 3px;
 }
+
+.academy-vip-plans { grid-column: 1 / -1; }
+.academy-language-editor td { white-space: pre-wrap; overflow-wrap: anywhere; vertical-align: top; }
+.academy-language-editor th { width: 50%; }
+.academy-language-editor textarea { min-width: 200px; width: 100%; box-sizing: border-box; }
+.academy-mail-status { margin: 18px 0; padding: 16px; background: #f5f8fc; border: 1px solid #e0e8f2; border-radius: 8px; }

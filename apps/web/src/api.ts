@@ -1,3 +1,4 @@
+import {uiText} from "./ui-language";
 import { submittingForm } from "./form-guard-core";
 export class ApiError extends Error {
   constructor(
@@ -30,7 +31,7 @@ export async function api<T = any>(
     if (!res.ok) {
       if (res.status === 401 && path !== "/login" && !path.startsWith("/setup"))
         window.dispatchEvent(new Event("meet-session-ended"));
-      throw new ApiError(data.error || "Yêu cầu thất bại", res.status);
+      throw new ApiError(uiText(data.error || "Yêu cầu thất bại"), res.status);
     }
     finish(true);
     return data;

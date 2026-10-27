@@ -1,0 +1,7610 @@
+[
+  {
+    "key": "/api/academy/webhooks/payos",
+    "area": "Cài đặt"
+  },
+  {
+    "key": "Bản mẫu không lưu cấu hình thật.",
+    "area": "Cài đặt"
+  },
+  {
+    "key": "Cấu hình kinh doanh chỉ quản lý trên website này. Cấu hình SFU, R2, VPS và nâng cấp do quản trị hạ tầng quản lý riêng.",
+    "area": "Cài đặt"
+  },
+  {
+    "key": "Chuyển khoản / QR",
+    "area": "Cài đặt"
+  },
+  {
+    "key": "Đã lưu và áp dụng trên website.",
+    "area": "Cài đặt"
+  },
+  {
+    "key": "Đã lưu; để trống để giữ nguyên",
+    "area": "Cài đặt"
+  },
+  {
+    "key": "Đang lưu…",
+    "area": "Cài đặt"
+  },
+  {
+    "key": "Đang tải cấu hình…",
+    "area": "Cài đặt"
+  },
+  {
+    "key": "Email & thanh toán",
+    "area": "Cài đặt"
+  },
+  {
+    "key": "Email gửi",
+    "area": "Cài đặt"
+  },
+  {
+    "key": "Email xác thực",
+    "area": "Cài đặt"
+  },
+  {
+    "key": "Học thử",
+    "area": "Cài đặt"
+  },
+  {
+    "key": "Khóa bí mật không hiển thị lại; để trống để giữ nguyên. Chỉ tài khoản có quyền Tài chính / VIP được lưu.",
+    "area": "Cài đặt"
+  },
+  {
+    "key": "Lưu cài đặt",
+    "area": "Cài đặt"
+  },
+  {
+    "key": "Mã BIN ngân hàng",
+    "area": "Cài đặt"
+  },
+  {
+    "key": "Mật khẩu SMTP",
+    "area": "Cài đặt"
+  },
+  {
+    "key": "Số bài học miễn phí mỗi tháng",
+    "area": "Cài đặt"
+  },
+  {
+    "key": "Số tài khoản",
+    "area": "Cài đặt"
+  },
+  {
+    "key": "Tải lại",
+    "area": "Cài đặt"
+  },
+  {
+    "key": "Tên đăng nhập SMTP",
+    "area": "Cài đặt"
+  },
+  {
+    "key": "Tên người nhận",
+    "area": "Cài đặt"
+  },
+  {
+    "key": "Thanh toán tự động payOS",
+    "area": "Cài đặt"
+  },
+  {
+    "key": "Webhook: ",
+    "area": "Cài đặt"
+  },
+  {
+    "key": " dòng trên trang",
+    "area": "Điểm danh"
+  },
+  {
+    "key": " giờ ",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "← Trang trước",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Áp dụng cho cả buổi",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Áp dụng cho tất cả học sinh của buổi này. Giờ kết nối thực tế của từng người được giữ nguyên.",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Bài học số 1",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Bảng đối chiếu điểm danh",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Báo cáo điểm danh",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Báo cáo theo lớp và môn",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Bộ lọc",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Buổi học đã chọn",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Chỉ tính các buổi đang học hoặc đã kết thúc. “Có kết nối” không đồng nghĩa với đủ điều kiện chuyên cần; thời gian được ghi nhận theo kết nối ứng dụng.",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Chỉ xem các lớp và môn bạn được phân công giảng dạy.",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Chỉ xem lớp được phân học và kết quả của riêng bạn.",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Cho phép ra sớm (phút)",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Cho phép vào muộn (phút)",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Chọn lớp học, sau đó chọn môn để xem báo cáo điểm danh.",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Chọn môn học để xem điểm danh riêng của môn trong lớp này.",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Chọn một buổi học để thiết lập giờ vào/ra chung cho toàn bộ lớp.",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Chưa có dữ liệu điểm danh cho lựa chọn này. Buổi chưa bắt đầu chưa được tính.",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Chưa có lớp hoặc môn học trong phạm vi tài khoản của bạn.",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "chưa ghi nhận",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Chưa ghi nhận",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Chưa vào",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "có kết nối",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Có kết nối",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Đã áp dụng khung giờ cho toàn bộ buổi học.",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Đã cập nhật khung giờ mẫu cho cả buổi.",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Đã lưu quy tắc",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Đã sửa bản mẫu",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Đang tải báo cáo…",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Đang tải khung giờ…",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Đạt",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Đạt khi đủ tỷ lệ thời gian, vào không trễ quá ngưỡng và ra không sớm quá ngưỡng. Buổi đang học chưa kết luận. Mặc định buổi dài 60 phút; chọn một buổi để chỉnh khung giờ chung.",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Điểm danh của tôi",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Dữ liệu máy chủ",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Giáo viên: ",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Giờ ra",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Giờ ra chung",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Giờ ra phải sau giờ vào.",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Giờ vào",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Giờ vào chung",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Kết quả",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Khung giờ điểm danh chung",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Lê Thanh Bình",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Lịch sử điểm danh của bạn",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Lớp / môn",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Lưu quy tắc",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Ngày học",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Nguyễn Hoàng An",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Ôn tập và thực hành",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Phạm Mai Chi",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Quy tắc điểm danh của trường",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Tất cả buổi đã bắt đầu",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Tất cả môn",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Tất cả môn học của bạn",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Thời gian",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Thời gian tối thiểu (%)",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Toàn bộ kết quả của bạn",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Trần Gia Huy",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Trang sau →",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Võ Ngọc Mai",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Vuốt ngang để đối chiếu các cột · Cột đầu luôn được giữ lại.",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Xem các lớp và môn học trong trường.",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Xuất Excel (.xlsx, tiếng Việt)",
+    "area": "Điểm danh"
+  },
+  {
+    "key": " · Hình đại diện mẫu",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": " · Màn hình",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": " camera",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": " kết quả. Nhập thêm để thu hẹp danh sách.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": " lớp đã gán",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": " lớp trong phạm vi",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": " mic · ",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": " môn ",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": " môn học",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": " môn trong lớp đã chọn",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": " tin nhắn chưa đọc",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "— phân cách bằng dấu phẩy hoặc tab, tối đa 100 dòng.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": ", đồng thời thêm CORS đúng domain. Credential phải có quyền cấu hình bucket và đọc/ghi/xóa object. Các rule khác được giữ lại. Không bật public bucket.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": ": chỉ nhập một cột tên môn",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": ". Cấu hình dùng chung cho toàn hệ thống; chỉ người giữ mã cài đặt trên VPS được thay đổi.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "/opt/meet/runtime-config/setup-token",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "+ Thêm dòng",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "+ Thêm dòng môn",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "+ Thêm SFU App",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "+ Thêm trợ giảng",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "✓ Lifecycle đã được R2 xác nhận ở lần lưu gần nhất.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "0 giây",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "1. Khởi tạo trường và admin",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "1. Trường & admin",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "10A3",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "12–72 byte; lưu trong password manager riêng.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "2. Cân bằng SFU theo lớp học",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "2. SFU",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "3. Ghi hình R2 và thời hạn lưu",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "3. R2 · Lưu trữ",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "40 phút 12 giây",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "44 phút 35 giây",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "6 ký tự, tối đa 72 byte",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "an@example.edu,SV2026001,Nguyễn An,mật_khẩu_riêng",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Ảnh đại diện không đọc được; chọn ảnh PNG/JPEG khác.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Ảnh đại diện quá lớn.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Anh/chị có thể rời riêng mình để phòng học và ghi hình máy chủ tiếp tục cho những người còn lại.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "App Secret",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "attendance.timing / account.save",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Bấm kiểm tra phiên bản",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Bạn có nội dung chưa lưu. Rời trang và bỏ thay đổi?",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Bản mẫu không gán dữ liệu máy chủ",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Bản phục hồi được mã hóa, lưu riêng trên VPS; nếu R2 đang bật thì phải tải lên và xác minh thành công trước nâng cấp. Kiểm tra lỗi sẽ phục hồi database và ứng dụng trước khi mở lại ghi dữ liệu. Không tự nâng cấp MySQL/Redis hoặc đổi hạ tầng.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Bản trên GitHub",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Bảng nhật ký",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Bảng phân công lớp – môn – giáo viên",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Bật lưu bản ghi vào R2 private",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Bật sao lưu tự động",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Biểu cảm",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Bỏ chọn ",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Bucket đã tạo",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Bước:",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Buổi học minh họa",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Cài đặt hệ thống",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Cài mới đã kèm dịch vụ cập nhật. Máy cài trước cần bật dịch vụ một lần theo",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Camera/micro đang bị chặn. Bấm biểu tượng quyền cạnh địa chỉ trang để cho phép, hoặc chọn vào lớp không dùng camera/micro.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Cần người vận hành",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Cấp khi lưu",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Cập nhật phiên bản từ GitHub",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Cấu hình cho trường của bạn",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Chỉ mình tôi rời đi",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Chỉ xem",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Chia sẻ màn hình",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Chia sẻ màn hình cần cuộc gọi thật. Bản xem trước không yêu cầu quyền thiết bị.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Chọn ảnh đại diện PNG/JPEG tối đa 2 MB.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Chọn biểu cảm",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Chọn lớp",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Chọn lớp trước",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Chọn trợ giảng",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Chu kỳ sao lưu (giờ)",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Chưa có bản sao đã xác minh. Theo dõi dịch vụ meet-backup trên VPS sau lần chạy đầu.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Chưa có nhật ký phù hợp.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Chưa có SFU app. Bạn có thể lưu phần quản lý trước; cuộc gọi cần ít nhất một app được bật.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Chưa đọc được ảnh đại diện.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Chưa kết nối được. Nếu đang nâng cấp, đợi dịch vụ khởi động lại; không cài lại hoặc gửi thêm yêu cầu. Nếu phiên cấu hình hết hạn, tải lại trang và mở khóa lại; tác vụ vẫn chạy trên VPS.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Chưa khởi tạo",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Chưa phân công",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Chưa tham gia",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Chưa xác định",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Chưa xác nhận lifecycle. Cần lưu thành công với credential thật.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Cloudflare Account ID",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Có ",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Ctrl/⌘ D",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Ctrl/⌘ E",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Đã cài dịch vụ trên VPS bằng bộ cài mới. Bản sao được mã hóa, kiểm tra tải về; khóa phục hồi nằm tại /etc/meet/recovery.key. Tải và giữ khóa ở nơi riêng, không đưa khóa lên cùng bucket. Bản sao không chứa video; video giữ theo thời hạn riêng.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Đã cập nhật bản mẫu trong phiên này, không lưu máy chủ",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Đã có trường trong hệ thống. Thêm trường tiếp theo bằng lệnh bootstrap trong tài liệu.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Đã đổi mật khẩu và kết thúc các phiên cũ. Đăng nhập lại để tiếp tục.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Đã import giáo viên",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Đã kết nối lại",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Đã khởi tạo",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Đã kiểm tra bản sao gần nhất:",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Đã lưu — để trống để giữ",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Đã lưu cấu hình. Trường/admin đã sẵn sàng. ",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Đã lưu môn học",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Đã lưu môn vào bản mẫu, chưa lưu máy chủ",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Đã lưu phân công",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Đã lưu phân công trong bản mẫu",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Đã rời lớp",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Đã tải lại và bỏ thay đổi chưa lưu",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Đã tham gia",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Đã thêm học sinh có sẵn vào lớp",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Đã thêm lớp trong bản mẫu",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Đã thêm môn vào bảng để kiểm tra trước khi lưu",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Đã xếp hàng; dịch vụ VPS sẽ nhận trong khoảng một phút.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Đã xóa dòng môn",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Dán nhiều dòng từ Excel hoặc CSV",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Đang chạy",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Đang kết nối dịch vụ cập nhật…",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Đang kiểm tra phiên quản trị…",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Đang kiểm tra và lưu…",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Đang lưu dữ liệu. Bạn vẫn muốn rời trang?",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Đang tải…",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Danh sách giáo viên",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Danh sách môn nhập trực tiếp",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Danh sách nhập trực tiếp",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Đặt mật khẩu mới",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Đây là bản xem trước. Không có kết nối SFU, truy cập camera/micro hoặc thay đổi buổi học thật.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Đến trang đăng nhập →",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Điều hành phòng",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Đối tượng",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Domain quản lý: ",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Dòng ",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Đóng hộp thoại",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Dữ liệu mẫu · Không kết nối camera, máy chủ hay Cloudflare",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Đưa môn vào bảng",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Đưa vào bảng để kiểm tra",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Dựng phiên bản mới",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Dừng trình bày",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Email",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Email admin",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Email, mã SV, họ tên, mật khẩu. Mã SV đăng nhập được như email.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Gán học sinh đã có bằng ID ngắn",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Gán vào lớp",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Ghi hình đang tắt.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Ghi hình hiện dùng trình duyệt giáo viên để ghi màn hình, chưa có worker ghi tự động toàn bộ cuộc gọi. Cần thử đoạn ngắn và xác nhận audio trước khi sử dụng.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Giáo viên",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Giáo viên hiện tại",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Giơ tay",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Giữ nguyên",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Giữ nguyên dữ liệu, domain và cấu hình. Chỉ cập nhật bản đã qua kiểm thử từ repository lehuunghi/meet. Không cập nhật khi có buổi học đang diễn ra.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Gửi biểu cảm ",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Hạ tay",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Họ tên",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "hoặc mở liên kết riêng mà bộ cài hiển thị. Phiên cấu hình có hiệu lực 15 phút.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Hoàn tất",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Học sinh theo lớp",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "hướng dẫn cập nhật",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "ID học sinh",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "ID môn",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "ID riêng",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Import XLSX giáo viên riêng — một sheet, header email,name,password",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Kết nối gián đoạn · sẽ tự thử lại",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Kết thúc buổi học",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Kết thúc cho tất cả",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Kết thúc cho tất cả mọi người?",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Khảo sát",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Khi lưu, hệ thống thiết lập và đọc lại lifecycle xóa sau theo số ngày đã chọn cho prefix ",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Khóa cấu hình",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Khôi phục tài khoản",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "KHỞI TẠO & VẬN HÀNH",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Không có dòng thay đổi",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Không có phân công thay đổi",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Không lấy được đường truyền media. Kiểm tra mạng và cấu hình TURN của trường.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Không mở được camera/micro",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Không mở được camera/micro. Thiết bị có thể đang được ứng dụng khác sử dụng; đóng ứng dụng đó hoặc vào lớp không dùng thiết bị.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Không nhận được media",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Không tìm thấy camera hoặc micro phù hợp. Kiểm tra thiết bị, hoặc chọn vào lớp không dùng camera/micro.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Không tìm thấy kết quả.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Kiểm tra bản mới",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Kiểm tra credential",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Kiểm tra điều kiện",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Kiểm tra GitHub",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Kiểm tra phiên bản",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Liên kết do quản trị viên cấp, dùng một lần trong 30 phút. Tài khoản đã bật 2FA vẫn cần mã xác thực.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Lọc nhật ký",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Lớp",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Lớp học",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Lớp quản lý",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Lưu các dòng thay đổi",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Lưu các môn thay đổi",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Lưu cấu hình & khởi tạo",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Lưu hoặc bỏ các dòng đang sửa trước khi chuyển bảng.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Lưu hoặc bỏ thay đổi trước khi đổi lớp.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Lưu phân công",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Mã 2FA nếu đã bật",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Mã cài đặt riêng",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Mã SV",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Mã trường",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Mật khẩu admin mới",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Mật khẩu mới",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "meet-recordings",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "minh@example.edu,Nguyễn Minh,mật_khẩu_riêng",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "mm/yyyy",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Mở cấu hình",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Mở khóa cấu hình",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Mỗi dòng là một SFU App ID + App Secret. Tất cả người trong một buổi dùng chung app đã gán cho lớp đó.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Mỗi dòng một môn. Có thể tạo trước, gán giáo viên ở bảng phân công sau. ID ngắn giữ nguyên khi sửa.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Mỗi môn một giáo viên chính và tối đa 10 trợ giảng. Trợ giảng được vào lớp và xem điểm danh; giáo viên chính bắt đầu/kết thúc buổi. Không đổi khi môn có buổi live.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Mọi người sẽ bị ngắt khỏi buổi học. Ghi hình máy chủ sẽ dừng và hoàn tất lưu nếu đã được bật.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Môn",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Môn học",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Môn học · ",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Một cột tên môn, tối đa 100 dòng. Tiêu đề tùy chọn: name hoặc Tên môn.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Một luồng nhận bị lỗi; đang chuẩn bị kết nối lại",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Nâng cấp dữ liệu",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Người tham gia",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Người thực hiện",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Nguyễn Minh Anh · Màn hình trình bày minh họa",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "nguyen-trai",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Nhận lớp mới",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Nhập App Secret",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Nhập giáo viên riêng; phân công lớp/môn ở tab kế bên.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Nhập mã trong ",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Nhập ngày hợp lệ theo ",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Nhập từ 1 đến 100 dòng môn",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Nhật ký hoạt động",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "NỘI DUNG BÀI HỌC MẪU",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Ở lại",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Password trống trên dòng đã lưu = giữ nguyên.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Phản chiếu hình của tôi",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Phân công giảng dạy",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Phản ứng minh họa: ",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Phòng học",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Phòng học xem trước · Các ô bên dưới là minh họa, không có luồng video hoặc ghi hình thật.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Phòng minh họa",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Phục hồi bản trước",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Quản lý học vụ",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "R2 Access Key ID",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "R2 Secret Access Key",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "recordings/",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Rời khỏi phòng học?",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Rời lớp",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Sao lưu dữ liệu, mã nguồn và cấu hình lên R2",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Sao lưu phục hồi",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Sao lưu và cập nhật an toàn",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Secret lưu ở volume riêng trên VPS, không commit Git và không trả về trong API đọc cấu hình. Bảo vệ cả thư mục runtime-config khi backup. Domain thay đổi cần cập nhật DNS/Caddy và cấu hình triển khai, không chỉ sửa tại trang này.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "SFU App ID",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "SFU chưa chấp nhận kết nối nhận",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "SFU trả thiếu các luồng nhận",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "SFU từ chối phát media",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "SV0123",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "SV0123 / MH0045 / tên…",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Tải lại / bỏ thay đổi",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Tải lại sẽ bỏ nội dung chưa lưu trong biểu mẫu này. Tiếp tục?",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Tạo lớp mới",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Tạo trường đầu tiên và tài khoản quản trị. Password không được lưu trong file cấu hình.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Tất cả",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Tắt phản chiếu hình của tôi",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "tên môn",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Tên môn",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Tên môn không hợp lệ",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Tên trường",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Thao tác",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Thao tác chính xác",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Thêm lớp",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Thêm tùy chọn",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Thiếu dấu nháy đóng trong danh sách",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Thời hạn lưu ghi hình (ngày)",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Thời hạn mặc định là 30 ngày. Thay đổi sẽ tác động lifecycle của các object ghi hình hiện có; không phải theo tháng lịch.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Tiếng Anh",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Tìm theo ID, mã SV, tên hoặc email",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Tìm và chọn lớp…",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Tìm và chọn môn…",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Tối đa 100 dòng mỗi lượt",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Tôi đã kết thúc các buổi học và đồng ý tạm khóa hệ thống để sao lưu, cập nhật bản ",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Tra cứu người thực hiện, thao tác và đối tượng trong trường.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Trần Ngọc Lan",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Trình duyệt chưa hỗ trợ camera/micro hoặc trang chưa được mở qua HTTPS. Có thể chọn vào lớp không dùng camera/micro.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Trình duyệt này chưa hỗ trợ chia sẻ màn hình. Hãy dùng Chrome, Edge hoặc Safari trên máy tính. Bạn vẫn có thể xem màn hình người khác chia sẻ.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Trò chuyện",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Trợ giảng ",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Trong cuộc gọi",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Trọng số 2 nhận khoảng gấp đôi số lớp mới so với trọng số 1. Phân bổ được lưu ở MySQL; thay trọng số chỉ ảnh hưởng lớp mới. Tắt “Nhận lớp mới” vẫn giữ phục vụ lớp đã gán. Không tự chuyển app giữa buổi khi upstream lỗi.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Trọng số phân lớp",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Ứng dụng chặn tải khi hết hạn và chạy tác vụ dọn mỗi giờ; R2 có thể xóa vật lý trễ hơn mốc hết hạn.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Về đăng nhập →",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Xác nhận kết thúc",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Xem giao diện theo vai trò",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Xóa dòng",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Xóa dòng môn",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Xóa trợ giảng",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "y = ax² + bx + c",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Yêu cầu thất bại",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": " · Bài bạn đã chọn",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": " · Cần thử lại: ",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": " · Đã quá hạn",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": " · Điểm: ",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": " bài chưa chấm",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": " đ · ",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": " học sinh chưa nộp",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": " MB",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": " ngày · ",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": " phút",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": ". Thông tin lựa chọn được giữ trong quá trình đăng ký.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "← Tất cả đơn hàng",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "← Trang giới thiệu",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "+ Thêm gói VIP",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Ảnh biên lai đưa đơn vào hàng chờ duyệt, không tự kích hoạt VIP.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Ảnh đại diện",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Ảnh đại diện của bạn",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Ảnh đại diện minh họa.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Bài 1 · Bắt đầu từ kiến thức cốt lõi",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Bài cần nộp",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Bài cần xử lý",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Bài giảng / chủ đề",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Bài học",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Bài tập",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Bài tập & nhận xét",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "BẢN DEMO · DỮ LIỆU MINH HỌA",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Bản ghi gốc đã hết hạn; cần chọn video còn hạn.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Bản ghi không khớp kho lưu trữ đã chọn.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Bản ghi lớp học",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Bạn không có quyền mở trang này",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Bản minh họa không có thanh toán thật.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Biên lai",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Biên lai chuyển khoản riêng tư",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Biên lai mẫu chưa có ảnh.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Biên lai minh họa.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Buổi ôn tập",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Buổi sắp dạy",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Các bài đang xem dở sẽ xuất hiện tại đây.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Cài đặt",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Cài đặt kinh doanh",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Cập nhật trạng thái thanh toán",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Câu ",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Câu hỏi",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Chào mừng trở lại",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Chế độ minh họa không thay đổi gói thật.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Chi tiết đơn",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Chờ đối soát",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Chờ sao chép",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Chờ thanh toán",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Chờ thanh toán / đối soát",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Chọn bản ghi buổi học để đăng",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Chọn bản ghi còn hạn để tạo video riêng cho khóa học. Bản gốc hết hạn không xóa bản đã sao chép. Tối đa 5 GiB; bài giảng chỉ công khai khi sao chép và kiểm tra xong.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Chọn câu trả lời",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Chọn gói",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Chọn gói học phù hợp",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Chọn khóa học",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Chọn lớp / môn",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Chọn video còn hạn",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Chưa chấm",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Chưa có bài giảng xuất bản.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Chưa có bài tập cần nộp trong các môn được giao. Bài tập áp dụng theo quyền của gói học.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Chưa có cấu hình gửi email. Điền thông tin máy chủ thư bên dưới để gửi liên kết xác thực.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Chưa có dữ liệu.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Chưa có lịch học trong 7 ngày tới.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Chưa có thông báo mới. Lịch học, bài tập, điểm và trạng thái thanh toán sẽ xuất hiện tại đây theo quyền tài khoản.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Chưa có video sẵn sàng trong 50 bản ghi gần nhất. Bản ghi phải tải lên hoàn tất và còn hạn lưu.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Chưa đăng ký",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Chưa đọc",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Chưa đọc được video gốc trên R2.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Chưa hoàn tất sao chép; kiểm tra R2 rồi thử lại.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Chưa phân chủ đề",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Chuẩn bị dạy",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Chương / chủ đề",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Có học Live",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Có lớp Live",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Có quyền học Live",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Công khai",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Công khai khi video sẵn sàng",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Công việc giảng dạy",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Đã cập nhật ảnh.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Đã cập nhật bài giảng.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Đã có cấu hình gửi email.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Đã đăng ký lớp. Mở mục Lớp học để xem lịch.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Đã đọc",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Đã ghi khoản chi.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Đã gửi biên lai để đối soát.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Đã hết hạn",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Đã hoàn tiền",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Đã lưu gói VIP. Các đơn đã tạo giữ nguyên giá và quyền lợi.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Đã lưu hồ sơ minh họa.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Đã lưu hồ sơ.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Đã lưu thứ tự bài giảng.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Đã nhận yêu cầu. Đóng trang vẫn tiếp tục sao chép.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Đã sao chép",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Đã thanh toán",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Đã từ chối",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Đã xóa gói khỏi danh mục; giữ lịch sử và quyền VIP đã cấp.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Đang bán",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Đang chờ",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Đang chờ: ",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Đang diễn ra",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Đăng ký học thử",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Đăng ký lớp Live",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Đang mở cổng học tập…",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Đang mở nội dung đã chọn…",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Đăng nhập",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Đăng nhập hoặc tạo tài khoản để tiếp tục",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Đang sao chép",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Đang tải lịch học và việc cần làm…",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Đang tải lớp học…",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Đang tạo đơn…",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Đăng video vào khóa học",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Đăng xuất",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Đánh dấu tất cả đã đọc",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Danh mục",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Danh mục học tập",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Đáp án/ghi chú chấm",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Demo không sao chép video thật.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Điểm",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Điểm danh & bản ghi",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Điền đầy đủ tất cả thông tin bắt buộc. Sau khi tạo tài khoản, kiểm tra hộp thư và bấm liên kết để xác thực email. Không cần nhập mã.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Điện thoại phụ huynh",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Điền tự động khi đọc được thời lượng; kiểm tra lại trước khi đăng.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Đính kèm biên lai",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Đội ngũ giáo viên",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Đối soát thanh toán",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Đơn đã thu",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Đơn hàng mô phỏng; không có thanh toán thật.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Đóng ảnh",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Đồng ý nhận thông tin khai giảng/ưu đãi",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Dữ liệu minh họa",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Đưa lên ",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Đưa xuống ",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Dung lượng hoặc định dạng video gốc không hợp lệ.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Đường dẫn trang",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Duyệt thanh toán",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Email đã xác thực",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Email đã xác thực. Anh/chị có thể đăng nhập để học.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Email đang chờ xác thực qua liên kết trong hộp thư.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Email xác thực thành viên",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Email: ",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Ghi chú bài giảng",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Ghi chú cho học sinh",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Giá / thời hạn",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Giá VND",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Giảng dạy",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Giao bài",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Giao bài tập",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Giáo viên minh họa",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Gói",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Gói học",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "GÓI HỌC",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Gói học & quyền lợi",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Gói học & thanh toán",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "gói học đã chọn",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Gửi lại liên kết xác thực email",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Hàm số và đồ thị",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Hạn gói học",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Hạn nộp",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Hạn: ",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Hệ thống tự thử lại thư chưa gửi sau 5 phút. Liên kết có hiệu lực 24 giờ.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Hết hạn VIP",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Hiểu bản chất, luyện bài có hướng dẫn và học Live cùng giáo viên.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Hồ sơ học viên",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Học chủ động.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Học tập chủ động · Tiến bộ bền vững",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Học thử miễn phí",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Học từng bước. Tiến bộ mỗi ngày.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Học viên",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Học viên minh họa",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Hôm nay",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Hôm nay của bạn",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Hủy sửa",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Kết nối mỗi ngày.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Kết nối trong lớp học Live",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Kho bài giảng",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Kho R2 đã đổi; kiểm tra đúng tài khoản và bucket ban đầu.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Khóa học",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "KHÓA HỌC",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Khóa học chưa có bài giảng. Chọn video của lớp ở trên hoặc tải file mới.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "khóa học đã chọn",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Khóa học đang mở",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Khóa học quản lý bài giảng",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Khóa học, bài giảng và gói học",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Khoản chi minh họa.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Không có bài cần xử lý.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Không còn thông tin bản ghi gốc.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Không gian giảng dạy",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "KHÔNG GIAN GIẢNG DẠY",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Không gian học tập",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "KHÔNG GIAN HỌC TẬP",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "KHÔNG GIAN HỌC TẬP CỦA BẠN",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Không gian làm việc",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Không tải được lịch học: ",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Không tìm thấy khóa học hoặc tài khoản chưa có quyền truy cập.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Không tìm thấy trang",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Kích hoạt VIP",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Lê Thu Hà",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Lịch 7 ngày tới",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Lịch học gần nhất",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Lớp ",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Lớp & giáo viên",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Lớp 10A1",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Lớp học của tôi",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Lớp học trực tiếp",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Lớp học và giáo viên",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Lớp và môn của bản ghi",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Lựa chọn trắc nghiệm, mỗi dòng một lựa chọn; để trống cho tự luận",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Lưu bài giảng",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Lưu điểm",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Lưu gói VIP",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Lưu hồ sơ",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Lưu khoản chi",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Mã đơn",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Mã xác thực hai bước",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Mật khẩu",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Mở bán lại",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Mở trang thanh toán",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Một nơi để học cùng giáo viên, khám phá bài giảng và theo dõi từng bước tiến của bạn.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "ngày",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Ngày",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Ngày chi",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Ngày sinh",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Ngày thu",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Ngữ văn",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Ngưng bán",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Nguồn & trạng thái",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Nguyễn Minh Anh",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Nhận xét",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Nháp",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Nhập đúng tên gói để xóa khỏi danh mục: ",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Nội dung chi",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Nội dung minh họa",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Nội dung: ",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Nộp bài",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Ôn tập chương 1",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Ôn tập phương trình",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Ôn tập theo nhịp học của bạn",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Phát bài giảng",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Phòng học minh họa",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "QR chuyển khoản",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Quản lý gói VIP",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Quản lý nội dung",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Quản trị",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Quản trị nền tảng",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "QUẢN TRỊ NỀN TẢNG",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Quản trị nội dung website",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Quản trị VA",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Quản trị viên",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Quản trị website",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Quay lại không gian học tập",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Quyền xem video",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "R2 chưa sao chép được video; kiểm tra quyền truy cập rồi thử lại.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Sao chép lỗi",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Sắp theo chương/chủ đề rồi thứ tự bài. Nút lên/xuống lưu ngay. Ghi chú hiển thị cho học sinh có quyền xem khóa học.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Số điện thoại",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Số điện thoại phụ huynh",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Số ngày",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Số tiền",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Số tiền VND",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Số tiền: ",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "STT",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Sửa bài giảng",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Sửa gói",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Sửa gói VIP",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Sửa thông tin bài giảng",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Tải ảnh thất bại",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Tải biên lai thất bại",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Tài khoản",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Tài khoản & phân quyền",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Tài khoản của bạn",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Tài khoản đã tạo. Hệ thống sẽ gửi link xác thực qua email; bấm link một lần, không cần nhập mã. Anh/chị có thể đăng nhập ngay.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Tài khoản và phân quyền",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Tải lại bài giảng",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Tải lại trạng thái email",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Tải và xuất bản",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Tải video thất bại",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Tải video thật cần cấu hình R2.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Tạo tài khoản",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Tạo tài khoản học tập",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Tên bài giảng",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Tên bài tập",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Tên gói",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Thanh toán đơn hàng",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Thao tác mô phỏng; không có giao dịch thật.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Thêm bài giảng",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Thêm câu hỏi",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Thêm gói VIP",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Thêm, sửa, ngưng bán hoặc xóa gói. Xóa gói khỏi danh mục không xóa lịch sử thanh toán và quyền VIP đã cấp.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Theo dõi hành trình học tập",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Theo dõi tiến độ và làm bài tập",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Theo phân công",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Thời lượng (phút)",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Thời lượng giây",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Thông báo",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Thông báo của bạn",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Thông tin học tập và thanh toán chỉ hiển thị theo quyền tài khoản.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Thông tin khóa học ↗",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Thu chi trung tâm",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Thu gọn",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Thử gửi lại email đang chờ",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Thử lại",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Thử sao chép lại",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Thử tải lại",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Thứ tự bài giảng",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Tiến độ",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Tiến độ ",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Tiếp tục bài học",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Tiếp tục học",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Tiếp tục khóa học đã chọn",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Toán",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Toán nền tảng",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Tốc độ",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Tôi muốn nhận lịch khai giảng và ưu đãi.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Tổng quan khóa học",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Trần Quốc Huy",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Trang ",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Trang đã chọn",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Trạng thái",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Trung tâm đang chuẩn bị khóa học đầu tiên.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Trường đang học",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Truy cập lớp học",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Từ chối",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Vào lớp học",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Vào phòng dạy",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Vật lý",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Video buổi học",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Video đã xuất bản.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Video lớp học → bài giảng khóa học",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Video minh họa: chưa có file thật.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Video MP4/WebM",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Video này đã có trong khóa học.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Video sao chép chưa vượt qua kiểm tra; vui lòng thử lại.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Video tải lên",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Video tiếp",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Video trước",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Video xem lại",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "VIP 30 ngày",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "VIP đang hoạt động",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Vui lòng điền đầy đủ và kiểm tra các ô được đánh dấu.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Xem",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Xem bài giảng trong danh mục trung tâm",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Xem bài học",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Xem bài nộp",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Xem bài tập",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Xem danh mục được cấp quyền",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Xem đơn",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Xem ghi chú",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Xem nội dung →",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Xóa câu",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Xóa gói",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Xuất Excel",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Xuất Excel cần dữ liệu thật.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": "Yêu cầu này đang lỗi. Dùng nút Thử sao chép lại trong bảng.",
+    "area": "Không gian học tập"
+  },
+  {
+    "key": " buổi học",
+    "area": "Lớp học & môn học"
+  },
+  {
+    "key": " môn",
+    "area": "Lớp học & môn học"
+  },
+  {
+    "key": "Bài học số ",
+    "area": "Lớp học & môn học"
+  },
+  {
+    "key": "Chọn lớp, mở môn học để chuẩn bị dạy hoặc xem từng buổi.",
+    "area": "Lớp học & môn học"
+  },
+  {
+    "key": "Chưa có buổi học.",
+    "area": "Lớp học & môn học"
+  },
+  {
+    "key": "Chưa có lớp được phân công.",
+    "area": "Lớp học & môn học"
+  },
+  {
+    "key": "Chưa có môn học được phân công.",
+    "area": "Lớp học & môn học"
+  },
+  {
+    "key": "Chưa có video đã hoàn tất cho buổi này.",
+    "area": "Lớp học & môn học"
+  },
+  {
+    "key": "Đang học / chuẩn bị",
+    "area": "Lớp học & môn học"
+  },
+  {
+    "key": "Đang tải video…",
+    "area": "Lớp học & môn học"
+  },
+  {
+    "key": "Điểm danh & video theo môn",
+    "area": "Lớp học & môn học"
+  },
+  {
+    "key": "Đoạn video",
+    "area": "Lớp học & môn học"
+  },
+  {
+    "key": "Lớp học & môn được phân công",
+    "area": "Lớp học & môn học"
+  },
+  {
+    "key": "Môn đang học hoặc giáo viên đã chuẩn bị được đưa lên đầu.",
+    "area": "Lớp học & môn học"
+  },
+  {
+    "key": "Môn được phân công",
+    "area": "Lớp học & môn học"
+  },
+  {
+    "key": "Môn học của tôi",
+    "area": "Lớp học & môn học"
+  },
+  {
+    "key": "Số buổi",
+    "area": "Lớp học & môn học"
+  },
+  {
+    "key": "Tháng báo cáo",
+    "area": "Lớp học & môn học"
+  },
+  {
+    "key": "Thống kê toàn môn",
+    "area": "Lớp học & môn học"
+  },
+  {
+    "key": "Tổng số buổi",
+    "area": "Lớp học & môn học"
+  },
+  {
+    "key": "Trang sau",
+    "area": "Lớp học & môn học"
+  },
+  {
+    "key": "Trang trước",
+    "area": "Lớp học & môn học"
+  },
+  {
+    "key": "Video",
+    "area": "Lớp học & môn học"
+  },
+  {
+    "key": "Video của buổi học",
+    "area": "Lớp học & môn học"
+  },
+  {
+    "key": "Video minh họa: chưa có file ghi hình thật.",
+    "area": "Lớp học & môn học"
+  },
+  {
+    "key": "Xem thống kê & video",
+    "area": "Lớp học & môn học"
+  },
+  {
+    "key": "Xem thống kê buổi",
+    "area": "Lớp học & môn học"
+  },
+  {
+    "key": "Xem video",
+    "area": "Lớp học & môn học"
+  },
+  {
+    "key": "Xem video buổi học",
+    "area": "Lớp học & môn học"
+  },
+  {
+    "key": " · Bạn đã chọn",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": " · Đang nói",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": " · Xin vào lớp",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": " (Bạn)",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": " đang chờ",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": " Kết nối tri thức, cùng nhau tiến bộ.",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": " meet",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": " môn được phân công",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": " người đang xin vào lớp · Xem",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": " phiếu",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "· ✋ Đang giơ tay",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "· bản minh họa",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "← Danh sách lớp",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "✋ Giơ tay",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "✋ Hạ tay",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "6 chữ số",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Bấm biểu tượng mic/camera để bật, hoặc vào lớp không dùng thiết bị.",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Bạn",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Bạn chưa được phép tham gia buổi này. Liên hệ giáo viên để được cho vào lại.",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Bạn có thể quay lại không gian học tập để xem các buổi học và bản ghi được cấp quyền.",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Bạn đã hiểu nội dung hôm nay?",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Bản ghi bài học",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Bản minh họa: không lưu hoặc gửi cho học sinh thật.",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Bản xem trước giao diện · Dữ liệu mẫu, chưa kết nối máy chủ hoặc Cloudflare. ",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Bảng tin",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Bật âm thanh",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Bật camera",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Bắt đầu buổi học",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Bật mic",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Bỏ ghim",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "buổi học",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Buổi học & video",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Buổi học của bạn",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Buổi học đã kết thúc",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Buổi học đang diễn ra",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Các buổi học & video",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Các lớp và môn học được phân công cho bạn.",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Các môn bạn đang theo học. Môn đang học được ưu tiên hiển thị.",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Các môn học sẽ xuất hiện tại đây khi bạn được phân công hoặc ghi danh.",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Cài đặt thiết bị",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Camera chưa được mở",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Cần giảng lại",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Cấu hình chưa hoàn tất. Chủ nền tảng kiểm tra trạng thái đồng bộ tại bảng quản trị trung tâm.",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Cấu hình hệ thống dùng chung",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "CHÀO MỪNG TRỞ LẠI",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Cho học sinh gửi tin nhắn",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Cho học sinh trình bày",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Cho phép vào lại",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Cho vào",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Chọn mic/camera hoặc tắt cả hai để vào chỉ nghe. Camera chỉ chia sẻ khi tham gia.",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Chưa bắt đầu",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Chưa có buổi học bắt đầu",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Chưa có giáo viên đang hoạt động được phân công.",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Chưa có hoạt động của môn học. Các buổi học sẽ được cập nhật tại đây.",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Chưa có học sinh đang hoạt động trong lớp.",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Chưa có khảo sát.",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Chưa có liên kết phòng học",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Chưa có môn học được phân công",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Chưa có thông báo của giáo viên.",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Chưa có tin nhắn.",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Chưa được phép vào lớp",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Chưa kết nối media",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Chưa phân công giáo viên",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Chuẩn bị trước khi vào lớp",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Chuyển động thẳng đều",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Công cụ lớp học",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Đã có micro · không có camera",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Đã đóng",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Đã hiểu",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Đã kết thúc",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Đã sao chép liên kết lớp học",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Đã từ chối / mời ra (",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Đã vào lại lớp · mic/camera chưa sẵn sàng, bấm biểu tượng để bật lại",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Đang chờ giáo viên duyệt vào lớp",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Đang chuẩn bị",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Đang chuẩn bị ghi hình",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Đang chuẩn bị…",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Đang đăng…",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Đang ghi hình",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Đang học",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Đang kết nối lại…",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Đang kết nối…",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Đang lưu bản ghi",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Đang mở",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Đăng nhập →",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Đăng nhập thật →",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Đăng nhập trường học",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Đang tải thông tin lớp…",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Đăng thông báo",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Đăng thông báo cho môn học",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Danh sách chi tiết học sinh do giáo viên phụ trách quản lý.",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Danh sách học sinh hiển thị khi sử dụng lớp thật.",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Đây là bản xem trước. Thao tác lưu dữ liệu cần đăng nhập máy chủ thật.",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Điểm danh & thời gian học",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Điểm danh & video",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Điều hành",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Điều hành phòng · ",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Điều hướng chính",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Đổi mật khẩu",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Đóng công cụ",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Đóng khảo sát",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Đóng menu ✕",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Duyệt học sinh trước khi vào",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Email hoặc mã SV",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Ghim màn hình",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Giáo viên chưa cho phép vào buổi này",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Giáo viên đã tắt gửi tin nhắn.",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Giáo viên đang chuẩn bị",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Giáo viên đang chuẩn bị buổi học",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Giáo viên đang tắt quyền trình bày",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Giáo viên yêu cầu tắt mic",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Gửi",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Gửi đến người trong lớp…",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Hạ tất cả tay",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Hoạt động của môn học",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Hoạt động lớp học",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Học sinh ",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "HỌC TẬP CÙNG NHAU",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Kết quả ",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Khảo sát trong buổi học",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "KHÔNG GIAN CỦA BẠN",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Không gian dạy và học trực tuyến dành cho trường của bạn.",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Không gian học tập ",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Không gian lớp học",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Không tìm thấy lớp học",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Không tìm thấy lớp/môn hoặc bạn chưa được phân công.",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Kiểm tra lại",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Làm mới thiết bị",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Liên kết lớp học",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Liên kết tham gia",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Lớp & môn học",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "LỚP HỌC",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Lớp học & môn học",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Lựa chọn · mỗi dòng một lựa chọn",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Lựa chọn 1\nLựa chọn 2",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Lưu mật khẩu",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "m",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Mã xác thực 2FA",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Mặc định hệ thống",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Màn hình của bạn",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Mất mạng · đang chờ kết nối",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Meet ",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Mic và camera chỉ được bật khi bạn chọn. Giơ tay để phát biểu; giáo viên điều hành người tham gia và quyền trình bày.",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Mic và camera trước khi vào lớp",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Mở cấu hình SFU / R2 / sao lưu ↗",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Mở khảo sát",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Mỗi lớp học.",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Mời ra",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "môn đang học",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Một kết nối mới.",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Một ngày mới, thêm những điều để khám phá.",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "N",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Nền tảng đang được khởi tạo",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Nếu chưa có tên thiết bị, đóng cài đặt rồi bật mic/camera để cấp quyền. Chọn loa phụ thuộc trình duyệt.",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Nhập câu hỏi và 2–6 lựa chọn khác nhau, mỗi lựa chọn một dòng",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Nội dung môn học",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Nội dung thông báo",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Ôn tập phương trình bậc hai",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Phản ứng",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Phản ứng ",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Phiên đã kết thúc. Vui lòng đăng nhập lại.",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Phòng học trực tiếp",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Phòng và bộ ghi máy chủ tiếp tục khi một người rời đi; đóng trình duyệt sẽ dừng camera/micro của chính thiết bị đó.",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Quản lý hoạt động học tập trong trường của bạn.",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Quản lý học sinh đã duyệt",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Quản trị trường học",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Quay lại đăng nhập",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Quay lại danh sách",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Quay lại lớp học",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Sao chép liên kết",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "SFU theo lớp, TURN, R2, thời hạn ghi hình và lịch sao lưu. Cần mã cài đặt riêng của người vận hành VPS.",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Tài khoản do nhà trường cung cấp.",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Tạo khảo sát",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Tất cả lớp được phân công",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Tắt camera",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Tắt mic",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Tên hoặc mã học sinh",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Tham gia buổi học để trả lời khảo sát.",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Tham gia buổi học để trò chuyện và giơ tay.",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Thành viên",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Thành viên (",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Thành viên môn học",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Thiết bị âm thanh & hình ảnh",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Thiết bị mặc định được chọn tự động. Chỉ đổi khi cần; hệ thống không tự bật mic/camera.",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Thông báo của giáo viên",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Thông báo môn học",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Thông tin lớp",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Thông tin môn học",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Thông tin phòng học",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Thử tìm bằng tên môn hoặc giáo viên.",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Tiêu đề thông báo",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Tìm lớp hoặc môn học",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Tìm lớp, môn học, giáo viên…",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Tìm người tham gia",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Tin nhắn",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Tin nhắn (",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Tin nhắn trong lớp",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Toán học",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Toàn màn hình",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Trần Gia Hân",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Trình duyệt chưa hỗ trợ toàn màn hình",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Trò chuyện trong lớp",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Trường của bạn",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Xác thực →",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Xem buổi học",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Xem môn học",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Xem trước giao diện",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Xin vào lớp",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Yêu cầu đã gửi. Chờ giáo viên duyệt, sau đó bấm vào lớp.",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Yêu cầu tất cả tắt mic",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Yêu cầu tắt mic",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Yêu cầu tắt mic áp dụng trên ứng dụng; học sinh có thể bật lại. Không có thao tác tự bật mic/camera của người khác.",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Bài học thử vẫn áp dụng hạn mức của tài khoản; không công khai đường dẫn lưu trữ video.",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Bài học xem thử sau đăng nhập",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Bài viết",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Bài viết & lịch khai giảng",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "bài viết công khai. Giáo viên và cảm nhận mới luôn bắt đầu ở chế độ nháp.",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Bản demo không xóa dữ liệu thật.",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Bản xem trước riêng — chưa lưu",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Bảo mật",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Cảm nhận",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Cảm nhận học sinh & phụ huynh",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Chỉ đăng lời nhận xét thật đã được đồng ý sử dụng. Có thể dùng tên viết tắt; không nhập số điện thoại hoặc thông tin riêng tư của học sinh.",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Chỉ xóa khóa chưa có bài giảng hoặc bài tập. Trang giới thiệu khóa học cũng được xóa. Lớp, môn Live và tài khoản học sinh được giữ nguyên. Với khóa đã có nội dung, bỏ chọn Xuất bản để ngừng hiển thị.",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Chia sẻ thực tế được đồng ý công khai",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Chính sách",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Chính sách bảo mật",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Chọn khóa học để biên tập",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Chọn một chuyên mục bên trái để quản lý. Thay đổi được giữ khi chuyển mục; bấm Lưu website để áp dụng toàn bộ.",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Chưa chọn",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Chương trình · mỗi dòng một phần",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Chuyên mục quản trị",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Chuyên mục quản trị website",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Công khai cảm nhận này — đã được người chia sẻ đồng ý",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Công khai hồ sơ giáo viên này",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Đã lưu khóa học. Biên tập mục tiêu, chương trình và lịch trong Website giới thiệu.",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Đã lưu website và nội dung khóa học.",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Đã xóa vĩnh viễn khóa học và trang giới thiệu của khóa.",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Đang công khai",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Đang dựng bản xem trước…",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Đang giữ nháp",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Địa chỉ",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Điểm đánh giá (không bắt buộc)",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Điện thoại",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Điều khoản",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Điều khoản sử dụng",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Đối tượng học",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Đóng bản xem trước",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Đường dẫn ngắn (chữ thường, số, dấu gạch ngang)",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Email liên hệ",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Giáo viên giới thiệu công khai",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Giáo viên hiển thị",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Giới thiệu đơn vị",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Giới thiệu khóa học",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Giới thiệu nên mô tả nội dung và lợi ích cụ thể, tránh lặp lại tên khóa học.",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Hiện mục cảm nhận kể cả khi đang cập nhật",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Hiện mục giáo viên tiêu biểu kể cả khi đang cập nhật",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Hồ sơ giáo viên",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Học sinh",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "ID môn học Live (nếu có)",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Khóa học cần chỉnh sửa",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Khóa học minh họa chưa lưu máy chủ.",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Không chọn bài học thử",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Không hiển thị điểm",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Kinh nghiệm & giới thiệu",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Lịch học & hình thức học",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Liên hệ",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Liên hệ & chính sách",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Lưu khóa học",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Lưu website",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Máy tính",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Mở tất cả các mục",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Mở website đang công khai ↗",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Môn phụ trách",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Mục tiêu · mỗi dòng một mục",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Ngôn ngữ & câu chữ",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Người chia sẻ",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Nhập đúng tên khóa học: ",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Nội dung",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Nội dung cảm nhận",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Nội dung công khai chỉ xuất hiện khi website được xuất bản. Các trường để trống sẽ được ẩn. Có thể bật sẵn mục giáo viên và cảm nhận; từng hồ sơ mới được giữ nháp đến khi anh/chị chọn công khai.",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Nội dung khóa học",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Nội dung website đang chỉnh",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Phụ huynh",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Số điện thoại hỗ trợ",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Tải lại nội dung",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Tải lại nội dung website đã lưu",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Tạo & sửa khóa học",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Tạo khóa học mới",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Tất cả nội dung",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Tên hiển thị",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Tên khóa học",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Tên nền tảng",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Thanh toán",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Thanh toán & hoàn phí",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Thêm bài viết",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Thêm cảm nhận",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Thêm hồ sơ giáo viên",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Thêm, sửa hoặc xóa nội dung rồi bấm Lưu website để áp dụng. Bản xem trước hiển thị nội dung đang chỉnh, kể cả bản nháp; không tự lưu hoặc công khai.",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Thiết bị",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Thông điệp giới thiệu",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Thông tin hỗ trợ",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Thu gọn các mục",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Thương hiệu & giới thiệu",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Tiêu đề",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Tóm tắt",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Tổng quan",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Trang chi tiết khóa học",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Trang chủ & giới thiệu",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Trang khóa học",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "WEBSITE",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Website đang công khai",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Website đang ở chế độ nháp",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Website giới thiệu",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Website minh họa, chưa lưu máy chủ.",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Xem đầy đủ ",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Xem đầy đủ bài viết",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Xem trang công khai ↗",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Xem trước nội dung thật cần tài khoản quản trị.",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Xem trước toàn website",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Xem trước trang khóa học",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Xem trước website",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Xóa bài viết",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Xóa bài viết này khỏi nội dung website? Bấm Lưu website để áp dụng.",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Xóa cảm nhận",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Xóa giáo viên giới thiệu",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Xóa nội dung giới thiệu khóa này",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Xóa phần giới thiệu chi tiết của khóa này? Bản ghi khóa học và bài giảng được giữ nguyên.",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Xóa vĩnh viễn khóa học",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Xuất bản",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Xuất bản bài viết",
+    "area": "Quản trị website"
+  },
+  {
+    "key": "Xuất bản website",
+    "area": "Quản trị website"
+  },
+  {
+    "key": ". Dùng ứng dụng xác thực TOTP. Giữ khóa thiết lập tại nơi an toàn để khôi phục trên thiết bị khác.",
+    "area": "Tài khoản & phân quyền"
+  },
+  {
+    "key": ". Không gửi vào nhóm chung.",
+    "area": "Tài khoản & phân quyền"
+  },
+  {
+    "key": "+ Thêm quản trị viên",
+    "area": "Tài khoản & phân quyền"
+  },
+  {
+    "key": "Ẩn liên kết",
+    "area": "Tài khoản & phân quyền"
+  },
+  {
+    "key": "Bản mẫu không lưu máy chủ",
+    "area": "Tài khoản & phân quyền"
+  },
+  {
+    "key": "Buổi học",
+    "area": "Tài khoản & phân quyền"
+  },
+  {
+    "key": "Cấp lại mật khẩu",
+    "area": "Tài khoản & phân quyền"
+  },
+  {
+    "key": "Chỉ giao trực tiếp cho đúng chủ tài khoản. Hết hạn lúc",
+    "area": "Tài khoản & phân quyền"
+  },
+  {
+    "key": "Chưa bật",
+    "area": "Tài khoản & phân quyền"
+  },
+  {
+    "key": "Đã bật",
+    "area": "Tài khoản & phân quyền"
+  },
+  {
+    "key": "Đang hoạt động",
+    "area": "Tài khoản & phân quyền"
+  },
+  {
+    "key": "Điểm danh",
+    "area": "Tài khoản & phân quyền"
+  },
+  {
+    "key": "Email quản trị mới",
+    "area": "Tài khoản & phân quyền"
+  },
+  {
+    "key": "Ghi hình",
+    "area": "Tài khoản & phân quyền"
+  },
+  {
+    "key": "Học vụ",
+    "area": "Tài khoản & phân quyền"
+  },
+  {
+    "key": "Kích hoạt",
+    "area": "Tài khoản & phân quyền"
+  },
+  {
+    "key": "Liên kết khôi phục",
+    "area": "Tài khoản & phân quyền"
+  },
+  {
+    "key": "Liên kết khôi phục dùng một lần",
+    "area": "Tài khoản & phân quyền"
+  },
+  {
+    "key": "Lưu tài khoản",
+    "area": "Tài khoản & phân quyền"
+  },
+  {
+    "key": "Mã xác thực 6 số",
+    "area": "Tài khoản & phân quyền"
+  },
+  {
+    "key": "Mật khẩu 12–72 byte",
+    "area": "Tài khoản & phân quyền"
+  },
+  {
+    "key": "Mật khẩu hiện tại",
+    "area": "Tài khoản & phân quyền"
+  },
+  {
+    "key": "Mật khẩu quản trị mới",
+    "area": "Tài khoản & phân quyền"
+  },
+  {
+    "key": "Nhập khóa này vào ứng dụng xác thực (hết hạn sau 5 phút):",
+    "area": "Tài khoản & phân quyền"
+  },
+  {
+    "key": "Nhật ký",
+    "area": "Tài khoản & phân quyền"
+  },
+  {
+    "key": "Quản lý tài khoản",
+    "area": "Tài khoản & phân quyền"
+  },
+  {
+    "key": "Quản trị gốc",
+    "area": "Tài khoản & phân quyền"
+  },
+  {
+    "key": "Quản trị gốc được bảo vệ. Vô hiệu hóa hoặc tạm ngưng sẽ chấm dứt quyền truy cập của tài khoản. Mỗi lần đăng nhập mới sẽ thoát phiên đăng nhập cũ.",
+    "area": "Tài khoản & phân quyền"
+  },
+  {
+    "key": "Quyền",
+    "area": "Tài khoản & phân quyền"
+  },
+  {
+    "key": "Quyền quản trị",
+    "area": "Tài khoản & phân quyền"
+  },
+  {
+    "key": "Sau khi bật hoặc tắt 2FA, đăng nhập lại. Không chia sẻ khóa thiết lập.",
+    "area": "Tài khoản & phân quyền"
+  },
+  {
+    "key": "Tài chính / VIP",
+    "area": "Tài khoản & phân quyền"
+  },
+  {
+    "key": "Tạm ngưng",
+    "area": "Tài khoản & phân quyền"
+  },
+  {
+    "key": "Tắt 2FA",
+    "area": "Tài khoản & phân quyền"
+  },
+  {
+    "key": "Tên quản trị mới",
+    "area": "Tài khoản & phân quyền"
+  },
+  {
+    "key": "Theo vai trò",
+    "area": "Tài khoản & phân quyền"
+  },
+  {
+    "key": "Thiết lập 2FA",
+    "area": "Tài khoản & phân quyền"
+  },
+  {
+    "key": "Thông tin chỉ xem. Liên hệ quản trị trường nếu cần điều chỉnh.",
+    "area": "Tài khoản & phân quyền"
+  },
+  {
+    "key": "Thông tin tài khoản",
+    "area": "Tài khoản & phân quyền"
+  },
+  {
+    "key": "Trường",
+    "area": "Tài khoản & phân quyền"
+  },
+  {
+    "key": "Trường Nguyễn Trãi",
+    "area": "Tài khoản & phân quyền"
+  },
+  {
+    "key": "Vai trò",
+    "area": "Tài khoản & phân quyền"
+  },
+  {
+    "key": "Vô hiệu hóa",
+    "area": "Tài khoản & phân quyền"
+  },
+  {
+    "key": "Xác nhận bật 2FA",
+    "area": "Tài khoản & phân quyền"
+  },
+  {
+    "key": "Xác thực hai bước (tùy chọn)",
+    "area": "Tài khoản & phân quyền"
+  },
+  {
+    "key": "Xóa tài khoản",
+    "area": "Tài khoản & phân quyền"
+  },
+  {
+    "key": "Xóa tài khoản sẽ thu hồi đăng nhập và xóa hồ sơ cá nhân; giữ lịch sử học/thanh toán. Nhập đúng email: ",
+    "area": "Tài khoản & phân quyền"
+  },
+  {
+    "key": "\n\nKhông cần nhập mã. Nếu không đăng ký, vui lòng bỏ qua thư này.",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "2FA đã bật",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "2FA đã bật hoặc không lưu được",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Account unavailable",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Administrator required",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Allocation read failed",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Ảnh chưa hoàn tất",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Ảnh đại diện chưa tải hoàn tất",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Ảnh đại diện không đọc được",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Ảnh đại diện tối đa 512 × 512",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Ảnh không thuộc tài khoản",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Ảnh PNG/JPEG tối đa 2 MiB",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Authentication unavailable",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Bài cần chấm: ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Bài gần hạn: ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Bài giảng đã thay đổi; tải lại trước khi sửa",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Bài nộp quá lớn",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Bài tập cần quyền của gói học",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Bài tập/thời hạn không hợp lệ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Bài viết xuất bản cần tiêu đề và đường dẫn duy nhất (chữ thường, số, gạch ngang)",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Bạn chưa được phép tham gia buổi này. Liên hệ giáo viên.",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Bạn chưa tham gia hoặc đã bị mời ra",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Bạn đã đăng nhập trên thiết bị khác",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Bản ghi cần đúng kho lưu trữ và có dung lượng tối đa 5 GiB",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Bản ghi đang được xử lý; thử lại sau",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Bản ghi không còn sẵn sàng hoặc không thuộc đơn vị",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Bản ghi vượt quá 8 GiB",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Bật R2 trước khi bật sao lưu",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Biên lai không thuộc tài khoản",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Buổi đã kết thúc",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Buổi học chưa bắt đầu hoặc đã kết thúc",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Buổi học: ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Buổi không còn diễn ra",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Cài đặt đã thay đổi; tải lại",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Cảm nhận cần đúng đối tượng và điểm đánh giá từ 0–5",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Cảm nhận công khai cần tên hiển thị và nội dung thực tế",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Cần gói VIP có Live",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Cần quyền học bài tập",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Câu chữ không hợp lệ hoặc không có trong danh mục",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Cấu hình đã lưu; chưa cập nhật hạn bản ghi, lưu lại để thử lại",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Cấu hình đã thay đổi. Tải lại trước khi lưu.",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Cấu hình được quản lý tại trung tâm",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Cấu hình ngôn ngữ quá lớn",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Câu hỏi không hợp lệ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Câu hỏi tối đa 200 ký tự và 2–6 lựa chọn",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chỉ giáo viên được chuẩn bị dạy",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chỉ hỗ trợ bản ghi MP4/WebM",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chỉ học sinh mua gói",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chỉ người điều hành được đổi cài đặt",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chỉ người điều hành được duyệt thành viên",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chỉ người điều hành được quản lý thành viên",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chỉ người điều hành được tạo khảo sát",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chỉ thử lại bài giảng sao chép thất bại",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chỉnh khung giờ chung của buổi học; không chỉnh riêng từng học sinh.",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chọn ảnh đại diện PNG/JPEG hợp lệ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chọn đúng lớp, môn và buổi học",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chọn lớp, môn và trang hợp lệ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chọn tháng hợp lệ từ năm 2000 đến 2100",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chọn tối đa 100 thông báo",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chọn XLSX dưới 4 MiB",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chữ ký không hợp lệ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa cập nhật được ảnh",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa cập nhật được thông báo",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa cấu hình webhook",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa chuẩn bị được buổi học",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa có bài nộp",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa có biên lai",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa có quyền bài tập",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa có quyền học bài này",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa có quyền nội dung",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa có quyền quản lý lớp học",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa có trung tâm",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa đọc được cấu hình email",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa đọc được gói",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa đọc được gói học",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa đọc được hàng đợi email",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa đọc được khóa học",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa đọc được phiên bản gói",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa đọc được phiên bản ngôn ngữ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa đọc được quyền",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa đọc được thứ tự",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa đọc hết bài giảng",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa đọc xong gói học",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa đọc xong khóa học",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa đủ các phần tải",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa dựng được bản xem trước",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa được cấp quyền ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa được cấp quyền tài khoản",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa được phân công chấm bài",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa được phép vào phòng học",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa gỡ được phân công",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa gửi được yêu cầu",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa gửi lại được email đang chờ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa hoàn tất sắp xếp",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa hoàn tất xóa khóa học",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa kết nối dịch vụ cập nhật trên VPS. Xem hướng dẫn bật dịch vụ.",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa kiểm tra được bài giảng đã có",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa kiểm tra được dữ liệu liên quan",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa kiểm tra được email",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa kiểm tra được lượt xem",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa kiểm tra được nội dung website",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa kiểm tra được phiên bản bài giảng",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa lưu được bài giảng",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa lưu được ghi chú",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa lưu được ghi chú bài giảng",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa lưu được gói",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa lưu được hồ sơ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa lưu được ngôn ngữ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa lưu được tên bài giảng",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa lưu được thứ tự",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa lưu được trạng thái",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa lưu được website",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa lưu được xác thực",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa lưu được yêu cầu sao chép",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa sắp được thứ tự bài giảng",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa sắp được vị trí bài giảng",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa sắp xếp được",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa tải được ảnh đại diện",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa tải được bài cần chấm",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa tải được bài tập",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa tải được bài xem dở",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa tải được bảng tin",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa tải được danh sách bài giảng",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa tải được đơn chờ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa tải được giáo viên",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa tải được gói học",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa tải được khóa học",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa tải được khóa học để xem trước",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa tải được lịch học",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa tải được ngôn ngữ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa tải được nội dung",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa tải được thanh toán",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa tải được thành viên",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa tải được thông báo",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa tải được trạng thái thông báo",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa tải được việc cần làm",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa tải được website",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa tạo được bài giảng",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa tạo được liên kết",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa tạo được liên kết phòng",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa tạo được liên kết xác thực",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa tạo được tài khoản",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa tạo được tài khoản; email có thể đã tồn tại",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa tạo được trường; cấu hình đã lưu, hãy thử lại bước khởi tạo",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa thể thử lại",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa thể xóa khóa học",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa thu hồi được tài khoản",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa xác thực được email",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa xóa được gói",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa xóa được tài khoản",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa xóa được trang giới thiệu khóa học",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Class already exists or cannot be created",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Class conflict; no users imported",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Clock unavailable",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Cloudflare từ chối credential hoặc không truy cập được",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Commit failed",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "CONFIG_DIR chưa được cấu hình",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "CONFIG_DIR required",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Course not found",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Create failed",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Current password incorrect",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Đã chấm: ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Đã có yêu cầu chờ; đợi dịch vụ cập nhật",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Đã gửi yêu cầu. Dịch vụ VPS sẽ xử lý trong khoảng một phút.",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Đã hết hạn nộp",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Đã hết lượt xem miễn phí tháng này. Nâng cấp VIP để tiếp tục.",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Đã khởi tạo; cần chạy lại migrate để cấp ID ngắn",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Đã tạo session kiểm tra; cần thử cuộc gọi hai phía để nghiệm thu media",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Đang cấp SFU, thử lại sau",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Đang có đơn chờ xử lý",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Đang có metadata bản ghi; giữ nguyên account/bucket và bật R2 để dọn đúng kho",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Đang khởi tạo bản ghi",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Đăng ký quá nhiều lần; thử lại sau 15 phút",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Đang lưu cấu hình, vui lòng thử lại",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Đang xử lý hoặc cần phục hồi; chưa nhận thêm cập nhật",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Dành cho giáo viên",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Danh sách đã thay đổi; tải lại trước khi sắp xếp",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Danh sách không tồn tại",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Danh sách sắp xếp không hợp lệ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Danh sách trùng hoặc chứa bài giảng ngoài khóa",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Database unavailable",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Dependencies unavailable",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Dịch vụ cập nhật chưa hoạt động trên VPS",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Điểm từ 0 đến 10",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Điền đủ họ tên, ngày sinh hợp lệ, địa chỉ, trường học và hai số điện thoại 9–15 chữ số",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Điền mã trường hợp lệ, tên trường, email viết thường và mật khẩu admin 12–72 byte",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Đợi 30 giây trước khi gửi lại",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "domain chưa gắn trung tâm",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Domain không hợp lệ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Domain trường chưa được cấu hình",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Đơn ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Đơn chờ thanh toán / đối soát",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Đơn đã được xử lý",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Đơn thanh toán dành cho học sinh",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Đơn vị đang tạm ngưng hoạt động. Vui lòng liên hệ quản trị.",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Dòng %d bị trùng email/mã SV hoặc ID không hợp lệ; chưa lưu dòng nào",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Dòng %d cần đủ 3 cột",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Dòng %d đã thay đổi, tải lại trước khi sửa",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Dòng %d: kiểm tra email, tên, ID/phiên bản hoặc mật khẩu ít nhất 6 ký tự, tối đa 72 byte",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Dòng %d: mã SV duy nhất, 1–40 ký tự A–Z, 0–9, dấu . _ -",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Dòng trùng hoặc môn đã thay đổi; tải lại bảng",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Download signing failed",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Dữ liệu đã thay đổi; tải lại",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Dữ liệu khảo sát lỗi",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Dữ liệu lỗi",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Dữ liệu thứ tự lỗi",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Email bị trùng",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Email chưa cấu hình",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Email đã có hoặc không tạo được tài khoản",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Email gửi không hợp lệ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Email không hợp lệ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Email liên hệ không hợp lệ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Enrollment failed",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Enrollment failed; no users imported",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Exactly one worksheet required",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Expected 1–50 tracks",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "File chỉ có 1 sheet",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Finalize failed",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Ghi chú quá dài",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Giao dịch không hợp lệ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Giao dịch không khớp",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Giáo viên đã tắt gửi tin nhắn",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Giáo viên đã tắt quyền trình bày",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Giáo viên không dùng cột mã SV",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Giáo viên phụ trách mới được đăng thông báo",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Giáo viên phụ trách mới được giao bài",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Giây kết nối",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Giờ ra chung (VN)",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Giờ ra phải sau giờ vào, tối đa 24 giờ. Tải lại khung giờ trước khi lưu.",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Giờ vào chung (VN)",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Giữ SFU App cũ cho các phòng đang kết nối",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Gói đã ngừng bán",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Gói đã thay đổi; tải lại trước khi sửa",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Gói đã xóa",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Gói hiện tại chưa có quyền học Live",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Gói học không hợp lệ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Gửi chậm lại",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Gửi tối đa 5 phản ứng mỗi 10 giây",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Hạn mức video từ 1 đến 100",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Hãy đăng nhập lại",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Hệ thống đang cập nhật an toàn. Vui lòng chờ hoàn tất.",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Header đúng: email,name,password; 1–100 giáo viên",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Hồ sơ chưa đầy đủ hoặc không hợp lệ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Hồ sơ không còn tồn tại",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Hồ sơ không hợp lệ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Họ tên học sinh",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "hóa",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "hoá học",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "hóa học",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Hoàn tất hoặc hủy các bản ghi đang chờ trước",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Hoàn tất tải thất bại; có thể thử lại",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Học sinh chưa được duyệt vào lớp",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Học sinh không thuộc lớp này; dùng mục gán tài khoản có sẵn",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Học trực tuyến cùng giáo viên",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Import commit failed",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Internal error",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Invalid class name",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Invalid cursor",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Invalid local track",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Invalid name",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Invalid or existing enrollment",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Invalid permissions",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Invalid presence event",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Invalid request",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Invalid school, email or password",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Invalid session",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Invalid SFU operation",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Invalid state transition",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Invalid track",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Invalid upload request ID",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Invalid worksheet",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Invalid XLSX",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Khảo sát đã đóng",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Khóa có bài giảng hoặc bài tập. Bỏ chọn Xuất bản để ngừng hiển thị; không xóa dữ liệu học tập bằng thao tác này.",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Khóa học khác",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Khóa học trực tuyến, lớp Live và bài giảng xem lại.",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Khóa học vừa có dữ liệu liên quan; tải lại trước khi tiếp tục",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Khóa học, lớp Live và bài giảng xem lại",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Khoản chi không hợp lệ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Khối ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Khôi phục chưa sẵn sàng",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không cấp được ID",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không cấp được liên kết khôi phục",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không cấp được link tải",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không cấp được quyền xem",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không cấp ID",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không cấp ID lớp",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không cấp liên kết khôi phục cho bản thân hoặc quản trị gốc",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không cập nhật được giơ tay",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không cập nhật được hạn mức",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không cập nhật được phòng chờ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không cập nhật được thành viên",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không cấu hình được R2: kiểm tra bucket có sẵn, quyền CORS/lifecycle/đọc/ghi/xóa object và rule cũ có thể xóa bản ghi trước thời hạn đã chọn. Cấu hình cục bộ chưa lưu; kiểm tra lại bucket nếu thao tác từ xa chỉ hoàn tất một phần.",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không có báo cáo",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không có quyền thực hiện",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không đăng ký được lớp",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không đọc được các phần đã tải",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không đọc được cấu hình",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không đọc được cấu hình cũ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không đọc được kết quả",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không đọc được khảo sát",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không đọc được lựa chọn",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không đọc được media",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không đọc được phản ứng",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không đọc được phiên media",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không đọc được phòng chờ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không đọc được phòng học",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không đọc được quyền phòng học",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không đọc được quyền trình bày",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không đọc được quyền trò chuyện",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không đọc được trình bày",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không đổi được mật khẩu; yêu cầu liên kết mới",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không đổi phân công khi môn có buổi đang học",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không đóng được khảo sát",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không được xem bài nộp",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không được xóa/đổi App ID đã gán lớp; hãy giữ credential và tắt nhận lớp mới",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không duyệt được đơn",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không gian dành cho giáo viên và học sinh",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không giao được bài",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không giữ được thành viên đang học",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không gửi được phản ứng",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không gửi được tin nhắn",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không gửi được yêu cầu",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không hoàn tất lưu website",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không hủy được phiên tải; thử lại sau",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không khởi tạo được tải từng phần",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không khớp đơn hoặc giao dịch trùng",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không kiểm tra được 2FA",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không kiểm tra được lượt xem",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không kiểm tra được trạng thái bản ghi",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không ký được phần tải",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không lưu được bản ghi",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không lưu được biên lai",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không lưu được cài đặt",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không lưu được cấu hình",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không lưu được điểm",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không lưu được file cấu hình; kiểm tra quyền CONFIG_DIR",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không lưu được hồ sơ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không lưu được khảo sát",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không lưu được khóa bảo mật",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không lưu được khóa học",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không lưu được khoản chi",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không lưu được khung giờ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không lưu được lớp",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không lưu được lựa chọn",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không lưu được mật khẩu; yêu cầu liên kết mới",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không lưu được nhật ký",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không lưu được nhật ký; yêu cầu liên kết mới",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không lưu được phân công",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không lưu được phiên tải",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không lưu được thông báo",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không lưu được tiến độ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không lưu được trạng thái hoàn tất",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không lưu được trạng thái hủy",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không lưu được website",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không lưu được yêu cầu",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không mở được biên lai",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không nộp được bài",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không phân lớp được; chưa lưu dòng nào",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không sửa buổi đã kết thúc",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không tải được bài tập",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không tạo được bài giảng",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không tạo được đơn",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không tạo được mật khẩu",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không tạo được môn",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không tạo được trường/admin",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không tạo được yêu cầu cập nhật",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không thấy bài giảng",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không thấy bài tập",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không thấy đơn",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không thấy đơn chờ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không thấy khóa học",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không thấy video chờ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không thể cấp quyền vượt quyền hiện có",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không thể xóa quản trị có quyền vượt tài khoản hiện tại",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không thể xóa quản trị gốc",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không thể xóa tài khoản đang đăng nhập",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không thu hồi được media",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không thu hồi được phiên media",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không thu hồi được presence",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không thu hồi được quyền trình bày",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không thu hồi được track",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không thu hồi được trình bày",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không thực hiện được thao tác chung",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không tìm thấy bài viết trong bản nháp",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không tìm thấy bản ghi đang chờ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không tìm thấy buổi trong lớp/môn",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không tìm thấy đơn thanh toán",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không tìm thấy đơn vị",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không tìm thấy giáo viên",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không tìm thấy giáo viên trong trường",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không tìm thấy gói",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không tìm thấy học sinh thuộc lớp",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không tìm thấy khảo sát",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không tìm thấy khóa học",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không tìm thấy khóa học của đơn vị",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không tìm thấy lớp",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không tìm thấy lớp/học sinh",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không tìm thấy lớp/môn/buổi trong phạm vi tài khoản",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không tìm thấy môn",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không tìm thấy môn đã phân công",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không tìm thấy môn học",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không tìm thấy nội dung",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không tìm thấy phòng học",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không tìm thấy tài khoản",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không tìm thấy tài khoản đang hoạt động",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không tìm thấy trang chính sách",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không tìm thấy trung tâm",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không từ chối được đơn",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không tự sửa trạng thái/quyền của mình",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không xác minh được bản ghi trên R2",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không xác nhận được lượt xem",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không xuất bản được video",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Không xuất được báo cáo",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Khung giờ đã được thay đổi; chọn lại buổi để tải dữ liệu mới.",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Kích thước hoặc thứ tự phần tải không hợp lệ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Kích thước phần tải không hợp lệ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Kiểm tra phiên bản mới trước khi cập nhật",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Kiểm tra tên, email và mật khẩu 12–72 byte",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Lịch sao lưu từ 1 đến 720 giờ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Liên kết đã được sử dụng; yêu cầu liên kết mới",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Liên kết không còn hợp lệ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Liên kết không hợp lệ hoặc đã hết hạn",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Liên kết không hợp lệ hoặc mật khẩu chưa đủ độ dài hợp lệ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Liên kết sai hoặc đã hết hạn",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Liên kết xác thực không hợp lệ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Loại nền tảng không hợp lệ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Lựa chọn không hợp lệ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Lựa chọn phải khác nhau, từ 1–100 ký tự",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Lượt xem đang được xử lý",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Lưu quyền thất bại",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Lưu thất bại",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Lưu trợ giảng thất bại",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "lý",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Mã cài đặt không đúng",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Mã thiết lập hết hạn",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Mã xác thực không đúng",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Mã xác thực không đúng hoặc đã sử dụng",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Mã xác thực không hợp lệ hoặc đã dùng",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Mật khẩu chưa đủ độ dài cho loại tài khoản",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Mật khẩu giáo viên/học sinh ít nhất 6 ký tự; quản trị ít nhất 12; tối đa 72 byte",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Mật khẩu không đúng",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Mật khẩu không hợp lệ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Mật khẩu tối thiểu 6 ký tự và tối đa 72 byte",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Media negotiation busy; retry",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Media ownership unavailable",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Media session retired during negotiation",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Media sessions unavailable",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Meeting is not live",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Meeting not found",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Meeting not found in this course",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Missing file",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Mở khóa cấu hình hệ thống trước",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Mốc nhật ký không hợp lệ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Môn còn liên kết, không thể xóa",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Môn đã có buổi học; giữ lại để bảo toàn lịch sử điểm danh",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Môn đã được sửa; tải lại trước khi lưu",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Môn đã thay đổi; tải lại bảng",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Môn dòng %d không hợp lệ; chưa lưu dòng nào",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Môn học không thuộc trung tâm",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Nếu tài khoản đang chờ xác thực, hệ thống sẽ gửi liên kết qua email. Vui lòng kiểm tra cả thư rác.",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Ngôn ngữ đã thay đổi; tải lại trước khi lưu",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "ngữ văn",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Nhập 1–100 dòng mỗi lượt",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Nhập 1–100 môn",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Nhập 1–100 phân công",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Nhập App ID và Secret trước",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Nhập đúng email và tải lại dữ liệu mới nhất",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Nhập đúng tên gói và tải lại dữ liệu mới nhất",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Nhập đúng tên khóa học để xác nhận xóa vĩnh viễn",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Nhập mã 2FA hợp lệ; khôi phục mật khẩu không bỏ qua 2FA",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Nhập tên giáo viên giới thiệu trước khi xuất bản",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Nhập tên, thời lượng 1–28800 giây và ghi chú hợp lệ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Nhập tiêu đề và nội dung thông báo hợp lệ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Nội dung không hợp lệ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Nội dung website cần được kiểm tra trước khi xóa khóa học",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Nội dung xem trước không hợp lệ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Operator session unavailable",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Origin rejected",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Password hashing failed",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Password unavailable",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Pending recording not found",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Permissions unavailable",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Phân công đã thay đổi; tải lại môn học",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Phân công giáo viên đã thay đổi",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Phân công giáo viên trước khi bắt đầu buổi học",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Phân hệ khóa học chưa bật",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Phản ứng chưa sẵn sàng",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Phản ứng không hợp lệ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Phiên media đã thu hồi; hãy kết nối lại",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Phiên tải đã hết hạn hoặc cấu hình R2 thay đổi; giữ bản lưu trên thiết bị",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Presence failed",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Publication persistence failed",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Publication unavailable in this room",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Quá 10.000 dòng; chọn từng buổi để xuất",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Quá nhiều câu chữ tùy chỉnh",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Quyền trình bày đã thay đổi",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "R2 cần Account ID 32 ký tự hex, bucket hợp lệ và cặp Access/Secret key",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "R2 is not configured",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Ra lớp / ghi nhận cuối (VN)",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Read failed",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Recording expired",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Recording is not enabled for this live meeting",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Recording not found",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Recording persistence failed",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Security unavailable",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Select a course and valid page",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Session expired",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Session không hợp lệ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Session limit reached for this meeting",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Session not found",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Session persistence failed",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Session store unavailable",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "SFU cần ID duy nhất, tên, App ID duy nhất, App Secret và trọng số 1–100",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "SFU chưa sẵn sàng hoặc credential đã gán không còn hợp lệ; kiểm tra cấu hình hệ thống",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "SFU mặc định",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "SFU negotiation failed",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "SFU returned no session",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Sign in required",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "SMTP cần địa chỉ host:587 dùng STARTTLS",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Số phần tải không hợp lệ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Số phút 0–240; tỷ lệ 1–100%",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Status must be live or ended",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Tài khoản chưa được cấp quyền cho chức năng này",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Tài khoản đã được tạo. Bấm liên kết sau để xác thực email (hiệu lực 24 giờ):\n\n",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Tài khoản đã tạo. Liên kết xác thực sẽ được gửi qua email; chỉ cần bấm liên kết, không nhập mã.",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Tài khoản đã thay đổi; yêu cầu liên kết mới",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Tài khoản quản trị gốc được bảo vệ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Teacher required",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Tên môn trống/quá dài hoặc ID trùng",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Tên thao tác quá dài",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Tên/chủ đề/ghi chú không hợp lệ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Tên/email không hợp lệ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Tên/nội dung khóa học không hợp lệ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Tham gia buổi học trước khi tạo media",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Tham gia buổi live trước",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Tham gia buổi live trước khi gửi tin nhắn",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Thanh toán đã được duyệt",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Thanh toán và hoàn phí",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Thao tác không hợp lệ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Thiếu file",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Thời hạn ghi hình từ 1 đến 3650 ngày",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Thông báo không hợp lệ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Thông tin quá dài hoặc chứa xuống dòng",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Thông tin trang khóa học không hợp lệ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Thử lại sau 15 phút",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Thử lại sau 5 phút",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "tiếng anh",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Tin nhắn từ 1–2000 ký tự",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Title and start time required",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "toán",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Tối đa 10 khảo sát mỗi buổi",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Tối đa 10 trợ giảng mỗi môn",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Tối đa 32 SFU app",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Tối đa 500 trang khóa học",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Trang không hợp lệ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Trang quản trị đã cũ. Tải lại trang trước khi lưu website.",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Trạng thái không hợp lệ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Trợ giảng không hợp lệ, trùng hoặc trùng giáo viên chính",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Trung tâm đang chuẩn bị nội dung",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Trung tâm đang khởi tạo",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Trường Lê Lợi",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Try again in five minutes",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Update failed",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Upload ID conflict",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Upload signing failed",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Upload XLSX under 4 MB",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Uploaded WebM missing or outside 1 byte–1 GiB limit",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "văn",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Vào buổi học trước khi dùng phản ứng",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Vào lớp (VN)",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Vào lớp trước khi xem khảo sát",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "vật lí",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "vật lý",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Vị trí không hợp lệ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Video chưa hoàn tất hoặc sai định dạng",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Video chưa sẵn sàng để công khai",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Video chưa xuất bản",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Video đã được tải lên; hãy hoàn tất để xác minh thay vì hủy",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Video tối đa 1 GiB, MP4/WebM và thời lượng hợp lệ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Webhook không hợp lệ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Website đã được thay đổi. Tải lại nội dung trước khi lưu.",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Xác thực email tài khoản học tập",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Xác thực email và hoàn thiện hồ sơ trước khi mua",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "XLSX không hợp lệ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Yêu cầu cập nhật không hợp lệ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Yêu cầu đã được sử dụng",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Yêu cầu đã hết hạn. Đăng nhập lại.",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Yêu cầu liên kết mới và thử lại",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": " MB · ",
+    "area": "Video & ghi hình"
+  },
+  {
+    "key": " phần đã tải",
+    "area": "Video & ghi hình"
+  },
+  {
+    "key": "Bản ghi còn trên thiết bị",
+    "area": "Video & ghi hình"
+  },
+  {
+    "key": "Bản ghi đang được sử dụng trong tab khác",
+    "area": "Video & ghi hình"
+  },
+  {
+    "key": "Bản ghi theo lớp và môn",
+    "area": "Video & ghi hình"
+  },
+  {
+    "key": "Bản ghi trong các lớp/môn của bạn",
+    "area": "Video & ghi hình"
+  },
+  {
+    "key": "Bản mẫu minh họa theo lớp và môn; chưa có video thật để phát.",
+    "area": "Video & ghi hình"
+  },
+  {
+    "key": "Bảng đối chiếu bản ghi",
+    "area": "Video & ghi hình"
+  },
+  {
+    "key": "Các bản ghi được phép xem, đã lưu và còn hạn. Buổi mới nhất hiển thị trước.",
+    "area": "Video & ghi hình"
+  },
+  {
+    "key": "Các đoạn đã lưu có thể tải lại sau khi mất mạng. Dùng đúng trình duyệt và tài khoản này; không xóa dữ liệu trình duyệt trước khi hoàn tất.",
+    "area": "Video & ghi hình"
+  },
+  {
+    "key": "Chọn lớp học, sau đó chọn môn để mở thư viện bản ghi.",
+    "area": "Video & ghi hình"
+  },
+  {
+    "key": "Chọn môn học để xem bản ghi riêng của môn trong lớp này.",
+    "area": "Video & ghi hình"
+  },
+  {
+    "key": "Chưa có bản ghi còn hạn cho môn/buổi đã chọn.",
+    "area": "Video & ghi hình"
+  },
+  {
+    "key": "Đã lưu bản ghi vào R2",
+    "area": "Video & ghi hình"
+  },
+  {
+    "key": "Đã tạo file tải xuống; kiểm tra file trước khi xóa bản trên thiết bị.",
+    "area": "Video & ghi hình"
+  },
+  {
+    "key": "Đang tải bản ghi…",
+    "area": "Video & ghi hình"
+  },
+  {
+    "key": "Đang xác minh bản ghi trên R2…",
+    "area": "Video & ghi hình"
+  },
+  {
+    "key": "Đóng các tab Meet cũ để mở bộ nhớ bản ghi",
+    "area": "Video & ghi hình"
+  },
+  {
+    "key": "Đóng video",
+    "area": "Video & ghi hình"
+  },
+  {
+    "key": "Dung lượng",
+    "area": "Video & ghi hình"
+  },
+  {
+    "key": "Hạn lưu",
+    "area": "Video & ghi hình"
+  },
+  {
+    "key": "Hủy bản ghi",
+    "area": "Video & ghi hình"
+  },
+  {
+    "key": "Hủy tải và xóa các đoạn ghi trên thiết bị? Thao tác này không thể hoàn tác.",
+    "area": "Video & ghi hình"
+  },
+  {
+    "key": "Kho riêng tư",
+    "area": "Video & ghi hình"
+  },
+  {
+    "key": "Không lưu được bản ghi trên thiết bị",
+    "area": "Video & ghi hình"
+  },
+  {
+    "key": "Không lưu được đoạn ghi: hết dung lượng hoặc vượt 8 GiB",
+    "area": "Video & ghi hình"
+  },
+  {
+    "key": "Lưu file về máy",
+    "area": "Video & ghi hình"
+  },
+  {
+    "key": "MB",
+    "area": "Video & ghi hình"
+  },
+  {
+    "key": "Tải bị gián đoạn; các đoạn ghi được giữ trên thiết bị để thử lại",
+    "area": "Video & ghi hình"
+  },
+  {
+    "key": "Tất cả bản ghi của bạn",
+    "area": "Video & ghi hình"
+  },
+  {
+    "key": "Tất cả buổi của môn",
+    "area": "Video & ghi hình"
+  },
+  {
+    "key": "Thiếu đoạn ghi trên thiết bị",
+    "area": "Video & ghi hình"
+  },
+  {
+    "key": "Tiếp tục tải lên R2",
+    "area": "Video & ghi hình"
+  },
+  {
+    "key": "Trình duyệt chưa hỗ trợ khóa ghi an toàn giữa các tab",
+    "area": "Video & ghi hình"
+  },
+  {
+    "key": "Trình duyệt không cho phép bộ nhớ phục hồi bản ghi",
+    "area": "Video & ghi hình"
+  },
+  {
+    "key": "Vuốt ngang để đối chiếu các cột · Cột buổi học luôn được giữ lại.",
+    "area": "Video & ghi hình"
+  },
+  {
+    "key": "Xem bản ghi",
+    "area": "Video & ghi hình"
+  },
+  {
+    "key": "· Không gian học tập trực tuyến.",
+    "area": "Website công khai"
+  },
+  {
+    "key": "← Danh mục khóa học",
+    "area": "Website công khai"
+  },
+  {
+    "key": "← Góc học tập",
+    "area": "Website công khai"
+  },
+  {
+    "key": "← Trang chủ",
+    "area": "Website công khai"
+  },
+  {
+    "key": "✓ Học ngay trên trình duyệt",
+    "area": "Website công khai"
+  },
+  {
+    "key": "✓ Linh hoạt trên mọi thiết bị",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Bài giảng xem lại",
+    "area": "Website công khai"
+  },
+  {
+    "key": "bài học khác nhau mỗi tháng",
+    "area": "Website công khai"
+  },
+  {
+    "key": "bài học khác nhau mỗi tháng và xem lại các bài đã chọn trong tháng. Các lớp Live và bài tập VIP tùy thuộc gói học đã đăng ký.",
+    "area": "Website công khai"
+  },
+  {
+    "key": "BẠN CẦN BIẾT",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Bạn có thể truy cập cổng học tập bằng trình duyệt trên máy tính hoặc điện thoại. Khi vào lớp Live, hãy cho phép camera và micro nếu muốn sử dụng.",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Bạn được chọn",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Bạn sẽ học được gì?",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Bắt đầu học",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Bắt đầu học miễn phí →",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Bắt đầu thật dễ dàng.",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Bắt đầu trải nghiệm.",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Bắt đầu với khóa học này",
+    "area": "Website công khai"
+  },
+  {
+    "key": "BƯỚC TIẾP THEO BẮT ĐẦU TỪ HÔM NAY",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Buổi học · Bài tập · Video",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Các gói học và quyền lợi sẽ được trung tâm công bố tại đây.",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Cảm nhận của học sinh & phụ huynh",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Cảm nhận sẽ được đăng khi có sự đồng ý của người chia sẻ. Học sinh và phụ huynh có thể gửi trải nghiệm hoặc góp ý qua kênh hỗ trợ của VA.",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Câu hỏi thường gặp",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Chỉ hiển thị tiêu đề. Đăng nhập và có quyền học để xem video trong khu vực học tập.",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Chi tiết →",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Chọn gói học →",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Chọn gói này",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Chọn khối lớp.",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Chủ động ôn tập",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Chưa bao gồm lớp Live và bài tập VIP.",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Chúng tôi đang lắng nghe những chia sẻ đầu tiên",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Chương trình học",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Có lớp học trực tiếp",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Có. Đăng nhập tài khoản của bạn để theo dõi tiến độ và tiếp tục bài giảng từ vị trí đã lưu.",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Đã có tài khoản? Tiếp tục học →",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Danh mục khóa học sẽ xuất hiện tại đây khi trung tâm công bố.",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Danh sách bài giảng",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Danh sách bài giảng đang được cập nhật.",
+    "area": "Website công khai"
+  },
+  {
+    "key": "ĐẦU TƯ CHO VIỆC HỌC",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Đến nội dung chính",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Điện thoại:",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Đọc bài viết →",
+    "area": "Website công khai"
+  },
+  {
+    "key": "ĐƠN GIẢN HƠN ĐỂ HỌC TỐT HƠN",
+    "area": "Website công khai"
+  },
+  {
+    "key": "ĐỒNG HÀNH CÙNG BẠN",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Gặp gỡ trong lớp Live",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Giáo viên tiêu biểu",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Giáo viên:",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Giới thiệu & hỗ trợ",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Góc học tập",
+    "area": "Website công khai"
+  },
+  {
+    "key": "GÓC HỌC TẬP",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Gói học và quyền lợi",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Gói VIP áp dụng cho danh mục trung tâm. Chọn gói để xem quyền lợi và thanh toán sau khi đăng nhập.",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Gửi chia sẻ đến VA →",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Hành trình cùng giáo viên",
+    "area": "Website công khai"
+  },
+  {
+    "key": "hành trình học liền mạch.",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Hồ sơ giáo viên đang được cập nhật",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Hỗ trợ",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Học cùng giáo viên",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Học cùng giáo viên. Chủ động theo dõi bài học.",
+    "area": "Website công khai"
+  },
+  {
+    "key": "HỌC CÙNG VA",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Học để tiến xa hơn.",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Học ở bất cứ đâu",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Học qua kho bài giảng xem lại",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Học tập chủ động.",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Học theo nhịp của bạn",
+    "area": "Website công khai"
+  },
+  {
+    "key": "HỌC TRỰC TUYẾN, KẾT NỐI THẬT",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Khám phá",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Khám phá bài giảng, xem lại nội dung đã học và tiếp tục từ vị trí đang xem dở.",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Khám phá khóa học",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Khám phá không gian học tập →",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Khám phá trước khi chọn hành trình dài hơn.",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Khóa học dành cho ai?",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Khóa học đầu tiên đang được chuẩn bị",
+    "area": "Website công khai"
+  },
+  {
+    "key": "KHÓA HỌC TẠI",
+    "area": "Website công khai"
+  },
+  {
+    "key": "KHÓA HỌC THEO KHỐI LỚP",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Không gian của bạn",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Không gian học tập của bạn",
+    "area": "Website công khai"
+  },
+  {
+    "key": "KHÔNG GIAN LỚP HỌC",
+    "area": "Website công khai"
+  },
+  {
+    "key": "KIẾN THỨC & CẢM HỨNG",
+    "area": "Website công khai"
+  },
+  {
+    "key": "KIẾN THỨC & LỊCH HỌC",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Kiến thức, phương pháp học và lịch khai giảng sẽ được cập nhật tại đây.",
+    "area": "Website công khai"
+  },
+  {
+    "key": "LÀM QUEN VỚI VIỆC HỌC",
+    "area": "Website công khai"
+  },
+  {
+    "key": "LẮNG NGHE & ĐỒNG HÀNH",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Lên đầu trang ↑",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Lịch học và hình thức học",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Liên hệ hỗ trợ",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Liên hệ VA →",
+    "area": "Website công khai"
+  },
+  {
+    "key": "LỰA CHỌN PHÙ HỢP VỚI BẠN",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Máy tính và điện thoại",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Menu",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Miễn phí",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Minh họa giao diện · Nội dung theo khóa học đã đăng ký",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Minh họa không gian lớp học",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Mở cánh cửa tri thức của bạn.",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Mở cổng học tập →",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Mọi thứ cho một",
+    "area": "Website công khai"
+  },
+  {
+    "key": "môn học",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Môn học của bạn",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Một tài khoản để kết nối, học tập và theo dõi hành trình của mình.",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Một vài thông tin trước khi tham gia học.",
+    "area": "Website công khai"
+  },
+  {
+    "key": "ngày ·",
+    "area": "Website công khai"
+  },
+  {
+    "key": "ngày đồng hành cùng việc học.",
+    "area": "Website công khai"
+  },
+  {
+    "key": "NGƯỜI ĐỒNG HÀNH",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Nhìn rõ từng bước tiến",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Những chia sẻ thực tế về hành trình học tập tại VA.",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Nội dung được phân công",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Quyền lợi rõ ràng, lựa chọn theo nhu cầu học tập của bạn.",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Tài khoản học thử có những quyền lợi gì?",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Tạo tài khoản để xem bài học theo quyền của bạn. Gói VIP dùng cho danh mục trung tâm; lịch Live theo lớp được phân công.",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Tạo tài khoản học thử →",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Tham gia lớp học Live",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Tham gia lớp học trên trình duyệt, trao đổi với giáo viên và học cùng các bạn.",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Thêm cảm hứng.",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Theo dõi hành trình",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Theo dõi tiến độ, điểm danh và bài tập để biết mình đang ở đâu trên hành trình học.",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Theo dõi vị trí xem dở",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Thông tin & chính sách",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Thông tin liên hệ đang được trung tâm cập nhật.",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Tiến bộ bền vững.",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Tiến độ và điểm danh",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Tiếp tục khi sẵn sàng.",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Tìm đúng môn cần học.",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Tìm hiểu người phụ trách môn học và cách đồng hành cùng học sinh.",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Tôi cần cài ứng dụng để học không?",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Tôi có thể tiếp tục bài giảng đang xem dở không?",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Trải nghiệm học tập",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Trung tâm đang cập nhật các gói học.",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Trung tâm đang hoàn thiện nội dung. Vui lòng quay lại sau.",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Từ tiếp cận kiến thức mới đến ôn tập và theo dõi kết quả, ngay trong một không gian.",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Tương tác trong lớp Live",
+    "area": "Website công khai"
+  },
+  {
+    "key": "VA",
+    "area": "Website công khai"
+  },
+  {
+    "key": "VA sẽ giới thiệu giáo viên, môn phụ trách và thông tin giảng dạy tại đây. Bạn có thể liên hệ để tìm hiểu lớp phù hợp.",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Vào không gian học tập",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Vững bước mỗi ngày.",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Vuốt ngang để xem thêm môn",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Xem bài giảng trong danh mục của trung tâm",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Xem bài học thử",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Xem câu hỏi thường gặp →",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Xem gói học và quyền lợi",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Xem hành trình của bạn",
+    "area": "Website công khai"
+  },
+  {
+    "key": "Xem lại các bài đã chọn trong tháng",
+    "area": "Website công khai"
+  }
+]

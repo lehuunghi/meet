@@ -1,3 +1,4 @@
+import { AcademyMailStatus } from "./academy-mail-status";
 import { useEffect, useState, useRef } from "react";
 import { api } from "./api";
 import { confirmFormReload, markFormClean } from "./form-guard-core";
@@ -42,6 +43,7 @@ export function AcademySettings({ demo }: { demo: boolean }) {
   return (
     <section className="academy-section">
       <h2>Email & thanh toán</h2>
+      <AcademyMailStatus demo={demo} />
       <p>
         Cấu hình kinh doanh chỉ quản lý trên website này. Cấu hình SFU, R2, VPS
         và nâng cấp do quản trị hạ tầng quản lý riêng.

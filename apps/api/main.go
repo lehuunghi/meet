@@ -32,6 +32,7 @@ type app struct {
 	origin        string
 	secure        bool
 	controlOrigin string
+	mailer        func(string, string, string) error
 }
 type identity struct {
 	Permissions []string `json:"permissions"`
@@ -181,6 +182,7 @@ func (a *app) routes() http.Handler {
 	m.HandleFunc("GET /api/profile", a.auth(a.profile))
 	m.HandleFunc("GET /api/accounts", a.auth(a.accounts))
 	m.HandleFunc("POST /api/accounts", a.auth(a.accountSave))
+	m.HandleFunc("POST /api/accounts/{user}/delete", a.auth(a.accountDelete))
 	m.HandleFunc("POST /api/2fa", a.auth(a.twoFactor))
 	m.HandleFunc("GET /api/catalog", a.auth(a.catalog))
 	m.HandleFunc("POST /api/classes", a.auth(a.createClass))
@@ -309,7 +311,7 @@ func migrate(db *sql.DB) error {
 	if e = migrateV4(c); e != nil {
 		return e
 	}
-	_, e = c.ExecContext(context.Background(), "INSERT IGNORE INTO schema_migrations VALUES(6),(7),(8),(9),(10)")
+	_, e = c.ExecContext(context.Background(), "INSERT IGNORE INTO schema_migrations VALUES(6),(7),(8),(9),(10),(11)")
 	return e
 }
 func main() {
@@ -362,6 +364,7 @@ func main() {
 	defer stop()
 	go a.retentionLoop(ctx)
 	go a.academyRecordingImportLoop(ctx)
+	go a.academyVerificationMailLoop(ctx)
 	go a.mediaCleanupLoop(ctx)
 	go func() {
 		<-ctx.Done()

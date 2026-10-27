@@ -6,6 +6,7 @@ import (
 	"encoding/xml"
 	"fmt"
 	"html/template"
+	"io"
 	"net/http"
 	"regexp"
 	"strings"
@@ -86,7 +87,27 @@ type webPlan struct {
 //go:embed academy_site.html
 var academySiteHTML string
 
-var academyWeb = template.Must(template.New("site").Funcs(template.FuncMap{"courseGroups": academyCourseGroups, "lines": func(s string) []string {
+type localizedWebsite struct{ base *template.Template }
+
+func (t localizedWebsite) Execute(w io.Writer, data any) error {
+	c, e := t.base.Clone()
+	if e != nil {
+		return e
+	}
+	var texts map[string]string
+	if d, ok := data.(map[string]any); ok {
+		texts, _ = d["UITexts"].(map[string]string)
+	}
+	c = c.Funcs(template.FuncMap{"ui": func(s string) string {
+		if v, ok := texts[s]; ok {
+			return v
+		}
+		return s
+	}})
+	return c.Execute(w, data)
+}
+
+var academyWeb = localizedWebsite{template.Must(template.New("site").Funcs(template.FuncMap{"ui": func(s string) string { return s }, "courseGroups": academyCourseGroups, "lines": func(s string) []string {
 	out := []string{}
 	for _, v := range strings.Split(s, "\n") {
 		if v = strings.TrimSpace(v); v != "" {
@@ -100,7 +121,7 @@ var academyWeb = template.Must(template.New("site").Funcs(template.FuncMap{"cour
 		text = text[:i] + "." + text[i:]
 	}
 	return text + " ₫"
-}}).Parse(academySiteHTML))
+}}).Parse(academySiteHTML))}
 
 func (a *app) websiteData(r *http.Request) (string, academySite, error) {
 	school, e := a.publicSchool(r)
@@ -233,7 +254,7 @@ func (a *app) academyWebsite(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.Header().Set("Cache-Control", "public, max-age=60")
-	_ = academyWeb.Execute(w, map[string]any{"Site": site, "Courses": courses, "Plans": plans, "Free": free, "Canonical": canonical, "Post": post, "Course": course, "Policy": policy, "HasPosts": hasPosts})
+	_ = academyWeb.Execute(w, map[string]any{"UITexts": a.uiTexts(r.Context(), school), "Site": site, "Courses": courses, "Plans": plans, "Free": free, "Canonical": canonical, "Post": post, "Course": course, "Policy": policy, "HasPosts": hasPosts})
 }
 func (a *app) academySitemap(w http.ResponseWriter, r *http.Request) {
 	if !academyEnabled() {
