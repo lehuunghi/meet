@@ -14,9 +14,11 @@ with tempfile.TemporaryDirectory(prefix='meet-recorder-upgrade-') as tmp:
     root=Path(tmp);u.ROOT=root/'app';u.STATE=root/'state';u.STATE.mkdir();(u.ROOT/'deploy').mkdir(parents=True)
     shutil.copy2(source/'deploy/recorder.compose.yaml',u.ROOT/'deploy/recorder.compose.yaml')
     shutil.copy2(source/'.env',u.ROOT/'.env');shutil.copytree(source/'secrets',u.ROOT/'secrets');(u.ROOT/'runtime-config').mkdir()
+    # Healthy stand-ins honor SIGTERM, as the real worker does. Keep the production
+    # grace period intact; the crash image still exits immediately for rollback checks.
     def build(tag,token,broken=False):
         folder=root/token;folder.mkdir()
-        (folder/'Dockerfile').write_text('FROM meet-web:local\nUSER root\nRUN mkdir -p /var/lib/meet-recorder && chown 10001:10001 /var/lib/meet-recorder && echo '+token+' >/recorder-test-token\nUSER 10001:10001\nENTRYPOINT ["/bin/sh","-c"]\nCMD ["'+('exit 1' if broken else 'while :; do sleep 5; done')+'"]\n')
+        (folder/'Dockerfile').write_text('FROM meet-web:local\nUSER root\nRUN mkdir -p /var/lib/meet-recorder && chown 10001:10001 /var/lib/meet-recorder && echo '+token+' >/recorder-test-token\nUSER 10001:10001\nENTRYPOINT ["/bin/sh","-c"]\nCMD ["'+('exit 1' if broken else 'trap exit TERM; while :; do sleep 1; done')+'"]\n')
         u.run('docker','build','-t',tag,str(folder),timeout=120)
         return u.run('docker','image','inspect','--format','{{.Id}}',tag).decode().strip()
     target='a'*40;bad_target='b'*40
