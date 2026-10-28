@@ -456,6 +456,25 @@ test("compact whiteboard dock leaves drawing usable on short phones", async ({
   await page.getByRole("button", { name: "Bảng trắng", exact: true }).click();
   await expect(page.locator(".drawing-compact")).toBeVisible();
   await page.getByLabel("Chọn công cụ viết vẽ", { exact: true }).click();
+  await expect
+    .poll(async () => {
+      const r = await page
+        .getByRole("menu", { name: "Danh sách công cụ viết vẽ" })
+        .boundingBox();
+      return (
+        !!r &&
+        r.x >= 0 &&
+        r.x + r.width <= 390 &&
+        r.y >= 0 &&
+        r.y + r.height <= 520
+      );
+    })
+    .toBe(true);
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
   await page.getByRole("menuitemradio", { name: "Bút", exact: true }).click();
   await line(page, "Bảng trắng dùng chung");
   await expect(

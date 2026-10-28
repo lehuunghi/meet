@@ -588,7 +588,7 @@
 }
 .room .drawing-labelled-menu > [role="menu"] {
   position: absolute;
-  left: 0;
+  left: var(--drawing-menu-left, 0px);
   top: calc(100% + 8px);
   width: 260px;
   max-width: calc(100vw - 50px);
@@ -844,4 +844,11 @@
 
 .drawing-compact .drawing-current-tool {
   display: none;
+}
+
+.room .drawing-compact .drawing-surface-switch > span {
+  display: none;
+}
+.room .drawing-compact .drawing-surface-switch {
+  margin: 0;
 }

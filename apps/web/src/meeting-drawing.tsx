@@ -689,6 +689,11 @@ export function MeetingDrawing({
                     const anchor = d
                       .querySelector("summary")!
                       .getBoundingClientRect();
+                    const menuWidth = Math.min(286, innerWidth - 50);
+                    d.style.setProperty(
+                      "--drawing-menu-left",
+                      `${Math.max(12 - anchor.left, Math.min(0, innerWidth - anchor.left - menuWidth - 12))}px`,
+                    );
                     const above = Math.max(0, anchor.top - 20);
                     const below = Math.max(0, innerHeight - anchor.bottom - 20);
                     const up = above > below;
