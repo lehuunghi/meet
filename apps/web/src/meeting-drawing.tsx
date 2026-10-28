@@ -14,6 +14,20 @@ import {
   type DrawingState,
 } from "./drawing-model";
 import "./meeting-drawing.css";
+const drawingTools = [
+  ["pointer", "Con trỏ"],
+  ["pen", "Bút"],
+  ["marker", "Đánh dấu"],
+  ["laser", "Mực biến mất"],
+  ["note", "Ghi chú cố định"],
+  ["stamp", "Hình dán"],
+  ["line", "Đường thẳng"],
+  ["arrow", "Mũi tên"],
+  ["rect", "Hình chữ nhật"],
+  ["ellipse", "Hình elip"],
+  ["text", "Viết chữ"],
+  ["erase", "Tẩy"],
+];
 type Target = { key: string; user_id: string; name: string };
 type Envelope = { state?: DrawingState; revision: number; targets: Target[] };
 export function requestDrawing(meeting: string, mode: string) {
@@ -212,12 +226,14 @@ export function MeetingDrawing({
   joined,
   canManage,
   demo = false,
+  onBoardChange,
 }: {
   meeting: string;
   user: { id: string; name: string };
   joined: boolean;
   canManage: boolean;
   demo?: boolean;
+  onBoardChange?: (open: boolean) => void;
 }) {
   const [state, setState] = useState<DrawingState>(emptyDrawing),
     [targets, setTargets] = useState<Target[]>([]),
@@ -274,12 +290,18 @@ export function MeetingDrawing({
     setTargets(v.targets || []);
   };
   async function load(force = false) {
-    if (demo) return;
+    if (demo)
+      return {
+        state: current.current,
+        targets: targetRef.current,
+        revision: version.current,
+      };
     const v = await api<Envelope>(
       `/meetings/${meeting}/drawing` +
         (force ? "" : `?since=${Math.max(0, version.current)}`),
     );
     receive(v);
+    return v;
   }
   function mutate(input: any): Promise<void> {
     const task = serial.current.then(async () => {
@@ -290,8 +312,11 @@ export function MeetingDrawing({
         if (input.action === "open_board") {
           s.active = true;
           s.mode = "board";
-        } else if (input.action === "open_screen") {
-          s.active = true;
+        } else if (
+          input.action === "open_screen" ||
+          input.action === "show_presentation"
+        ) {
+          s.active = input.action !== "show_presentation";
           s.mode = "screen";
           s.target = input.target;
           s.screens[input.target] ||= {
@@ -350,6 +375,18 @@ export function MeetingDrawing({
     setBusy(true);
     setError("");
     try {
+      if (
+        ["open_board", "open_screen", "show_presentation", "close"].includes(
+          input.action,
+        )
+      ) {
+        for (const [id, entry] of [...pending.current]) {
+          await mutate({ action: "stroke", ...entry });
+          if (pending.current.get(id)?.stroke.seq === entry.stroke.seq)
+            pending.current.delete(id);
+        }
+        setPendingCount(pending.current.size);
+      }
       await mutate(input);
     } catch (e) {
       setError((e as Error).message);
@@ -437,11 +474,50 @@ export function MeetingDrawing({
           return;
         }
         void act({ action: "open_board" });
+      } else if (d.mode === "present") {
+        setPicker(false);
+        void load(true)
+          .then((v) => {
+            const own = v.targets.find((t) => t.user_id === user.id);
+            if (own)
+              return act({ action: "show_presentation", target: own.key });
+          })
+          .catch((e) => setError(e.message));
       } else setPicker((v) => !v);
     };
     window.addEventListener("meeting:drawing", handler);
     return () => window.removeEventListener("meeting:drawing", handler);
   }, [meeting, joined, canManage]);
+  useEffect(() => {
+    const board = state.active && state.mode === "board";
+    onBoardChange?.(board);
+    const room = anchor.current?.closest<HTMLElement>(".room");
+    if (room) room.dataset.sharedSurface = board ? "board" : "presentation";
+    hosts.forEach((h) => {
+      h.dataset.presentationSuppressed = String(
+        board ||
+          (!board &&
+            state.mode === "screen" &&
+            !!target &&
+            h.dataset.presentation !== target.user_id),
+      );
+    });
+    return () => {
+      if (room) delete room.dataset.sharedSurface;
+      hosts.forEach((h) => delete h.dataset.presentationSuppressed);
+    };
+  }, [state.active, state.mode, target?.key, hosts, onBoardChange]);
+  useEffect(() => {
+    const close = (e: Event) => {
+      anchor.current
+        ?.querySelectorAll<HTMLDetailsElement>(".drawing-labelled-menu[open]")
+        .forEach((d) => {
+          if (!d.contains(e.target as Node)) d.open = false;
+        });
+    };
+    document.addEventListener("pointerdown", close);
+    return () => document.removeEventListener("pointerdown", close);
+  }, []);
   const add = (stroke: DrawStroke) => {
     const p = drawingPage(current.current);
     if (!p) return;
@@ -544,12 +620,12 @@ export function MeetingDrawing({
       ref={anchor}
       className={
         "meeting-drawing-anchor " +
-        (state.active && state.mode === "screen"
+        (state.active && state.mode === "screen" && screenLive
           ? "drawing-on-presentation"
           : "")
       }
     >
-      {(picker || error || (state.active && tools)) && (
+      {(picker || error || (state.active && tools && screenLive)) && (
         <section className="meeting-drawing-tools" aria-label="Công cụ viết vẽ">
           <header>
             <strong>
@@ -567,12 +643,38 @@ export function MeetingDrawing({
               <span className="drawing-sr-only">Ẩn công cụ</span>
             </button>
           </header>
+          {state.active &&
+            state.mode === "board" &&
+            canManage &&
+            targets.length > 0 && (
+              <div className="drawing-surface-switch">
+                <span>
+                  Bảng trắng đang hiển thị cho cả lớp · màn hình chia sẻ tạm ẩn
+                </span>
+                <button
+                  disabled={busy || pendingCount > 0}
+                  onClick={() =>
+                    void act({
+                      action: "show_presentation",
+                      target: target?.key || targets[0].key,
+                    })
+                  }
+                >
+                  Quay lại trình bày
+                </button>
+              </div>
+            )}
           {error && <p role="alert">{error}</p>}
           {picker && (
             <div className="drawing-targets">
               <p>Chọn màn hình để chú thích:</p>
               {targets
-                .filter((t) => canManage || t.user_id === user.id)
+                .filter(
+                  (t) =>
+                    canManage ||
+                    (t.user_id === user.id &&
+                      !(state.active && state.mode === "board")),
+                )
                 .map((t) => (
                   <button
                     key={t.key}
@@ -586,6 +688,12 @@ export function MeetingDrawing({
                     {t.name}
                   </button>
                 ))}
+              {state.active && state.mode === "board" && !canManage && (
+                <p>
+                  Giáo viên đang dùng bảng trắng. Chờ chuyển sang trình bày để
+                  chú thích màn hình.
+                </p>
+              )}
               {!targets.length && <p>Cần có người đang chia sẻ màn hình.</p>}
               {targets.length > 0 &&
                 !canManage &&
@@ -596,32 +704,99 @@ export function MeetingDrawing({
           )}
           {state.active && screenLive && (
             <>
+              <details
+                className="drawing-labelled-menu"
+                onToggle={(e) => {
+                  const d = e.currentTarget;
+                  if (d.open) {
+                    d.dataset.side =
+                      d.getBoundingClientRect().top > innerHeight * 0.5
+                        ? "up"
+                        : "down";
+                    if (
+                      document.activeElement === d.querySelector("summary") ||
+                      !d.contains(document.activeElement)
+                    )
+                      d.querySelector<HTMLElement>(
+                        '[aria-checked="true"]',
+                      )?.focus();
+                  }
+                }}
+                onKeyDown={(e) => {
+                  const d = e.currentTarget;
+                  if (e.key === "Escape") {
+                    d.open = false;
+                    d.querySelector<HTMLElement>("summary")?.focus();
+                  }
+                  if (["ArrowDown", "ArrowUp", "Home", "End"].includes(e.key)) {
+                    e.preventDefault();
+                    const items = Array.from(
+                      d.querySelectorAll<HTMLButtonElement>(
+                        '[role="menuitemradio"]',
+                      ),
+                    );
+                    const index = items.indexOf(
+                      document.activeElement as HTMLButtonElement,
+                    );
+                    const next =
+                      e.key === "Home"
+                        ? 0
+                        : e.key === "End"
+                          ? items.length - 1
+                          : (index +
+                              (e.key === "ArrowDown" ? 1 : -1) +
+                              items.length) %
+                            items.length;
+                    items[next]?.focus();
+                  }
+                }}
+              >
+                <summary
+                  data-meet-tip="Chọn công cụ viết vẽ"
+                  aria-label="Chọn công cụ viết vẽ"
+                >
+                  <DrawingIcon kind={tool} />
+                  <span>
+                    {drawingTools.find(([key]) => key === tool)?.[1] ||
+                      "Công cụ"}
+                  </span>
+                  <span aria-hidden="true">⌄</span>
+                </summary>
+                <div role="menu" aria-label="Danh sách công cụ viết vẽ">
+                  {drawingTools.map(([key, label]) => (
+                    <button
+                      type="button"
+                      role="menuitemradio"
+                      aria-checked={tool === key}
+                      disabled={!canDraw}
+                      key={key}
+                      onClick={(e) => {
+                        setTool(key);
+                        if (key === "stamp") setText("⭐");
+                        const d = e.currentTarget.closest("details");
+                        if (d) d.open = false;
+                      }}
+                    >
+                      <DrawingIcon kind={key} />
+                      <span>{label}</span>
+                      {tool === key && <span aria-hidden="true">✓</span>}
+                    </button>
+                  ))}
+                </div>
+              </details>
               <div
                 className="drawing-tool-row"
                 role="toolbar"
                 aria-label="Bút và hình vẽ"
               >
-                {[
-                  ["pointer", "Con trỏ"],
-                  ["pen", "Bút"],
-                  ["marker", "Đánh dấu"],
-                  ["laser", "Mực biến mất"],
-                  ["note", "Ghi chú cố định"],
-                  ["stamp", "Hình dán"],
-                  ["line", "Đường thẳng"],
-                  ["arrow", "Mũi tên"],
-                  ["rect", "Hình chữ nhật"],
-                  ["ellipse", "Hình elip"],
-                  ["text", "Viết chữ"],
-                  ["erase", "Tẩy"],
-                ].map(([key, label]) => (
+                {drawingTools.map(([key, label]) => (
                   <button
                     key={key}
                     type="button"
                     aria-pressed={tool === key}
                     disabled={!canDraw}
                     aria-label={label}
-                    title={label}
+                    data-meet-tip={label}
                     onClick={() => {
                       setTool(key);
                       if (key === "stamp") setText("⭐");
@@ -721,7 +896,7 @@ export function MeetingDrawing({
                     !strokes.some((v) => v.owner === user.id)
                   }
                   onClick={undo}
-                  title="Hoàn tác nét của tôi"
+                  data-meet-tip="Hoàn tác nét của tôi"
                   aria-label="Hoàn tác nét của tôi"
                 >
                   <DrawingIcon kind="undo" />
@@ -729,7 +904,7 @@ export function MeetingDrawing({
                 </button>
                 <button
                   disabled={!view}
-                  title="Tải ảnh PNG"
+                  data-meet-tip="Tải ảnh PNG"
                   aria-label="Tải ảnh PNG"
                   onClick={() => void exportPNG()}
                 >
@@ -851,7 +1026,7 @@ export function MeetingDrawing({
           createPortal(
             <button
               className="presentation-annotate"
-              title="Viết lên màn hình này"
+              data-meet-tip="Viết lên màn hình này"
               aria-label="Viết lên màn hình này"
               onClick={() => {
                 const t = targets.find(

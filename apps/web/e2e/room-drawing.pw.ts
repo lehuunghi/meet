@@ -14,6 +14,7 @@ async function enterDemo(page: Page) {
 }
 async function line(page: Page, label = "Bảng trắng dùng chung") {
   const canvas = page.getByLabel(label, { exact: true });
+  await canvas.scrollIntoViewIfNeeded();
   const box = (await canvas.boundingBox())!;
   await page.mouse.move(box.x + box.width * 0.2, box.y + box.height * 0.3);
   await page.mouse.down();
@@ -127,6 +128,97 @@ test("presentation has a direct annotation action, icon tools and fading ink", a
   await expect(canvas).toHaveCount(0);
 });
 
+test("board and presentation share one main surface and retain content when switching", async ({
+  page,
+}) => {
+  await enterDemo(page);
+  const presentation = page.locator(".preview-stage");
+  await expect(presentation).toBeVisible();
+  await page.getByRole("button", { name: "Bảng trắng", exact: true }).click();
+  await expect(presentation).toBeHidden();
+  await page.getByRole("button", { name: "Bút", exact: true }).click();
+  await line(page);
+  await page
+    .getByRole("button", { name: "Quay lại trình bày", exact: true })
+    .click();
+  await expect(presentation).toBeVisible();
+  await expect(
+    page.getByLabel("Bảng trắng dùng chung", { exact: true }),
+  ).toHaveCount(0);
+  await page.getByRole("button", { name: "Bảng trắng", exact: true }).click();
+  await expect(presentation).toBeHidden();
+  await expect(
+    page.getByRole("button", { name: "Hoàn tác nét của tôi" }),
+  ).toBeEnabled();
+  await page
+    .getByRole("button", { name: "Đóng cho cả lớp", exact: true })
+    .click();
+  await expect(presentation).toBeVisible();
+  await page
+    .getByRole("button", { name: "Viết lên màn hình này", exact: true })
+    .click();
+  await expect(
+    page.getByLabel("Chú thích trên màn hình chia sẻ", { exact: true }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Bảng trắng", exact: true }).click();
+  await expect(
+    page.getByLabel("Chú thích trên màn hình chia sẻ", { exact: true }),
+  ).toHaveCount(0);
+  await expect(presentation).toBeHidden();
+  await page.evaluate(() =>
+    window.dispatchEvent(
+      new CustomEvent("meeting:drawing", {
+        detail: { meeting: "preview", mode: "present" },
+      }),
+    ),
+  );
+  await expect(presentation).toBeVisible();
+  await expect(
+    page.getByLabel("Bảng trắng dùng chung", { exact: true }),
+  ).toHaveCount(0);
+});
+
+test("Meet icon hints and labelled drawing menu support mouse, keyboard and mobile", async ({
+  page,
+}) => {
+  await enterDemo(page);
+  await page.getByRole("button", { name: "Tắt mic", exact: true }).hover();
+  await expect(page.getByRole("tooltip")).toHaveText("Tắt mic");
+  await page.getByRole("button", { name: "Bảng trắng", exact: true }).click();
+  await page.getByLabel("Chọn công cụ viết vẽ", { exact: true }).click();
+  const menu = page.getByRole("menu", { name: "Danh sách công cụ viết vẽ" });
+  await expect(
+    menu.getByRole("menuitemradio", { name: "Ghi chú cố định" }),
+  ).toBeVisible();
+  await menu.getByRole("menuitemradio", { name: "Ghi chú cố định" }).click();
+  await expect(
+    page.getByRole("button", { name: "Ghi chú cố định", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.getByLabel("Chọn công cụ viết vẽ", { exact: true }).click();
+  await menu
+    .getByRole("menuitemradio", { name: "Mũi tên", exact: true })
+    .click();
+  await expect(
+    page.getByRole("button", { name: "Mũi tên", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+  await page.getByLabel("Chọn công cụ viết vẽ", { exact: true }).click();
+  await page.keyboard.press("End");
+  await page.keyboard.press("Enter");
+  await expect(
+    page.getByRole("button", { name: "Tẩy", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
+  await page.screenshot({
+    path: "../../outputs/meet-surface-tools-mobile.png",
+    fullPage: true,
+  });
+});
+
 test("two participants receive persisted drawings and teacher permission changes", async ({
   browser,
 }) => {
@@ -207,6 +299,8 @@ test("two participants receive persisted drawings and teacher permission changes
   await expect(
     student.getByLabel("Bảng trắng dùng chung", { exact: true }),
   ).toBeVisible();
+  await expect(teacher.locator('[data-presentation="teacher"]')).toBeHidden();
+  await expect(student.locator('[data-presentation="teacher"]')).toBeHidden();
   await expect(
     student.getByRole("button", { name: "Bút", exact: true }),
   ).toBeDisabled();

@@ -31,7 +31,7 @@ test(
               contents: `
  export class ClassroomMedia {
  constructor(id,onTrack){this.onTrack=onTrack;this.streams=[];}
- async subscribe(){if(this.streams.length)return;const canvas=document.createElement('canvas');canvas.width=640;canvas.height=360;const c=canvas.getContext('2d');c.fillStyle='#0055ff';c.fillRect(0,0,640,360);const audio=new AudioContext();await audio.resume();const osc=audio.createOscillator(),dest=audio.createMediaStreamDestination();osc.connect(dest);osc.start();const stream=new MediaStream([...canvas.captureStream(15).getTracks(),...dest.stream.getTracks()]);this.streams.push(stream);this.audio=audio;this.onTrack('student:screen',stream,'Học sinh · Màn hình');}
+ async subscribe(){if(this.streams.length)return;const canvas=document.createElement('canvas');canvas.width=640;canvas.height=360;const c=canvas.getContext('2d');c.fillStyle='#0055ff';c.fillRect(0,0,640,360);const audio=new AudioContext();await audio.resume();const osc=audio.createOscillator(),dest=audio.createMediaStreamDestination();osc.connect(dest);osc.start();const stream=new MediaStream([...canvas.captureStream(15).getTracks(),...dest.stream.getTracks()]);this.streams.push(stream);this.audio=audio;this.onTrack('student:screen',stream,'Học sinh · Màn hình');const second=document.createElement('canvas');second.width=640;second.height=360;const red=second.getContext('2d');red.fillStyle='#ff0000';red.fillRect(0,0,640,360);const secondStream=second.captureStream(15);this.streams.push(secondStream);this.onTrack('other:screen',secondStream,'Màn hình thứ hai');}
  async audioLevels(){return {};}
  async recover(){}
  close(){this.streams.forEach(s=>s.getTracks().forEach(t=>t.stop()));this.audio?.close();}
@@ -76,6 +76,9 @@ test(
         await window.capture.tick([]);
       });
       while (total < 2) await new Promise((r) => setTimeout(r, 250));
+      await page.evaluate(async()=>window.capture.tick([],{active:false,mode:'screen',target_user:'other'}));
+      await page.waitForTimeout(100);
+      const selected=await page.evaluate(()=>Array.from(document.querySelector('canvas').getContext('2d').getImageData(500,300,1,1).data));assert.equal(selected[0],255);assert.ok(selected[2]<100);
       await page.evaluate(async()=>{await window.capture.tick([], {active:true,mode:'board',page:'p1',pages:[{id:'p1',strokes:[{id:'ink',kind:'rect',color:'#FF4D4F',width:12,points:[{x:100,y:100},{x:500,y:400}],text:''}]}],screens:{}})});
       await page.waitForTimeout(100);
       const white=await page.evaluate(()=>Array.from(document.querySelector('canvas').getContext('2d').getImageData(20,20,1,1).data));assert.deepEqual(white,[255,255,255,255]);

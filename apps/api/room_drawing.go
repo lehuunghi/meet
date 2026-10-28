@@ -141,7 +141,10 @@ func applyDrawing(s *drawingState, in drawingInput, actor string, host bool, tar
 		s.Active = true
 		s.Mode = "board"
 		return 200, ""
-	case "open_screen":
+	case "open_screen", "show_presentation":
+		if s.Active && s.Mode == "board" && !host {
+			return 403, "Giáo viên đang dùng bảng trắng; chờ giáo viên chuyển sang trình bày"
+		}
 		owner := false
 		found := false
 		for _, t := range targets {
@@ -178,6 +181,9 @@ func applyDrawing(s *drawingState, in drawingInput, actor string, host bool, tar
 		s.Active = true
 		s.Mode = "screen"
 		s.Target = in.Target
+		if in.Action == "show_presentation" {
+			s.Active = false
+		}
 		return 200, ""
 	case "allow", "close", "page_add", "page_select", "page_delete", "clear":
 		if !control {
@@ -194,6 +200,9 @@ func applyDrawing(s *drawingState, in drawingInput, actor string, host bool, tar
 			s.Allow = in.Allow
 		case "close":
 			s.Active = false
+			if s.Mode == "board" && validTarget {
+				s.Mode = "screen"
+			}
 		case "page_add":
 			if !host || s.Mode != "board" {
 				return 403, "Chỉ giáo viên thêm trang bảng trắng"

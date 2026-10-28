@@ -694,6 +694,7 @@ function Room({
 }) {
   const [state, setState] = useState(meeting.status),
     [joined, setJoined] = useState(false),
+    [boardOpen,setBoardOpen]=useState(false),
     [local, setLocal] = useState<MediaStream | null>(null),
     [remote, setRemote] = useState<
       Record<string, { stream: MediaStream; name: string }>
@@ -825,6 +826,7 @@ function Room({
   const toggleMic = () =>
     void run(async () => {
       if (!media.current) throw Error("Chưa kết nối media");
+      if(!localScreen&&boardOpen&&!canManage)throw Error("Giáo viên đang dùng bảng trắng; chờ chuyển sang trình bày");
       const stream = await media.current.setEnabled("audio", !preMic);
       if (stream) setLocal(new MediaStream(stream.getTracks()));
       setPreMic(!preMic);
@@ -854,6 +856,7 @@ function Room({
         throw Error("Giáo viên đang tắt quyền trình bày");
       const stream = await media.current.share();
       setLocalScreen(stream || null);
+      if(stream)requestDrawing(meeting.id,"present");
       stream
         ?.getVideoTracks()[0]
         ?.addEventListener("ended", () => setLocalScreen(null), { once: true });
@@ -1311,7 +1314,7 @@ function Room({
           mic={preMic}
           camera={preCamera}
           sharing={!!localScreen}
-          canPresent={canManage || rules.present_enabled}
+          canPresent={canManage || (rules.present_enabled&&!boardOpen)}
           raised={handRaised}
           busy={busy}
           canManage={canManage && state === "live"}
@@ -1470,6 +1473,7 @@ function Room({
                 <button
                   className="call-control"
                   aria-label={preMic ? "Tắt mic" : "Bật mic"}
+                  data-meet-tip={preMic?"Tắt mic":"Bật mic"}
                   aria-pressed={preMic}
                   disabled={busy}
                   onClick={() => void run(() => togglePreview("audio"))}
@@ -1479,6 +1483,7 @@ function Room({
                 <button
                   className="call-control"
                   aria-label={preCamera ? "Tắt camera" : "Bật camera"}
+                  data-meet-tip={preCamera?"Tắt camera":"Bật camera"}
                   aria-pressed={preCamera}
                   disabled={busy}
                   onClick={() => void run(() => togglePreview("video"))}
@@ -1589,7 +1594,7 @@ function Room({
           </article>
         ))}
       </div>
-      {joined&&<MeetingDrawing meeting={meeting.id} user={user} joined={joined} canManage={canManage}/>}
+      {joined&&<MeetingDrawing meeting={meeting.id} user={user} joined={joined} canManage={canManage} onBoardChange={setBoardOpen}/>}
       <RoomTools
         panelTab={panelTab}
         onPanelTabChange={setPanelTab}

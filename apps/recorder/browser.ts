@@ -53,7 +53,7 @@ function draw() {
     return;
   }
   const screen =
-    (ink?.active && ink.mode === "screen" && ink.target_user
+    (ink?.mode === "screen" && ink.target_user
       ? all.find(([key]) => key === ink!.target_user + ":screen")
       : undefined) || all.find(([key]) => key.endsWith(":screen"));
   const person =

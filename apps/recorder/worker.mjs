@@ -358,7 +358,7 @@ async function record(job, lease) {
       );
       let ink = inkRows[0]?.content || null;
       if (typeof ink === "string") ink = JSON.parse(ink);
-      if (ink?.active && ink.mode === "screen") {
+      if (ink?.mode === "screen") {
         const target = list.find(
           (p) =>
             createHash("sha256")

@@ -536,3 +536,117 @@
     min-width: 0;
   }
 }
+
+/* A single shared teaching surface; camera tiles remain available. */
+.room [data-presentation][data-presentation-suppressed="true"] {
+  display: none !important;
+}
+.room .meeting-drawing-tools {
+  overflow: visible;
+  position: relative;
+}
+.drawing-surface-switch {
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+  align-items: center;
+  margin: 6px 0 10px;
+  font-size: 12px;
+  flex-wrap: wrap;
+  color: #53657e;
+}
+.room .drawing-surface-switch button {
+  background: #0b4ed8;
+  color: #fff;
+  border: 0;
+  white-space: nowrap;
+}
+.room .drawing-labelled-menu {
+  display: inline-block;
+  position: relative;
+  z-index: 50;
+  margin: 5px 0;
+}
+.room .drawing-labelled-menu > summary {
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  background: #dce8ff;
+  color: #123664;
+  border-radius: 22px;
+  padding: 8px 13px;
+  cursor: pointer;
+  font-size: 13px;
+  min-height: 40px;
+}
+.room .drawing-labelled-menu > summary::-webkit-details-marker {
+  display: none;
+}
+.room .drawing-labelled-menu > [role="menu"] {
+  position: absolute;
+  left: 0;
+  top: calc(100% + 8px);
+  width: 260px;
+  max-width: calc(100vw - 50px);
+  max-height: min(55dvh, 480px);
+  overflow: auto;
+  background: #202124;
+  color: #e8eaed;
+  border: 1px solid #414449;
+  border-radius: 14px;
+  padding: 8px;
+  box-shadow: 0 10px 30px #0006;
+}
+.room .drawing-labelled-menu[data-side="up"] > [role="menu"] {
+  top: auto;
+  bottom: calc(100% + 8px);
+}
+.room .drawing-labelled-menu button[role="menuitemradio"] {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  width: 100%;
+  min-height: 42px;
+  text-align: left;
+  border: 0;
+  background: transparent;
+  color: #e8eaed;
+  border-radius: 7px;
+  font-size: 13px;
+  padding: 10px;
+}
+.room .drawing-labelled-menu button[role="menuitemradio"] > span:first-of-type {
+  flex: 1;
+}
+.room .drawing-labelled-menu button[aria-checked="true"],
+.room .drawing-labelled-menu button[role="menuitemradio"]:hover {
+  background: #343d4c;
+  color: #aecbfa;
+}
+.room .drawing-labelled-menu button[role="menuitemradio"]:focus-visible {
+  outline: 2px solid #aecbfa;
+  outline-offset: -2px;
+}
+.meeting-control-tip {
+  position: fixed;
+  z-index: 2000;
+  transform: translate(-50%, -100%);
+  pointer-events: none;
+  background: #3c4043;
+  color: #fff;
+  padding: 8px 12px;
+  border: 1px solid #5f6368;
+  border-radius: 7px;
+  box-shadow: 0 3px 10px #0003;
+  font:
+    500 12px/1.5 "Segoe UI",
+    Arial,
+    sans-serif;
+  max-width: min(260px, calc(100vw - 24px));
+  text-align: center;
+  white-space: normal;
+}
+.meeting-control-tip[data-below="true"] {
+  transform: translateX(-50%);
+}
