@@ -449,7 +449,12 @@ export function MeetingDrawing({
       ? stroke.id
       : user.id + "-" + stroke.id;
     pending.current.set(id, {
-      stroke: { ...stroke, id, owner: user.id },
+      stroke: {
+        ...stroke,
+        id,
+        owner: user.id,
+        expires_at: stroke.kind === "laser" ? Date.now() + 5000 : undefined,
+      },
       context: drawingContext(current.current),
       epoch: p.epoch,
     });

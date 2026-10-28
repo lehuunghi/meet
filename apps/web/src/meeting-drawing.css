@@ -391,6 +391,14 @@
 }
 
 /* Prejoin: device preview and explicit join action stay separate on every screen. */
+.room .video-grid > section.prejoin {
+  background: #f8fafd !important;
+  border-color: #dce6f3;
+  color: #162b49;
+}
+.room .prejoin-placeholder > span {
+  flex-shrink: 0;
+}
 .room .prejoin {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 310px;
@@ -481,6 +489,9 @@
   min-width: 220px;
 }
 @media (max-width: 700px) {
+  .room .prejoin .prejoin-placeholder {
+    padding: 16px 16px 82px;
+  }
   .room .prejoin {
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto auto auto 250px auto;
