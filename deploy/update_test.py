@@ -83,4 +83,44 @@ class UpdaterTests(unittest.TestCase):
             with patch.object(u,'ROOT',root),patch.object(u,'STATE',state),patch.object(u,'resume_recorders') as resume,patch.object(u,'publish'),patch.object(u.os,'O_NOFOLLOW',0,create=True):
                 u.worker();resume.assert_called_once()
 
+    def test_recorder_plan_accepts_only_standard_managed_configuration(self):
+        identity='a'*64
+        meta={'Image':'sha256:'+'b'*64,'Config':{'Env':['RECORDER_CONCURRENCY=2'],'Labels':{'com.docker.compose.project.working_dir':str(u.ROOT/'deploy'),'com.docker.compose.project.config_files':str(u.ROOT/'deploy/recorder.compose.yaml')+','+str(u.STATE/'recorder.images.json')}}}
+        with patch.object(u,'run',side_effect=[identity.encode(),json.dumps([meta]).encode()]):
+            plan=u.recorder_plan('c'*40)
+            self.assertEqual(plan['concurrency'],'2');self.assertEqual(plan['old_image'],meta['Image'])
+        meta['Config']['Labels']['com.docker.compose.project.config_files']='/custom/recorder.yaml'
+        with patch.object(u,'run',side_effect=[identity.encode(),json.dumps([meta]).encode()]):
+            with self.assertRaisesRegex(ValueError,'Custom recorder'):u.recorder_plan('c'*40)
+
+    def test_recorder_config_drift_is_rejected_before_replacement(self):
+        old={'services':{'recorder':{'image':'old','volumes':['spool:/recordings']}}}
+        new={'services':{'recorder':{'image':'new','volumes':['empty:/recordings']}}}
+        with patch.object(u,'run',side_effect=[json.dumps(old).encode(),json.dumps(new).encode()]):
+            with self.assertRaisesRegex(ValueError,'volumes/network'):u.check_recorder_config(Path('/stage'))
+
+    def test_rollback_recorder_is_created_stopped_and_journaled_for_legacy_recovery(self):
+        plan={'old_image':'sha256:'+'b'*64,'target_image':'meet-recorder:'+'c'*40,'concurrency':'2'}
+        job={'recorder_upgrade':plan,'recorders':['a'*64]};identity='d'*64
+        def save(value,**fields):value.update(fields)
+        with tempfile.TemporaryDirectory() as tmp,patch.object(u,'STATE',Path(tmp)),patch.object(u,'checkpoint',side_effect=save),patch.object(u,'run',side_effect=[b'',identity.encode()]) as run:
+            u.activate_recorder(job,plan['old_image'],start=False)
+            self.assertIn('--no-start',run.call_args_list[0].args)
+            self.assertEqual(job['recorders'],[identity]);self.assertFalse(job['recorder_changed'])
+
+    def test_recorder_crash_prevents_commit_and_keeps_recovery_intent(self):
+        plan={'old_image':'sha256:'+'b'*64,'target_image':'meet-recorder:'+'c'*40,'concurrency':'1'}
+        job={'recorder_upgrade':plan}
+        def save(value,**fields):value.update(fields)
+        with tempfile.TemporaryDirectory() as tmp,patch.object(u,'STATE',Path(tmp)),patch.object(u,'checkpoint',side_effect=save),patch.object(u,'run',side_effect=[b'',('d'*64).encode(),json.dumps([{'State':{'Running':False},'RestartCount':1}]).encode()]):
+            with self.assertRaisesRegex(ValueError,'runtime health'):u.activate_recorder(job,plan['target_image'])
+            self.assertTrue(job['recorder_changed'])
+
+    def test_interrupted_recorder_resume_uses_result_to_pick_the_correct_image(self):
+        plan={'old_image':'sha256:'+'b'*64,'target_image':'meet-recorder:'+'c'*40,'concurrency':'1'}
+        for result,want in [('success',plan['target_image']),('rolled_back',plan['old_image'])]:
+            job={'committed':True,'result':result,'recorders':['a'*64],'recorder_upgrade':plan}
+            with patch.object(u,'activate_recorder') as activate:
+                u.resume_recorders(job);activate.assert_called_once_with(job,want)
+
 if __name__ == '__main__': unittest.main()

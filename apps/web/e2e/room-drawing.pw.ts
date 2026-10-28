@@ -293,6 +293,16 @@ test("two participants receive persisted drawings and teacher permission changes
   await student
     .getByRole("button", { name: "Vào lớp học", exact: true })
     .click();
+  for (const p of [teacher, student]) {
+    await p.locator(".video-grid").evaluate((el) => {
+      const screen = document.createElement("article");
+      screen.dataset.presentation = "teacher";
+      screen.textContent = "Màn hình kiểm thử";
+      el.append(screen);
+    });
+    await expect(p.locator('[data-presentation="teacher"]')).toHaveCount(1);
+    await expect(p.locator('[data-presentation="teacher"]')).toBeVisible();
+  }
   await teacher
     .getByRole("button", { name: "Bảng trắng", exact: true })
     .click();

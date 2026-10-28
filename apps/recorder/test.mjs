@@ -8,6 +8,87 @@ import {
   assertRemoteTracks,
   retentionDays,
 } from "./core.mjs";
+
+test(
+  "worker freezes recording/spool writes until updater maintenance is released",
+  { skip: !process.env.TEST_REDIS_URL, timeout: 25000 },
+  async () => {
+    const fs = await import("node:fs/promises"),
+      os = await import("node:os"),
+      path = await import("node:path"),
+      { spawn } = await import("node:child_process"),
+      { once } = await import("node:events"),
+      { build } = await import("esbuild"),
+      { createClient } = await import("redis");
+    await build({
+      entryPoints: ["browser.ts"],
+      bundle: true,
+      format: "iife",
+      outfile: "dist/browser.js",
+    });
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), "meet-freeze-")),
+      redis = createClient({ url: process.env.TEST_REDIS_URL });
+    await redis.connect();
+    await fs.writeFile(
+      path.join(dir, "mysql"),
+      "qa:qa@tcp(127.0.0.1:1)/qa?parseTime=true&loc=UTC",
+    );
+    await fs.writeFile(path.join(dir, "redis"), process.env.TEST_REDIS_URL);
+    await fs.writeFile(
+      path.join(dir, "settings.json"),
+      JSON.stringify({ r2: { enabled: true } }),
+    );
+    await fs.writeFile(path.join(dir, "maintenance"), "test-freeze");
+    await redis.del("server-recorder:seen");
+    const child = spawn(process.execPath, ["worker.mjs"], {
+        env: {
+          ...process.env,
+          MYSQL_DSN_FILE: path.join(dir, "mysql"),
+          REDIS_URL_FILE: path.join(dir, "redis"),
+          CONFIG_DIR: dir,
+          SPOOL_DIR: path.join(dir, "spool"),
+        },
+        stdio: ["ignore", "ignore", "pipe"],
+      }),
+      exited = once(child, "exit");
+    let errors = "";
+    child.stderr.on("data", (data) => (errors += data.toString()));
+    const until = async (predicate) => {
+      const end = Date.now() + 6000;
+      while (Date.now() < end) {
+        if (await predicate()) return;
+        await new Promise((r) => setTimeout(r, 100));
+      }
+      assert.fail("Worker state did not change in time");
+    };
+    try {
+      await until(() => redis.exists("server-recorder:seen"));
+      await new Promise((r) => setTimeout(r, 1300));
+      assert.equal(child.exitCode, null);
+      assert.equal(errors.includes("RECORDER_POLL_RETRY"), false);
+      await fs.unlink(path.join(dir, "maintenance"));
+      await until(() => errors.includes("RECORDER_POLL_RETRY"));
+    } finally {
+      child.kill("SIGTERM");
+      let timer;
+      await Promise.race([
+        exited,
+        new Promise(
+          (r) =>
+            (timer = setTimeout(() => {
+              child.kill("SIGKILL");
+              r();
+            }, 7000)),
+        ),
+      ]);
+      clearTimeout(timer);
+      await exited;
+      await redis.del("server-recorder:seen");
+      await redis.quit();
+      await fs.rm(dir, { recursive: true, force: true });
+    }
+  },
+);
 test("worker uses the meeting's pinned SFU, including disabled-but-pinned credentials", () => {
   const pool = {
     sfu: [

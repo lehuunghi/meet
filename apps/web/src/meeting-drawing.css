@@ -538,6 +538,7 @@
 }
 
 /* A single shared teaching surface; camera tiles remain available. */
+.room:has(.drawing-board-stage) [data-presentation] { display:none!important; }
 .room [data-presentation][data-presentation-suppressed="true"] {
   display: none !important;
 }

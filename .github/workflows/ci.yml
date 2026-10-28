@@ -191,6 +191,9 @@ jobs:
         env:
           APP_ORIGIN: http://localhost:8080
           MEET_DISPOSABLE_BACKUP_TEST: 'true'
+      - run: sudo --preserve-env=MEET_DISPOSABLE_BACKUP_TEST python3 deploy/recorder_update_integration.py
+        env:
+          MEET_DISPOSABLE_BACKUP_TEST: 'true'
       - run: sudo --preserve-env=MEET_DISPOSABLE_BACKUP_TEST python3 control/purge_integration.py
         env:
           MEET_DISPOSABLE_BACKUP_TEST: 'true'

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { DrawingIcon } from "./drawing-icon";
-import { api } from "./api";
+import { drawingRequest, retryDrawing } from "./drawing-request";
 import {
   drawingContext,
   drawingPage,
@@ -238,6 +238,8 @@ export function MeetingDrawing({
   const [state, setState] = useState<DrawingState>(emptyDrawing),
     [targets, setTargets] = useState<Target[]>([]),
     [error, setError] = useState(""),
+    [pollError, setPollError] = useState(""),
+    [syncError, setSyncError] = useState(""),
     [picker, setPicker] = useState(false),
     [tools, setTools] = useState(true),
     [tool, setTool] = useState("pointer"),
@@ -258,6 +260,9 @@ export function MeetingDrawing({
     canvas = useRef<HTMLCanvasElement | null>(null),
     alive = useRef(true),
     pumping = useRef(false),
+    polling = useRef(false),
+    retry = useRef({ failures: 0, at: 0 }),
+    presentationAttempt = useRef(0),
     targetRef = useRef(targets);
   current.current = state;
   targetRef.current = targets;
@@ -296,7 +301,7 @@ export function MeetingDrawing({
         targets: targetRef.current,
         revision: version.current,
       };
-    const v = await api<Envelope>(
+    const v = await drawingRequest<Envelope>(
       `/meetings/${meeting}/drawing` +
         (force ? "" : `?since=${Math.max(0, version.current)}`),
     );
@@ -362,10 +367,13 @@ export function MeetingDrawing({
         });
         return;
       }
-      const result = await api<Envelope>(`/meetings/${meeting}/drawing`, {
-        ...input,
-        revision: current.current.control_revision || 0,
-      });
+      const result = await drawingRequest<Envelope>(
+        `/meetings/${meeting}/drawing`,
+        {
+          ...input,
+          revision: current.current.control_revision || 0,
+        },
+      );
       receive(result);
     });
     serial.current = task.catch(() => {});
@@ -386,6 +394,10 @@ export function MeetingDrawing({
             pending.current.delete(id);
         }
         setPendingCount(pending.current.size);
+        if (!pending.current.size) {
+          setSyncError("");
+          retry.current = { failures: 0, at: 0 };
+        }
       }
       await mutate(input);
     } catch (e) {
@@ -396,17 +408,37 @@ export function MeetingDrawing({
     }
   }
   const pump = async () => {
-    if (pumping.current || !pending.current.size || !joined) return;
+    if (
+      pumping.current ||
+      !pending.current.size ||
+      !joined ||
+      Date.now() < retry.current.at
+    )
+      return;
     pumping.current = true;
     const [id, entry] = pending.current.entries().next().value!;
     try {
       await mutate({ action: "stroke", ...entry });
+      retry.current = { failures: 0, at: 0 };
+      if (alive.current) setSyncError("");
       if (pending.current.get(id)?.stroke.seq === entry.stroke.seq)
         pending.current.delete(id);
     } catch (e) {
-      pending.current.delete(id);
+      if (retryDrawing(e)) {
+        retry.current.failures++;
+        retry.current.at =
+          Date.now() +
+          Math.min(10000, 500 * 2 ** Math.min(retry.current.failures, 5));
+      } else {
+        pending.current.delete(id);
+        retry.current = { failures: 0, at: 0 };
+      }
       if (alive.current) {
-        setError((e as Error).message);
+        setSyncError(
+          retryDrawing(e)
+            ? "Kết nối chập chờn. Nét vẽ đang được giữ và sẽ tự gửi lại. Đừng tải lại hoặc rời lớp khi chưa lưu xong."
+            : (e as Error).message,
+        );
         await load(true).catch(() => {});
       }
     } finally {
@@ -417,10 +449,18 @@ export function MeetingDrawing({
   useEffect(() => {
     alive.current = true;
     let stopped = false;
-    const tick = () =>
-      void load().catch((e) => {
-        if (!stopped) setError(e.message);
-      });
+    const tick = async () => {
+      if (polling.current) return;
+      polling.current = true;
+      try {
+        await load();
+        if (!stopped) setPollError("");
+      } catch (e) {
+        if (!stopped) setPollError((e as Error).message);
+      } finally {
+        polling.current = false;
+      }
+    };
     if (joined && !demo) tick();
     if (demo)
       setTargets([
@@ -437,10 +477,21 @@ export function MeetingDrawing({
     return () => {
       stopped = true;
       alive.current = false;
+      presentationAttempt.current++;
       clearInterval(id);
       clearInterval(p);
     };
   }, [meeting, joined, demo]);
+  useEffect(() => {
+    const protect = (e: BeforeUnloadEvent) => {
+      if (pending.current.size) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+    window.addEventListener("beforeunload", protect);
+    return () => window.removeEventListener("beforeunload", protect);
+  }, []);
   useEffect(() => {
     const room = anchor.current?.closest(".room");
     if (!room) return;
@@ -467,6 +518,7 @@ export function MeetingDrawing({
     const handler = (e: Event) => {
       const d = (e as CustomEvent).detail;
       if (d.meeting !== meeting || !joined) return;
+      const attempt = ++presentationAttempt.current;
       setTools(true);
       if (d.mode === "board") {
         if (!canManage) {
@@ -476,13 +528,27 @@ export function MeetingDrawing({
         void act({ action: "open_board" });
       } else if (d.mode === "present") {
         setPicker(false);
-        void load(true)
-          .then((v) => {
-            const own = v.targets.find((t) => t.user_id === user.id);
-            if (own)
-              return act({ action: "show_presentation", target: own.key });
-          })
-          .catch((e) => setError(e.message));
+        void (async () => {
+          for (let i = 0; i < 8; i++) {
+            if (!alive.current || attempt !== presentationAttempt.current)
+              return;
+            try {
+              const v = await load(true);
+              if (!alive.current || attempt !== presentationAttempt.current)
+                return;
+              const own = v.targets.find((t) => t.user_id === user.id);
+              if (own)
+                return act({ action: "show_presentation", target: own.key });
+            } catch (e) {
+              if (!retryDrawing(e)) throw e;
+            }
+            await new Promise((r) => setTimeout(r, 400));
+          }
+          if (alive.current && attempt === presentationAttempt.current)
+            throw Error(
+              "Chưa chuyển được màn hình. Khi kết nối ổn định, chọn Quay lại trình bày.",
+            );
+        })().catch((e) => setError(e.message));
       } else setPicker((v) => !v);
     };
     window.addEventListener("meeting:drawing", handler);
@@ -625,7 +691,11 @@ export function MeetingDrawing({
           : "")
       }
     >
-      {(picker || error || (state.active && tools && screenLive)) && (
+      {(picker ||
+        error ||
+        pollError ||
+        syncError ||
+        (state.active && tools && screenLive)) && (
         <section className="meeting-drawing-tools" aria-label="Công cụ viết vẽ">
           <header>
             <strong>
@@ -664,7 +734,9 @@ export function MeetingDrawing({
                 </button>
               </div>
             )}
-          {error && <p role="alert">{error}</p>}
+          {(error || syncError || pollError) && (
+            <p role="alert">{error || syncError || pollError}</p>
+          )}
           {picker && (
             <div className="drawing-targets">
               <p>Chọn màn hình để chú thích:</p>

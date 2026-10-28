@@ -246,6 +246,9 @@ def recover(job, b):
             os.chmod(path, 0o600)
             if name != '.env':
                 os.chown(path, 10001, 10001)
+    # Restore the worker before resetting source; an old updater must never inherit
+    # a journal that refers to removed recorder container IDs.
+    if job.get('recorder_upgrade'):activate_recorder(job,job['recorder_upgrade']['old_image'],start=False)
     if git('rev-parse', 'HEAD') != job['old_sha']:
         # Only undo this updater's fast-forward, under maintenance and its exclusive lock.
         git('reset', '--hard', job['old_sha'])
@@ -267,9 +270,69 @@ def pause_recorders(job):
         run('docker', 'stop', '--time', '120', *ids, timeout=150)
 
 
+def recorder_plan(target):
+    ids = run('docker','ps','--quiet','--no-trunc','--filter','label=com.docker.compose.project=meet-recorder','--filter','label=com.docker.compose.service=recorder').decode().split()
+    if not ids:return None
+    if len(ids)!=1 or not re.fullmatch(r'[a-f0-9]{64}',ids[0]):raise ValueError('Multiple/custom recorders require a reviewed manual upgrade')
+    meta=json.loads(run('docker','inspect',ids[0]))[0]
+    labels=meta.get('Config',{}).get('Labels',{}) or {}
+    files=labels.get('com.docker.compose.project.config_files','').split(',')
+    approved=[str(ROOT/'deploy/recorder.compose.yaml')]
+    if labels.get('com.docker.compose.project.working_dir')!=str(ROOT/'deploy') or files not in (approved,approved+[str(STATE/'recorder.images.json')]):
+        raise ValueError('Custom recorder configuration requires a reviewed manual upgrade')
+    old=meta.get('Image','')
+    if not re.fullmatch(r'sha256:[a-f0-9]{64}',old):raise ValueError('Invalid recorder image identity')
+    env=dict(value.split('=',1) for value in meta.get('Config',{}).get('Env',[]) if '=' in value)
+    concurrency=env.get('RECORDER_CONCURRENCY','1')
+    if not re.fullmatch(r'[1-8]',concurrency):raise ValueError('Unsupported recorder concurrency')
+    return {'container':ids[0],'old_image':old,'target_image':'meet-recorder:'+target,'concurrency':concurrency}
+
+
+def check_recorder_config(stage):
+    def config(root):
+        raw=run('docker','compose','--project-name','meet-recorder','--env-file',str(ROOT/'.env'),'-f',str(root/'deploy/recorder.compose.yaml'),'config','--format','json')
+        value=json.loads(raw.decode().replace(str(root),str(ROOT)))
+        service=value.get('services',{}).get('recorder',{})
+        service.pop('image',None);service.pop('build',None)
+        return value
+    if config(ROOT)!=config(stage):raise ValueError('Recorder runtime/volumes/network changed; reviewed migration required')
+
+
+def build_recorder(stage,plan):
+    check_recorder_config(stage)
+    run('docker','build','-f',str(stage/'apps/recorder/Dockerfile'),'-t',plan['target_image'],str(stage/'apps'),timeout=900)
+    run('docker','run','--rm','--entrypoint','node',plan['target_image'],'--input-type=module','-e',"import fs from 'node:fs';import './core.mjs';for(const p of ['worker.mjs','dist/browser.js'])fs.readFileSync(p);",timeout=60)
+
+
+def activate_recorder(job,image,start=True):
+    plan=job.get('recorder_upgrade')
+    if not plan:return
+    if image not in (plan['old_image'],plan['target_image']) or not re.fullmatch(r'(?:sha256:[a-f0-9]{64}|meet-recorder:[a-f0-9]{40})',image):raise ValueError('Invalid recorder upgrade image')
+    if not re.fullmatch(r'[1-8]',str(plan.get('concurrency',''))):raise ValueError('Invalid recorder concurrency')
+    checkpoint(job,recorder_changed=True)
+    path=STATE/'recorder.images.json'
+    atomic(path,{'services':{'recorder':{'image':image,'environment':{'RECORDER_CONCURRENCY':plan['concurrency']}}}})
+    command=['docker','compose','--project-name','meet-recorder','--env-file',str(ROOT/'.env'),'-f',str(ROOT/'deploy/recorder.compose.yaml'),'-f',str(path)]
+    run(*command,'up',*(['-d'] if start else ['--no-start']),'--no-deps','--no-build','recorder',timeout=180)
+    identity=run(*command,'ps','--all','--quiet','recorder').decode().strip()
+    if not re.fullmatch(r'[a-f0-9]{64}',identity):raise ValueError('Recorder did not start')
+    if not start:
+        checkpoint(job,recorders=[identity],recorder_changed=False,recorder_active_image=image)
+        return
+    for i in range(3):
+        meta=json.loads(run('docker','inspect',identity))[0]
+        if not meta.get('State',{}).get('Running') or meta.get('RestartCount',0):raise ValueError('Recorder runtime health check failed')
+        if i<2:time.sleep(1)
+    checkpoint(job,recorders=[],recorder_changed=False,recorder_active_image=image)
+
+
 def resume_recorders(job):
     ids = job.get('recorders', [])
     if not ids:
+        return
+    if job.get('recorder_upgrade'):
+        plan=job['recorder_upgrade']
+        activate_recorder(job,plan['target_image'] if job.get('committed') and job.get('result')=='success' else plan['old_image'])
         return
     if any(not re.fullmatch(r'[a-f0-9]{64}', value) for value in ids):
         raise ValueError('Invalid recorder container identity')
@@ -308,6 +371,8 @@ def apply(target, request_id):
         if stage.exists():
             raise ValueError('Previous staging checkout exists; inspect it before retrying')
         git('worktree', 'add', '--detach', str(stage), target)
+        plan=recorder_plan(target)
+        if plan:checkpoint(job,recorder_upgrade=plan)
         if BOOTSTRAP:
             old_config=json.loads(compose('config','--format','json'))
             target_raw=run('docker','compose','--project-name','meet','--env-file',str(ROOT/'.env'),'-f',str(stage/'deploy/compose.yaml'),'config','--format','json')
@@ -319,7 +384,9 @@ def apply(target, request_id):
         api_image, web_image = 'meet-api:' + target, 'meet-web:' + target
         run('docker', 'build', '--build-arg', 'MEET_COMMIT=' + target, '--build-arg', 'MEET_VERSION=' + release['version'], '-t', api_image, str(stage / 'apps/api'), timeout=900)
         run('docker', 'build', '-t', web_image, str(stage / 'apps/web'), timeout=900)
+        if plan:build_recorder(stage,plan)
         checkout_safe()
+        if plan and recorder_plan(target)!=plan:raise ValueError('Recorder changed during build; retry later')
         if git('rev-parse', 'HEAD') != job['old_sha'] or int(sql("SELECT COUNT(*) FROM meetings WHERE status='live'")):
             raise ValueError('Checkout changed or a lesson started; retry later')
         checkpoint(job, frozen=True)
@@ -346,6 +413,7 @@ def apply(target, request_id):
         publish(state='updating', phase='verify', message='Đang kiểm tra ứng dụng mới trước khi mở lại ghi dữ liệu.')
         compose('up', '-d', '--no-deps', '--no-build', 'api', 'web', override=new)
         health(target)
+        if plan:activate_recorder(job,plan['target_image'])
         checkpoint(job, active=False, committed=True, result='success')
         publish(state='success', phase='done', current_sha=target, current_version=release['version'], can_update=False, message='Cập nhật thành công. Cấu hình và dữ liệu được giữ nguyên.')
         (ROOT / 'runtime-config/maintenance').unlink(missing_ok=True)

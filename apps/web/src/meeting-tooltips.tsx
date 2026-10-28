@@ -53,6 +53,7 @@ export function MeetingTooltips() {
     document.addEventListener("pointerout", out);
     document.addEventListener("focusout", out);
     document.addEventListener("pointerdown", clear);
+    document.addEventListener("click",clear);
     document.addEventListener("keydown", key);
     window.addEventListener("scroll", clear, true);
     window.addEventListener("resize", clear);
@@ -63,6 +64,7 @@ export function MeetingTooltips() {
       document.removeEventListener("pointerout", out);
       document.removeEventListener("focusout", out);
       document.removeEventListener("pointerdown", clear);
+      document.removeEventListener("click",clear);
       document.removeEventListener("keydown", key);
       window.removeEventListener("scroll", clear, true);
       window.removeEventListener("resize", clear);

@@ -764,6 +764,10 @@
     "area": "Giao diện chung"
   },
   {
+    "key": "Chưa chuyển được màn hình. Khi kết nối ổn định, chọn Quay lại trình bày.",
+    "area": "Giao diện chung"
+  },
+  {
     "key": "Chưa có ảnh đã tải.",
     "area": "Giao diện chung"
   },
@@ -1252,6 +1256,10 @@
     "area": "Giao diện chung"
   },
   {
+    "key": "Kết nối chập chờn. Nét vẽ đang được giữ và sẽ tự gửi lại. Đừng tải lại hoặc rời lớp khi chưa lưu xong.",
+    "area": "Giao diện chung"
+  },
+  {
     "key": "Kết nối gián đoạn · sẽ tự thử lại",
     "area": "Giao diện chung"
   },
@@ -1461,6 +1469,10 @@
   },
   {
     "key": "Màu bút",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Máy chủ chưa phản hồi hợp lệ. Vui lòng thử lại.",
     "area": "Giao diện chung"
   },
   {

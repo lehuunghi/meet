@@ -435,6 +435,27 @@ let retrying = false;
 while (!stopping) {
   try {
     await redis.set("server-recorder:seen", String(Date.now()), { EX: 30 });
+    // The updater may start the replacement worker before releasing maintenance.
+    // Keep spool recovery and recording writes behind the same freeze as the API.
+    if (
+      await fs
+        .access(
+          path.join(
+            process.env.CONFIG_DIR || "/var/lib/meet-config",
+            "maintenance",
+          ),
+        )
+        .then(
+          () => true,
+          (e) => {
+            if (e.code === "ENOENT") return false;
+            throw e;
+          },
+        )
+    ) {
+      await sleep(1000);
+      continue;
+    }
     if (!retrying) {
       retrying = true;
       retrySpool()
