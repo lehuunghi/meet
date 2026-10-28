@@ -39,12 +39,12 @@ jobs:
           ffmpeg -version
       - run: node --test browser-test.mjs
       - name: Reproduce restrictive recorder source permissions
-        run: chmod 600 apps/recorder/worker.mjs apps/recorder/core.mjs
+        run: chmod 600 apps/recorder/package.json apps/recorder/worker.mjs apps/recorder/core.mjs
         working-directory: .
       - run: docker build -f apps/recorder/Dockerfile apps -t meet-recorder:ci
         working-directory: .
       - name: Verify recorder runtime user can read its modules and bundle
-        run: docker run --rm --entrypoint node meet-recorder:ci --input-type=module -e "import fs from 'node:fs'; import './core.mjs'; for (const p of ['worker.mjs','dist/browser.js']) fs.readFileSync(p);"
+        run: docker run --rm --entrypoint node meet-recorder:ci --input-type=module -e "import fs from 'node:fs'; import './core.mjs'; import 'mysql2/promise'; import 'redis'; import 'playwright'; import '@aws-sdk/client-s3'; for (const p of ['package.json','worker.mjs','dist/browser.js']) fs.readFileSync(p);"
         working-directory: .
       - run: bash -n deploy/install-recorder.sh
         working-directory: .

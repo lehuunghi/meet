@@ -11,6 +11,8 @@
 
 Hàng chờ nét nằm trong bộ nhớ của trang hiện tại. Khi còn cảnh báo chưa gửi, không tải lại hoặc rời lớp; trình duyệt được yêu cầu cảnh báo khi đóng/tải lại trang có nét chờ. Đây không phải chế độ làm việc ngoại tuyến có lưu lâu dài. Lỗi quyền, buổi đã kết thúc hoặc trang đã đổi được báo và dừng gửi nét cũ để bảo vệ nội dung chung.
 
+7. **Quyền đọc cấu hình Node của recorder:** lượt triển khai thật phát hiện `package.json` kế thừa quyền chỉ root đọc từ checkout của updater. Bản sửa đặt quyền đọc rõ ràng trong image và kiểm tra tải cả các thư viện thật dưới tài khoản runtime trước khi khóa ứng dụng. Lượt gặp lỗi đã tự phục hồi bản trước.
+
 ## Cập nhật an toàn
 
 Chỉ thay ứng dụng/recorder khi không còn buổi đang diễn ra. Quy trình vẫn yêu cầu phiên bản GitHub đã qua CI, checkout sạch, sao lưu mã hóa đã xác minh, khóa ghi và kiểm tra sức khỏe. Recorder đã cài theo bộ chuẩn được cập nhật tự động; hệ thống không tự cài thêm recorder vào máy chưa dùng ghi hình.

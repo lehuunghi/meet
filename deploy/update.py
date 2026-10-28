@@ -301,7 +301,7 @@ def check_recorder_config(stage):
 def build_recorder(stage,plan):
     check_recorder_config(stage)
     run('docker','build','-f',str(stage/'apps/recorder/Dockerfile'),'-t',plan['target_image'],str(stage/'apps'),timeout=900)
-    run('docker','run','--rm','--entrypoint','node',plan['target_image'],'--input-type=module','-e',"import fs from 'node:fs';import './core.mjs';for(const p of ['worker.mjs','dist/browser.js'])fs.readFileSync(p);",timeout=60)
+    run('docker','run','--rm','--entrypoint','node',plan['target_image'],'--input-type=module','-e',"import fs from 'node:fs';import './core.mjs';import 'mysql2/promise';import 'redis';import 'playwright';import '@aws-sdk/client-s3';for(const p of ['package.json','worker.mjs','dist/browser.js'])fs.readFileSync(p);",timeout=60)
 
 
 def activate_recorder(job,image,start=True):
