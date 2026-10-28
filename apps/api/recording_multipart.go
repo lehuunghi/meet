@@ -38,6 +38,10 @@ func (a *app) recordingMultipartStart(w http.ResponseWriter, r *http.Request) {
 		problem(w, 409, "Recording is not enabled for this live meeting")
 		return
 	}
+	if !a.recordingTeachingGate(w, r) {
+		return
+	}
+
 	store, ok := r2ready(w)
 	if !ok {
 		return

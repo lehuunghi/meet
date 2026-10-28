@@ -298,3 +298,4 @@ CREATE TABLE IF NOT EXISTS academy_invoices (
  PRIMARY KEY(school_id,order_id),UNIQUE KEY ain_number(school_id,number),FOREIGN KEY(school_id,order_id) REFERENCES academy_orders(school_id,id)
 );
 CREATE TABLE IF NOT EXISTS meeting_drawing_state (school_id CHAR(36) NOT NULL,meeting_id CHAR(36) NOT NULL,content JSON NOT NULL,revision BIGINT NOT NULL DEFAULT 0,PRIMARY KEY(school_id,meeting_id),FOREIGN KEY(school_id,meeting_id) REFERENCES meetings(school_id,id));
+CREATE TABLE IF NOT EXISTS meeting_teaching_windows (school_id CHAR(36) NOT NULL,meeting_id CHAR(36) NOT NULL,started_at DATETIME(6) NULL,ended_at DATETIME(6) NULL,teacher_id CHAR(36) NULL,PRIMARY KEY(school_id,meeting_id),FOREIGN KEY(school_id,meeting_id) REFERENCES meetings(school_id,id));

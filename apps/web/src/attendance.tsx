@@ -18,6 +18,8 @@ type ReportRow = {
   class_name?: string;
   lesson_start?: string;
   lesson_end?: string;
+  teaching_started_at?: string;
+  teaching_ended_at?: string;
   meeting_id?: string;
   meeting_title?: string;
   starts_at?: string;
@@ -403,6 +405,7 @@ export function AttendanceReport({
                   ) : (
                     shown.length > 0 && (
                       <>
+                        {meeting&&shown[0]?.teaching_started_at&&<p className="report-context">Giáo viên vào dạy: {vnDateTime(shown[0].teaching_started_at)} · Kết thúc lớp: {shown[0].teaching_ended_at?vnDateTime(shown[0].teaching_ended_at):"Đang giảng dạy"}. Điểm danh tính trong khung giảng dạy; không cộng thời gian chờ.</p>}
                         <div
                           className="comparison-scroll"
                           role="region"
@@ -475,6 +478,7 @@ export function AttendanceReport({
                                       >
                                         {r.meeting_title || "Buổi học"}
                                       </strong>
+                                      {r.teaching_started_at&&<small title="Mốc giảng dạy của giáo viên">{vnTime(r.teaching_started_at)} – {r.teaching_ended_at?vnTime(r.teaching_ended_at):"Đang dạy"}</small>}
                                     </td>
                                   )}
                                   {!meeting && (

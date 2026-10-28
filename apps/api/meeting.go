@@ -156,6 +156,19 @@ func (a *app) meetingState(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if in.Status == "ended" {
+		var ended time.Time
+		if e = tx.QueryRowContext(r.Context(), "SELECT UTC_TIMESTAMP(6)").Scan(&ended); e != nil {
+			problem(w, 500, "Clock unavailable")
+			return
+		}
+		if _, e = tx.ExecContext(r.Context(), "UPDATE meeting_teaching_windows SET ended_at=? WHERE school_id=? AND meeting_id=? AND started_at IS NOT NULL AND ended_at IS NULL", ended, u.School, r.PathValue("id")); e != nil {
+			problem(w, 500, "Update failed")
+			return
+		}
+		if _, e = tx.ExecContext(r.Context(), `UPDATE presence SET seconds=seconds+IF(online AND last_seen>=?-INTERVAL 45 SECOND AND last_seen<=?,GREATEST(0,TIMESTAMPDIFF(SECOND,last_seen,?)),0),last_seen=IF(online AND last_seen>=?-INTERVAL 45 SECOND,?,last_seen),online=FALSE WHERE school_id=? AND meeting_id=? AND (NOT EXISTS(SELECT 1 FROM meeting_teaching_windows t WHERE t.school_id=presence.school_id AND t.meeting_id=presence.meeting_id) OR EXISTS(SELECT 1 FROM meeting_teaching_windows t WHERE t.school_id=presence.school_id AND t.meeting_id=presence.meeting_id AND t.started_at IS NOT NULL))`, ended, ended, ended, ended, ended, u.School, r.PathValue("id")); e != nil {
+			problem(w, 500, "Update failed")
+			return
+		}
 		if _, e = tx.ExecContext(r.Context(), "UPDATE presence SET online=FALSE WHERE school_id=? AND meeting_id=?", u.School, r.PathValue("id")); e != nil {
 			problem(w, 500, "Update failed")
 			return
@@ -164,6 +177,9 @@ func (a *app) meetingState(w http.ResponseWriter, r *http.Request) {
 			problem(w, 500, "Update failed")
 			return
 		}
+	} else if _, e = tx.ExecContext(r.Context(), "INSERT IGNORE INTO meeting_teaching_windows(school_id,meeting_id) VALUES(?,?)", u.School, r.PathValue("id")); e != nil {
+		problem(w, 500, "Update failed")
+		return
 	}
 	if tx.Commit() != nil {
 		problem(w, 500, "Update failed")
@@ -200,7 +216,7 @@ func (a *app) presence(w http.ResponseWriter, r *http.Request) {
 	if !decode(w, r, &in) {
 		return
 	}
-	if in.Kind != "join" && in.Kind != "heartbeat" && in.Kind != "leave" {
+	if in.Kind != "join" && in.Kind != "heartbeat" && in.Kind != "leave" && in.Kind != "ready" {
 		problem(w, 400, "Invalid presence event")
 		return
 	}
@@ -228,6 +244,22 @@ func (a *app) presence(w http.ResponseWriter, r *http.Request) {
 		problem(w, 500, "Clock unavailable")
 		return
 	}
+	if in.Kind == "ready" {
+		var ready int
+		if u.Role != "teacher" || tx.QueryRowContext(r.Context(), "SELECT COUNT(*) FROM presence WHERE school_id=? AND meeting_id=? AND user_id=? AND online=TRUE AND last_seen>=?-INTERVAL 45 SECOND", u.School, id, u.ID, now).Scan(&ready) != nil || ready != 1 {
+			problem(w, 403, "Vào phòng trước khi bắt đầu giảng dạy")
+			return
+		}
+		if e = a.startTeaching(tx, r, m, now); e != nil {
+			problem(w, 500, "Teaching start failed")
+			return
+		}
+	}
+	tracked, start, end, e := teachingWindow(tx, r)
+	if e != nil {
+		problem(w, 500, "Teaching window unavailable")
+		return
+	}
 	_, e = tx.ExecContext(r.Context(), "INSERT IGNORE INTO presence(school_id,meeting_id,user_id,joined_at,last_seen,online) VALUES(?,?,?,?,?,FALSE)", u.School, id, u.ID, now, now)
 	if e != nil {
 		problem(w, 500, "Presence failed")
@@ -241,13 +273,23 @@ func (a *app) presence(w http.ResponseWriter, r *http.Request) {
 		problem(w, 500, "Presence failed")
 		return
 	}
-	seconds += credit(last, now, online)
+	seconds += teachingCredit(last, now, online, tracked, start, end)
+	if start.Valid && in.Kind != "leave" {
+		if _, e = tx.ExecContext(r.Context(), "UPDATE presence SET joined_at=? WHERE school_id=? AND meeting_id=? AND joined_at<? AND last_seen<?", now, u.School, id, start.Time, start.Time); e != nil {
+			problem(w, 500, "Presence failed")
+			return
+		}
+	}
 	_, e = tx.ExecContext(r.Context(), "UPDATE presence SET last_seen=?,seconds=?,online=? WHERE school_id=? AND meeting_id=? AND user_id=?", now, seconds, in.Kind != "leave", u.School, id, u.ID)
 	if e != nil {
 		problem(w, 500, "Presence failed")
 		return
 	}
-	if _, e = tx.ExecContext(r.Context(), "INSERT INTO attendance_events(school_id,meeting_id,user_id,kind) VALUES(?,?,?,?)", u.School, id, u.ID, in.Kind); e != nil {
+	event := in.Kind
+	if event == "ready" {
+		event = "heartbeat"
+	}
+	if _, e = tx.ExecContext(r.Context(), "INSERT INTO attendance_events(school_id,meeting_id,user_id,kind) VALUES(?,?,?,?)", u.School, id, u.ID, event); e != nil {
 		problem(w, 500, "Presence failed")
 		return
 	}

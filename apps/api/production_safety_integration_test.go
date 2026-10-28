@@ -232,6 +232,7 @@ func TestProductionSafetyIntegration(t *testing.T) {
 		t.Fatal(state)
 	}
 	adminCookie := login("demo", "admin")
+	testTeachingWindow(t, a, request, teacher, student, adminCookie)
 	testRoomDrawing(t, a, request, teacher, student, other)
 	testRoomModeration(t, a, request, teacher, student, other)
 	testCourseWorkspace(t, a, request, teacher, student, other)

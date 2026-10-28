@@ -1156,6 +1156,7 @@ function Room({
         },
       );
       if (stream.getTracks().length) await media.current.publish(stream);
+      if(user.role==='teacher') await api(`/meetings/${meeting.id}/presence`,{kind:'ready'});
       setPreview(null);
       saveRoomResume(
         user,
@@ -1537,8 +1538,9 @@ function Room({
           </article>
         )}
         {localScreen && (
-          <article data-presentation={user.id} className={focusKey === "self:screen" ? "is-pinned" : ""}>
+          <article data-presentation={user.id} className={"local-presentation "+(focusKey === "self:screen" ? "is-pinned" : "")}>
             <Video stream={localScreen} muted />
+            <div className="presenter-preview-shield"><CallIcon kind="present"/><h3>Bạn đang trình bày</h3><p>Chia sẻ một thẻ hoặc cửa sổ riêng để tránh lặp màn hình. Bấm Chú thích để viết vẽ trực tiếp lên phần trình bày.</p><div><button onClick={e=>e.currentTarget.closest('article')?.classList.add('preview-visible')}>Vẫn hiển thị màn hình của tôi</button><button onClick={share}>Dừng trình bày</button></div></div>
             <strong>Màn hình của bạn</strong>
             <div className="tile-actions">
               <button

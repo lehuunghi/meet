@@ -8,6 +8,7 @@ export type DrawStroke = {
   points: DrawPoint[];
   text: string;
   seq: number;
+  expires_at?: number;
 };
 export type DrawPage = {
   id: string;
@@ -45,6 +46,7 @@ export function drawingContext(s: DrawingState) {
   return s.mode === "screen" ? "screen:" + s.target : "board:" + s.page;
 }
 export function paintStroke(ctx: CanvasRenderingContext2D, s: DrawStroke) {
+  if (s.expires_at && s.expires_at <= Date.now()) return;
   const p = s.points;
   if (!p.length) return;
   ctx.save();
@@ -57,7 +59,33 @@ export function paintStroke(ctx: CanvasRenderingContext2D, s: DrawStroke) {
   const a = p[0],
     b = p[p.length - 1];
   ctx.beginPath();
-  if (s.kind === "text") {
+  if (s.kind === "note") {
+    const w = Math.min(320, 1600 - a.x),
+      h = Math.min(150, 900 - a.y);
+    ctx.fillStyle = "#FFF1A8";
+    ctx.fillRect(a.x, a.y, w, h);
+    ctx.strokeStyle = "#E5BB42";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(a.x, a.y, w, h);
+    ctx.fillStyle = "#162B49";
+    ctx.font = '26px "Segoe UI",Arial,sans-serif';
+    const words = s.text.split(/\s+/);
+    let line = "",
+      row = 0;
+    for (const word of words) {
+      const candidate = line + " " + word;
+      if (ctx.measureText(candidate).width > w - 24 && line) {
+        ctx.fillText(line, a.x + 12, a.y + 34 + row * 32, w - 24);
+        line = word;
+        row++;
+        if (row >= 3) break;
+      } else line = candidate.trim();
+    }
+    if (row < 3) ctx.fillText(line, a.x + 12, a.y + 34 + row * 32, w - 24);
+  } else if (s.kind === "stamp") {
+    ctx.font = '64px "Segoe UI Emoji",sans-serif';
+    ctx.fillText(s.text, a.x, a.y + 64, 80);
+  } else if (s.kind === "text") {
     ctx.font = '32px "Segoe UI",Arial,sans-serif';
     s.text
       .split("\n")
@@ -88,8 +116,25 @@ export function paintStroke(ctx: CanvasRenderingContext2D, s: DrawStroke) {
     ctx.fill();
   } else {
     ctx.moveTo(a.x, a.y);
-    (s.kind === "line" ? [b] : p.slice(1)).forEach((v) => ctx.lineTo(v.x, v.y));
+    (s.kind === "line" || s.kind === "arrow" ? [b] : p.slice(1)).forEach((v) =>
+      ctx.lineTo(v.x, v.y),
+    );
     ctx.stroke();
+    if (s.kind === "arrow") {
+      const angle = Math.atan2(b.y - a.y, b.x - a.x),
+        size = 18 + s.width;
+      ctx.beginPath();
+      ctx.moveTo(
+        b.x - size * Math.cos(angle - 0.5),
+        b.y - size * Math.sin(angle - 0.5),
+      );
+      ctx.lineTo(b.x, b.y);
+      ctx.lineTo(
+        b.x - size * Math.cos(angle + 0.5),
+        b.y - size * Math.sin(angle + 0.5),
+      );
+      ctx.stroke();
+    }
   }
   ctx.restore();
 }
@@ -110,6 +155,7 @@ export function paintDrawing(
   ctx.restore();
 }
 export function hitStroke(s: DrawStroke, p: DrawPoint) {
+  if (s.expires_at && s.expires_at <= Date.now()) return false;
   const a = s.points[0],
     b = s.points.at(-1)!;
   if (!a) return false;
@@ -122,6 +168,13 @@ export function hitStroke(s: DrawStroke, p: DrawPoint) {
         : 0;
     return Math.hypot(p.x - a.x - t * dx, p.y - a.y - t * dy) < 18 + s.width;
   };
+  if (s.kind === "note" || s.kind === "stamp")
+    return (
+      p.x >= a.x &&
+      p.y >= a.y &&
+      p.x <= a.x + (s.kind === "note" ? 320 : 80) &&
+      p.y <= a.y + (s.kind === "note" ? 150 : 80)
+    );
   if (s.kind === "text")
     return (
       p.x >= a.x &&
@@ -149,6 +202,6 @@ export function hitStroke(s: DrawStroke, p: DrawPoint) {
         25 / Math.max(1, Math.min(rx, ry))
     );
   }
-  if (s.kind === "line") return segment(a, b);
+  if (s.kind === "line" || s.kind === "arrow") return segment(a, b);
   return s.points.some((v, i) => segment(v, s.points[Math.max(0, i - 1)]));
 }

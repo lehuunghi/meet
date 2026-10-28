@@ -42,7 +42,7 @@ func (a *app) attendanceAdjust(w http.ResponseWriter, r *http.Request) {
 	problem(w, 410, "Chỉnh khung giờ chung của buổi học; không chỉnh riêng từng học sinh.")
 }
 
-const timingSelect = `SELECT COALESCE(t.starts_at,m.starts_at),COALESCE(t.ends_at,DATE_ADD(m.starts_at,INTERVAL 60 MINUTE)),m.title FROM meetings m JOIN courses c ON c.school_id=m.school_id AND c.id=m.course_id LEFT JOIN meeting_timings t ON t.school_id=m.school_id AND t.meeting_id=m.id WHERE m.school_id=? AND m.id=? AND c.id=? AND c.class_id=?`
+const timingSelect = `SELECT COALESCE(t.starts_at,tw.started_at,m.starts_at),COALESCE(t.ends_at,tw.ended_at,DATE_ADD(COALESCE(tw.started_at,m.starts_at),INTERVAL 60 MINUTE)),m.title FROM meetings m JOIN courses c ON c.school_id=m.school_id AND c.id=m.course_id LEFT JOIN meeting_teaching_windows tw ON tw.school_id=m.school_id AND tw.meeting_id=m.id LEFT JOIN meeting_timings t ON t.school_id=m.school_id AND t.meeting_id=m.id WHERE m.school_id=? AND m.id=? AND c.id=? AND c.class_id=?`
 
 func (a *app) attendanceTiming(w http.ResponseWriter, r *http.Request) {
 	if !admin(w, r) {

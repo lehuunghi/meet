@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { DrawingIcon } from "./drawing-icon";
 import { api } from "./api";
 import {
   drawingContext,
@@ -62,7 +63,11 @@ function DrawingCanvas({
     const observer = new ResizeObserver(render);
     observer.observe(canvas);
     render();
+    const fading = page.strokes.some((s) => s.kind === "laser")
+      ? setInterval(render, 100)
+      : null;
     return () => {
+      if (fading) clearInterval(fading);
       observer.disconnect();
       onNode?.(null);
     };
@@ -113,7 +118,7 @@ function DrawingCanvas({
           props.current.onErase(p);
           return;
         }
-        if (tool === "text" && !text.trim()) return;
+        if ((tool === "text" || tool === "note") && !text.trim()) return;
         const g: DrawStroke = {
           id: crypto.randomUUID(),
           owner: "",
@@ -121,10 +126,11 @@ function DrawingCanvas({
           color,
           width,
           points: [p],
-          text: tool === "text" ? text : "",
+          text: ["text", "note", "stamp"].includes(tool) ? text : "",
+          expires_at: tool === "laser" ? Date.now() + 5000 : undefined,
           seq: 1,
         };
-        if (tool === "text") {
+        if (["text", "note", "stamp"].includes(tool)) {
           props.current.onStroke(g);
           return;
         }
@@ -136,7 +142,7 @@ function DrawingCanvas({
         const g = gesture.current;
         if (!g || !e.currentTarget.hasPointerCapture(e.pointerId)) return;
         const p = point(e);
-        if (g.kind === "pen" || g.kind === "marker") {
+        if (g.kind === "pen" || g.kind === "marker" || g.kind === "laser") {
           if (
             g.points.length >= 1000 ||
             Math.hypot(p.x - g.points.at(-1)!.x, p.y - g.points.at(-1)!.y) < 2
@@ -529,7 +535,15 @@ export function MeetingDrawing({
     />
   );
   return (
-    <div ref={anchor} className="meeting-drawing-anchor">
+    <div
+      ref={anchor}
+      className={
+        "meeting-drawing-anchor " +
+        (state.active && state.mode === "screen"
+          ? "drawing-on-presentation"
+          : "")
+      }
+    >
       {(picker || error || (state.active && tools)) && (
         <section className="meeting-drawing-tools" aria-label="Công cụ viết vẽ">
           <header>
@@ -544,7 +558,8 @@ export function MeetingDrawing({
                 setPicker(false);
               }}
             >
-              Ẩn công cụ
+              <DrawingIcon kind="close" />
+              <span className="drawing-sr-only">Ẩn công cụ</span>
             </button>
           </header>
           {error && <p role="alert">{error}</p>}
@@ -585,7 +600,11 @@ export function MeetingDrawing({
                   ["pointer", "Con trỏ"],
                   ["pen", "Bút"],
                   ["marker", "Đánh dấu"],
+                  ["laser", "Mực biến mất"],
+                  ["note", "Ghi chú cố định"],
+                  ["stamp", "Hình dán"],
                   ["line", "Đường thẳng"],
+                  ["arrow", "Mũi tên"],
                   ["rect", "Hình chữ nhật"],
                   ["ellipse", "Hình elip"],
                   ["text", "Viết chữ"],
@@ -596,9 +615,15 @@ export function MeetingDrawing({
                     type="button"
                     aria-pressed={tool === key}
                     disabled={!canDraw}
-                    onClick={() => setTool(key)}
+                    aria-label={label}
+                    title={label}
+                    onClick={() => {
+                      setTool(key);
+                      if (key === "stamp") setText("⭐");
+                    }}
                   >
-                    {label}
+                    <DrawingIcon kind={key} />
+                    <span className="drawing-sr-only">{label}</span>
                   </button>
                 ))}
                 <label>
@@ -638,7 +663,22 @@ export function MeetingDrawing({
                   </select>
                 </label>
               </div>
-              {tool === "text" && (
+              {tool === "stamp" && (
+                <div className="drawing-stamps" aria-label="Chọn hình dán">
+                  {["⭐", "👍", "✅", "❓", "❤️"].map((emoji) => (
+                    <button
+                      title={"Hình dán " + emoji}
+                      aria-label={"Hình dán " + emoji}
+                      aria-pressed={text === emoji}
+                      onClick={() => setText(emoji)}
+                      key={emoji}
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
+              )}
+              {["text", "note"].includes(tool) && (
                 <label>
                   Nội dung chữ
                   <input
@@ -655,7 +695,7 @@ export function MeetingDrawing({
                       add({
                         id: crypto.randomUUID(),
                         owner: user.id,
-                        kind: "text",
+                        kind: tool,
                         color,
                         width,
                         points: [{ x: 600, y: 350 }],
@@ -676,11 +716,20 @@ export function MeetingDrawing({
                     !strokes.some((v) => v.owner === user.id)
                   }
                   onClick={undo}
+                  title="Hoàn tác nét của tôi"
+                  aria-label="Hoàn tác nét của tôi"
                 >
-                  Hoàn tác nét của tôi
+                  <DrawingIcon kind="undo" />
+                  <span className="drawing-sr-only">Hoàn tác nét của tôi</span>
                 </button>
-                <button disabled={!view} onClick={() => void exportPNG()}>
-                  Tải ảnh PNG
+                <button
+                  disabled={!view}
+                  title="Tải ảnh PNG"
+                  aria-label="Tải ảnh PNG"
+                  onClick={() => void exportPNG()}
+                >
+                  <DrawingIcon kind="download" />
+                  <span className="drawing-sr-only">Tải ảnh PNG</span>
                 </button>
                 {canManage && (
                   <label>
@@ -711,13 +760,19 @@ export function MeetingDrawing({
                           });
                       }}
                     >
-                      Xóa nét trên trang
+                      <DrawingIcon kind="trash" />
+                      <span>Xóa nét trên trang</span>
                     </button>
                     <button
                       disabled={busy || pendingCount > 0}
                       onClick={() => void act({ action: "close" })}
                     >
-                      Đóng cho cả lớp
+                      <DrawingIcon kind="close" />
+                      <span>
+                        {state.mode === "screen"
+                          ? "Dừng chú thích"
+                          : "Đóng cho cả lớp"}
+                      </span>
                     </button>
                   </>
                 )}
@@ -784,6 +839,31 @@ export function MeetingDrawing({
             {surface()}
           </section>,
           slot,
+        )}
+      {hosts
+        .filter((h) => canManage || h.dataset.presentation === user.id)
+        .map((h, i) =>
+          createPortal(
+            <button
+              className="presentation-annotate"
+              title="Viết lên màn hình này"
+              aria-label="Viết lên màn hình này"
+              onClick={() => {
+                const t = targets.find(
+                  (t) => t.user_id === h.dataset.presentation,
+                );
+                setTools(true);
+                setTool("pen");
+                if (t) void act({ action: "open_screen", target: t.key });
+                else setPicker(true);
+              }}
+            >
+              <DrawingIcon kind="pen" />
+              <span>Chú thích</span>
+            </button>,
+            h,
+            "annotate-" + i,
+          ),
         )}
       {state.active &&
         state.mode === "screen" &&

@@ -6,7 +6,7 @@ export function recordingStopReason(
   now = Date.now(),
 ) {
   if (seconds >= 8 * 3600) return "limit";
-  if (humans === 0 && emptySince && now - emptySince >= 30000) return "empty";
+  // Empty rooms and browser closure do not end a teacher-started lesson.
   return "";
 }
 export const renewScript = `if redis.call('GET',KEYS[1])==ARGV[1] then return redis.call('EXPIRE',KEYS[1],ARGV[2]) end return 0`;

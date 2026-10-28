@@ -446,7 +446,7 @@ while (!stopping) {
     const cfg = await settings();
     if (cfg.r2?.enabled && active.size < concurrency) {
       const [jobs] = await db.execute(
-        `SELECT m.id AS meeting_id,m.school_id,c.teacher_id AS owner_id FROM meetings m JOIN courses c ON c.id=m.course_id AND c.school_id=m.school_id WHERE m.status='live' AND m.recording_allowed=TRUE AND c.teacher_id IS NOT NULL AND EXISTS(SELECT 1 FROM presence p WHERE p.school_id=m.school_id AND p.meeting_id=m.id AND p.online=TRUE AND p.last_seen>=UTC_TIMESTAMP()-INTERVAL 45 SECOND) ORDER BY m.starts_at LIMIT 200`,
+        `SELECT m.id AS meeting_id,m.school_id,c.teacher_id AS owner_id FROM meetings m JOIN meeting_teaching_windows tw ON tw.school_id=m.school_id AND tw.meeting_id=m.id AND tw.started_at IS NOT NULL AND tw.ended_at IS NULL JOIN courses c ON c.id=m.course_id AND c.school_id=m.school_id WHERE m.status='live' AND m.recording_allowed=TRUE AND c.teacher_id IS NOT NULL ORDER BY m.starts_at LIMIT 200`,
       );
       for (const job of jobs) {
         if (active.size >= concurrency) break;

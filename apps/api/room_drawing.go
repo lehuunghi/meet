@@ -18,14 +18,15 @@ type drawPoint struct {
 	Y float64 `json:"y"`
 }
 type drawStroke struct {
-	ID     string      `json:"id"`
-	Owner  string      `json:"owner"`
-	Kind   string      `json:"kind"`
-	Color  string      `json:"color"`
-	Width  int         `json:"width"`
-	Points []drawPoint `json:"points"`
-	Text   string      `json:"text"`
-	Seq    int         `json:"seq"`
+	ID      string      `json:"id"`
+	Owner   string      `json:"owner"`
+	Kind    string      `json:"kind"`
+	Color   string      `json:"color"`
+	Width   int         `json:"width"`
+	Points  []drawPoint `json:"points"`
+	Text    string      `json:"text"`
+	Seq     int         `json:"seq"`
+	Expires int64       `json:"expires_at,omitempty"`
 }
 type drawPage struct {
 	ID      string       `json:"id"`
@@ -89,11 +90,11 @@ func validDrawStroke(v drawStroke) bool {
 		return false
 	}
 	switch v.Kind {
-	case "pen", "marker", "line", "rect", "ellipse", "text":
+	case "pen", "marker", "laser", "line", "arrow", "rect", "ellipse", "text", "note", "stamp":
 	default:
 		return false
 	}
-	if v.Kind == "text" && strings.TrimSpace(v.Text) == "" {
+	if (v.Kind == "text" || v.Kind == "note" || v.Kind == "stamp") && strings.TrimSpace(v.Text) == "" {
 		return false
 	}
 	for _, p := range v.Points {
@@ -267,6 +268,17 @@ func applyDrawing(s *drawingState, in drawingInput, actor string, host bool, tar
 			return 403, "Nét vẽ không thuộc tài khoản"
 		}
 		v.Owner = actor
+		v.Expires = 0
+		if v.Kind == "laser" {
+			v.Expires = time.Now().UnixMilli() + 5000
+		}
+		live := p.Strokes[:0]
+		for _, old := range p.Strokes {
+			if old.Expires == 0 || old.Expires > time.Now().UnixMilli() {
+				live = append(live, old)
+			}
+		}
+		p.Strokes = live
 		for i, old := range p.Strokes {
 			if old.ID == v.ID {
 				if old.Owner != actor {

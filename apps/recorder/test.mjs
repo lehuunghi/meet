@@ -49,10 +49,10 @@ test("MySQL connection uses UTC and a supported DSN without logging credentials"
   );
   assert.throws(() => parseDSN("invalid"));
 });
-test("one teacher leaving does not stop recording while others remain; empty grace and eight-hour cap do", () => {
+test("teacher departure and an empty room do not stop recording; eight-hour cap does", () => {
   assert.equal(recordingStopReason(10, 1000, 100, 100000), "");
   assert.equal(recordingStopReason(0, 1000, 100, 20000), "");
-  assert.equal(recordingStopReason(0, 1000, 100, 31000), "empty");
+  assert.equal(recordingStopReason(0, 1000, 100, 31000), "");
   assert.equal(recordingStopReason(10, 0, 28800, 100000), "limit");
 });
 test(

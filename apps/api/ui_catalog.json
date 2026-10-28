@@ -92,11 +92,19 @@
     "area": "Cài đặt"
   },
   {
+    "key": " · Kết thúc lớp: ",
+    "area": "Điểm danh"
+  },
+  {
     "key": " dòng trên trang",
     "area": "Điểm danh"
   },
   {
     "key": " giờ ",
+    "area": "Điểm danh"
+  },
+  {
+    "key": ". Điểm danh tính trong khung giảng dạy; không cộng thời gian chờ.",
     "area": "Điểm danh"
   },
   {
@@ -212,6 +220,14 @@
     "area": "Điểm danh"
   },
   {
+    "key": "Đang dạy",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Đang giảng dạy",
+    "area": "Điểm danh"
+  },
+  {
     "key": "Đang tải báo cáo…",
     "area": "Điểm danh"
   },
@@ -233,6 +249,10 @@
   },
   {
     "key": "Dữ liệu máy chủ",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Giáo viên vào dạy: ",
     "area": "Điểm danh"
   },
   {
@@ -281,6 +301,10 @@
   },
   {
     "key": "Lưu quy tắc",
+    "area": "Điểm danh"
+  },
+  {
+    "key": "Mốc giảng dạy của giáo viên",
     "area": "Điểm danh"
   },
   {
@@ -692,6 +716,10 @@
     "area": "Giao diện chung"
   },
   {
+    "key": "Chọn hình dán",
+    "area": "Giao diện chung"
+  },
+  {
     "key": "Chọn lớp",
     "area": "Giao diện chung"
   },
@@ -713,6 +741,10 @@
   },
   {
     "key": "Chu kỳ sao lưu (giờ)",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Chú thích",
     "area": "Giao diện chung"
   },
   {
@@ -1052,11 +1084,11 @@
     "area": "Giao diện chung"
   },
   {
-    "key": "Dựng phiên bản mới",
+    "key": "Dừng chú thích",
     "area": "Giao diện chung"
   },
   {
-    "key": "Dừng trình bày",
+    "key": "Dựng phiên bản mới",
     "area": "Giao diện chung"
   },
   {
@@ -1081,6 +1113,10 @@
   },
   {
     "key": "Gán vào lớp",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Ghi chú cố định",
     "area": "Giao diện chung"
   },
   {
@@ -1137,6 +1173,14 @@
   },
   {
     "key": "Hình chữ nhật",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Hình dán",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Hình dán ",
     "area": "Giao diện chung"
   },
   {
@@ -1465,6 +1509,14 @@
   },
   {
     "key": "Một luồng nhận bị lỗi; đang chuẩn bị kết nối lại",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Mực biến mất",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Mũi tên",
     "area": "Giao diện chung"
   },
   {
@@ -1889,6 +1941,10 @@
   },
   {
     "key": "Viết lên màn hình chia sẻ",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Viết lên màn hình này",
     "area": "Giao diện chung"
   },
   {
@@ -3948,6 +4004,10 @@
     "area": "Phòng học & hệ thống"
   },
   {
+    "key": "Bạn đang trình bày",
+    "area": "Phòng học & hệ thống"
+  },
+  {
     "key": "Bản ghi bài học",
     "area": "Phòng học & hệ thống"
   },
@@ -4045,6 +4105,10 @@
   },
   {
     "key": "CHÀO MỪNG TRỞ LẠI",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Chia sẻ một thẻ hoặc cửa sổ riêng để tránh lặp màn hình. Bấm Chú thích để viết vẽ trực tiếp lên phần trình bày.",
     "area": "Phòng học & hệ thống"
   },
   {
@@ -4281,6 +4345,10 @@
   },
   {
     "key": "Đóng menu ✕",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Dừng trình bày",
     "area": "Phòng học & hệ thống"
   },
   {
@@ -4721,6 +4789,10 @@
   },
   {
     "key": "Trường của bạn",
+    "area": "Phòng học & hệ thống"
+  },
+  {
+    "key": "Vẫn hiển thị màn hình của tôi",
     "area": "Phòng học & hệ thống"
   },
   {
@@ -5948,6 +6020,10 @@
     "area": "Thông báo hệ thống"
   },
   {
+    "key": "Chưa đọc được mốc giảng dạy",
+    "area": "Thông báo hệ thống"
+  },
+  {
     "key": "Chưa đọc được phiên bản gói",
     "area": "Thông báo hệ thống"
   },
@@ -6677,6 +6753,10 @@
   },
   {
     "key": "Ghi chú quá dài",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Ghi hình bắt đầu khi giáo viên đã vào dạy và dừng khi kết thúc lớp",
     "area": "Thông báo hệ thống"
   },
   {
@@ -8072,6 +8152,14 @@
     "area": "Thông báo hệ thống"
   },
   {
+    "key": "Teaching start failed",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Teaching window unavailable",
+    "area": "Thông báo hệ thống"
+  },
+  {
     "key": "Tên hoặc trạng thái lớp không hợp lệ",
     "area": "Thông báo hệ thống"
   },
@@ -8269,6 +8357,10 @@
   },
   {
     "key": "Vào lớp trước khi xem khảo sát",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Vào phòng trước khi bắt đầu giảng dạy",
     "area": "Thông báo hệ thống"
   },
   {

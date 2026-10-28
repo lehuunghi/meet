@@ -12,8 +12,8 @@ async function enterDemo(page: Page) {
     .first()
     .click();
 }
-async function line(page: Page) {
-  const canvas = page.getByLabel("Bảng trắng dùng chung", { exact: true });
+async function line(page: Page, label = "Bảng trắng dùng chung") {
+  const canvas = page.getByLabel(label, { exact: true });
   const box = (await canvas.boundingBox())!;
   await page.mouse.move(box.x + box.width * 0.2, box.y + box.height * 0.3);
   await page.mouse.down();
@@ -68,6 +68,63 @@ test("shared drawing controls support pages, export, presentation overlay and mo
   await expect(
     page.getByLabel("Chú thích trên màn hình chia sẻ", { exact: true }),
   ).toBeVisible();
+});
+
+test("presentation has a direct annotation action, icon tools and fading ink", async ({
+  page,
+}) => {
+  await enterDemo(page);
+  await page
+    .getByRole("button", { name: "Viết lên màn hình này", exact: true })
+    .click();
+  const canvas = page.getByLabel("Chú thích trên màn hình chia sẻ", {
+    exact: true,
+  });
+  await expect(canvas).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Mũi tên", exact: true }).locator("svg"),
+  ).toHaveCount(1);
+  await page
+    .getByRole("button", { name: "Ghi chú cố định", exact: true })
+    .click();
+  await page.getByLabel("Nội dung chữ trên bảng").fill("Ôn tập công thức");
+  await page.getByRole("button", { name: "Thêm chữ ở giữa" }).click();
+  await expect(
+    page.getByRole("button", { name: "Hoàn tác nét của tôi" }),
+  ).toBeEnabled();
+  await page.getByRole("button", { name: "Hình dán", exact: true }).click();
+  await page.getByRole("button", { name: "Hình dán ✅", exact: true }).click();
+  const box = (await canvas.boundingBox())!;
+  await page.mouse.click(box.x + box.width * 0.7, box.y + box.height * 0.3);
+  await expect(page.getByText(/Đang lưu…/)).toHaveCount(0);
+  page.on("dialog", (d) => d.accept());
+  await page
+    .getByRole("button", { name: "Xóa nét trên trang", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Mực biến mất", exact: true }).click();
+  await line(page, "Chú thích trên màn hình chia sẻ");
+  const alpha = () =>
+    canvas.evaluate(
+      (c: HTMLCanvasElement) =>
+        c
+          .getContext("2d")!
+          .getImageData(
+            Math.round(c.width * 0.4),
+            Math.round(c.height * 0.45),
+            1,
+            1,
+          ).data[3],
+    );
+  await expect.poll(alpha).toBeGreaterThan(0);
+  await expect.poll(alpha, { timeout: 10000 }).toBe(0);
+  await page.screenshot({
+    path: "../../outputs/meet-annotation-icons.png",
+    fullPage: true,
+  });
+  await page
+    .getByRole("button", { name: "Dừng chú thích", exact: true })
+    .click();
+  await expect(canvas).toHaveCount(0);
 });
 
 test("two participants receive persisted drawings and teacher permission changes", async ({

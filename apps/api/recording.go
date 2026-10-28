@@ -25,6 +25,10 @@ func (a *app) recordingCreate(w http.ResponseWriter, r *http.Request) {
 		problem(w, 409, "Recording is not enabled for this live meeting")
 		return
 	}
+	if !a.recordingTeachingGate(w, r) {
+		return
+	}
+
 	store, ready := r2ready(w)
 	if !ready {
 		return
