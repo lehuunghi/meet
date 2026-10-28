@@ -13,6 +13,8 @@ Hàng chờ nét nằm trong bộ nhớ của trang hiện tại. Khi còn cản
 
 7. **Quyền đọc cấu hình Node của recorder:** lượt triển khai thật phát hiện `package.json` kế thừa quyền chỉ root đọc từ checkout của updater. Bản sửa đặt quyền đọc rõ ràng trong image và kiểm tra tải cả các thư viện thật dưới tài khoản runtime trước khi khóa ứng dụng. Lượt gặp lỗi đã tự phục hồi bản trước.
 
+8. **Menu công cụ vượt mép trên mobile (v0.26.1):** đo khoảng trống thực tế trên/dưới nút mở, giới hạn chiều cao theo khoảng trống và giữ vị trí cuộn khi chuyển focus. Kiểm thử hồi quy tái hiện lỗi ở màn hình 390 × 520 trước khi sửa.
+
 ## Cập nhật an toàn
 
 Chỉ thay ứng dụng/recorder khi không còn buổi đang diễn ra. Quy trình vẫn yêu cầu phiên bản GitHub đã qua CI, checkout sạch, sao lưu mã hóa đã xác minh, khóa ghi và kiểm tra sức khỏe. Recorder đã cài theo bộ chuẩn được cập nhật tự động; hệ thống không tự cài thêm recorder vào máy chưa dùng ghi hình.

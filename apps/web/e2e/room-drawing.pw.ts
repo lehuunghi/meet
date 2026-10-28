@@ -194,8 +194,17 @@ test("Meet icon hints and labelled drawing menu support mouse, keyboard and mobi
   await expect(
     page.getByRole("button", { name: "Ghi chú cố định", exact: true }),
   ).toHaveAttribute("aria-pressed", "true");
-  await page.setViewportSize({ width: 390, height: 844 });
+  await page.setViewportSize({ width: 390, height: 520 });
+  await page
+    .getByLabel("Chọn công cụ viết vẽ", { exact: true })
+    .evaluate((el) => window.scrollBy(0, el.getBoundingClientRect().top - 265));
   await page.getByLabel("Chọn công cụ viết vẽ", { exact: true }).click();
+  await expect
+    .poll(async () => {
+      const r = await menu.boundingBox();
+      return !!r && r.y >= 8 && r.y + r.height <= 512;
+    })
+    .toBe(true);
   await menu
     .getByRole("menuitemradio", { name: "Mũi tên", exact: true })
     .click();

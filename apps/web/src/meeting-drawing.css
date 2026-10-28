@@ -590,7 +590,7 @@
   top: calc(100% + 8px);
   width: 260px;
   max-width: calc(100vw - 50px);
-  max-height: min(55dvh, 480px);
+  max-height: min(55dvh, 480px, var(--drawing-menu-space, 480px));
   overflow: auto;
   background: #202124;
   color: #e8eaed;

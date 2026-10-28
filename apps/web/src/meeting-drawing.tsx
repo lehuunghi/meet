@@ -781,17 +781,24 @@ export function MeetingDrawing({
                 onToggle={(e) => {
                   const d = e.currentTarget;
                   if (d.open) {
-                    d.dataset.side =
-                      d.getBoundingClientRect().top > innerHeight * 0.5
-                        ? "up"
-                        : "down";
+                    const anchor = d
+                      .querySelector("summary")!
+                      .getBoundingClientRect();
+                    const above = Math.max(0, anchor.top - 20);
+                    const below = Math.max(0, innerHeight - anchor.bottom - 20);
+                    const up = above > below;
+                    d.dataset.side = up ? "up" : "down";
+                    d.style.setProperty(
+                      "--drawing-menu-space",
+                      `${Math.max(0, up ? above : below)}px`,
+                    );
                     if (
                       document.activeElement === d.querySelector("summary") ||
                       !d.contains(document.activeElement)
                     )
                       d.querySelector<HTMLElement>(
                         '[aria-checked="true"]',
-                      )?.focus();
+                      )?.focus({ preventScroll: true });
                   }
                 }}
                 onKeyDown={(e) => {
