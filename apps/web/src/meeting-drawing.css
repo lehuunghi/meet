@@ -820,7 +820,7 @@
 .room .drawing-compact > .drawing-labelled-menu {
   margin: 0;
 }
-.room .drawing-dock-action {
+.room .meeting-drawing-tools .drawing-dock-action {
   width: 38px;
   height: 38px;
   min-height: 38px;
@@ -833,7 +833,7 @@
   color: #e8eaed;
   padding: 7px;
 }
-.room .drawing-dock-action:hover {
+.room .meeting-drawing-tools .drawing-dock-action:hover {
   background: #454746;
 }
 .room .drawing-compact > [role="alert"] {
