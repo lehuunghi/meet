@@ -1,3 +1,4 @@
+import {MeetingDrawing,requestDrawing} from "./meeting-drawing";
 import { AcademyApp } from "./academy";
 import { vnDate } from "./date-format";
 import { Accounts } from "./accounts";
@@ -1304,6 +1305,7 @@ function Room({
       </div>
       <div className="room-toolbar" ref={toolbarRef}>
         <MeetingControls
+          onBoard={()=>requestDrawing(meeting.id,'board')} onAnnotate={()=>requestDrawing(meeting.id,'screen')}
           joined={joined}
           mic={preMic}
           camera={preCamera}
@@ -1535,7 +1537,7 @@ function Room({
           </article>
         )}
         {localScreen && (
-          <article className={focusKey === "self:screen" ? "is-pinned" : ""}>
+          <article data-presentation={user.id} className={focusKey === "self:screen" ? "is-pinned" : ""}>
             <Video stream={localScreen} muted />
             <strong>Màn hình của bạn</strong>
             <div className="tile-actions">
@@ -1551,7 +1553,7 @@ function Room({
         )}
         {Object.entries(remote).map(([k, v]) => (
           <article
-            key={k}
+            key={k} data-presentation={k.endsWith(':screen')?k.slice(0,-7):undefined}
             className={
               (focusKey === k ? "is-pinned " : "") +
               (activeSpeaker === k ? "is-speaking" : "")
@@ -1585,6 +1587,7 @@ function Room({
           </article>
         ))}
       </div>
+      {joined&&<MeetingDrawing meeting={meeting.id} user={user} joined={joined} canManage={canManage}/>}
       <RoomTools
         panelTab={panelTab}
         onPanelTabChange={setPanelTab}

@@ -1,3 +1,4 @@
+import {MeetingDrawing,requestDrawing} from "./meeting-drawing";
 import { useState } from "react";
 import { RoomTools } from "./room-tools";
 import { MeetingControls, MeetingLeaveDialog, MeetingModal, type MeetingPanel } from "./meeting-controls";
@@ -151,7 +152,7 @@ export function PreviewRoom({
       </div>
       <div className="preview-classroom">
         <section>
-          <div className="preview-stage">
+          <div className="preview-stage" data-presentation={role!=="student"?role:"teacher"}>
             <div>
               <small>NỘI DUNG BÀI HỌC MẪU</small>
               <h1>Hàm số và đồ thị</h1>
@@ -182,7 +183,7 @@ export function PreviewRoom({
               ),
             )}
           </div>
-          <div className="room-toolbar"><MeetingControls joined mic={mic} camera={camera} sharing={false} raised={raised} busy={false} canManage={role!=='student'} people={people} unread={unread} panel={toolsOpen?panelTab:null} code="Phòng minh họa" onMic={()=>setMic(!mic)} onCamera={()=>setCamera(!camera)} onShare={()=>setMessage('Chia sẻ màn hình cần cuộc gọi thật. Bản xem trước không yêu cầu quyền thiết bị.')} onHand={()=>setRaised(!raised)} onReact={emoji=>setMessage('Phản ứng minh họa: '+emoji)} onPanel={openPanel} onLeave={()=>role!=='student'?setLeaveChoice('leave'):onExit()} onEnd={()=>setLeaveChoice('end')} onSettings={()=>setInfo('Cài đặt thiết bị')} onInfo={()=>setInfo('Thông tin phòng học')} mirror={mirror} onMirror={()=>setMirror(!mirror)} onFullscreen={()=>void document.querySelector<HTMLElement>('.room')?.requestFullscreen?.().catch(()=>setMessage('Trình duyệt chưa hỗ trợ toàn màn hình'))}/></div>
+          <div className="room-toolbar"><MeetingControls onBoard={()=>requestDrawing("preview", "board")} onAnnotate={()=>requestDrawing("preview", "screen")} joined mic={mic} camera={camera} sharing={false} raised={raised} busy={false} canManage={role!=='student'} people={people} unread={unread} panel={toolsOpen?panelTab:null} code="Phòng minh họa" onMic={()=>setMic(!mic)} onCamera={()=>setCamera(!camera)} onShare={()=>setMessage('Chia sẻ màn hình cần cuộc gọi thật. Bản xem trước không yêu cầu quyền thiết bị.')} onHand={()=>setRaised(!raised)} onReact={emoji=>setMessage('Phản ứng minh họa: '+emoji)} onPanel={openPanel} onLeave={()=>role!=='student'?setLeaveChoice('leave'):onExit()} onEnd={()=>setLeaveChoice('end')} onSettings={()=>setInfo('Cài đặt thiết bị')} onInfo={()=>setInfo('Thông tin phòng học')} mirror={mirror} onMirror={()=>setMirror(!mirror)} onFullscreen={()=>void document.querySelector<HTMLElement>('.room')?.requestFullscreen?.().catch(()=>setMessage('Trình duyệt chưa hỗ trợ toàn màn hình'))}/></div>
           {leaveChoice&&<MeetingLeaveDialog busy={false} ending={leaveChoice==='end'} onLeave={onExit} onEnd={onExit} onClose={()=>setLeaveChoice(false)}/>}
           {info&&<MeetingModal title={info} onClose={()=>setInfo('')}><p>Đây là bản xem trước. Không có kết nối SFU, truy cập camera/micro hoặc thay đổi buổi học thật.</p></MeetingModal>}
           {message && (
@@ -192,6 +193,7 @@ export function PreviewRoom({
           )}
         </section>
       </div>
+      <MeetingDrawing demo joined meeting="preview" user={{id:role,name:role}} canManage={role!=="student"}/>
       <RoomTools panelTab={panelTab} onPanelTabChange={setPanelTab} handRaised={raised} onHandChange={setRaised} onStats={s=>{setPeople(s.people);setUnread(s.unread);}}
         open={toolsOpen}
         onClose={() => setToolsOpen(false)}

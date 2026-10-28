@@ -76,6 +76,11 @@ test(
         await window.capture.tick([]);
       });
       while (total < 2) await new Promise((r) => setTimeout(r, 250));
+      await page.evaluate(async()=>{await window.capture.tick([], {active:true,mode:'board',page:'p1',pages:[{id:'p1',strokes:[{id:'ink',kind:'rect',color:'#FF4D4F',width:12,points:[{x:100,y:100},{x:500,y:400}],text:''}]}],screens:{}})});
+      await page.waitForTimeout(100);
+      const white=await page.evaluate(()=>Array.from(document.querySelector('canvas').getContext('2d').getImageData(20,20,1,1).data));assert.deepEqual(white,[255,255,255,255]);
+      const inkPixel=await page.evaluate(()=>Array.from(document.querySelector('canvas').getContext('2d').getImageData(80,120,1,1).data));assert.equal(inkPixel[0],255);assert.ok(inkPixel[1]<100);
+      await page.evaluate(async()=>{await window.capture.tick([],null)});
       const before = total;
       await teacher.close();
       while (total < before + 2) await new Promise((r) => setTimeout(r, 250));

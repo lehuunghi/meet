@@ -1,0 +1,207 @@
+.room:has(> .meeting-drawing-anchor) {
+  grid-template-rows: auto auto auto minmax(0, 1fr);
+}
+.room > .meeting-drawing-anchor {
+  grid-column: 1;
+  grid-row: 3;
+  min-width: 0;
+  z-index: 5;
+}
+.room:has(> .meeting-drawing-anchor) > .video-grid,
+.room:has(> .meeting-drawing-anchor) > .preview-classroom {
+  grid-row: 4;
+}
+.room:has(> .meeting-drawing-anchor) > .room-tools {
+  grid-row: 3/5;
+}
+.meeting-drawing-tools {
+  background: #f5f8fe;
+  color: #162b49;
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 12px;
+  min-width: 0;
+}
+.room .meeting-drawing-tools header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0;
+  margin: 0 0 10px;
+  min-height: 32px;
+}
+.room .meeting-drawing-tools button,
+.room .drawing-board-stage button {
+  background: #eaf1ff;
+  color: #102a56;
+  border: 1px solid #b8cdf8;
+  padding: 7px 10px;
+  border-radius: 7px;
+  font-size: 12px;
+  min-height: 36px;
+}
+.room .meeting-drawing-tools button[aria-pressed="true"] {
+  background: #0b4ed8;
+  color: white;
+}
+.drawing-tool-row,
+.drawing-actions,
+.drawing-pages {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.drawing-tool-row label,
+.drawing-actions label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0;
+  font-size: 12px;
+}
+.room .meeting-drawing-tools label,
+.room .meeting-drawing-tools header strong {
+  color: #162b49;
+}
+.meeting-drawing-tools select,
+.meeting-drawing-tools input,
+.drawing-pages select {
+  margin: 0;
+  background: white;
+  color: #162b49;
+  border: 1px solid #b8cdf8;
+  padding: 6px;
+  min-height: 34px;
+  width: auto;
+  font-size: 13px;
+}
+.meeting-drawing-tools input[type="checkbox"] {
+  min-height: 0;
+}
+.drawing-actions {
+  margin-top: 10px;
+}
+.meeting-drawing-tools p,
+.meeting-drawing-tools small {
+  color: #526680;
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+.meeting-drawing-tools [role="alert"] {
+  color: #c52835;
+}
+.drawing-board-stage {
+  grid-column: 1/-1;
+  order: -3;
+  min-width: 0;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  align-self: start;
+  color: #162b49;
+}
+.drawing-pages {
+  padding: 9px 12px;
+  border-bottom: 1px solid #dce6f3;
+}
+.drawing-board-stage .meeting-drawing-canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16/9;
+  background: white;
+}
+.room .meeting-screen-ink {
+  position: absolute;
+  z-index: 4;
+  pointer-events: none;
+  overflow: hidden;
+}
+.meeting-screen-ink .meeting-drawing-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+}
+.room [data-presentation] {
+  position: relative;
+}
+.room [data-presentation] .tile-actions {
+  z-index: 8;
+}
+.room:has(.drawing-board-stage) > .video-grid {
+  min-height: 0;
+  align-content: start;
+}
+.room:has(.drawing-board-stage) .preview-stage {
+  display: none;
+}
+.drawing-targets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.room .meeting-drawing-tools button:disabled {
+  opacity: 0.45;
+}
+.meeting-drawing-tools > label {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-top: 10px;
+}
+.meeting-drawing-tools > label input {
+  flex: 1;
+  min-width: 120px;
+}
+.room .meeting-drawing-tools button:focus-visible,
+.drawing-pages button:focus-visible {
+  outline: 3px solid #00c2e8;
+  outline-offset: 2px;
+}
+@media (max-width: 700px) {
+  .meeting-drawing-tools {
+    padding: 10px;
+    border-radius: 9px;
+  }
+  .drawing-tool-row {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    max-width: 100%;
+    padding-bottom: 7px;
+  }
+  .drawing-tool-row > * {
+    flex-shrink: 0;
+  }
+  .drawing-actions {
+    gap: 7px;
+  }
+  .room .meeting-drawing-tools button,
+  .room .drawing-board-stage button {
+    min-height: 40px;
+    font-size: 11px;
+  }
+  .drawing-pages {
+    gap: 7px;
+    padding: 8px;
+  }
+  .meeting-drawing-tools input {
+    font-size: 16px;
+  }
+  .room .meeting-drawing-tools header strong {
+    font-size: 13px;
+  }
+  .room:has(.drawing-board-stage) > .video-grid {
+    min-height: 0;
+  }
+  .room > .meeting-drawing-anchor {
+    width: 100%;
+  }
+}
+.meeting-drawing-slot {
+  display: contents;
+}

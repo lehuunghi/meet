@@ -1,3 +1,8 @@
+import {
+  drawingPage,
+  paintDrawing,
+  type DrawingState,
+} from "../web/src/drawing-model";
 import { ClassroomMedia } from "../web/src/media";
 declare global {
   interface Window {
@@ -31,6 +36,7 @@ let media: ClassroomMedia,
   writes = Promise.resolve(),
   stopping = false;
 let speaker = "";
+let ink: (DrawingState & { target_user?: string }) | null = null;
 function remove(key: string) {
   const tile = tiles.get(key);
   tile?.source?.disconnect();
@@ -41,7 +47,15 @@ function draw() {
   ctx.fillStyle = "#202124";
   ctx.fillRect(0, 0, 1280, 720);
   const all = [...tiles.entries()];
-  const screen = all.find(([key]) => key.endsWith(":screen"));
+  const inkPage = ink?.active ? drawingPage(ink) : null;
+  if (ink?.active && ink.mode === "board" && inkPage) {
+    paintDrawing(ctx, inkPage, 1280, 720, true);
+    return;
+  }
+  const screen =
+    (ink?.active && ink.mode === "screen" && ink.target_user
+      ? all.find(([key]) => key === ink!.target_user + ":screen")
+      : undefined) || all.find(([key]) => key.endsWith(":screen"));
   const person =
     all.find(([key]) => key === speaker) ||
     all.find(([key]) => !key.endsWith(":screen"));
@@ -66,6 +80,17 @@ function draw() {
       const vw = tile.video.videoWidth * scale,
         vh = tile.video.videoHeight * scale;
       ctx.drawImage(tile.video, x + (w - vw) / 2, y + (h - vh) / 2, vw, vh);
+      if (
+        ink?.active &&
+        ink.mode === "screen" &&
+        inkPage &&
+        screen?.[1] === tile
+      ) {
+        ctx.save();
+        ctx.translate(x + (w - vw) / 2, y + (h - vh) / 2);
+        paintDrawing(ctx, inkPage, vw, vh);
+        ctx.restore();
+      }
     }
     ctx.fillStyle = "#202124cc";
     ctx.fillRect(x, y + h - 34, w, 34);
@@ -140,7 +165,11 @@ window.capture = {
     timer = window.setInterval(draw, 1000 / 15);
     startSegment();
   },
-  async tick(list: any[]) {
+  async tick(
+    list: any[],
+    drawing: (DrawingState & { target_user?: string }) | null = null,
+  ) {
+    ink = drawing;
     await media.recover();
     await media.subscribe(list, "__server_recorder__");
     const levels = await media.audioLevels();

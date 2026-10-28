@@ -1,6 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import { randomBytes } from "node:crypto";
+import { randomBytes, createHash } from "node:crypto";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import mysql from "mysql2/promise";
@@ -352,7 +352,26 @@ async function record(job, lease) {
       )
         break;
       const list = await publications(job);
-      await page.evaluate((list) => window.capture.tick(list), list);
+      const [inkRows] = await db.execute(
+        "SELECT content FROM meeting_drawing_state WHERE school_id=? AND meeting_id=?",
+        [job.school_id, job.meeting_id],
+      );
+      let ink = inkRows[0]?.content || null;
+      if (typeof ink === "string") ink = JSON.parse(ink);
+      if (ink?.active && ink.mode === "screen") {
+        const target = list.find(
+          (p) =>
+            createHash("sha256")
+              .update(p.session_id + ":" + p.track_name)
+              .digest("hex") === ink.target,
+        );
+        if (target) ink.target_user = target.user_id;
+        else ink.active = false;
+      }
+      await page.evaluate(({ list, ink }) => window.capture.tick(list, ink), {
+        list,
+        ink,
+      });
       const [participants] = await db.execute(
         "SELECT COUNT(*) AS n FROM presence WHERE school_id=? AND meeting_id=? AND online=TRUE AND last_seen>=UTC_TIMESTAMP()-INTERVAL 45 SECOND",
         [job.school_id, job.meeting_id],

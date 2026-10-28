@@ -297,3 +297,4 @@ CREATE TABLE IF NOT EXISTS academy_invoices (
  school_id CHAR(36) NOT NULL,order_id CHAR(36) NOT NULL,number VARCHAR(32) NOT NULL,buyer_name VARCHAR(200) NOT NULL,buyer_email VARCHAR(254) NOT NULL,plan_name VARCHAR(200) NOT NULL,amount_vnd BIGINT NOT NULL,days INT NOT NULL,created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
  PRIMARY KEY(school_id,order_id),UNIQUE KEY ain_number(school_id,number),FOREIGN KEY(school_id,order_id) REFERENCES academy_orders(school_id,id)
 );
+CREATE TABLE IF NOT EXISTS meeting_drawing_state (school_id CHAR(36) NOT NULL,meeting_id CHAR(36) NOT NULL,content JSON NOT NULL,revision BIGINT NOT NULL DEFAULT 0,PRIMARY KEY(school_id,meeting_id),FOREIGN KEY(school_id,meeting_id) REFERENCES meetings(school_id,id));

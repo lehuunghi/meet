@@ -229,6 +229,8 @@ func (a *app) routes() http.Handler {
 	m.HandleFunc("POST /api/meetings/{id}/sfu", a.auth(a.sfu))
 	m.HandleFunc("POST /api/meetings/{id}/media/reset", a.auth(a.mediaReset))
 	m.HandleFunc("GET /api/meetings/{id}/tracks", a.auth(a.tracks))
+	m.HandleFunc("GET /api/meetings/{id}/drawing", a.auth(a.roomDrawing))
+	m.HandleFunc("POST /api/meetings/{id}/drawing", a.auth(a.roomDrawing))
 	m.HandleFunc("GET /api/meetings/{id}/participants", a.auth(a.roomParticipants))
 	m.HandleFunc("GET /api/meetings/{id}/messages", a.auth(a.roomMessages))
 	m.HandleFunc("POST /api/meetings/{id}/messages", a.auth(a.sendMessage))
@@ -313,7 +315,7 @@ func migrate(db *sql.DB) error {
 	if _, e = c.ExecContext(context.Background(), "INSERT IGNORE INTO academy_live_memberships(school_id,user_id,expires_at) SELECT school_id,user_id,expires_at FROM academy_memberships WHERE live_enabled=TRUE"); e != nil {
 		return e
 	}
-	_, e = c.ExecContext(context.Background(), "INSERT IGNORE INTO schema_migrations VALUES(6),(7),(8),(9),(10),(11),(12),(13),(14),(15)")
+	_, e = c.ExecContext(context.Background(), "INSERT IGNORE INTO schema_migrations VALUES(6),(7),(8),(9),(10),(11),(12),(13),(14),(15),(16)")
 	return e
 }
 func main() {

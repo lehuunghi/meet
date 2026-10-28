@@ -356,6 +356,10 @@
     "area": "Điểm danh"
   },
   {
+    "key": " · Đang lưu…",
+    "area": "Giao diện chung"
+  },
+  {
     "key": " · Hình đại diện mẫu",
     "area": "Giao diện chung"
   },
@@ -504,6 +508,10 @@
     "area": "Giao diện chung"
   },
   {
+    "key": "Ẩn công cụ",
+    "area": "Giao diện chung"
+  },
+  {
     "key": "an@example.edu,SV2026001,Nguyễn An,mật_khẩu_riêng",
     "area": "Giao diện chung"
   },
@@ -556,6 +564,18 @@
     "area": "Giao diện chung"
   },
   {
+    "key": "Bảng trắng",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Bảng trắng của lớp",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Bảng trắng dùng chung",
+    "area": "Giao diện chung"
+  },
+  {
     "key": "Bật lưu bản ghi vào R2 private",
     "area": "Giao diện chung"
   },
@@ -584,6 +604,14 @@
     "area": "Giao diện chung"
   },
   {
+    "key": "Bút",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Bút và hình vẽ",
+    "area": "Giao diện chung"
+  },
+  {
     "key": "Cài đặt hệ thống",
     "area": "Giao diện chung"
   },
@@ -593,6 +621,10 @@
   },
   {
     "key": "Camera/micro đang bị chặn. Bấm biểu tượng quyền cạnh địa chỉ trang để cho phép, hoặc chọn vào lớp không dùng camera/micro.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Cần có người đang chia sẻ màn hình.",
     "area": "Giao diện chung"
   },
   {
@@ -636,6 +668,10 @@
     "area": "Giao diện chung"
   },
   {
+    "key": "Cho học sinh cùng vẽ",
+    "area": "Giao diện chung"
+  },
+  {
     "key": "Chọn ảnh đã tải",
     "area": "Giao diện chung"
   },
@@ -664,6 +700,10 @@
     "area": "Giao diện chung"
   },
   {
+    "key": "Chọn màn hình để chú thích:",
+    "area": "Giao diện chung"
+  },
+  {
     "key": "Chọn tệp logo",
     "area": "Giao diện chung"
   },
@@ -673,6 +713,14 @@
   },
   {
     "key": "Chu kỳ sao lưu (giờ)",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Chú thích màn hình",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Chú thích trên màn hình chia sẻ",
     "area": "Giao diện chung"
   },
   {
@@ -724,6 +772,10 @@
     "area": "Giao diện chung"
   },
   {
+    "key": "Chưa xuất được ảnh",
+    "area": "Giao diện chung"
+  },
+  {
     "key": "Chuẩn bị bài học",
     "area": "Giao diện chung"
   },
@@ -737,6 +789,18 @@
   },
   {
     "key": "Có ",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Con trỏ",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Công cụ vẽ",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Công cụ viết vẽ",
     "area": "Giao diện chung"
   },
   {
@@ -856,6 +920,10 @@
     "area": "Giao diện chung"
   },
   {
+    "key": "Đậm",
+    "area": "Giao diện chung"
+  },
+  {
     "key": "Dán nhiều dòng từ Excel hoặc CSV",
     "area": "Giao diện chung"
   },
@@ -900,6 +968,14 @@
     "area": "Giao diện chung"
   },
   {
+    "key": "Đang xem · Giáo viên có thể cho phép học sinh cùng vẽ.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Đánh dấu",
+    "area": "Giao diện chung"
+  },
+  {
     "key": "Danh sách giáo viên",
     "area": "Giao diện chung"
   },
@@ -920,11 +996,23 @@
     "area": "Giao diện chung"
   },
   {
+    "key": "Đen",
+    "area": "Giao diện chung"
+  },
+  {
     "key": "Đến trang đăng nhập →",
     "area": "Giao diện chung"
   },
   {
     "key": "Điều hành phòng",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Đỏ",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Độ dày bút",
     "area": "Giao diện chung"
   },
   {
@@ -937,6 +1025,10 @@
   },
   {
     "key": "Dòng ",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Đóng cho cả lớp",
     "area": "Giao diện chung"
   },
   {
@@ -965,6 +1057,10 @@
   },
   {
     "key": "Dừng trình bày",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Đường thẳng",
     "area": "Giao diện chung"
   },
   {
@@ -1000,7 +1096,15 @@
     "area": "Giao diện chung"
   },
   {
+    "key": "Giáo viên chưa mở bảng trắng",
+    "area": "Giao diện chung"
+  },
+  {
     "key": "Giáo viên hiện tại",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Giáo viên hoặc người trình bày mở chú thích trước.",
     "area": "Giao diện chung"
   },
   {
@@ -1032,11 +1136,23 @@
     "area": "Giao diện chung"
   },
   {
+    "key": "Hình chữ nhật",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Hình elip",
+    "area": "Giao diện chung"
+  },
+  {
     "key": "Họ tên",
     "area": "Giao diện chung"
   },
   {
     "key": "hoặc mở liên kết riêng mà bộ cài hiển thị. Phiên cấu hình có hiệu lực 15 phút.",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Hoàn tác nét của tôi",
     "area": "Giao diện chung"
   },
   {
@@ -1260,11 +1376,27 @@
     "area": "Giao diện chung"
   },
   {
+    "key": "Màn hình trình bày minh họa",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Mảnh",
+    "area": "Giao diện chung"
+  },
+  {
     "key": "Mật khẩu admin mới",
     "area": "Giao diện chung"
   },
   {
     "key": "Mật khẩu mới",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Màu",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Màu bút",
     "area": "Giao diện chung"
   },
   {
@@ -1340,6 +1472,10 @@
     "area": "Giao diện chung"
   },
   {
+    "key": "Nét",
+    "area": "Giao diện chung"
+  },
+  {
     "key": "Ngưng giáo viên",
     "area": "Giao diện chung"
   },
@@ -1372,6 +1508,10 @@
     "area": "Giao diện chung"
   },
   {
+    "key": "Nhập chữ rồi chạm vào bảng",
+    "area": "Giao diện chung"
+  },
+  {
     "key": "Nhập đúng tên lớp để xóa và giữ lịch sử: ",
     "area": "Giao diện chung"
   },
@@ -1397,6 +1537,14 @@
   },
   {
     "key": "NỘI DUNG BÀI HỌC MẪU",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Nội dung chữ",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Nội dung chữ trên bảng",
     "area": "Giao diện chung"
   },
   {
@@ -1524,6 +1672,10 @@
     "area": "Giao diện chung"
   },
   {
+    "key": "Tải ảnh PNG",
+    "area": "Giao diện chung"
+  },
+  {
     "key": "Tải lại / bỏ thay đổi",
     "area": "Giao diện chung"
   },
@@ -1560,6 +1712,10 @@
     "area": "Giao diện chung"
   },
   {
+    "key": "Tẩy",
+    "area": "Giao diện chung"
+  },
+  {
     "key": "Tên lớp mới",
     "area": "Giao diện chung"
   },
@@ -1588,7 +1744,15 @@
     "area": "Giao diện chung"
   },
   {
+    "key": "Thêm chữ ở giữa",
+    "area": "Giao diện chung"
+  },
+  {
     "key": "Thêm lớp",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Thêm trang",
     "area": "Giao diện chung"
   },
   {
@@ -1645,6 +1809,14 @@
   },
   {
     "key": "Trần Ngọc Lan",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Trắng",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Trang bảng trắng",
     "area": "Giao diện chung"
   },
   {
@@ -1712,11 +1884,31 @@
     "area": "Giao diện chung"
   },
   {
+    "key": "Viết chữ",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Viết lên màn hình chia sẻ",
+    "area": "Giao diện chung"
+  },
+  {
     "key": "VIP · Có thể học Live",
     "area": "Giao diện chung"
   },
   {
+    "key": "Vừa",
+    "area": "Giao diện chung"
+  },
+  {
     "key": "Xác nhận kết thúc",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Xanh đậm",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Xanh ngọc",
     "area": "Giao diện chung"
   },
   {
@@ -1749,6 +1941,22 @@
   },
   {
     "key": "Xóa lớp",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Xóa nét trên trang",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Xóa toàn bộ nét vẽ trên trang hiện tại?",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Xóa trang",
+    "area": "Giao diện chung"
+  },
+  {
+    "key": "Xóa trang bảng trắng hiện tại?",
     "area": "Giao diện chung"
   },
   {
@@ -5416,6 +5624,22 @@
     "area": "Thông báo hệ thống"
   },
   {
+    "key": "Bạn không còn quyền trong phòng",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Bảng chưa mở hoặc màn hình đã dừng",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Bảng đã đầy; xuất ảnh và xóa trang cũ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Bảng đã thay đổi. Vui lòng thử lại",
+    "area": "Thông báo hệ thống"
+  },
+  {
     "key": "Bật R2 trước khi bật sao lưu",
     "area": "Thông báo hệ thống"
   },
@@ -5516,7 +5740,35 @@
     "area": "Thông báo hệ thống"
   },
   {
+    "key": "Chỉ giáo viên cấp quyền vẽ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chỉ giáo viên chuyển trang",
+    "area": "Thông báo hệ thống"
+  },
+  {
     "key": "Chỉ giáo viên được chuẩn bị dạy",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chỉ giáo viên hoặc người trình bày điều khiển",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chỉ giáo viên hoặc người trình bày mở chú thích",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chỉ giáo viên mở bảng trắng",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chỉ giáo viên thêm trang bảng trắng",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chỉ giáo viên xóa trang",
     "area": "Thông báo hệ thống"
   },
   {
@@ -5549,6 +5801,10 @@
   },
   {
     "key": "Chỉ thử lại bài giảng sao chép thất bại",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chỉ xóa nét của bạn",
     "area": "Thông báo hệ thống"
   },
   {
@@ -5664,6 +5920,10 @@
     "area": "Thông báo hệ thống"
   },
   {
+    "key": "Chưa đọc được bảng",
+    "area": "Thông báo hệ thống"
+  },
+  {
     "key": "Chưa đọc được cấu hình",
     "area": "Thông báo hệ thống"
   },
@@ -5749,6 +6009,10 @@
   },
   {
     "key": "Chưa gỡ được phân công",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa gửi được nét vẽ",
     "area": "Thông báo hệ thống"
   },
   {
@@ -5845,6 +6109,10 @@
   },
   {
     "key": "Chưa lưu được bài giảng",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa lưu được bảng",
     "area": "Thông báo hệ thống"
   },
   {
@@ -5952,6 +6220,10 @@
     "area": "Thông báo hệ thống"
   },
   {
+    "key": "Chưa tải được bảng",
+    "area": "Thông báo hệ thống"
+  },
+  {
     "key": "Chưa tải được bảng tin",
     "area": "Thông báo hệ thống"
   },
@@ -5993,6 +6265,10 @@
   },
   {
     "key": "Chưa tải được lớp đang mở",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Chưa tải được màn hình chia sẻ",
     "area": "Thông báo hệ thống"
   },
   {
@@ -6416,6 +6692,10 @@
     "area": "Thông báo hệ thống"
   },
   {
+    "key": "Giáo viên chưa cho phép bạn vẽ",
+    "area": "Thông báo hệ thống"
+  },
+  {
     "key": "Giáo viên đã tắt gửi tin nhắn",
     "area": "Thông báo hệ thống"
   },
@@ -6449,6 +6729,10 @@
   },
   {
     "key": "Giờ vào chung (VN)",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Giữ lại ít nhất một trang",
     "area": "Thông báo hệ thống"
   },
   {
@@ -6992,6 +7276,10 @@
     "area": "Thông báo hệ thống"
   },
   {
+    "key": "Không sửa nét vẽ của người khác",
+    "area": "Thông báo hệ thống"
+  },
+  {
     "key": "Không tải được bài tập",
     "area": "Thông báo hệ thống"
   },
@@ -7384,6 +7672,10 @@
     "area": "Thông báo hệ thống"
   },
   {
+    "key": "Màn hình đã dừng hoặc thay đổi",
+    "area": "Thông báo hệ thống"
+  },
+  {
     "key": "Mật khẩu chưa đủ độ dài cho loại tài khoản",
     "area": "Thông báo hệ thống"
   },
@@ -7473,6 +7765,18 @@
   },
   {
     "key": "Môn học không thuộc trung tâm",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Nét vẽ đã được xóa",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Nét vẽ không hợp lệ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Nét vẽ không thuộc tài khoản",
     "area": "Thông báo hệ thống"
   },
   {
@@ -7601,6 +7905,10 @@
   },
   {
     "key": "Phản ứng không hợp lệ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Phiên bản không hợp lệ",
     "area": "Thông báo hệ thống"
   },
   {
@@ -7808,6 +8116,10 @@
     "area": "Thông báo hệ thống"
   },
   {
+    "key": "Thao tác bảng không hợp lệ",
+    "area": "Thông báo hệ thống"
+  },
+  {
     "key": "Thao tác không hợp lệ",
     "area": "Thông báo hệ thống"
   },
@@ -7864,11 +8176,27 @@
     "area": "Thông báo hệ thống"
   },
   {
+    "key": "Tối đa 20 trang; xuất ảnh hoặc xóa trang cũ",
+    "area": "Thông báo hệ thống"
+  },
+  {
     "key": "Tối đa 32 SFU app",
     "area": "Thông báo hệ thống"
   },
   {
     "key": "Tối đa 500 trang khóa học",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Trang đã đầy; xuất ảnh rồi tạo trang mới",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Trang đã thay đổi",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Trang đã thay đổi; nét vẽ cũ không được khôi phục",
     "area": "Thông báo hệ thống"
   },
   {
@@ -7928,6 +8256,10 @@
     "area": "Thông báo hệ thống"
   },
   {
+    "key": "Vào buổi học trước khi dùng bảng",
+    "area": "Thông báo hệ thống"
+  },
+  {
     "key": "Vào buổi học trước khi dùng phản ứng",
     "area": "Thông báo hệ thống"
   },
@@ -7945,6 +8277,10 @@
   },
   {
     "key": "vật lý",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Vẽ quá nhanh; đợi một giây rồi thử lại",
     "area": "Thông báo hệ thống"
   },
   {
@@ -8001,6 +8337,14 @@
   },
   {
     "key": "XLSX không hợp lệ",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Xuất ảnh rồi xóa toàn bộ trang để tiếp tục",
+    "area": "Thông báo hệ thống"
+  },
+  {
+    "key": "Xuất ảnh rồi xóa trang để tiếp tục",
     "area": "Thông báo hệ thống"
   },
   {

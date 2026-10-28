@@ -232,6 +232,7 @@ func TestProductionSafetyIntegration(t *testing.T) {
 		t.Fatal(state)
 	}
 	adminCookie := login("demo", "admin")
+	testRoomDrawing(t, a, request, teacher, student, other)
 	testRoomModeration(t, a, request, teacher, student, other)
 	testCourseWorkspace(t, a, request, teacher, student, other)
 	must(request("POST", "/api/accounts/demo-student/recovery", `{}`, teacher), 403)

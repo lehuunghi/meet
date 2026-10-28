@@ -42,7 +42,7 @@ func testRoomModeration(t *testing.T, a *app, request func(string, string, strin
 	if !strings.Contains(w.Body.String(), "waiting") {
 		t.Fatal(w.Body.String())
 	}
-	for _, path := range []string{"/tracks", "/participants", "/messages", "/members", "/polls", "/reactions"} {
+	for _, path := range []string{"/tracks", "/participants", "/messages", "/members", "/polls", "/reactions", "/drawing"} {
 		must(request("GET", base+path, "", waiting), 403)
 	}
 	must(request("POST", base+"/presence", `{"kind":"join"}`, waiting), 403)
