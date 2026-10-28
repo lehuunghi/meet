@@ -206,6 +206,9 @@ test("Meet icon hints and labelled drawing menu support mouse, keyboard and mobi
     })
     .toBe(true);
   await menu
+    .getByRole("menuitem", { name: "Đường kẻ và hình dạng", exact: true })
+    .click();
+  await menu
     .getByRole("menuitemradio", { name: "Mũi tên", exact: true })
     .click();
   await expect(
@@ -218,7 +221,10 @@ test("Meet icon hints and labelled drawing menu support mouse, keyboard and mobi
   ).toBe(true);
   await page.getByLabel("Chọn công cụ viết vẽ", { exact: true }).click();
   await page.keyboard.press("End");
-  await page.keyboard.press("Enter");
+  await expect(
+    menu.getByRole("menuitem", { name: "Đóng bảng cho cả lớp", exact: true }),
+  ).toBeFocused();
+  await menu.getByRole("menuitemradio", { name: "Tẩy", exact: true }).click();
   await expect(
     page.getByRole("button", { name: "Tẩy", exact: true }),
   ).toHaveAttribute("aria-pressed", "true");
@@ -361,4 +367,61 @@ test("two participants receive persisted drawings and teacher permission changes
   ).toBeDisabled();
   await teacher.close();
   await student.close();
+});
+
+test("annotation menu groups colors and stamps and controls class permissions", async ({
+  page,
+}) => {
+  await enterDemo(page);
+  await page
+    .getByRole("button", { name: "Viết lên màn hình này", exact: true })
+    .click();
+  const open = () =>
+    page.getByLabel("Chọn công cụ viết vẽ", { exact: true }).click();
+  const menu = page.getByRole("menu", { name: "Danh sách công cụ viết vẽ" });
+  await open();
+  await menu.getByRole("menuitem", { name: "Màu", exact: true }).click();
+  await menu
+    .getByRole("menuitemradio", { name: "Xanh lá", exact: true })
+    .click();
+  await expect(page.getByLabel("Màu bút", { exact: true })).toHaveValue(
+    "#34A853",
+  );
+  await open();
+  await menu.getByRole("menuitem", { name: "Hình dán", exact: true }).click();
+  await menu
+    .getByRole("menuitem", { name: "Hình dán ✅", exact: true })
+    .click();
+  await expect(
+    page.getByRole("button", { name: "Hình dán ✅", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
+  await open();
+  const allow = menu.getByRole("menuitemcheckbox", {
+    name: "Cho phép người khác chú thích",
+    exact: true,
+  });
+  await expect(allow).toHaveAttribute("aria-checked", "false");
+  await allow.click();
+  await expect(allow).toHaveAttribute("aria-checked", "true");
+  await page.keyboard.press("Escape");
+  await expect(menu).toBeHidden();
+  await open();
+  await menu
+    .getByRole("menuitem", { name: "Đường kẻ và hình dạng", exact: true })
+    .click();
+  await page.keyboard.press("Escape");
+  await expect(
+    menu.getByRole("menuitem", { name: "Màu", exact: true }),
+  ).toBeVisible();
+  await page
+    .getByLabel("Chú thích trên màn hình chia sẻ", { exact: true })
+    .click({ position: { x: 200, y: 100 } });
+  await expect(menu).toBeHidden();
+  await open();
+  await menu
+    .getByRole("menuitem", { name: "Dừng chú thích", exact: true })
+    .click();
+  await expect(
+    page.getByLabel("Chú thích trên màn hình chia sẻ", { exact: true }),
+  ).toHaveCount(0);
 });

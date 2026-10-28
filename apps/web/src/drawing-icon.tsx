@@ -1,12 +1,17 @@
 export function DrawingIcon({ kind }: { kind: string }) {
   const paths: Record<string, string> = {
+    chevron: "m9 5 7 7-7 7",
+    back: "m15 5-7 7 7 7",
+    people: "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M20 8v6m-3-3h6",
+    stop: "M9 4H4v16h5m4-13 5 5-5 5m-5-5h13",
+    shapes: "M3 3h9v9H3zM21 16a5 5 0 1 1-10 0 5 5 0 0 1 10 0Z",
     pointer: "m5 3 14 9-7 1-3 7z",
     pen: "m4 16 11-11 4 4L8 20H4zm9-9 4 4",
     marker: "m6 15 9-10 5 5-10 9H6zm-2 6h10",
     laser: "m5 15 9-10 5 5-9 10H5zm-2 7h4m12-6 2 2M18 3l2-2",
     text: "M4 5h16M12 5v15M8 20h8",
     note: "M4 3h16v12l-6 6H4zm10 18v-6h6M8 8h8m-8 4h5",
-    stamp: "M12 3c4 0 4 4 2 6v4h4l2 5H4l2-5h4V9c-2-2-2-6 2-6ZM5 21h14",
+    stamp: "M4 3h16v11l-7 7H4zM13 21v-7h7M8 8h.01M15 8h.01M8 11q3 3 6 0",
     line: "M4 20 20 4",
     arrow: "M4 20 20 4m-8 0h8v8",
     rect: "M4 4h16v16H4z",

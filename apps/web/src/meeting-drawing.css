@@ -538,7 +538,9 @@
 }
 
 /* A single shared teaching surface; camera tiles remain available. */
-.room:has(.drawing-board-stage) [data-presentation] { display:none!important; }
+.room:has(.drawing-board-stage) [data-presentation] {
+  display: none !important;
+}
 .room [data-presentation][data-presentation-suppressed="true"] {
   display: none !important;
 }
@@ -590,7 +592,7 @@
   top: calc(100% + 8px);
   width: 260px;
   max-width: calc(100vw - 50px);
-  max-height: min(55dvh, 480px, var(--drawing-menu-space, 480px));
+  max-height: min(480px, var(--drawing-menu-space, calc(100dvh - 24px)));
   overflow: auto;
   background: #202124;
   color: #e8eaed;
@@ -650,4 +652,138 @@
 }
 .meeting-control-tip[data-below="true"] {
   transform: translateX(-50%);
+}
+
+/* One compact annotation menu shared by the board and presentation. */
+.room .drawing-labelled-menu > [role="menu"] {
+  width: 286px;
+  padding: 6px 4px;
+  border-radius: 12px;
+}
+.room
+  .drawing-labelled-menu
+  button:is(
+    [role="menuitemradio"],
+    [role="menuitem"],
+    [role="menuitemcheckbox"]
+  ) {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: #e8eaed;
+  text-align: left;
+  font:
+    500 13px/1.5 "Segoe UI",
+    Arial,
+    sans-serif;
+}
+.room
+  .drawing-labelled-menu
+  button:is(
+    [role="menuitemradio"],
+    [role="menuitem"],
+    [role="menuitemcheckbox"]
+  )
+  > span:first-of-type {
+  flex: 1;
+}
+.room
+  .drawing-labelled-menu
+  button:is(
+    [role="menuitemradio"],
+    [role="menuitem"],
+    [role="menuitemcheckbox"]
+  ):hover {
+  background: #303134;
+}
+.room .drawing-labelled-menu button[aria-checked="true"] {
+  color: #aecbfa;
+  background: #283345;
+}
+.room .drawing-labelled-menu button:focus-visible {
+  outline: 2px solid #aecbfa;
+  outline-offset: -2px;
+}
+.room .drawing-labelled-menu button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.room .drawing-labelled-menu button > svg {
+  flex: none;
+  color: inherit;
+}
+.room .drawing-labelled-menu button > svg:last-child:not(:first-child) {
+  width: 15px;
+  height: 15px;
+}
+.room .drawing-labelled-menu [role="separator"] {
+  height: 1px;
+  background: #454746;
+  margin: 5px 8px;
+}
+.room .drawing-menu-color {
+  width: 22px;
+  height: 22px;
+  border: 2px solid #dce0e4;
+  border-radius: 50%;
+  flex: none;
+}
+.room .drawing-labelled-menu .drawing-menu-colors {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  padding: 8px;
+}
+.room .drawing-labelled-menu .drawing-menu-colors button {
+  position: relative;
+  min-height: 50px;
+  justify-content: center;
+  padding: 4px;
+}
+.room .drawing-menu-colors i {
+  height: 30px;
+  width: 30px;
+  border: 2px solid #dce0e4;
+  border-radius: 50%;
+}
+.room
+  .drawing-labelled-menu
+  .drawing-menu-colors
+  button
+  > span:not(.drawing-sr-only) {
+  position: absolute;
+  inset: auto;
+  flex: none;
+  color: #fff;
+  background: #202124;
+  border-radius: 50%;
+  font-size: 10px;
+  padding: 0 3px;
+  right: 4px;
+  bottom: 2px;
+}
+.room .drawing-labelled-menu .drawing-menu-stamps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  padding: 8px;
+}
+.room .drawing-labelled-menu .drawing-menu-stamps button {
+  justify-content: center;
+  font-size: 27px;
+  min-height: 56px;
+}
+.room .drawing-labelled-menu .drawing-menu-back {
+  font-weight: 600;
+  color: #aecbfa;
+}
+
+.drawing-on-presentation .drawing-current-tool {
+  display: none;
 }

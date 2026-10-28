@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { DrawingToolMenu } from "./drawing-tool-menu";
 import { DrawingIcon } from "./drawing-icon";
 import { drawingRequest, retryDrawing } from "./drawing-request";
 import {
@@ -25,7 +26,7 @@ const drawingTools = [
   ["arrow", "Mũi tên"],
   ["rect", "Hình chữ nhật"],
   ["ellipse", "Hình elip"],
-  ["text", "Viết chữ"],
+  ["text", "Hộp văn bản"],
   ["erase", "Tẩy"],
 ];
 type Target = { key: string; user_id: string; name: string };
@@ -811,7 +812,7 @@ export function MeetingDrawing({
                     e.preventDefault();
                     const items = Array.from(
                       d.querySelectorAll<HTMLButtonElement>(
-                        '[role="menuitemradio"]',
+                        '[role="menuitemradio"], [role="menuitem"], [role="menuitemcheckbox"]',
                       ),
                     );
                     const index = items.indexOf(
@@ -835,33 +836,44 @@ export function MeetingDrawing({
                   aria-label="Chọn công cụ viết vẽ"
                 >
                   <DrawingIcon kind={tool} />
-                  <span>
+                  <span className="drawing-current-tool">
                     {drawingTools.find(([key]) => key === tool)?.[1] ||
                       "Công cụ"}
                   </span>
                   <span aria-hidden="true">⌄</span>
                 </summary>
-                <div role="menu" aria-label="Danh sách công cụ viết vẽ">
-                  {drawingTools.map(([key, label]) => (
-                    <button
-                      type="button"
-                      role="menuitemradio"
-                      aria-checked={tool === key}
-                      disabled={!canDraw}
-                      key={key}
-                      onClick={(e) => {
-                        setTool(key);
-                        if (key === "stamp") setText("⭐");
-                        const d = e.currentTarget.closest("details");
-                        if (d) d.open = false;
-                      }}
-                    >
-                      <DrawingIcon kind={key} />
-                      <span>{label}</span>
-                      {tool === key && <span aria-hidden="true">✓</span>}
-                    </button>
-                  ))}
-                </div>
+                <DrawingToolMenu
+                  tool={tool}
+                  color={color}
+                  canDraw={canDraw}
+                  busy={busy}
+                  manage={canManage || owner}
+                  canAllow={canManage}
+                  allow={state.allow_students}
+                  pending={pendingCount > 0}
+                  screen={state.mode === "screen"}
+                  choose={(next, value) => {
+                    setTool(next);
+                    if (next === "stamp") setText(value || "⭐");
+                  }}
+                  setColor={setColor}
+                  toggleAllow={() => {
+                    if (canManage)
+                      void act({
+                        action: "allow",
+                        allow_students: !state.allow_students,
+                      });
+                  }}
+                  clear={() => {
+                    if (confirm("Xóa toàn bộ nét vẽ trên trang hiện tại?"))
+                      void act({
+                        action: "clear",
+                        context,
+                        epoch: page!.epoch,
+                      });
+                  }}
+                  stop={() => void act({ action: "close" })}
+                />
               </details>
               <div
                 className="drawing-tool-row"
@@ -901,6 +913,7 @@ export function MeetingDrawing({
                       ["#162B49", "Đen"],
                       ["#FFFFFF", "Trắng"],
                       ["#006F86", "Xanh đậm"],
+                      ["#34A853", "Xanh lá"],
                     ].map(([v, l]) => (
                       <option key={v} value={v}>
                         {l}
