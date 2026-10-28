@@ -160,21 +160,67 @@ func exerciseAcademyCommunications(t *testing.T, a *app, db *sql.DB, request fun
 	}
 	_ = json.Unmarshal(queued.Body.Bytes(), &campaign)
 	must(request("POST", "/api/academy/mail-campaigns", manual, admin), 201)
+	// An empty SKIP LOCKED claim is not evidence that the queue is drained.
+	// Keep every eligible row locked to reproduce that case deterministically.
+	locked, err := db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelReadCommitted})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer locked.Rollback()
+	lockedRows, err := locked.QueryContext(ctx, "SELECT id FROM academy_mail_jobs WHERE campaign_id=? FOR UPDATE", campaign.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for lockedRows.Next() {
+		var id string
+		if err = lockedRows.Scan(&id); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err = lockedRows.Err(); err != nil {
+		t.Fatal(err)
+	}
+	lockedRows.Close()
+	if err = a.sendNextAcademyMail(ctx); err != nil {
+		t.Fatal(err)
+	}
+	if calls != 0 || count("SELECT COUNT(*) FROM academy_mail_jobs WHERE campaign_id=? AND status='queued'", campaign.ID) != expected {
+		t.Fatal("locked claim sent or lost mail")
+	}
+	if err = locked.Rollback(); err != nil {
+		t.Fatal(err)
+	}
+	deliveryContext, cancelDelivery := context.WithTimeout(ctx, 15*time.Second)
+	defer cancelDelivery()
 	var wg sync.WaitGroup
 	for worker := 0; worker < 4; worker++ {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			for i := 0; i < expected; i++ {
-				if err := a.sendNextAcademyMail(ctx); err != nil {
+			for deliveryContext.Err() == nil {
+				if err := a.sendNextAcademyMail(deliveryContext); err != nil {
 					t.Error(err)
+					return
+				}
+				var remaining int
+				if err := db.QueryRowContext(deliveryContext, "SELECT COUNT(*) FROM academy_mail_jobs WHERE campaign_id=? AND status<>'sent'", campaign.ID).Scan(&remaining); err != nil {
+					t.Error(err)
+					return
+				}
+				if remaining == 0 {
+					return
+				}
+				select {
+				case <-deliveryContext.Done():
+					return
+				case <-time.After(5 * time.Millisecond):
 				}
 			}
 		}()
 	}
 	wg.Wait()
 	if calls != expected || count("SELECT COUNT(*) FROM academy_mail_jobs WHERE campaign_id=? AND status='sent'", campaign.ID) != expected {
-		t.Fatal("mail delivery duplicated or lost", calls, expected)
+		t.Fatalf("mail delivery duplicated or incomplete: calls=%d expected=%d sent=%d queued=%d sending=%d cancelled=%d", calls, expected, count("SELECT COUNT(*) FROM academy_mail_jobs WHERE campaign_id=? AND status='sent'", campaign.ID), count("SELECT COUNT(*) FROM academy_mail_jobs WHERE campaign_id=? AND status='queued'", campaign.ID), count("SELECT COUNT(*) FROM academy_mail_jobs WHERE campaign_id=? AND status='sending'", campaign.ID), count("SELECT COUNT(*) FROM academy_mail_jobs WHERE campaign_id=? AND status='cancelled'", campaign.ID))
 	}
 	retryBody := fmt.Sprintf(`{"subject":"Thử lại","body":"Email cho tôi","audience":"self","request_id":"%s"}`, uid())
 	retry := request("POST", "/api/academy/mail-campaigns", retryBody, admin)
