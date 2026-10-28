@@ -852,3 +852,14 @@
 .room .drawing-compact .drawing-surface-switch {
   margin: 0;
 }
+
+.room .presentation-annotate {
+  left: 12px;
+  right: auto;
+  bottom: 12px;
+  width: 44px;
+  height: 44px;
+  padding: 11px;
+  border-radius: 50%;
+  justify-content: center;
+}

@@ -24,7 +24,7 @@ async function line(page: Page, label = "Bảng trắng dùng chung") {
   await page.mouse.up();
   await expect(page.getByText(/Đang lưu…/)).toHaveCount(0);
 }
-test("whiteboard controls support pages, export and mobile without screen annotation", async ({
+test("shared drawing controls support pages, export, presentation overlay and mobile", async ({
   page,
 }) => {
   await enterDemo(page);
@@ -76,21 +76,26 @@ test("whiteboard controls support pages, export and mobile without screen annota
       exact: true,
     }),
   ).toHaveCount(0);
+  await page.keyboard.press("Escape");
+  await page
+    .getByRole("button", { name: "Mở công cụ vẽ", exact: true })
+    .click();
   await expect(
-    page.getByRole("button", { name: "Viết lên màn hình này", exact: true }),
-  ).toHaveCount(0);
-  await expect(page.locator(".meeting-screen-ink")).toHaveCount(0);
+    page.getByLabel("Chú thích trên màn hình chia sẻ", { exact: true }),
+  ).toBeVisible();
 });
 
-test("whiteboard has icon tools and fading ink without presentation annotations", async ({
+test("presentation has a direct annotation action, icon tools and fading ink", async ({
   page,
 }) => {
   await enterDemo(page);
-  await page.getByRole("button", { name: "Bảng trắng", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Mở công cụ vẽ", exact: true })
+    .click();
   await page
     .getByRole("button", { name: "Tùy chỉnh bút", exact: true })
     .click();
-  const canvas = page.getByLabel("Bảng trắng dùng chung", {
+  const canvas = page.getByLabel("Chú thích trên màn hình chia sẻ", {
     exact: true,
   });
   await expect(canvas).toBeVisible();
@@ -115,7 +120,7 @@ test("whiteboard has icon tools and fading ink without presentation annotations"
     .getByRole("button", { name: "Xóa nét trên trang", exact: true })
     .click();
   await page.getByRole("button", { name: "Mực biến mất", exact: true }).click();
-  await line(page, "Bảng trắng dùng chung");
+  await line(page, "Chú thích trên màn hình chia sẻ");
   const alpha = () =>
     canvas.evaluate(
       (c: HTMLCanvasElement) =>
@@ -126,16 +131,16 @@ test("whiteboard has icon tools and fading ink without presentation annotations"
             Math.round(c.height * 0.45),
             1,
             1,
-          ).data[0],
+          ).data[3],
     );
-  await expect.poll(alpha).toBeLessThan(240);
-  await expect.poll(alpha, { timeout: 10000 }).toBeGreaterThan(250);
+  await expect.poll(alpha).toBeGreaterThan(0);
+  await expect.poll(alpha, { timeout: 10000 }).toBe(0);
   await page.screenshot({
     path: "../../outputs/meet-annotation-icons.png",
     fullPage: true,
   });
   await page
-    .getByRole("button", { name: "Đóng cho cả lớp", exact: true })
+    .getByRole("button", { name: "Dừng chú thích", exact: true })
     .click();
   await expect(canvas).toHaveCount(0);
 });
@@ -174,10 +179,16 @@ test("board and presentation share one main surface and retain content when swit
     .getByRole("button", { name: "Đóng cho cả lớp", exact: true })
     .click();
   await expect(presentation).toBeVisible();
+  await page
+    .getByRole("button", { name: "Mở công cụ vẽ", exact: true })
+    .click();
   await expect(
-    page.getByRole("button", { name: "Viết lên màn hình này", exact: true }),
-  ).toHaveCount(0);
+    page.getByLabel("Chú thích trên màn hình chia sẻ", { exact: true }),
+  ).toBeVisible();
   await page.getByRole("button", { name: "Bảng trắng", exact: true }).click();
+  await expect(
+    page.getByLabel("Chú thích trên màn hình chia sẻ", { exact: true }),
+  ).toHaveCount(0);
   await expect(presentation).toBeHidden();
   await page.evaluate(() =>
     window.dispatchEvent(
@@ -396,7 +407,9 @@ test("annotation menu groups colors and stamps and controls class permissions", 
   page,
 }) => {
   await enterDemo(page);
-  await page.getByRole("button", { name: "Bảng trắng", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Mở công cụ vẽ", exact: true })
+    .click();
   const open = () =>
     page.getByLabel("Chọn công cụ viết vẽ", { exact: true }).click();
   const menu = page.getByRole("menu", { name: "Danh sách công cụ viết vẽ" });
@@ -435,25 +448,77 @@ test("annotation menu groups colors and stamps and controls class permissions", 
     menu.getByRole("menuitem", { name: "Màu", exact: true }),
   ).toBeVisible();
   await page
-    .getByLabel("Bảng trắng dùng chung", { exact: true })
+    .getByLabel("Chú thích trên màn hình chia sẻ", { exact: true })
     .click({ position: { x: 200, y: 100 } });
   await expect(menu).toBeHidden();
   await open();
   await menu
-    .getByRole("menuitem", { name: "Đóng bảng cho cả lớp", exact: true })
+    .getByRole("menuitem", { name: "Dừng chú thích", exact: true })
     .click();
   await expect(
-    page.getByLabel("Bảng trắng dùng chung", { exact: true }),
+    page.getByLabel("Chú thích trên màn hình chia sẻ", { exact: true }),
   ).toHaveCount(0);
 });
 
-test("compact whiteboard dock leaves drawing usable on short phones", async ({
+test("compact annotation dock leaves the shared canvas usable on short phones", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 520 });
   await enterDemo(page);
+  await page
+    .getByRole("button", { name: "Mở công cụ vẽ", exact: true })
+    .click();
+  await expect(page.locator(".drawing-compact")).toBeVisible();
+  await page.getByLabel("Chọn công cụ viết vẽ", { exact: true }).click();
+  await page.getByRole("menuitemradio", { name: "Bút", exact: true }).click();
+  await line(page, "Chú thích trên màn hình chia sẻ");
+  await expect(
+    page.getByRole("button", { name: "Hoàn tác nét của tôi", exact: true }),
+  ).toBeEnabled();
+  await page
+    .getByRole("button", { name: "Tùy chỉnh bút", exact: true })
+    .click();
+  await expect(
+    page.getByRole("toolbar", { name: "Bút và hình vẽ" }),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: "Tùy chỉnh bút", exact: true })
+    .click();
+  await expect(
+    page.getByRole("toolbar", { name: "Bút và hình vẽ" }),
+  ).toBeHidden();
+});
+
+test("floating pen uses an icon only and board menu stays inside narrow phone edges", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 520 });
+  await enterDemo(page);
+  const pen = page.getByRole("button", { name: "Mở công cụ vẽ", exact: true });
+  await expect(pen).toBeVisible();
+  await expect(pen).toHaveText("");
+  await pen.click();
+  await expect(page.locator(".drawing-compact")).toBeVisible();
+  await expect(
+    page.getByLabel("Chú thích trên màn hình chia sẻ", { exact: true }),
+  ).toBeVisible();
+  await expect(pen).toHaveCount(0);
+  await page.getByLabel("Chọn công cụ viết vẽ", { exact: true }).click();
+  await page
+    .getByRole("menuitem", { name: "Dừng chú thích", exact: true })
+    .click();
+  await expect(pen).toBeVisible();
   await page.getByLabel("Thêm tùy chọn", { exact: true }).click();
-  await page.getByRole("button", { name: "Bảng trắng", exact: true }).click();
+  await expect(
+    page.getByRole("button", {
+      name: "Viết lên màn hình chia sẻ",
+      exact: true,
+    }),
+  ).toHaveCount(0);
+  await page
+    .locator(".meeting-menu")
+    .getByRole("button", { name: "Bảng trắng", exact: true })
+    .click();
   await expect(page.locator(".drawing-compact")).toBeVisible();
   await page.getByLabel("Chọn công cụ viết vẽ", { exact: true }).click();
   await expect
@@ -475,21 +540,4 @@ test("compact whiteboard dock leaves drawing usable on short phones", async ({
       () => document.documentElement.scrollWidth <= innerWidth,
     ),
   ).toBe(true);
-  await page.getByRole("menuitemradio", { name: "Bút", exact: true }).click();
-  await line(page, "Bảng trắng dùng chung");
-  await expect(
-    page.getByRole("button", { name: "Hoàn tác nét của tôi", exact: true }),
-  ).toBeEnabled();
-  await page
-    .getByRole("button", { name: "Tùy chỉnh bút", exact: true })
-    .click();
-  await expect(
-    page.getByRole("toolbar", { name: "Bút và hình vẽ" }),
-  ).toBeVisible();
-  await page
-    .getByRole("button", { name: "Tùy chỉnh bút", exact: true })
-    .click();
-  await expect(
-    page.getByRole("toolbar", { name: "Bút và hình vẽ" }),
-  ).toBeHidden();
 });

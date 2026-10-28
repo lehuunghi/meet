@@ -173,6 +173,54 @@ function DrawingCanvas({
     />
   );
 }
+function ScreenOverlay({
+  host,
+  children,
+}: {
+  host: HTMLElement;
+  children: React.ReactNode;
+}) {
+  const [rect, setRect] = useState({ left: 0, top: 0, width: 0, height: 0 });
+  useEffect(() => {
+    const v = host.querySelector("video");
+    const measure = () => {
+      const w = host.clientWidth,
+        h = host.clientHeight,
+        vw = v?.videoWidth || 1600,
+        vh = v?.videoHeight || 900,
+        scale = Math.min(w / vw, h / vh);
+      const next = {
+        left: (w - vw * scale) / 2,
+        top: (h - vh * scale) / 2,
+        width: vw * scale,
+        height: vh * scale,
+      };
+      setRect((old) =>
+        Object.keys(next).every(
+          (k) => old[k as keyof typeof old] === next[k as keyof typeof next],
+        )
+          ? old
+          : next,
+      );
+    };
+    const ob = new ResizeObserver(measure);
+    ob.observe(host);
+    v?.addEventListener("loadedmetadata", measure);
+    v?.addEventListener("resize", measure);
+    measure();
+    return () => {
+      ob.disconnect();
+      v?.removeEventListener("loadedmetadata", measure);
+      v?.removeEventListener("resize", measure);
+    };
+  }, [host]);
+  return createPortal(
+    <div className="meeting-screen-ink" style={rect}>
+      {children}
+    </div>,
+    host,
+  );
+}
 export function MeetingDrawing({
   meeting,
   user,
@@ -193,6 +241,7 @@ export function MeetingDrawing({
     [error, setError] = useState(""),
     [pollError, setPollError] = useState(""),
     [syncError, setSyncError] = useState(""),
+    [picker, setPicker] = useState(false),
     [tools, setTools] = useState(true),
     [expandedTools, setExpandedTools] = useState(false),
     [tool, setTool] = useState("pointer"),
@@ -471,7 +520,6 @@ export function MeetingDrawing({
     const handler = (e: Event) => {
       const d = (e as CustomEvent).detail;
       if (d.meeting !== meeting || !joined) return;
-      if (!["board", "present"].includes(d.mode)) return;
       const attempt = ++presentationAttempt.current;
       setTools(true);
       if (d.mode === "board") {
@@ -481,6 +529,7 @@ export function MeetingDrawing({
         }
         void act({ action: "open_board" });
       } else if (d.mode === "present") {
+        setPicker(false);
         void (async () => {
           for (let i = 0; i < 8; i++) {
             if (!alive.current || attempt !== presentationAttempt.current)
@@ -502,7 +551,7 @@ export function MeetingDrawing({
               "Chưa chuyển được màn hình. Khi kết nối ổn định, chọn Quay lại trình bày.",
             );
         })().catch((e) => setError(e.message));
-      }
+      } else setPicker((v) => !v);
     };
     window.addEventListener("meeting:drawing", handler);
     return () => window.removeEventListener("meeting:drawing", handler);
@@ -513,7 +562,13 @@ export function MeetingDrawing({
     const room = anchor.current?.closest<HTMLElement>(".room");
     if (room) room.dataset.sharedSurface = board ? "board" : "presentation";
     hosts.forEach((h) => {
-      h.dataset.presentationSuppressed = String(board);
+      h.dataset.presentationSuppressed = String(
+        board ||
+          (!board &&
+            state.mode === "screen" &&
+            !!target &&
+            h.dataset.presentation !== target.user_id),
+      );
     });
     return () => {
       if (room) delete room.dataset.sharedSurface;
@@ -629,11 +684,20 @@ export function MeetingDrawing({
     />
   );
   return (
-    <div ref={anchor} className="meeting-drawing-anchor">
-      {(error ||
+    <div
+      ref={anchor}
+      className={
+        "meeting-drawing-anchor " +
+        (state.active && state.mode === "screen" && screenLive
+          ? "drawing-on-presentation"
+          : "")
+      }
+    >
+      {(picker ||
+        error ||
         pollError ||
         syncError ||
-        (state.active && state.mode === "board" && tools)) && (
+        (state.active && tools && screenLive)) && (
         <section
           className={
             "meeting-drawing-tools" + (!expandedTools ? " drawing-compact" : "")
@@ -642,13 +706,14 @@ export function MeetingDrawing({
         >
           <header>
             <strong>
-              Bảng trắng
+              {state.mode === "screen" ? "Chú thích màn hình" : "Bảng trắng"}
               {pendingCount > 0 ? " · Đang lưu…" : ""}
             </strong>
             <button
               type="button"
               onClick={() => {
                 setTools(false);
+                setPicker(false);
               }}
             >
               <DrawingIcon kind="close" />
@@ -679,7 +744,44 @@ export function MeetingDrawing({
           {(error || syncError || pollError) && (
             <p role="alert">{error || syncError || pollError}</p>
           )}
-          {state.active && state.mode === "board" && (
+          {picker && (
+            <div className="drawing-targets">
+              <p>Chọn màn hình để chú thích:</p>
+              {targets
+                .filter(
+                  (t) =>
+                    canManage ||
+                    (t.user_id === user.id &&
+                      !(state.active && state.mode === "board")),
+                )
+                .map((t) => (
+                  <button
+                    key={t.key}
+                    disabled={busy}
+                    onClick={() => {
+                      void act({ action: "open_screen", target: t.key });
+                      setPicker(false);
+                      setTool("pen");
+                    }}
+                  >
+                    {t.name}
+                  </button>
+                ))}
+              {state.active && state.mode === "board" && !canManage && (
+                <p>
+                  Giáo viên đang dùng bảng trắng. Chờ chuyển sang trình bày để
+                  chú thích màn hình.
+                </p>
+              )}
+              {!targets.length && <p>Cần có người đang chia sẻ màn hình.</p>}
+              {targets.length > 0 &&
+                !canManage &&
+                !targets.some((t) => t.user_id === user.id) && (
+                  <p>Giáo viên hoặc người trình bày mở chú thích trước.</p>
+                )}
+            </div>
+          )}
+          {state.active && screenLive && (
             <>
               <details
                 className="drawing-labelled-menu"
@@ -764,7 +866,7 @@ export function MeetingDrawing({
                   canAllow={canManage}
                   allow={state.allow_students}
                   pending={pendingCount > 0}
-                  screen={false}
+                  screen={state.mode === "screen"}
                   choose={(next, value) => {
                     setTool(next);
                     if (["text", "note"].includes(next)) setExpandedTools(true);
@@ -789,7 +891,7 @@ export function MeetingDrawing({
                   stop={() => void act({ action: "close" })}
                 />
               </details>
-              {state.mode === "board" && (
+              {state.active && (
                 <>
                   {!expandedTools && (
                     <button
@@ -982,7 +1084,11 @@ export function MeetingDrawing({
                       onClick={() => void act({ action: "close" })}
                     >
                       <DrawingIcon kind="close" />
-                      <span>Đóng cho cả lớp</span>
+                      <span>
+                        {state.mode === "screen"
+                          ? "Dừng chú thích"
+                          : "Đóng cho cả lớp"}
+                      </span>
                     </button>
                   </>
                 )}
@@ -1050,6 +1156,50 @@ export function MeetingDrawing({
           </section>,
           slot,
         )}
+      {hosts
+        .filter(
+          (h) =>
+            (canManage || h.dataset.presentation === user.id) &&
+            !(
+              state.active &&
+              state.mode === "screen" &&
+              target?.user_id === h.dataset.presentation &&
+              tools
+            ),
+        )
+        .map((h, i) =>
+          createPortal(
+            <button
+              className="presentation-annotate"
+              data-meet-tip="Công cụ vẽ"
+              aria-label="Mở công cụ vẽ"
+              onClick={() => {
+                const t = targets.find(
+                  (t) => t.user_id === h.dataset.presentation,
+                );
+                setTools(true);
+                setTool("pen");
+                if (t) void act({ action: "open_screen", target: t.key });
+                else setPicker(true);
+              }}
+            >
+              <DrawingIcon kind="pen" />
+            </button>,
+            h,
+            "annotate-" + i,
+          ),
+        )}
+      {state.active &&
+        state.mode === "screen" &&
+        view &&
+        target &&
+        hosts
+          .filter((h) => h.dataset.presentation === target.user_id)
+          .map((h, i) => (
+            <ScreenOverlay host={h} key={target.key + ":" + i}>
+              {surface(true)}
+            </ScreenOverlay>
+          ))}
     </div>
   );
 }
