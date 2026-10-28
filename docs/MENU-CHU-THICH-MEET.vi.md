@@ -1,9 +1,9 @@
-# Menu chú thích Meet — v0.27.0
+# Bảng trắng và công cụ vẽ — v0.28.0
 
-Menu tối với icon và tên công cụ dùng chung cho bảng trắng và màn hình trình bày: Hình dán, Bút, Mực biến mất, Hộp văn bản, Ghi chú cố định, Đường kẻ và hình dạng, Màu, Xóa tất cả và Tẩy. Giáo viên có thêm điều khiển cho phép người khác chú thích và dừng chú thích/đóng bảng.
+Đã bỏ nút “Viết lên màn hình chia sẻ”, nút chú thích trên ô trình bày và lớp vẽ đè lên luồng màn hình. Bản ghi mới cũng không ghép nét chú thích màn hình cũ vào video. Các video đã lưu và dữ liệu nét cũ được giữ nguyên; không có thao tác xóa dữ liệu lịch sử khi nâng cấp.
 
-Hình dán, hình dạng và màu mở trong cùng khung menu, có nút quay lại; tránh menu con tràn ngang trên điện thoại. Menu tự chọn khoảng trống trên/dưới, cuộn khi màn hình thấp, đóng khi chạm ra ngoài hoặc đổi kích thước. Có điều hướng bằng phím mũi tên, Home/End và Escape. Xóa tất cả chỉ xóa nét của trang/màn hình đang chọn và có xác nhận; các trang khác được giữ lại. Tắt chú thích giữ luồng chia sẻ màn hình tiếp tục.
+Trong phòng học, chọn **Bảng trắng** để vẽ. Thanh nhỏ gồm nút chọn công cụ, hoàn tác và tùy chỉnh. Menu tối lấy cảm hứng từ mẫu giao diện người dùng cung cấp, gồm Hình dán, Bút, Mực biến mất, Hộp văn bản, Ghi chú cố định, Đường kẻ và hình dạng, Màu, Xóa tất cả và Tẩy. Giáo viên có thể cho phép học sinh cùng vẽ và đóng bảng cho cả lớp.
 
-Bảng màu hiển thị thành ô màu. Chọn hình dán rồi chạm vào bảng/màn hình để đặt. Hộp văn bản và ghi chú dùng ô nhập nội dung sẵn có. Thanh chú thích mặc định thu gọn thành nút công cụ, hoàn tác và tùy chỉnh để không che màn hình chia sẻ. Mở tùy chỉnh khi cần chọn độ dày hoặc các thao tác phụ. Công cụ nhanh vẫn hỗ trợ hoàn tác, tải PNG và độ dày nét. Học sinh chỉ được vẽ khi giáo viên cấp quyền; máy chủ tiếp tục kiểm tra quyền như trước.
+Menu phụ mở trong cùng khung và có nút quay lại, tự giới hạn theo khoảng trống màn hình. Có hỗ trợ bàn phím, chạm ra ngoài để đóng và tự đóng khi đổi kích thước. Tùy chỉnh bút mở độ dày nét, nhập chữ/ghi chú, tải PNG và các thao tác phụ. Xóa tất cả chỉ xóa trang hiện tại, có xác nhận.
 
-Đây là thiết kế lấy cảm hứng từ hình tham chiếu; không sử dụng mã nguồn hay tài sản thương hiệu của Google. Thay đổi giao diện không thay đổi mốc điểm danh, ghi hình, quyền VIP hoặc dữ liệu bài học.
+Bảng trắng và trình bày vẫn chuyển đổi qua lại, giữ nội dung bảng. Bấm Quay lại trình bày không dừng chia sẻ; mở lại Bảng trắng để tiếp tục vẽ. Mốc điểm danh, ghi hình máy chủ và quyền VIP không thay đổi. Trạng thái chú thích màn hình từ phiên bản cũ không được dựng thành lớp vẽ trên trình bày nữa.

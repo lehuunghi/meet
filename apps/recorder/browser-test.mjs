@@ -79,6 +79,10 @@ test(
       await page.evaluate(async()=>window.capture.tick([],{active:false,mode:'screen',target_user:'other'}));
       await page.waitForTimeout(100);
       const selected=await page.evaluate(()=>Array.from(document.querySelector('canvas').getContext('2d').getImageData(500,300,1,1).data));assert.equal(selected[0],255);assert.ok(selected[2]<100);
+      const cleanScreen=await page.evaluate(()=>Array.from(document.querySelector('canvas').getContext('2d').getImageData(80,120,1,1).data));
+      await page.evaluate(async()=>window.capture.tick([],{active:true,mode:'screen',target:'legacy',target_user:'other',screens:{legacy:{id:'legacy',epoch:0,strokes:[{id:'old',kind:'rect',color:'#0B4ED8',width:12,points:[{x:100,y:100},{x:500,y:400}],text:''}]}}}));
+      await page.waitForTimeout(100);
+      const legacyScreen=await page.evaluate(()=>Array.from(document.querySelector('canvas').getContext('2d').getImageData(80,120,1,1).data));assert.deepEqual(legacyScreen,cleanScreen);
       await page.evaluate(async()=>{await window.capture.tick([], {active:true,mode:'board',page:'p1',pages:[{id:'p1',strokes:[{id:'ink',kind:'rect',color:'#FF4D4F',width:12,points:[{x:100,y:100},{x:500,y:400}],text:''}]}],screens:{}})});
       await page.waitForTimeout(100);
       const white=await page.evaluate(()=>Array.from(document.querySelector('canvas').getContext('2d').getImageData(20,20,1,1).data));assert.deepEqual(white,[255,255,255,255]);

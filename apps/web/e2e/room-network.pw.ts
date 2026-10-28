@@ -78,7 +78,8 @@ test("temporary polling/post errors recover without dropping or duplicating the 
   const canvas = page.getByLabel("Bảng trắng dùng chung", { exact: true });
   await expect(canvas).toBeVisible();
   await expect(page.getByRole("alert")).toHaveCount(0);
-  await page.getByRole("button", { name: "Bút", exact: true }).click();
+  await page.getByLabel("Chọn công cụ viết vẽ", { exact: true }).click();
+  await page.getByRole("menuitemradio", { name: "Bút", exact: true }).click();
   await canvas.scrollIntoViewIfNeeded();
   const box = (await canvas.boundingBox())!;
   await page.mouse.move(box.x + box.width * 0.2, box.y + box.height * 0.3);
@@ -201,4 +202,53 @@ test("slow drawing polling does not accumulate parallel requests", async ({
   peak = 0;
   await page.waitForTimeout(3500);
   expect(peak).toBe(1);
+});
+
+test("legacy screen-annotation state never creates an overlay or old entry point", async ({
+  page,
+}) => {
+  const state = emptyDrawing();
+  state.active = true;
+  state.mode = "screen";
+  state.target = "share";
+  const writes: string[] = [];
+  await room(page, async (route) => {
+    if (route.request().method() !== "GET")
+      writes.push(route.request().postDataJSON().action);
+    await route.fulfill({
+      json: {
+        state,
+        revision: 1,
+        targets: [{ key: "share", user_id: "teacher", name: "Màn hình" }],
+      },
+    });
+  });
+  await page.locator(".video-grid").evaluate((el) => {
+    const card = document.createElement("article");
+    card.dataset.presentation = "teacher";
+    card.textContent = "Màn hình đang trình bày";
+    el.append(card);
+  });
+  await expect(page.locator('[data-presentation="teacher"]')).toBeVisible();
+  await page.evaluate(() =>
+    window.dispatchEvent(
+      new CustomEvent("meeting:drawing", {
+        detail: { meeting: "net", mode: "screen" },
+      }),
+    ),
+  );
+  await page.getByLabel("Thêm tùy chọn", { exact: true }).click();
+  await expect(
+    page.getByRole("button", {
+      name: "Viết lên màn hình chia sẻ",
+      exact: true,
+    }),
+  ).toHaveCount(0);
+  await expect(
+    page.getByRole("button", { name: "Viết lên màn hình này", exact: true }),
+  ).toHaveCount(0);
+  await expect(
+    page.locator(".meeting-screen-ink,.drawing-targets"),
+  ).toHaveCount(0);
+  expect(writes).toEqual([]);
 });

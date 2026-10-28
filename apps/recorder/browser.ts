@@ -80,17 +80,6 @@ function draw() {
       const vw = tile.video.videoWidth * scale,
         vh = tile.video.videoHeight * scale;
       ctx.drawImage(tile.video, x + (w - vw) / 2, y + (h - vh) / 2, vw, vh);
-      if (
-        ink?.active &&
-        ink.mode === "screen" &&
-        inkPage &&
-        screen?.[1] === tile
-      ) {
-        ctx.save();
-        ctx.translate(x + (w - vw) / 2, y + (h - vh) / 2);
-        paintDrawing(ctx, inkPage, vw, vh);
-        ctx.restore();
-      }
     }
     ctx.fillStyle = "#202124cc";
     ctx.fillRect(x, y + h - 34, w, 34);

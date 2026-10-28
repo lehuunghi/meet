@@ -796,7 +796,7 @@
   .drawing-on-presentation:has(.meeting-drawing-tools:not(.drawing-compact)) {
   width: min(680px, calc(100vw - 24px));
 }
-.room .drawing-on-presentation .drawing-compact {
+.room .drawing-compact {
   display: flex;
   align-items: center;
   gap: 4px;
@@ -820,7 +820,7 @@
 .room .drawing-compact > .drawing-labelled-menu {
   margin: 0;
 }
-.room .drawing-on-presentation .drawing-dock-action {
+.room .drawing-dock-action {
   width: 38px;
   height: 38px;
   min-height: 38px;
@@ -833,11 +833,15 @@
   color: #e8eaed;
   padding: 7px;
 }
-.room .drawing-on-presentation .drawing-dock-action:hover {
+.room .drawing-dock-action:hover {
   background: #454746;
 }
 .room .drawing-compact > [role="alert"] {
   max-width: 220px;
   margin: 0 6px;
   color: #ffb4ab;
+}
+
+.drawing-compact .drawing-current-tool {
+  display: none;
 }

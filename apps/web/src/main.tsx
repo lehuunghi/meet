@@ -1309,7 +1309,7 @@ function Room({
       </div>
       <div className="room-toolbar" ref={toolbarRef}>
         <MeetingControls
-          onBoard={()=>requestDrawing(meeting.id,'board')} onAnnotate={()=>requestDrawing(meeting.id,'screen')}
+          onBoard={()=>requestDrawing(meeting.id,'board')}
           joined={joined}
           mic={preMic}
           camera={preCamera}
