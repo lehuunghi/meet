@@ -21,10 +21,6 @@
 .academy-shell .danger:hover {background:var(--brand-red-soft)}
 .status.live {color:var(--brand-teal);background:var(--brand-cyan-soft)}
 .room {background:#111B2D;color:#F2F6FC}
-.room .room-toolbar {background:#111B2D;border-top-color:#32445E}
-.room .room-toolbar button.call-control[aria-pressed="true"] {background:var(--brand-cyan-light);color:var(--brand-navy)}
-.room .room-toolbar .room-leave {background:var(--brand-danger);color:var(--brand-white);border-color:var(--brand-red)}
-.room .room-toolbar .room-leave:hover {background:#A91F2B}
 .room .call-control:focus-visible,.room a:focus-visible,.room button:focus-visible {outline:3px solid var(--brand-cyan);outline-offset:3px}
 @media(forced-colors:active){.academy-shell .academy-cms-nav a[aria-current="page"]{outline:2px solid Highlight}.room .room-toolbar .room-leave{border:2px solid ButtonText}}
 .academy-shell progress {accent-color:var(--brand-blue);border:0;border-radius:999px;overflow:hidden;background:var(--brand-blue-soft)}

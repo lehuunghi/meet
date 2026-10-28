@@ -2196,3 +2196,17 @@
 .academy-transfer{display:grid;gap:16px;max-width:800px}.academy-transfer label{display:grid;gap:8px}.academy-transfer>button{justify-self:start}.academy-receipt-preview{width:min(100%,320px);max-height:360px;object-fit:contain;border:1px solid var(--brand-line);border-radius:8px}.academy-invoice-dialog{width:min(640px,calc(100vw - 24px));max-height:90dvh;overflow:auto;border:1px solid var(--brand-line);border-radius:14px;padding:28px;color:var(--brand-ink);background:white}.academy-invoice-dialog::backdrop{background:#102a5680}.academy-invoice-dialog dl{display:grid;grid-template-columns:140px 1fr;gap:12px 18px;margin:24px 0}.academy-invoice-dialog dt{color:var(--brand-muted)}.academy-invoice-dialog dd{margin:0;overflow-wrap:anywhere}.academy-invoice-dialog small{color:var(--brand-muted)}
 @media(max-width:600px){.academy-broadcast-list article{flex-direction:column}.academy-communication-form>button,.academy-transfer>button{width:100%}.academy-invoice-dialog{padding:20px}.academy-invoice-dialog dl{grid-template-columns:1fr;gap:4px}.academy-invoice-dialog dd{margin-bottom:10px}}
 @media print{body:has(.academy-invoice-dialog[open]) *{visibility:hidden!important}body:has(.academy-invoice-dialog[open]) .academy-invoice-dialog[open],body:has(.academy-invoice-dialog[open]) .academy-invoice-print,body:has(.academy-invoice-dialog[open]) .academy-invoice-print *{visibility:visible!important}.academy-invoice-dialog[open]{position:absolute!important;inset:0!important;margin:0!important;width:100%!important;max-height:none!important;overflow:visible!important;border:0!important;box-shadow:none!important}.invoice-no-print{display:none!important}}
+
+/* Communications is one administration area; inactive forms stay mounted. */
+.academy-communications {min-width:0;}
+.academy-communications [hidden] {display:none!important;}
+.academy-communication-tabs {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:16px 0 22px;max-width:900px;}
+.academy-communication-tabs [role="tab"] {min-height:44px;padding:10px 12px;border:1px solid #cbd5e1;border-radius:9px;background:#fff;color:#243b53;font-weight:600;font-size:13px;}
+.academy-communication-tabs [role="tab"][aria-selected="true"] {background:var(--brand-blue);color:#fff;border-color:var(--brand-blue);}
+.academy-communication-tabs [role="tab"]:focus-visible {outline:3px solid #0b4ed8;outline-offset:3px;}
+.academy-communication-form fieldset {display:grid;gap:16px;border:0;padding:0;margin:0;min-width:0;}
+.academy-communication-form fieldset>button {justify-self:start;}
+.academy-communication-form fieldset:disabled :is(input,textarea,select) {background:#f1f5f9;color:#526176;cursor:wait;}
+.academy-communication-actions {display:flex;gap:6px;flex-wrap:wrap;}
+.academy-broadcast-body {white-space:pre-wrap;overflow-wrap:anywhere;max-height:280px;overflow:auto;padding:10px 4px;}
+@media(max-width:600px){.academy-communication-tabs{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;}.academy-communication-form fieldset>button{width:100%;}}

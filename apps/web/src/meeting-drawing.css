@@ -863,3 +863,10 @@
   border-radius: 50%;
   justify-content: center;
 }
+
+.room .meeting-drawing-tools .drawing-dock-action {background:#445168;color:#fff;border:1px solid #91a0b8;}
+.room .meeting-drawing-tools .drawing-dock-action:hover {background:#596a84;}
+.room .meeting-drawing-tools .drawing-dock-action:disabled {opacity:1;background:#273244;color:#aeb8c8;border-color:#647188;cursor:not-allowed;}
+.room .drawing-labelled-menu>summary {border:1px solid #8ab4f8;}
+
+.room .presentation-annotate {border:1px solid #416b9e;padding:10px;box-shadow:0 2px 12px #0005;}

@@ -1,5 +1,5 @@
 import {ReceiptTransfer,InvoiceButton} from "./academy-invoice";
-import {BroadcastManager,AcademyMailCenter} from "./academy-communications";
+import {AcademyMailCenter} from "./academy-communications";
 import { StudentLiveClasses } from "./student-live-classes";
 import { subjectArt } from "./subject-art";
 import { LearningDataCleanup } from "./academy-data-cleanup";
@@ -755,8 +755,8 @@ export function AcademyApp({
             ["reports", "Điểm danh & bản ghi"], ["manage", "Quản lý nội dung"],
             ["courses", "Khóa học"], ["students", "Học viên"],
             ["orders", "Duyệt thanh toán"], ["finance", "Thu chi"],
-            ["website", "Quản trị website"], ["accounts", "Tài khoản & phân quyền"],
-            ["settings", "Email & thanh toán"], ["mail", "Nội dung & gửi email"], ["notifications", "Thông báo"],
+            ["website", "Quản trị website"], ["mail", "Thông báo & email"],
+            ["accounts", "Tài khoản & phân quyền"], ["settings", "Cài đặt kinh doanh"], ["notifications", "Thông báo của tôi"],
             ["profile", "Tài khoản của bạn"],
           ] : staff ? [
             ["live", "Lớp học"], ["courses", "Kho bài giảng"],
@@ -882,7 +882,7 @@ export function AcademyApp({
                                     : tab === "accounts"
                                       ? "Tài khoản và phân quyền"
                                       : tab === "mail"
- ? "Nội dung & gửi email"
+ ? "Thông báo & email"
  : tab === "settings"
                                         ? "Cài đặt kinh doanh"
                                         : "Tài khoản của bạn"}
@@ -931,8 +931,7 @@ export function AcademyApp({
             )}
           </section>
         )}
-        {!routeForbidden && admin && tab==="mail" && <AcademyMailCenter demo={demo}/>}
- {admin && tab==="notifications" && (user.permissions==null||user.permissions.includes("communications")) && <BroadcastManager demo={demo} onChanged={()=>window.dispatchEvent(new Event("academy-notifications-changed"))}/>}
+        {!routeForbidden && admin && tab==="mail" && <AcademyMailCenter demo={demo} canConfigure={user.permissions==null||user.permissions.includes("finance")} onChanged={()=>window.dispatchEvent(new Event("academy-notifications-changed"))}/>}
  {tab === "notifications" && (
           <AcademyNotificationList
             rows={notifications}

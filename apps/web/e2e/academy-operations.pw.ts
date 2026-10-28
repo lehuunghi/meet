@@ -150,13 +150,11 @@ test("receipt needs explicit confirmation and produces a pending invoice without
     exact: true,
   });
   await expect(confirm).toBeDisabled();
-  await page
-    .getByLabel("Đính kèm biên lai", { exact: true })
-    .setInputFiles({
-      name: "receipt.png",
-      mimeType: "image/png",
-      buffer: photo,
-    });
+  await page.getByLabel("Đính kèm biên lai", { exact: true }).setInputFiles({
+    name: "receipt.png",
+    mimeType: "image/png",
+    buffer: photo,
+  });
   await expect(confirm).toBeEnabled();
   expect(confirmed).toBe(0);
   expect(uploaded).toBe(1);
@@ -236,7 +234,7 @@ test("global notice reaches a second account and deletion removes it there too",
   }
   await mock(page, "admin");
   await mock(teacher, "teacher");
-  await page.goto("/hoc/thong-bao");
+  await page.goto("/quan-tri/email?muc=thong-bao");
   await teacher.goto("/hoc/thong-bao");
   await page
     .getByLabel("Tiêu đề thông báo", { exact: true })
@@ -260,9 +258,9 @@ test("global notice reaches a second account and deletion removes it there too",
   await page
     .getByRole("button", { name: "Xóa thông báo", exact: true })
     .click();
-  await expect(page.locator(".academy-notifications")).not.toContainText(
-    "Thông báo kiểm thử",
-  );
+  await expect(
+    page.getByRole("cell", { name: "Thông báo kiểm thử", exact: true }),
+  ).toHaveCount(0);
   await teacher.evaluate(() => window.dispatchEvent(new Event("focus")));
   await expect(teacher.locator(".academy-notifications")).not.toContainText(
     "Thông báo kiểm thử",
@@ -316,7 +314,7 @@ test("email templates and composing use the dedicated administration page", asyn
               : [],
     });
   });
-  await page.goto("/quan-tri/email");
+  await page.goto("/quan-tri/email?muc=mau-email");
   await page
     .getByLabel("Tiêu đề email tự động", { exact: true })
     .fill("Xác thực email VA");
@@ -325,6 +323,7 @@ test("email templates and composing use the dedicated administration page", asyn
     .click();
   await expect.poll(() => template?.subject).toBe("Xác thực email VA");
   expect(template.body).toContain("{{verification_link}}");
+  await page.getByRole("tab", { name: "Soạn email", exact: true }).click();
   await page.getByLabel("Tiêu đề email", { exact: true }).fill("Lịch học mới");
   await page
     .getByLabel("Nội dung email", { exact: true })

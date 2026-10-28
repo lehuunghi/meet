@@ -878,3 +878,30 @@
 .room .preview-stage{min-height:260px;height:clamp(260px,40dvh,390px)}
 .room .preview-tiles article{padding:12px 10px}
 @media(max-width:700px){.room .preview-stage{min-height:220px;height:30dvh;padding:20px}.room .preview-tiles{gap:7px}.room .preview-tiles article{padding:10px 5px}.room .preview-tiles article>span{width:36px;height:36px;line-height:36px;font-size:18px;margin:3px auto 8px}.room .preview-tiles small{font-size:8px}.room .preview-tiles strong{font-size:9px}}
+
+/* Strong boundaries and explicit colors keep controls legible on the dark stage. */
+.room .room-toolbar {background:#111a28;border-top:1px solid #68778d;}
+.room .room-toolbar button.call-control,
+.room .room-toolbar button.call-control[aria-pressed="false"],
+.room .meeting-popup>summary {background:#3c4656;color:#fff;border:1px solid #8b98ac;box-shadow:0 2px 5px #0003;}
+.room .room-toolbar button.call-control:hover,.room .meeting-popup>summary:hover {background:#526079;border-color:#c1cddd;}
+.room .room-toolbar button.call-control[aria-label="Bật mic"],
+.room .room-toolbar button.call-control[aria-label="Bật camera"] {background:#fce8e6;color:#b3261e;border-color:#f4a8a2;}
+.room .room-toolbar button.call-control.is-on,
+.room .room-toolbar button.meeting-panel-toggle[aria-pressed="true"] {background:#dce8ff;color:#0b3a8f;border-color:#8ab4f8;}
+.room .room-toolbar button.room-leave {background:#b3261e;color:#fff;border-color:#ffaaa4;}
+.room .room-toolbar button.room-leave:hover {background:#941e18;color:#fff;}
+.room .room-toolbar button.call-control:disabled {opacity:1;background:#273244;color:#b5bfce;border-color:#647188;cursor:not-allowed;}
+.room .room-toolbar button.call-control:focus-visible,.room .meeting-popup>summary:focus-visible {outline:3px solid #dce8ff;outline-offset:3px;}
+.room .room-toolbar .call-control .control-label {display:none;}
+.room .room-toolbar .call-control svg {width:24px;height:24px;}
+.room .tile-actions button {background:#202124ed;color:#fff;border:1px solid #8994a5;}
+
+.room .tile-actions button {font-size:12px;min-height:34px;padding:6px 10px;}
+.room>.room-tools button {font-size:13px;min-height:40px;}
+
+.room .room-toolbar button.call-control,.room .meeting-popup>summary {transition:box-shadow .12s,border-color .12s;}
+
+.room>.room-tools .room-panel-heading button {font-size:22px;min-width:40px;width:40px;height:40px;}
+.room>header {flex-wrap:wrap;}
+.room>header button {font-size:12px;min-height:40px;background:#e8f0fe;color:#12324d;border:1px solid #8ab4f8;}
