@@ -243,6 +243,7 @@ export function MeetingDrawing({
     [syncError, setSyncError] = useState(""),
     [picker, setPicker] = useState(false),
     [tools, setTools] = useState(true),
+    [expandedTools, setExpandedTools] = useState(false),
     [tool, setTool] = useState("pointer"),
     [color, setColor] = useState("#0B4ED8"),
     [width, setWidth] = useState(4),
@@ -697,7 +698,15 @@ export function MeetingDrawing({
         pollError ||
         syncError ||
         (state.active && tools && screenLive)) && (
-        <section className="meeting-drawing-tools" aria-label="Công cụ viết vẽ">
+        <section
+          className={
+            "meeting-drawing-tools" +
+            (state.mode === "screen" && !expandedTools
+              ? " drawing-compact"
+              : "")
+          }
+          aria-label="Công cụ viết vẽ"
+        >
           <header>
             <strong>
               {state.mode === "screen" ? "Chú thích màn hình" : "Bảng trắng"}
@@ -834,6 +843,10 @@ export function MeetingDrawing({
                 <summary
                   data-meet-tip="Chọn công cụ viết vẽ"
                   aria-label="Chọn công cụ viết vẽ"
+                  aria-description={
+                    "Công cụ đang chọn: " +
+                    (drawingTools.find(([key]) => key === tool)?.[1] || "Bút")
+                  }
                 >
                   <DrawingIcon kind={tool} />
                   <span className="drawing-current-tool">
@@ -854,6 +867,7 @@ export function MeetingDrawing({
                   screen={state.mode === "screen"}
                   choose={(next, value) => {
                     setTool(next);
+                    if (["text", "note"].includes(next)) setExpandedTools(true);
                     if (next === "stamp") setText(value || "⭐");
                   }}
                   setColor={setColor}
@@ -875,6 +889,34 @@ export function MeetingDrawing({
                   stop={() => void act({ action: "close" })}
                 />
               </details>
+              {state.mode === "screen" && (
+                <>
+                  {!expandedTools && (
+                    <button
+                      className="drawing-dock-action"
+                      disabled={
+                        !canDraw ||
+                        pendingCount > 0 ||
+                        !strokes.some((v) => v.owner === user.id)
+                      }
+                      onClick={undo}
+                      aria-label="Hoàn tác nét của tôi"
+                      data-meet-tip="Hoàn tác nét của tôi"
+                    >
+                      <DrawingIcon kind="undo" />
+                    </button>
+                  )}
+                  <button
+                    className="drawing-dock-action"
+                    aria-label="Tùy chỉnh bút"
+                    data-meet-tip="Tùy chỉnh bút"
+                    aria-expanded={expandedTools}
+                    onClick={() => setExpandedTools((v) => !v)}
+                  >
+                    <DrawingIcon kind="more" />
+                  </button>
+                </>
+              )}
               <div
                 className="drawing-tool-row"
                 role="toolbar"

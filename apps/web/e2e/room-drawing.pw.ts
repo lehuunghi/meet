@@ -78,6 +78,9 @@ test("presentation has a direct annotation action, icon tools and fading ink", a
   await page
     .getByRole("button", { name: "Viết lên màn hình này", exact: true })
     .click();
+  await page
+    .getByRole("button", { name: "Tùy chỉnh bút", exact: true })
+    .click();
   const canvas = page.getByLabel("Chú thích trên màn hình chia sẻ", {
     exact: true,
   });
@@ -393,8 +396,8 @@ test("annotation menu groups colors and stamps and controls class permissions", 
     .getByRole("menuitem", { name: "Hình dán ✅", exact: true })
     .click();
   await expect(
-    page.getByRole("button", { name: "Hình dán ✅", exact: true }),
-  ).toHaveAttribute("aria-pressed", "true");
+    page.getByLabel("Chọn công cụ viết vẽ", { exact: true }),
+  ).toHaveAttribute("aria-description", "Công cụ đang chọn: Hình dán");
   await open();
   const allow = menu.getByRole("menuitemcheckbox", {
     name: "Cho phép người khác chú thích",
@@ -424,4 +427,33 @@ test("annotation menu groups colors and stamps and controls class permissions", 
   await expect(
     page.getByLabel("Chú thích trên màn hình chia sẻ", { exact: true }),
   ).toHaveCount(0);
+});
+
+test("compact annotation dock leaves the shared canvas usable on short phones", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 520 });
+  await enterDemo(page);
+  await page
+    .getByRole("button", { name: "Viết lên màn hình này", exact: true })
+    .click();
+  await expect(page.locator(".drawing-compact")).toBeVisible();
+  await page.getByLabel("Chọn công cụ viết vẽ", { exact: true }).click();
+  await page.getByRole("menuitemradio", { name: "Bút", exact: true }).click();
+  await line(page, "Chú thích trên màn hình chia sẻ");
+  await expect(
+    page.getByRole("button", { name: "Hoàn tác nét của tôi", exact: true }),
+  ).toBeEnabled();
+  await page
+    .getByRole("button", { name: "Tùy chỉnh bút", exact: true })
+    .click();
+  await expect(
+    page.getByRole("toolbar", { name: "Bút và hình vẽ" }),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: "Tùy chỉnh bút", exact: true })
+    .click();
+  await expect(
+    page.getByRole("toolbar", { name: "Bút và hình vẽ" }),
+  ).toBeHidden();
 });

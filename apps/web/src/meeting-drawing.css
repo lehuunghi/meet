@@ -787,3 +787,57 @@
 .drawing-on-presentation .drawing-current-tool {
   display: none;
 }
+
+.room .drawing-on-presentation {
+  width: max-content;
+  max-width: calc(100vw - 24px);
+}
+.room
+  .drawing-on-presentation:has(.meeting-drawing-tools:not(.drawing-compact)) {
+  width: min(680px, calc(100vw - 24px));
+}
+.room .drawing-on-presentation .drawing-compact {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px;
+  background: #202124;
+  border: 1px solid #454746;
+  border-radius: 28px;
+  width: max-content;
+  max-width: 100%;
+  margin: 0;
+  box-shadow: 0 4px 16px #0004;
+}
+.room .drawing-compact > header,
+.room .drawing-compact > .drawing-tool-row,
+.room .drawing-compact > .drawing-actions,
+.room .drawing-compact > .drawing-stamps,
+.room .drawing-compact > label,
+.room .drawing-compact > small {
+  display: none;
+}
+.room .drawing-compact > .drawing-labelled-menu {
+  margin: 0;
+}
+.room .drawing-on-presentation .drawing-dock-action {
+  width: 38px;
+  height: 38px;
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 50%;
+  background: #303134;
+  color: #e8eaed;
+  padding: 7px;
+}
+.room .drawing-on-presentation .drawing-dock-action:hover {
+  background: #454746;
+}
+.room .drawing-compact > [role="alert"] {
+  max-width: 220px;
+  margin: 0 6px;
+  color: #ffb4ab;
+}
