@@ -174,7 +174,7 @@ test("website reload protects checkbox-only edits", async ({ page }) => {
   await expect.poll(() => reads).toBe(2);
   await expect(published).toBeChecked();
   await page
-    .getByRole("button", { name: "Email & thanh toán", exact: true })
+    .getByRole("button", { name: "Cài đặt kinh doanh", exact: true })
     .click();
   await expect(page).toHaveURL(/cai-dat$/);
 });

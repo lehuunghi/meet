@@ -75,7 +75,7 @@ test("managed academy administrators stay on the website and edit business setti
     page.getByRole("link", { name: "Mở bảng quản trị nền tảng" }),
   ).toHaveCount(0);
   await page
-    .getByRole("button", { name: "Email & thanh toán", exact: true })
+    .getByRole("button", { name: "Cài đặt kinh doanh", exact: true })
     .click();
   await page.locator("[name=bank_name]").fill("Người nhận VA");
   await page.getByRole("button", { name: "Lưu cài đặt", exact: true }).click();
