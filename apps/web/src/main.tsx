@@ -1331,6 +1331,7 @@ function Room({
       </div>
       <div className="room-toolbar" ref={toolbarRef}>
         <MeetingControls
+          canRecord={canManage && state !== "ended"}
           recordingEnabled={recordingEnabled}
           recordingState={serverRecording}
           onRecording={changeRecording}

@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 
-for (const role of ["teacher", "student"]) {
-  test(`${role}: lesson recording preference and call controls`, async ({
+for (const [role,initialStatus] of [["teacher","live"],["student","live"],["teacher","scheduled"]]) {
+  test(`${role} ${initialStatus}: lesson recording preference and call controls`, async ({
     page,
   }) => {
     let enabled = true,
@@ -10,7 +10,7 @@ for (const role of ["teacher", "student"]) {
     const lesson = {
       id: "lesson",
       title: "Buổi học",
-      status: "live",
+      status: initialStatus,
       course_id: "math",
       starts_at: new Date().toISOString(),
       short_code: "abc123",
@@ -69,6 +69,7 @@ for (const role of ["teacher", "student"]) {
       await expect(box).toHaveCount(0);
     }
     await page.keyboard.press("Escape");
+    if(initialStatus==="scheduled") await page.getByRole("button",{name:"Bắt đầu buổi học",exact:true}).click();
     await page
       .getByRole("button", { name: "Vào lớp học", exact: true })
       .click();
