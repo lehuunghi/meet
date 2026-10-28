@@ -784,6 +784,19 @@ function Room({
     return () => clearInterval(timer);
   }, []);
   const [serverRecording, setServerRecording] = useState("unavailable");
+  const [recordingEnabled, setRecordingEnabled] = useState(!!meeting.recording_allowed);
+  const recordingWriting = useRef(false);
+  const recordingRevision = useRef(0);
+  const changeRecording = () => void run(async () => {
+    if (recordingWriting.current) return;
+    recordingWriting.current = true;
+    recordingRevision.current++;
+    try {
+      const result = await api<{recording_allowed:boolean}>(`/meetings/${meeting.id}/recording-control`, {enabled:!recordingEnabled});
+      setRecordingEnabled(result.recording_allowed);
+      refreshRoom();
+    } finally { recordingRevision.current++; recordingWriting.current = false; }
+  });
 
   const [preMic, setPreMic] = useState(resumeHint.current?.mic || false),
     [preCamera, setPreCamera] = useState(resumeHint.current?.camera || false),
@@ -916,6 +929,7 @@ function Room({
   useEffect(() => {
     let active = true;
     const poll = async () => {
+      const revision = recordingRevision.current;
       try {
         const current = await api<{
           status: string;
@@ -924,10 +938,12 @@ function Room({
           admission?: string;
           mute_request?: number;
           server_recording?: { state: string };
+          recording_allowed?: boolean | number;
         }>(`/meetings/${meeting.id}`);
         if (active && current) {
           setState(current.status);
           setServerRecording(current.server_recording?.state || "unavailable");
+          if (revision === recordingRevision.current && !recordingWriting.current && current.recording_allowed !== undefined) setRecordingEnabled(!!current.recording_allowed);
           if (typeof current.can_manage === "boolean")
             setCanManage(current.can_manage);
           if (current.rules) setRules(current.rules);
@@ -1005,12 +1021,16 @@ function Room({
     if (!joined) return;
     let stopped = false,
       ticking = false;
+    let lastHeartbeat = 0;
     const tick = async () => {
       if (ticking || stopped) return;
       ticking = true;
       let heartbeatPassed = false;
       try {
-        await api(`/meetings/${meeting.id}/presence`, { kind: "heartbeat" });
+        if (Date.now() - lastHeartbeat >= 15000) {
+          await api(`/meetings/${meeting.id}/presence`, { kind: "heartbeat" });
+          lastHeartbeat = Date.now();
+        }
         heartbeatPassed = true;
         if (stopped) return;
 
@@ -1035,7 +1055,7 @@ function Room({
         ticking = false;
       }
     };
-    const timer = setInterval(() => void tick(), 15000);
+    const timer = setInterval(() => void tick(), 2000);
     void tick();
     return () => {
       stopped = true;
@@ -1049,7 +1069,7 @@ function Room({
       if (pending || !navigator.onLine || !joinedRef.current) return;
       pending = true;
       try {
-        await media.current?.recover(force);
+        await media.current?.recover(force, user.id);
       } catch (e) {
         if (e instanceof ApiError && [401, 403, 404].includes(e.status)) {
           media.current?.close();
@@ -1063,15 +1083,18 @@ function Room({
         pending = false;
       }
     };
-    const online = () => void recover(true);
+    const online = () => { media.current?.networkRestored(); void recover(); };
+    const visible = () => { if (document.visibilityState === "visible") online(); };
     const offline = () => setConnection("Mất mạng · đang chờ kết nối");
     window.addEventListener("online", online);
     window.addEventListener("offline", offline);
-    const timer = setInterval(() => void recover(), 5000);
+    document.addEventListener("visibilitychange", visible);
+    const timer = setInterval(() => void recover(), 1000);
     return () => {
       clearInterval(timer);
       window.removeEventListener("online", online);
       window.removeEventListener("offline", offline);
+      document.removeEventListener("visibilitychange", visible);
     };
   }, [joined]);
   useEffect(
@@ -1155,7 +1178,6 @@ function Room({
           }),
         (text) => {
           setConnection(text);
-          if (text === "Đang kết nối lại…") setLocalScreen(null);
         },
       );
       if (stream.getTracks().length) await media.current.publish(stream);
@@ -1309,6 +1331,9 @@ function Room({
       </div>
       <div className="room-toolbar" ref={toolbarRef}>
         <MeetingControls
+          recordingEnabled={recordingEnabled}
+          recordingState={serverRecording}
+          onRecording={changeRecording}
           onBoard={()=>requestDrawing(meeting.id,'board')}
           joined={joined}
           mic={preMic}

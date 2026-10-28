@@ -81,7 +81,7 @@ func (a *app) roomState(w http.ResponseWriter, r *http.Request) {
 		problem(w, 503, "Chưa tạo được liên kết phòng")
 		return
 	}
-	send(w, 200, map[string]any{"server_recording": a.serverRecordingStatus(r), "short_code": code, "id": r.PathValue("id"), "title": m.Title, "course_id": m.CourseID, "course": m.Course, "class_name": m.Class, "starts_at": m.Starts, "recording_allowed": m.Recording, "status": m.Status, "can_manage": host, "rules": rules, "admission": state, "mute_request": mute})
+	send(w, 200, map[string]any{"server_recording": a.serverRecordingStatus(r, m.Recording), "short_code": code, "id": r.PathValue("id"), "title": m.Title, "course_id": m.CourseID, "course": m.Course, "class_name": m.Class, "starts_at": m.Starts, "recording_allowed": m.Recording, "status": m.Status, "can_manage": host, "rules": rules, "admission": state, "mute_request": mute})
 }
 func (a *app) requestAdmission(w http.ResponseWriter, r *http.Request) {
 	m, ok := a.access(w, r, false)

@@ -905,3 +905,9 @@
 .room>.room-tools .room-panel-heading button {font-size:22px;min-width:40px;width:40px;height:40px;}
 .room>header {flex-wrap:wrap;}
 .room>header button {font-size:12px;min-height:40px;background:#e8f0fe;color:#12324d;border:1px solid #8ab4f8;}
+.room .room-toolbar button.meeting-recording-toggle {color:#ffb4ab;}
+.room .room-toolbar button.meeting-recording-toggle.is-recording {background:#fce8e6;color:#b3261e;border-color:#f4a8a2;}
+.room .meeting-recording-option {display:flex;align-items:center;gap:10px;padding:12px;color:#fff;cursor:pointer;font-size:14px;}
+.room .meeting-recording-option input {width:20px;height:20px;accent-color:#a8c7fa;flex-shrink:0;}
+.room .meeting-recording-help {color:#c6cfde;font-size:12px;line-height:1.5;padding:0 12px 8px;margin:0;}
+@media(max-width:420px){.room .meeting-main-controls{gap:5px;}.room .room-toolbar button.meeting-recording-toggle{width:40px;min-width:40px;height:44px;}}

@@ -224,6 +224,7 @@ func (a *app) routes() http.Handler {
 	m.HandleFunc("POST /api/courses/{id}/prepare", a.auth(a.prepareCourse))
 	m.HandleFunc("GET /api/rooms/{code}", a.auth(a.resolveRoom))
 	m.HandleFunc("POST /api/meetings/{id}/state", a.auth(a.meetingState))
+	m.HandleFunc("POST /api/meetings/{id}/recording-control", a.auth(a.controlRecording))
 	m.HandleFunc("POST /api/meetings/{id}/presence", a.auth(a.presence))
 	m.HandleFunc("GET /api/meetings/{id}/attendance", a.auth(a.attendance))
 	m.HandleFunc("POST /api/meetings/{id}/sfu", a.auth(a.sfu))

@@ -2,10 +2,12 @@ export function CallIcon({
   kind,
   off = false,
 }: {
-  kind: "mic" | "camera" | "present" | "people" | "leave" | "hand" | "reaction" | "chat" | "more" | "shield" | "activities" | "fullscreen" | "settings" | "info";
+  kind: "mic" | "camera" | "present" | "people" | "leave" | "hand" | "reaction" | "chat" | "more" | "shield" | "activities" | "fullscreen" | "settings" | "info" | "record" | "stop";
   off?: boolean;
 }) {
   const paths = {
+    record: "M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0ZM16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z",
+    stop: "M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0ZM8 8h8v8H8z",
     mic: "M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3Zm-7-3a7 7 0 0 0 14 0M12 18v4M8 22h8",
     camera: "M3 5h12v14H3zM15 10l6-4v12l-6-4",
     present: "M3 4h18v14H3zM8 22h8M12 18v4M12 14V7m-4 4 4-4 4 4",

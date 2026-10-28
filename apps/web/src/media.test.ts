@@ -1,6 +1,74 @@
 import { afterEach, expect, it, vi } from "vitest";
 import { ClassroomMedia, gather, classroomIceServers } from "./media";
 afterEach(() => vi.unstubAllGlobals());
+it("tolerates short network blips, then restores subscriptions and the existing screen capture", async () => {
+  const clock = vi.spyOn(Date, "now");
+  clock.mockReturnValue(100000);
+  const reset = vi.fn(async () => ({ ok: true })) as any;
+  const media = new ClassroomMedia(
+    "lesson",
+    () => {},
+    () => {},
+    () => {},
+    reset,
+  );
+  const stop = vi.fn(),
+    close = vi.fn();
+  const screen = {
+    getVideoTracks: () => [{ readyState: "live" }],
+    getTracks: () => [{ stop }],
+  };
+  Object.assign(media, {
+    peers: [{ connectionState: "disconnected", close }],
+    screen,
+    created: 100000,
+  });
+  const publish = vi
+    .spyOn(media as any, "publishInternal")
+    .mockResolvedValue(undefined);
+  const subscribe = vi
+    .spyOn(media as any, "subscribeInternal")
+    .mockResolvedValue(undefined);
+  try {
+    await media.recover(false, "student");
+    expect(reset).not.toHaveBeenCalled();
+    clock.mockReturnValue(101000);
+    await media.recover(false, "student");
+    expect(reset).not.toHaveBeenCalled();
+    clock.mockReturnValue(102000);
+    await media.recover(false, "student");
+    expect(close).toHaveBeenCalledOnce();
+    expect(publish).toHaveBeenCalledWith(screen, true);
+    expect(stop).not.toHaveBeenCalled();
+    expect(subscribe).toHaveBeenCalledWith({ ok: true }, "student");
+  } finally {
+    clock.mockRestore();
+  }
+});
+it("coalesces reconnect attempts and retries immediately when the network returns", async () => {
+  let fail = true;
+  const request = vi.fn(async () => {
+    if (fail) throw Error("offline");
+    return { ok: true };
+  }) as any;
+  const media = new ClassroomMedia(
+    "lesson",
+    () => {},
+    () => {},
+    () => {},
+    request,
+  );
+  const first = media.recover(true),
+    second = media.recover(true);
+  expect(first).toBe(second);
+  await expect(first).rejects.toThrow("offline");
+  await media.recover(true);
+  expect(request).toHaveBeenCalledTimes(1);
+  fail = false;
+  media.networkRestored();
+  await media.recover();
+  expect(request).toHaveBeenCalledTimes(2);
+});
 it("switches camera devices without unmuting the camera or restarting other media", async () => {
   const old = { id: "old", kind: "video", enabled: false, stop: vi.fn() },
     next = { id: "next", kind: "video", enabled: true, stop: vi.fn() };

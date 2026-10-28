@@ -1,5 +1,5 @@
 import { api } from "./api";
-import {microphoneConstraints,cameraConstraints} from './devices';
+import { microphoneConstraints, cameraConstraints } from "./devices";
 export type Publication = {
   session_id: string;
   track_name: string;
@@ -67,6 +67,7 @@ export class ClassroomMedia {
   private disconnectedAt = 0;
   private retryAt = 0;
   private failures = 0;
+  private recoveryPending: Promise<void> | null = null;
   private serial<T>(work: () => Promise<T>): Promise<T> {
     const next = this.queue.then(() => {
       if (this.closed) throw new Error("Đã rời lớp");
@@ -82,9 +83,44 @@ export class ClassroomMedia {
     private onTrack: (key: string, stream: MediaStream, name: string) => void,
     private onRemove: (key: string) => void = () => {},
     private onState: (state: string) => void = () => {},
-    private request: typeof api = api,
-  ) {}
+    request: typeof api = api,
+  ) {
+    this.request = async <T = any>(
+      path: string,
+      body?: unknown,
+      method?: string,
+      signal?: AbortSignal,
+    ): Promise<T> => {
+      const controller = new AbortController();
+      const abort = () => controller.abort();
+      if (signal?.aborted) controller.abort();
+      else signal?.addEventListener("abort", abort, { once: true });
+      const timer = setTimeout(abort, 8000);
+      try {
+        return await request<T>(path, body, method, controller.signal);
+      } finally {
+        clearTimeout(timer);
+        signal?.removeEventListener("abort", abort);
+      }
+    };
+  }
+  private request: typeof api;
   private async session(pc: RTCPeerConnection) {
+    pc.addEventListener?.("connectionstatechange", () => {
+      if (this.closed || !this.peers.includes(pc)) return;
+      if (pc.connectionState === "disconnected" && !this.disconnectedAt)
+        this.disconnectedAt = Date.now();
+      if (
+        pc.connectionState === "connected" &&
+        this.peers.every((p) => p.connectionState === "connected")
+      )
+        this.onState("Đã kết nối");
+      if (
+        pc.connectionState === "disconnected" ||
+        pc.connectionState === "failed"
+      )
+        this.onState("Kết nối gián đoạn · đang nối lại…");
+    });
     this.peers.push(pc);
     this.peerCreated.set(pc, Date.now());
     const s = await this.request(`/meetings/${this.meeting}/sfu`, {
@@ -299,7 +335,10 @@ export class ClassroomMedia {
   }
   changeDevice(kind: "audio" | "video", deviceID: string) {
     return this.serial(async () => {
-      const selected = kind==='audio'?microphoneConstraints(deviceID):cameraConstraints(deviceID);
+      const selected =
+        kind === "audio"
+          ? microphoneConstraints(deviceID)
+          : cameraConstraints(deviceID);
       const stream = await navigator.mediaDevices.getUserMedia(
         kind === "audio"
           ? { audio: selected, video: false }
@@ -395,8 +434,12 @@ export class ClassroomMedia {
       .forEach((t) => (t.enabled = enabled));
     return this.local;
   }
-  recover(force = false) {
-    return this.serial(async () => {
+  networkRestored() {
+    this.retryAt = 0;
+  }
+  recover(force = false, self?: string) {
+    if (this.recoveryPending) return this.recoveryPending;
+    const pending = this.serial(async () => {
       const now = Date.now();
       const failed = this.peers.some(
         (p) =>
@@ -416,7 +459,7 @@ export class ClassroomMedia {
       if (
         !force &&
         !failed &&
-        !(this.disconnectedAt && now - this.disconnectedAt > 10000) &&
+        !(this.disconnectedAt && now - this.disconnectedAt >= 1500) &&
         now - this.created < 45 * 60000
       )
         return;
@@ -429,11 +472,9 @@ export class ClassroomMedia {
         this.peerCreated.clear();
         this.sessionIDs.clear();
         this.screenPeer = undefined;
-        this.screen?.getTracks().forEach((t) => {
-          t.stop();
-          this.local?.removeTrack(t);
-        });
-        this.screen = undefined;
+        // The capture permission remains valid across a transport replacement.
+        // Republish live display tracks instead of asking for screen access again.
+        const screen = this.screen;
         this.receiver = undefined;
         this.receiverID = undefined;
         this.known.clear();
@@ -445,20 +486,41 @@ export class ClassroomMedia {
         });
         this.remoteStreams.clear();
         if (this.local) await this.publishInternal(this.local);
+        if (screen?.getVideoTracks().some((t) => t.readyState !== "ended")) {
+          await this.publishInternal(screen, true);
+          this.screenPeer = this.peers[this.peers.length - 1];
+        }
+        if (self)
+          await this.subscribeInternal(
+            await this.request(`/meetings/${this.meeting}/tracks`),
+            self,
+          );
         this.created = Date.now();
         this.disconnectedAt = 0;
         this.failures = 0;
         this.retryAt = 0;
-        this.onState("Đã kết nối lại");
+        this.onState(
+          this.peers.every((p) => p.connectionState === "connected")
+            ? "Đã kết nối lại"
+            : "Đang khôi phục hình và tiếng…",
+        );
       } catch (e) {
         this.failures++;
         this.retryAt =
-          Date.now() + Math.min(60000, 2000 * 2 ** Math.min(this.failures, 5));
+          Date.now() +
+          Math.min(10000, 1000 * 2 ** Math.min(this.failures - 1, 4));
         this.created = 0; // Keep retrying even if a failed attempt allocated no peer.
         this.onState("Kết nối gián đoạn · sẽ tự thử lại");
         throw e;
       }
     });
+    this.recoveryPending = pending;
+    void pending
+      .finally(() => {
+        if (this.recoveryPending === pending) this.recoveryPending = null;
+      })
+      .catch(() => {});
+    return pending;
   }
   close() {
     this.closed = true;

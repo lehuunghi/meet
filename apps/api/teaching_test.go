@@ -52,6 +52,25 @@ func testTeachingWindow(t *testing.T, a *app, request func(string, string, strin
 	const id = "teaching-window-test"
 	exec(`INSERT INTO meetings(id,school_id,course_id,title,starts_at,status,recording_allowed) SELECT ? ,school_id,course_id,'Teaching window test',UTC_TIMESTAMP()-INTERVAL 2 HOUR,'scheduled',TRUE FROM meetings WHERE id='demo-meeting'`, id)
 	base := "/api/meetings/" + id
+	must(request("POST", base+"/recording-control", `{"enabled":false}`, student), 403)
+	must(request("POST", base+"/recording-control", `{}`, teacher), 400)
+	must(request("POST", base+"/recording-control", `{"enabled":false}`, teacher), 200)
+	var recording bool
+	if e := a.db.QueryRow("SELECT recording_allowed FROM meetings WHERE id=?", id).Scan(&recording); e != nil || recording {
+		t.Fatal("recording preference not saved", e)
+	}
+	// Use the actual tenant, not the participant or meeting ID, for recorder ownership.
+	var school string
+	if e := a.db.QueryRow("SELECT school_id FROM meetings WHERE id=?", id).Scan(&school); e != nil {
+		t.Fatal(e)
+	}
+	lease := "server-recording-lease:" + school + ":" + id
+	if e := a.cache.Set(t.Context(), lease, "test-worker", time.Minute).Err(); e != nil {
+		t.Fatal(e)
+	}
+	must(request("POST", base+"/recording-control", `{"enabled":true}`, teacher), 409)
+	a.cache.Del(t.Context(), lease)
+	must(request("POST", base+"/recording-control", `{"enabled":true}`, teacher), 200)
 	must(request("POST", base+"/state", `{"status":"live"}`, teacher), 200)
 	var start, end sql.NullTime
 	var seconds int64
@@ -110,6 +129,7 @@ func testTeachingWindow(t *testing.T, a *app, request func(string, string, strin
 		t.Fatal("teaching interval not credited", seconds)
 	}
 	must(request("POST", base+"/state", `{"status":"ended"}`, teacher), 200)
+	must(request("POST", base+"/recording-control", `{"enabled":true}`, teacher), 409)
 	read()
 	if !end.Valid || !end.Time.After(start.Time) {
 		t.Fatal("end not persisted")
