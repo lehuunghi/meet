@@ -165,7 +165,7 @@ func (a *app) meetingState(w http.ResponseWriter, r *http.Request) {
 			problem(w, 500, "Update failed")
 			return
 		}
-		if _, e = tx.ExecContext(r.Context(), `UPDATE presence SET seconds=seconds+IF(online AND last_seen>=?-INTERVAL 45 SECOND AND last_seen<=?,GREATEST(0,TIMESTAMPDIFF(SECOND,last_seen,?)),0),last_seen=IF(online AND last_seen>=?-INTERVAL 45 SECOND,?,last_seen),online=FALSE WHERE school_id=? AND meeting_id=? AND (NOT EXISTS(SELECT 1 FROM meeting_teaching_windows t WHERE t.school_id=presence.school_id AND t.meeting_id=presence.meeting_id) OR EXISTS(SELECT 1 FROM meeting_teaching_windows t WHERE t.school_id=presence.school_id AND t.meeting_id=presence.meeting_id AND t.started_at IS NOT NULL))`, ended, ended, ended, ended, ended, u.School, r.PathValue("id")); e != nil {
+		if _, e = tx.ExecContext(r.Context(), `UPDATE presence SET seconds=seconds+IF(online AND last_seen>=?-INTERVAL 45 SECOND AND last_seen<=?,GREATEST(0,TIMESTAMPDIFF(SECOND,GREATEST(last_seen,COALESCE((SELECT t.started_at FROM meeting_teaching_windows t WHERE t.school_id=presence.school_id AND t.meeting_id=presence.meeting_id),last_seen)),?)),0),last_seen=IF(online AND last_seen>=?-INTERVAL 45 SECOND,?,last_seen),online=FALSE WHERE school_id=? AND meeting_id=? AND (NOT EXISTS(SELECT 1 FROM meeting_teaching_windows t WHERE t.school_id=presence.school_id AND t.meeting_id=presence.meeting_id) OR EXISTS(SELECT 1 FROM meeting_teaching_windows t WHERE t.school_id=presence.school_id AND t.meeting_id=presence.meeting_id AND t.started_at IS NOT NULL))`, ended, ended, ended, ended, ended, u.School, r.PathValue("id")); e != nil {
 			problem(w, 500, "Update failed")
 			return
 		}

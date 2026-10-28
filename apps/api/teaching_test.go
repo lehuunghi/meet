@@ -79,6 +79,7 @@ func testTeachingWindow(t *testing.T, a *app, request func(string, string, strin
 	if start.Valid {
 		t.Fatal("admin observer started teaching")
 	}
+	exec("UPDATE presence SET last_seen=UTC_TIMESTAMP()-INTERVAL 30 SECOND WHERE meeting_id=? AND user_id='demo-student'", id)
 	must(request("POST", base+"/presence", `{"kind":"join"}`, teacher), 200)
 	must(request("POST", base+"/presence", `{"kind":"ready"}`, teacher), 200)
 	read()
@@ -86,6 +87,10 @@ func testTeachingWindow(t *testing.T, a *app, request func(string, string, strin
 		t.Fatal("teacher join did not start teaching")
 	}
 	first := start.Time
+	var observed time.Time
+	if e := a.db.QueryRow("SELECT last_seen FROM presence WHERE meeting_id=? AND user_id='demo-student'", id).Scan(&observed); e != nil || !observed.Before(first.Add(-20*time.Second)) {
+		t.Fatal("starting teaching refreshed a student heartbeat", observed, e)
+	}
 	must(request("POST", base+"/presence", `{"kind":"leave"}`, teacher), 200)
 	read()
 	if end.Valid {

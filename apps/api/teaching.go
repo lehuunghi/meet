@@ -30,8 +30,8 @@ func (a *app) startTeaching(tx *sql.Tx, r *http.Request, m meetingInfo, now time
 	if n == 0 {
 		return nil
 	}
-	// Discard preparation time, retaining the real first teaching observation for online students.
-	_, err = tx.ExecContext(r.Context(), `UPDATE presence SET seconds=0,joined_at=IF(online AND last_seen>=?-INTERVAL 45 SECOND,?,joined_at),last_seen=IF(online AND last_seen>=?-INTERVAL 45 SECOND,?,last_seen) WHERE school_id=? AND meeting_id=?`, now, now, now, now, u.School, r.PathValue("id"))
+	// Discard preparation time without refreshing anyone else's heartbeat lease.
+	_, err = tx.ExecContext(r.Context(), `UPDATE presence SET seconds=0,joined_at=IF(online AND last_seen>=?-INTERVAL 45 SECOND,?,joined_at) WHERE school_id=? AND meeting_id=?`, now, now, u.School, r.PathValue("id"))
 	return err
 }
 
