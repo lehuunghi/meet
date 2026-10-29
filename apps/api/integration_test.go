@@ -382,6 +382,10 @@ func TestIntegration(t *testing.T) {
 	if request("GET", "/api/attendance/report?course_id="+courseID, "", assistant).Code != 200 {
 		t.Fatal("assistant report denied")
 	}
+	// A two-person historical roster fixture isolates shared timing from the late-enrolment case above.
+	if _, e = db.Exec("INSERT IGNORE INTO lesson_roster(school_id,meeting_id,user_id) VALUES('school-demo','demo-meeting','demo-second')"); e != nil {
+		t.Fatal(e)
+	}
 	// Lesson-wide timing changes apply to every student without editing their recorded presence.
 	timingPath := "/api/attendance/timing?meeting_id=demo-meeting&class_id=demo-class&course_id=demo-math"
 	w = request("GET", timingPath, "", administrator)

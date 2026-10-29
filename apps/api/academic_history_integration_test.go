@@ -116,6 +116,25 @@ func testAcademicHistory(t *testing.T, a *app, school, owner string) {
 	if w = call("admin", owner, "POST", "/api/academic/operations", string(raw), a.academicOperations); w.Code != 409 {
 		t.Fatalf("conflicting schedule accepted: %d", w.Code)
 	}
+	termBody := `{"Action":"term","Name":"QA revision ` + uid() + `","Starts":"2026-09-01","Ends":"2027-06-30"}`
+	w = call("admin", owner, "POST", "/api/academic/operations", termBody, a.academicOperations)
+	if w.Code != 200 {
+		t.Fatalf("term create %d %s", w.Code, w.Body)
+	}
+	var created map[string]any
+	if e = json.Unmarshal(w.Body.Bytes(), &created); e != nil {
+		t.Fatal(e)
+	}
+	change := map[string]any{"Action": "term", "ID": created["id"], "Name": "QA changed " + uid(), "Starts": "2026-09-01", "Ends": "2027-06-30", "Revision": 0}
+	raw, _ = json.Marshal(change)
+	if w = call("admin", owner, "POST", "/api/academic/operations", string(raw), a.academicOperations); w.Code != 409 {
+		t.Fatal("stale term revision accepted")
+	}
+	change["Revision"] = 1
+	raw, _ = json.Marshal(change)
+	if w = call("admin", owner, "POST", "/api/academic/operations", string(raw), a.academicOperations); w.Code != 200 {
+		t.Fatalf("term edit %d %s", w.Code, w.Body)
+	}
 	// Don't leave synthetic live rooms behind for subsequent integration checks.
 	exec("UPDATE meetings SET status='ended' WHERE id=?", next)
 	term := uid()

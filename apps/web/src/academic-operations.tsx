@@ -44,21 +44,17 @@ export function AcademicOperations({
   });
   async function load() {
     if (demo) return;
-    try {
-      const [t, h, s] = await Promise.all([
-        api<Row[]>("/academic/operations?kind=terms"),
-        api<Row[]>("/academic/operations?kind=transfers"),
-        api<Row[]>("/academic/operations?kind=sessions"),
-      ]);
-      setTerms(t);
-      setHistory(h);
-      setSessions(s);
-    } catch (e) {
-      setMessage((e as Error).message);
-    }
+    const [t, h, s] = await Promise.all([
+      api<Row[]>("/academic/operations?kind=terms"),
+      api<Row[]>("/academic/operations?kind=transfers"),
+      api<Row[]>("/academic/operations?kind=sessions"),
+    ]);
+    setTerms(t);
+    setHistory(h);
+    setSessions(s);
   }
   useEffect(() => {
-    void load();
+    void load().catch((e) => setMessage(e.message));
   }, [demo]);
   async function save(value: Row) {
     if (busy) return;
@@ -72,6 +68,15 @@ export function AcademicOperations({
       await api("/academic/operations", value);
       await load();
       await onChange();
+      if (value.Action === "term")
+        setTerm({
+          ID: "",
+          Name: "",
+          Starts: "",
+          Ends: "",
+          Closed: false,
+          Revision: 0,
+        });
       setMessage("Đã lưu. Lịch sử buổi học cũ được giữ nguyên.");
     } catch (e) {
       setMessage((e as Error).message);

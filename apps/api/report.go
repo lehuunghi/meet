@@ -57,7 +57,7 @@ func (a *app) renderAttendance(w http.ResponseWriter, r *http.Request, course, c
  COALESCE(p.online AND p.last_seen>=UTC_TIMESTAMP()-INTERVAL 45 SECOND AND m.status='live',FALSE) AS online
  FROM courses c JOIN classes cl ON cl.id=c.class_id AND cl.school_id=c.school_id
  JOIN meetings m ON m.school_id=c.school_id AND m.course_id=c.id AND `+mainLessonSQL+` AND m.status IN ('live','ended') AND NOT EXISTS(SELECT 1 FROM attendance_report_deletions ad WHERE ad.school_id=m.school_id AND ad.meeting_id=m.id)
- JOIN (SELECT school_id,meeting_id,user_id FROM lesson_roster UNION ALL SELECT en.school_id,old.id,en.user_id FROM enrollments en JOIN courses oc ON oc.school_id=en.school_id AND oc.class_id=en.class_id JOIN meetings old ON old.school_id=oc.school_id AND old.course_id=oc.id WHERE NOT EXISTS(SELECT 1 FROM lesson_history h WHERE h.school_id=old.school_id AND h.meeting_id=old.id) AND NOT EXISTS(SELECT 1 FROM lesson_roster exists_roster WHERE exists_roster.school_id=old.school_id AND exists_roster.meeting_id=old.id AND exists_roster.user_id=en.user_id)) roster ON roster.school_id=m.school_id AND roster.meeting_id=m.id
+ JOIN (SELECT school_id,meeting_id,user_id FROM lesson_roster WHERE school_id=? UNION ALL SELECT en.school_id,old.id,en.user_id FROM enrollments en JOIN courses oc ON oc.school_id=en.school_id AND oc.class_id=en.class_id JOIN meetings old ON old.school_id=oc.school_id AND old.course_id=oc.id WHERE en.school_id=? AND NOT EXISTS(SELECT 1 FROM lesson_history h WHERE h.school_id=old.school_id AND h.meeting_id=old.id) AND NOT EXISTS(SELECT 1 FROM lesson_roster exists_roster WHERE exists_roster.school_id=old.school_id AND exists_roster.meeting_id=old.id AND exists_roster.user_id=en.user_id)) roster ON roster.school_id=m.school_id AND roster.meeting_id=m.id
  JOIN users u ON u.id=roster.user_id AND u.school_id=roster.school_id AND u.role='student'
  LEFT JOIN lesson_history history ON history.school_id=m.school_id AND history.meeting_id=m.id
  LEFT JOIN academic_terms term ON term.id=history.term_id AND term.school_id=history.school_id
@@ -66,5 +66,5 @@ func (a *app) renderAttendance(w http.ResponseWriter, r *http.Request, course, c
  LEFT JOIN meeting_timings mt ON mt.school_id=m.school_id AND mt.meeting_id=m.id
  LEFT JOIN attendance_policies policy ON policy.school_id=c.school_id
  WHERE `+lessonAccess+` AND (?='' OR c.id=?) AND (?='' OR c.class_id=?) AND (?='' OR m.id=?) AND (?<>'student' OR u.id=?) AND (?='' OR (m.starts_at>=? AND m.starts_at<?))
- ORDER BY m.starts_at DESC,m.id,u.name,u.id LIMIT ? OFFSET ?`, u.School, u.Role, u.Role, u.ID, u.Role, u.ID, course, course, class, class, meeting, meeting, u.Role, u.ID, month, from, to, limit, page*50)
+ ORDER BY m.starts_at DESC,m.id,u.name,u.id LIMIT ? OFFSET ?`, u.School, u.School, u.School, u.Role, u.Role, u.ID, u.Role, u.ID, course, course, class, class, meeting, meeting, u.Role, u.ID, month, from, to, limit, page*50)
 }
