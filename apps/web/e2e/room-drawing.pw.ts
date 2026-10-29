@@ -447,9 +447,10 @@ test("annotation menu groups colors and stamps and controls class permissions", 
   await expect(
     menu.getByRole("menuitem", { name: "Màu", exact: true }),
   ).toBeVisible();
-  await page
-    .getByLabel("Chú thích trên màn hình chia sẻ", { exact: true })
-    .click({ position: { x: 200, y: 100 } });
+  const canvas=page.getByLabel("Chú thích trên màn hình chia sẻ", { exact: true });
+  const outside=await canvas.evaluate(el=>{const r=el.getBoundingClientRect();for(const [x,y] of [[r.left+12,r.top+12],[r.right-12,r.top+12],[r.left+12,r.bottom-12],[r.right-12,r.bottom-12]])if(document.elementFromPoint(x,y)===el)return {x,y};return null;});
+  expect(outside).not.toBeNull();
+  await page.mouse.click(outside!.x,outside!.y);
   await expect(menu).toBeHidden();
   await open();
   await menu

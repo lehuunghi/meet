@@ -15,6 +15,8 @@ test("Meet controls keep readable foregrounds and visible boundaries in on and o
   page,
 }) => {
   await page.goto("/hoc/buoi-hoc/preview?academy_demo=1&role=teacher");
+  await expect(page.locator('.room')).toHaveCSS('background-color','rgb(17, 17, 17)');
+  await expect(page.getByRole('button',{name:'Tắt mic',exact:true}).locator('svg')).toHaveAttribute('viewBox','0 -960 960 960');
   const check = async () => {
     const data = await page.locator(".room-toolbar").evaluate((el) => ({
       bar: getComputedStyle(el).backgroundColor,
@@ -51,6 +53,8 @@ test("Meet controls keep readable foregrounds and visible boundaries in on and o
   await page.getByRole("button", { name: "Tắt mic", exact: true }).click();
   await page.getByRole("button", { name: "Tắt camera", exact: true }).click();
   await page.getByRole("button", { name: "Giơ tay", exact: true }).click();
+  await expect(page.getByRole('button',{name:'Bật mic',exact:true})).toHaveCSS('background-color','rgb(249, 222, 220)');
+  await expect(page.getByRole('button',{name:'Hạ tay',exact:true})).toHaveCSS('background-color','rgb(168, 199, 250)');
   await check();
   await page.getByRole("button", { name: "Bật mic", exact: true }).hover();
   await expect(page.getByRole("tooltip")).toHaveText("Bật mic");

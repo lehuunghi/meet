@@ -1,7 +1,7 @@
 import {MeetingDrawing,requestDrawing} from "./meeting-drawing";
 import { useState } from "react";
 import { RoomTools } from "./room-tools";
-import { MeetingControls, MeetingLeaveDialog, MeetingModal, type MeetingPanel } from "./meeting-controls";
+import { MeetingControls, MeetingClock, MeetingLeaveDialog, MeetingModal, type MeetingPanel } from "./meeting-controls";
 export const previewRoles = [
   { id: "admin", name: "Lê Thu Hà", label: "Admin" },
   { id: "teacher", name: "Nguyễn Minh Anh", label: "Giáo viên" },
@@ -142,9 +142,7 @@ export function PreviewRoom({
   return (
     <main className={"room" + (toolsOpen ? " room-tools-open" : "")}>
       <header>
-        <span className="brand">
-          m<span>●</span> meet
-        </span>
+        <span className="room-header-identity"><MeetingClock/><span className="room-header-code">Phòng minh họa</span></span><span className="brand room-brand">VA Meet</span>
         <h2>{title}</h2>
       </header>
       <div className="banner">

@@ -49,6 +49,11 @@ for (const [role,initialStatus] of [["teacher","live"],["student","live"],["teac
     });
     await page.setViewportSize({ width: 320, height: 680 });
     await page.goto("/?room=lesson");
+    const preview=await page.locator('.prejoin-media').boundingBox();
+    for(const button of await page.locator('.prejoin-device-icons button').all()){
+      const r=await button.boundingBox();expect(r!.x).toBeGreaterThanOrEqual(preview!.x);expect(r!.x+r!.width).toBeLessThanOrEqual(preview!.x+preview!.width+1);expect(r!.y+r!.height).toBeLessThanOrEqual(preview!.y+preview!.height+1);
+    }
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
     await page.getByLabel("Thêm tùy chọn", { exact: true }).click();
     const box = page.getByRole("checkbox", {
       name: "Ghi hình khi giáo viên vào lớp",

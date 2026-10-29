@@ -91,8 +91,8 @@ test("host admits waiting students, updates rules, pins video and sends reaction
     await route.fulfill({ json: data });
   });
   await page.goto("/?room=lesson");
-  await expect(page.locator('.prejoin')).toHaveCSS('background-color','rgb(248, 250, 253)');
-  await expect(page.locator('.prejoin h2')).toHaveCSS('color','rgb(22, 43, 73)');
+  await expect(page.locator('.prejoin')).toHaveCSS('background-color','rgb(255, 255, 255)');
+  await expect(page.locator('.prejoin h2')).toHaveCSS('color','rgb(32, 33, 36)');
   await expect(page.locator(".room>header h2")).toHaveText("Lớp kiểm tra");
   await expect(
     page.getByRole("heading", {

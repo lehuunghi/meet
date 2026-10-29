@@ -1,4 +1,7 @@
+import { meetSymbols } from "./meet-symbols";
 export function DrawingIcon({ kind }: { kind: string }) {
+  const names: Record<string,string>={chevron:"chevron_right",back:"chevron_left",people:"person_add",stop:"logout",shapes:"shapes",pointer:"near_me",pen:"ink_pen",marker:"ink_highlighter",laser:"stylus_laser_pointer",text:"text_fields",note:"sticky_note_2",stamp:"add_reaction",line:"horizontal_rule",arrow:"north_east",rect:"rectangle",ellipse:"circle",erase:"ink_eraser",undo:"undo",download:"download",trash:"delete",close:"close",board:"tv",more:"more_horiz",eye:"visibility",fullscreen:"open_in_full",zoomIn:"zoom_in",zoomOut:"zoom_out",move:"swap_vert"};
+  if(names[kind]) return <svg className="meet-symbol" aria-hidden="true" focusable="false" width="24" height="24" viewBox="0 -960 960 960" fill="currentColor" stroke="none"><path d={meetSymbols[names[kind]]}/></svg>;
   const paths: Record<string, string> = {
     chevron: "m9 5 7 7-7 7",
     back: "m15 5-7 7 7 7",

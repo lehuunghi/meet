@@ -245,7 +245,7 @@ export function MeetingDrawing({
     [tools, setTools] = useState(true),
     [expandedTools, setExpandedTools] = useState(false),
     [tool, setTool] = useState("pointer"),
-    [color, setColor] = useState("#0B4ED8"),
+    [color, setColor] = useState("#34A853"),
     [width, setWidth] = useState(4),
     [text, setText] = useState(""),
     [hosts, setHosts] = useState<HTMLElement[]>([]),
@@ -917,6 +917,7 @@ export function MeetingDrawing({
                   >
                     <DrawingIcon kind="more" />
                   </button>
+                  <button className="drawing-dock-action" aria-label="Toàn màn hình nội dung" data-meet-tip="Toàn màn hình nội dung" onClick={() => { const room=anchor.current?.closest<HTMLElement>('.room'); if(document.fullscreenElement)void document.exitFullscreen().catch(()=>setError('Không thể thoát toàn màn hình'));else if(room?.requestFullscreen)void room.requestFullscreen().catch(()=>setError('Trình duyệt chưa cho phép toàn màn hình'));else setError('Trình duyệt chưa hỗ trợ toàn màn hình'); }}><DrawingIcon kind="fullscreen"/></button>
                 </>
               )}
               <div

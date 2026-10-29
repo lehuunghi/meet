@@ -8,6 +8,7 @@ import { RoomTools } from "./room-tools";
 import { CallIcon } from "./call-icon";
 import {
   MeetingControls,
+  MeetingClock,
   MeetingLeaveDialog,
   MeetingModal,
   type MeetingPanel,
@@ -35,6 +36,7 @@ import { RecordingRecovery } from "./recording-recovery";
 import "./workspace.css";
 import "./learning.css";
 import "./brand-theme.css";
+import "./meet-reference.css";
 import {
   RoleSwitcher,
   PreviewRoom,
@@ -1244,15 +1246,16 @@ function Room({
   return (
     <main
       data-mirror={mirror}
-      className={"room" + (toolsOpen ? " room-tools-open" : "")}
+      className={"room" + (!joined && state !== "ended" ? " room-prejoin" : "") + (toolsOpen ? " room-tools-open" : "")}
     >
       <header>
-        <span className="brand">
-          m<span>●</span> meet
-        </span>
+        <span className="room-header-identity"><MeetingClock/><span className="room-header-code">{meeting.short_code||"Phòng học"}</span></span>
+        <span className="brand room-brand">VA Meet</span>
         <h2>{meeting.title}</h2>
         <button
           className="secondary"
+          aria-label="Sao chép liên kết"
+          data-meet-tip="Sao chép liên kết"
           onClick={() =>
             void run(async () => {
               const info = await api<Meeting>(`/meetings/${meeting.id}`);
@@ -1266,7 +1269,7 @@ function Room({
             })
           }
         >
-          Sao chép liên kết
+          <CallIcon kind="info"/>
         </button>
       </header>
       {error && (
@@ -1282,6 +1285,7 @@ function Room({
         <RecordingRecovery owner={user.id} school={user.school_id} active="" />
       )}
       <div className="room-status-line">
+        {localScreen && <div className="room-presenting-banner"><CallIcon kind="present"/><span>Bạn đang trình bày</span><button disabled={busy} onClick={share}>Dừng trình bày</button></div>}
         {connection && (
           <div
             className="room-connection-status"
@@ -1465,19 +1469,8 @@ function Room({
         )}
         {!joined && state !== "ended" && (
           <section className="section prejoin">
-            <div>
-              <h2>Chuẩn bị trước khi vào lớp</h2>
-              {["waiting", "removed", "denied"].includes(admission) && (
-                <p role="status">
-                  {admission === "waiting"
-                    ? "Yêu cầu đã gửi. Chờ giáo viên duyệt, sau đó bấm vào lớp."
-                    : "Bạn chưa được phép tham gia buổi này. Liên hệ giáo viên để được cho vào lại."}
-                </p>
-              )}
-              <p>
-                Chọn mic/camera hoặc tắt cả hai để vào chỉ nghe. Camera chỉ chia
-                sẻ khi tham gia.
-              </p>
+            <div className="prejoin-media">
+              <span className="prejoin-name">{user.name}</span>
               {(!preview || !preview.getVideoTracks().length) && (
                 <div className="prejoin-placeholder">
                   <span>{user.name[0]}</span>
@@ -1517,6 +1510,21 @@ function Room({
                   <CallIcon kind="camera" off={!preCamera} />
                 </button>
               </div>{" "}
+              {preview?.getVideoTracks().length ? <Video stream={preview} muted /> : null}
+            </div>
+            <div className="prejoin-intro">
+              <h2>Sẵn sàng tham gia?</h2>
+              {["waiting", "removed", "denied"].includes(admission) && (
+                <p role="status">
+                  {admission === "waiting"
+                    ? "Yêu cầu đã gửi. Chờ giáo viên duyệt, sau đó bấm vào lớp."
+                    : "Bạn chưa được phép tham gia buổi này. Liên hệ giáo viên để được cho vào lại."}
+                </p>
+              )}
+              <p>
+                Chọn mic/camera hoặc tắt cả hai để vào chỉ nghe. Camera chỉ chia
+                sẻ khi tham gia.
+              </p>
               {state === "live" && (
                 <div className="prejoin-actions">
                   <button
@@ -1533,9 +1541,6 @@ function Room({
                 </div>
               )}
             </div>
-            {preview?.getVideoTracks().length ? (
-              <Video stream={preview} muted />
-            ) : null}
           </section>
         )}
         {local && (
