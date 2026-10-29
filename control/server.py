@@ -8,7 +8,7 @@ from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 ROOT=Path(os.environ.get('MEET_CONTROL_DATA','/var/lib/meet-control'))
 ORIGIN=os.environ.get('MEET_CONTROL_ORIGIN','https://admin.tn.edu.vn').rstrip('/')
 HOST=re.compile(r'(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,63}')
-ACTIONS={'configure','check','update','backup','domain','accounts','provision','lifecycle','relocate','backup-list','restore','purge'}
+ACTIONS={'recorders','configure','check','update','backup','domain','accounts','provision','lifecycle','relocate','backup-list','restore','purge'}
 
 STAGES={'queued':(0,'Đang chờ xử lý'),'release':(3,'Kiểm tra phiên bản đã qua kiểm thử'),'dns':(8,'Kiểm tra DNS'),'ssh':(15,'Xác thực SSH và fingerprint'),'system':(22,'Cài thư viện hệ điều hành'),'source':(30,'Tải mã nguồn'),'docker':(42,'Chuẩn bị Docker và dịch vụ'),'images':(55,'Dựng ứng dụng'),'database':(72,'Khởi tạo cơ sở dữ liệu'),'https':(84,'Kiểm tra HTTPS'),'agent':(92,'Liên kết quản trị'),'configure':(96,'Chờ VPS áp dụng cấu hình'),'verify':(98,'Xác minh kết quả'),'snapshot_download':(20,'Tải bản sao lưu mã hóa'),'snapshot_verify':(35,'Xác minh nội dung và đúng đơn vị'),'rollback_backup':(60,'Tạo và xác minh bản hoàn tác'),'restore_data':(75,'Phục hồi dữ liệu và cấu hình'),'restore_check':(94,'Kiểm tra sau phục hồi'),'purge_verified':(20,'Đã đối chiếu đúng VPS và đơn vị'),'purge_storage':(50,'Gỡ dịch vụ và dữ liệu MySQL/Redis'),'purge_files':(75,'Xóa mã nguồn và cấu hình trên VPS'),'purge_complete':(95,'VPS đã gỡ xong; đang xóa đơn vị khỏi trung tâm'),'done':(100,'Hoàn tất')}
 BACKUP_KEY=re.compile(r'(?:backups/[a-zA-Z0-9/_-]+\.meet|local:[a-f0-9-]{36}\.meet)')
@@ -96,6 +96,7 @@ def limited(db,key,maximum,seconds):
 
 def validate_config(value):
     if not isinstance(value,dict):raise ValueError('Cấu hình không hợp lệ')
+    if value.get('recording_mode','vps') not in ('vps','browser','cluster'):raise ValueError('Phương thức ghi không hợp lệ')
     value['turn']=[] # Removed: old snapshots remain readable but no TURN keys are applied.
     if value.get('platform_mode','school') not in ('school','academy'):raise ValueError('Loại nền tảng không hợp lệ')
     if type(value.get('retention_days',30)) is not int or not 1<=value.get('retention_days',30)<=3650:raise ValueError('Thời hạn video phải từ 1 đến 3650 ngày')
@@ -268,6 +269,9 @@ class Handler(BaseHTTPRequestHandler):
         if isinstance(usage,list) and len(usage)<=50:
             safe['sfu_usage']=[{k:v for k,v in x.items() if k in ('id','app_id','ingress_bytes','egress_bytes','month_ingress_bytes','month_egress_bytes','samples','updated_at','first_day','meetings') and isinstance(v,(str,int)) and not isinstance(v,bool)} for x in usage if isinstance(x,dict)]
             safe['sfu_usage_kind']='estimated_webrtc'
+        nodes=status.get('recording_nodes',[])
+        if isinstance(nodes,list) and len(nodes)<=200:
+            safe['recording_nodes']=[{k:v for k,v in x.items() if k in ('id','name','enabled','last_seen','platform') and isinstance(v,(str,bool))} for x in nodes if isinstance(x,dict)]
         if self.path=='/agent/poll':db.execute('UPDATE schools SET seen=?,status=? WHERE id=?',(now,json.dumps(safe),sid))
         else:db.execute('UPDATE schools SET seen=? WHERE id=?',(now,sid))
         if self.path=='/agent/poll':
@@ -311,6 +315,7 @@ class Handler(BaseHTTPRequestHandler):
             if state=='success' and job['action']=='domain':
                 payload=decrypt(job['payload'],sid);db.execute('UPDATE schools SET domain=?,revision=revision+1 WHERE id=?',(payload['domain'],sid))
                 queue(db,sid,'configure',{'settings':decrypt(row['config'],sid),'name':row['name'],'domain':payload['domain']},row['revision']+1)
+            if job['action']=='recorders' and state in ('success','failed'):db.execute('UPDATE jobs SET payload=? WHERE id=?',(encrypt({},sid),job['id']))
             audit(db,'agent',job['action']+'.'+state,sid);return {'ok':True}
         raise ValueError('Unknown endpoint')
     def school_api(self,db,data):
@@ -553,6 +558,19 @@ class Handler(BaseHTTPRequestHandler):
                 if action in ('lifecycle','relocate','purge'):raise ValueError('Dùng chức năng quản lý riêng')
                 if db.execute("SELECT 1 FROM relocations WHERE school=? AND state IN ('backup_ready','preparing','prepared','cutting_over','cutover_failed')",(sid,)).fetchone():raise ValueError('Đang chuyển VPS; chờ hoàn tất')
                 if not isinstance(payload,dict):raise ValueError('Nội dung tác vụ không hợp lệ')
+                if action=='recorders':
+                    if user['role']!='owner' or not row['agent_hash']:raise ValueError('Cần chủ hệ thống và VPS đã liên kết')
+                    if 'recording_workers' not in json.loads(row['status']).get('features',[]):raise ValueError('Nâng cấp client để hỗ trợ cụm ghi')
+                    if payload.get('Action')=='enroll':
+                        label=str(payload.get('Name','')).strip()
+                        if not label or len(label.encode())>100:raise ValueError('Tên máy không hợp lệ')
+                        code=secrets.token_hex(32);payload={'Action':'enroll','Name':label,'Code':code}
+                    elif payload.get('Action')=='node':
+                        if not re.fullmatch('[a-f0-9]{32}',str(payload.get('Node',''))) or type(payload.get('Enabled')) is not bool:raise ValueError('Thông tin máy không hợp lệ')
+                        code='';payload={k:payload[k] for k in ('Action','Node','Enabled')}
+                    else:raise ValueError('Thao tác máy ghi không hợp lệ')
+                    job=queue(db,sid,action,payload,row['revision']);audit(db,actor,'recorder.'+payload['Action'],sid)
+                    return {'id':job,'code':code,'expires_in':600}
                 if action=='academy':raise ValueError('Quản lý khóa học và học viên tại website của đơn vị')
                 if action in ('backup-list','restore'):
                     if user['role']!='owner':raise ValueError('Cần quyền chủ hệ thống')

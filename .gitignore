@@ -16,3 +16,6 @@ __pycache__/
 outputs/
 test-results/
 playwright-report/
+
+apps/recording-agent/data/
+apps/recording-agent/release/

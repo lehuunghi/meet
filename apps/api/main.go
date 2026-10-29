@@ -142,6 +142,7 @@ func (a *app) auth(next http.HandlerFunc) http.HandlerFunc {
 func (a *app) routes() http.Handler {
 	m := http.NewServeMux()
 	a.academyRoutes(m)
+	a.recordingRoutes(m)
 	m.HandleFunc("GET /api/health", func(w http.ResponseWriter, r *http.Request) {
 		ctx, c := context.WithTimeout(r.Context(), 2*time.Second)
 		defer c()
@@ -328,7 +329,7 @@ func migrate(db *sql.DB) error {
 	if e = migrateAcademicHistory(c); e != nil {
 		return e
 	}
-	_, e = c.ExecContext(context.Background(), "INSERT IGNORE INTO schema_migrations VALUES(6),(7),(8),(9),(10),(11),(12),(13),(14),(15),(16),(17),(18),(19)")
+	_, e = c.ExecContext(context.Background(), "INSERT IGNORE INTO schema_migrations VALUES(6),(7),(8),(9),(10),(11),(12),(13),(14),(15),(16),(17),(18),(19),(21)")
 	return e
 }
 func main() {
@@ -353,7 +354,7 @@ func main() {
 				a := &app{client: &http.Client{Timeout: 40 * time.Second}, origin: os.Getenv("APP_ORIGIN")}
 				e = a.configureBucket(context.Background(), cfg.R2, cfg.Retention)
 			}
-		case "managed-config", "managed-account", "managed-status", "managed-academy":
+		case "managed-recorders", "managed-config", "managed-account", "managed-status", "managed-academy":
 			e = managedCommand(db, os.Args[1])
 		case "bootstrap":
 			e = bootstrap(db)

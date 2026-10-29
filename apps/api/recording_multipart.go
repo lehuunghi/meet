@@ -42,6 +42,11 @@ func (a *app) recordingMultipartStart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	j, capable := r.Context().Value(recordingJobKey{}).(recordingWorkerJob)
+	if !capable || a.cache.Get(r.Context(), recordingLeaseKey(j)).Val() != j.Lease {
+		problem(w, 409, "Chọn phương thức ghi và nhận quyền ghi trước")
+		return
+	}
 	store, ok := r2ready(w)
 	if !ok {
 		return
@@ -82,6 +87,12 @@ func (a *app) recordingMultipartStart(w http.ResponseWriter, r *http.Request) {
 		abort()
 		a.db.ExecContext(r.Context(), "UPDATE recordings SET deleted_at=UTC_TIMESTAMP(6) WHERE id=?", id)
 		problem(w, 503, "Không lưu được phiên tải")
+		return
+	}
+	if a.cache.Set(r.Context(), "recorder-file-job:"+id, j.ID, 7*24*time.Hour).Err() != nil {
+		abort()
+		a.db.ExecContext(r.Context(), "UPDATE recordings SET deleted_at=UTC_TIMESTAMP(6) WHERE id=?", id)
+		problem(w, 503, "Không lưu được quyền tải")
 		return
 	}
 	a.audit(r, "recording.multipart.start", id)

@@ -1,3 +1,5 @@
+import { RecordingRecovery } from "./recording-recovery";
+import { RecordingWorkers } from "./recording-workers";
 import {ReceiptTransfer,InvoiceButton} from "./academy-invoice";
 import {AcademyMailCenter} from "./academy-communications";
 import { StudentLiveClasses } from "./student-live-classes";
@@ -1105,6 +1107,7 @@ export function AcademyApp({
             notice={setNotice}
           />
         )}
+        {staff&&!demo&&<RecordingRecovery owner={user.id} school={user.school_id}/>}
         {!routeForbidden && admin && tab === "manage" && (
           <ManagePanel
             canFinance={
@@ -1118,7 +1121,7 @@ export function AcademyApp({
           />
         )}
         {!routeForbidden && admin && tab === "settings" && (
-          <AcademySettings demo={demo} />
+          <><AcademySettings demo={demo} />{(user.permissions==null||user.permissions.includes("recordings"))&&<RecordingWorkers demo={demo}/>}</>
         )}
         {!routeForbidden && admin && tab === "website" && (
           <AcademySiteEditor

@@ -92,6 +92,21 @@ func (a *app) serverRecordingStatus(r *http.Request, enabled bool) map[string]an
 	if e != nil || !cfg.R2.Enabled {
 		return map[string]any{"state": "disabled"}
 	}
+	mode, err := a.recordingMode(r.Context(), who(r).School)
+	if err != nil {
+		return map[string]any{"state": "unavailable"}
+	}
+	if mode != "vps" {
+		raw, e := a.cache.Get(r.Context(), "server-recording:"+who(r).School+":"+r.PathValue("id")).Result()
+		var st struct {
+			State string `json:"state"`
+			Seen  int64  `json:"seen"`
+		}
+		if e == nil && json.Unmarshal([]byte(raw), &st) == nil && time.Now().Unix()-st.Seen < 30 && (st.State == "stopped" || a.cache.Exists(r.Context(), "server-recording-lease:"+who(r).School+":"+r.PathValue("id")).Val() > 0) {
+			return map[string]any{"state": st.State, "mode": mode}
+		}
+		return map[string]any{"state": "queued", "mode": mode}
+	}
 	if a.cache.Exists(r.Context(), "server-recorder:seen").Val() == 0 {
 		return map[string]any{"state": "unavailable"}
 	}

@@ -26,6 +26,8 @@ func permitted(u identity, p string) bool {
 }
 func permissionFor(path string) string {
 	switch {
+	case strings.HasPrefix(path, "/api/recording-workers"):
+		return "recordings"
 	case strings.HasPrefix(path, "/api/academy/"):
 		return ""
 	case strings.HasPrefix(path, "/api/accounts"):

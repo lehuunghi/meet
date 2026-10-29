@@ -1037,6 +1037,7 @@
       }
       if (tab === "r2") {
         cfg.retention_days = Number(get("retention"));
+        cfg.recording_mode=get("recording_mode")||"vps";
         cfg.r2 = {
           ...cfg.r2,
           enabled: data.has("enabled"),
@@ -1943,6 +1944,7 @@
       if(tab==="sfu") renderSFUUsage();
       if (tab === "r2")
         f.innerHTML =
+          '<label>Phương thức ghi<select name="recording_mode">'+[['vps','Ghi trên VPS'],['browser','Trình duyệt giáo viên'],['cluster','Cụm máy Windows / Linux']].map(([v,n])=>'<option value="'+v+'" '+((cfg.recording_mode||'vps')===v?'selected':'')+'>'+n+'</option>').join('')+'</select></label><p>Đổi phương thức sau khi dừng ghi các buổi đang diễn ra. Máy cụm cần được đăng ký với website đơn vị.</p>'+
           check("enabled", "Bật lưu video R2", cfg.r2?.enabled) +
           '<div class="grid">' +
           input("account", "Cloudflare Account ID", cfg.r2?.account_id) +
@@ -1968,7 +1970,8 @@
             cfg.backup?.interval_hours || 24,
             "number",
           ) +
-          "<p>Dùng bucket riêng cho từng đơn vị. Kho video khóa học (academy/) tách khỏi ghi hình phòng học; không đặt lifecycle xóa toàn bucket sau 30 ngày. Giảm thời hạn ghi hình có thể xóa bản ghi phòng học sớm hơn.</p>";
+          "<section id=\"recording-workers\"></section><p>Dùng bucket riêng cho từng đơn vị. Kho video khóa học (academy/) tách khỏi ghi hình phòng học; không đặt lifecycle xóa toàn bucket sau 30 ngày. Giảm thời hạn ghi hình có thể xóa bản ghi phòng học sớm hơn.</p>";
+      if(tab==="r2")renderRecordingWorkers();
       if (tab === "general") {
         for (const name of ["name", "domain", "ip"])
           f.elements.namedItem(name).required = true;
@@ -1993,6 +1996,20 @@
         b.className = "primary";
         f.append(b);
       } else for (const e of f.elements) if(!e.dataset.readonlyAction)e.disabled = true;
+    }
+    function renderRecordingWorkers(){
+      const el=$("#recording-workers");if(!el||!selected)return;
+      let st={};try{st=JSON.parse(selected.status||"{}")}catch{}
+      el.innerHTML='<h3>Cụm máy ghi Windows / Linux</h3><p>Mỗi máy nhận một lớp. Tạo mã đăng ký, cài ứng dụng trên máy rồi nhập domain website đơn vị và mã. Mã chỉ hiển thị một lần; đợi tác vụ đồng bộ thành công trước khi nhập.</p>';
+      if(!st.features?.includes('recording_workers')){el.append(document.createTextNode('Nâng cấp client và agent điều khiển để quản lý cụm ghi.'));return;}
+      const rows=Array.isArray(st.recording_nodes)?st.recording_nodes:[];
+      const table=document.createElement('div');table.className='table-wrap';table.innerHTML='<table><thead><tr><th>Máy</th><th>Hệ điều hành</th><th>Lần kết nối</th><th>Trạng thái</th><th></th></tr></thead><tbody>'+rows.map(n=>'<tr><td>'+esc(n.name)+'</td><td>'+esc(n.platform)+'</td><td>'+esc(n.last_seen?controlDate(n.last_seen,true):'Chưa kết nối')+'</td><td>'+esc(n.enabled?'Đang bật':'Đã thu hồi')+'</td><td data-recorder-node="'+esc(n.id)+'"></td></tr>').join('')+'</tbody></table>';el.append(table);
+      if(me.role==='owner'){
+       for(const n of rows){const cell=[...table.querySelectorAll('[data-recorder-node]')].find(c=>c.dataset.recorderNode===n.id);cell?.append(button(n.enabled?'Ngừng / thu hồi':'Kích hoạt',async()=>{await api('schools/'+selected.id+'/action',{action:'recorders',payload:{Action:'node',Node:n.id,Enabled:!n.enabled}});notice('Đã gửi thay đổi máy ghi. Làm mới sau khi tác vụ thành công.')}));}
+       const name=document.createElement('input');name.placeholder='Tên máy ghi';name.maxLength=100;name.setAttribute('aria-label','Tên máy ghi');el.append(name);
+       el.append(button('Tạo mã đăng ký máy',async()=>{const result=await api('schools/'+selected.id+'/action',{action:'recorders',payload:{Action:'enroll',Name:name.value}});const box=document.createElement('input');box.readOnly=true;box.value=result.code;box.setAttribute('aria-label','Mã đăng ký máy dùng một lần');box.onfocus=()=>box.select();el.append(box);el.append(button('Ẩn mã',()=>box.remove()));notice('Đã tạo mã. Đợi tác vụ thành công rồi nhập trong bộ cài; mã hết hạn sau 10 phút kể từ khi áp dụng.')}));
+      }
+      const refresh=button('Làm mới máy ghi',async()=>{const sid=selected.id,latest=await api('schools');if(selected?.id!==sid)return;const row=latest.find(x=>x.id===sid);if(row){selected.status=row.status;renderRecordingWorkers()}});refresh.dataset.readonlyAction='true';el.append(refresh);
     }
     function renderSFUUsage() {
       const el=$("#sfu-usage");if(!el)return;

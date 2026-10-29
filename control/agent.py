@@ -129,6 +129,7 @@ def execute(job,status):
         revision=ROOT/'runtime-config/control-revision.json'
         if not revision.exists() or json.loads(revision.read_text()).get('revision',0)<job['revision']:configure(job)
     elif action=='accounts':cli('managed-account',payload)
+    elif action=='recorders':cli('managed-recorders',payload)
     elif action=='academy':return 'failed','BUSINESS_MANAGEMENT_LOCAL'
     elif action=='check':run('python3',str(ROOT/'deploy/update.py'),'check')
     elif action=='update':

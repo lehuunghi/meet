@@ -458,6 +458,7 @@ let retrying = false;
 while (!stopping) {
   try {
     await redis.set("server-recorder:seen", String(Date.now()), { EX: 30 });
+    await redis.set("server-recorder:protocol", "2", { EX: 30 });
     // The updater may start the replacement worker before releasing maintenance.
     // Keep spool recovery and recording writes behind the same freeze as the API.
     if (
@@ -490,7 +491,7 @@ while (!stopping) {
     const cfg = await settings();
     if (cfg.r2?.enabled && active.size < concurrency) {
       const [jobs] = await db.execute(
-        `SELECT m.id AS meeting_id,m.school_id,c.teacher_id AS owner_id FROM meetings m JOIN meeting_teaching_windows tw ON tw.school_id=m.school_id AND tw.meeting_id=m.id AND tw.started_at IS NOT NULL AND tw.ended_at IS NULL JOIN courses c ON c.id=m.course_id AND c.school_id=m.school_id WHERE m.status='live' AND m.recording_allowed=TRUE AND c.teacher_id IS NOT NULL ORDER BY m.starts_at LIMIT 200`,
+        `SELECT m.id AS meeting_id,m.school_id,c.teacher_id AS owner_id FROM meetings m JOIN meeting_teaching_windows tw ON tw.school_id=m.school_id AND tw.meeting_id=m.id AND tw.started_at IS NOT NULL AND tw.ended_at IS NULL JOIN courses c ON c.id=m.course_id AND c.school_id=m.school_id WHERE NOT EXISTS(SELECT 1 FROM recording_policies rp WHERE rp.school_id=m.school_id AND rp.mode<>'vps') AND m.status='live' AND m.recording_allowed=TRUE AND c.teacher_id IS NOT NULL ORDER BY m.starts_at LIMIT 200`,
       );
       for (const job of jobs) {
         if (active.size >= concurrency) break;

@@ -1,3 +1,5 @@
+import { useBrowserRecording } from "./use-browser-recording";
+import { RecordingWorkers } from "./recording-workers";
 import { MeetingBreakouts } from "./meeting-breakouts";
 import {MeetingDrawing,requestDrawing} from "./meeting-drawing";
 import { AcademyApp } from "./academy";
@@ -659,6 +661,7 @@ function App() {
                 <AcademicAdmin demo={demo} onChange={refresh} />
               )}
               {allowed("accounts") && <Accounts demo={demo} />}
+              {allowed("recordings") && <RecordingWorkers demo={demo} />}
               {!managed && (
                 <section className="section">
                   <h2>Cấu hình hệ thống dùng chung</h2>
@@ -800,6 +803,7 @@ function MeetingRoom({
     return () => clearInterval(timer);
   }, []);
   const [serverRecording, setServerRecording] = useState("unavailable");
+  const [recordingMode,setRecordingMode]=useState("vps");
   const [recordingEnabled, setRecordingEnabled] = useState(!!meeting.recording_allowed);
   const recordingWriting = useRef(false);
   const recordingRevision = useRef(0);
@@ -890,8 +894,10 @@ function MeetingRoom({
         ?.getVideoTracks()[0]
         ?.addEventListener("ended", () => setLocalScreen(null), { once: true });
     });
+  const browserRecording=useBrowserRecording({enabled:joined&&canManage&&!isBreakout&&state==="live"&&recordingEnabled&&recordingMode==="browser",meeting:meeting.id,owner:user.id,school:user.school_id,title:meeting.title,scene:{tiles:{...(local?{self:{stream:local,name:user.name}}:{}),...remote,...(localScreen?{"self:screen":{stream:localScreen,name:"Màn hình giáo viên"}}:{})}}});
   const leave = () =>
     void run(async () => {
+      await browserRecording.stop();
       clearRoomResume(user);
       resumeHint.current = null;
       const wasJoined = joinedRef.current;
@@ -907,6 +913,7 @@ function MeetingRoom({
   const end = () =>
     void run(async () => {
       await api(`/meetings/${parentMeeting}/state`, { status: "ended" });
+      await browserRecording.stop();
       setState("ended");
       clearRoomResume(user);
       resumeHint.current = null;
@@ -953,12 +960,13 @@ function MeetingRoom({
           rules?: RoomRules;
           admission?: string;
           mute_request?: number;
-          server_recording?: { state: string };
+          server_recording?: { state: string; mode?: string };
           recording_allowed?: boolean | number;
         }>(`/meetings/${meeting.id}`);
         if (active && current) {
           setState(current.status);
           setServerRecording(current.server_recording?.state || "unavailable");
+          setRecordingMode(current.server_recording?.mode || "vps");
           if (revision === recordingRevision.current && !recordingWriting.current && current.recording_allowed !== undefined) setRecordingEnabled(!!current.recording_allowed);
           if (typeof current.can_manage === "boolean")
             setCanManage(current.can_manage);
@@ -1314,7 +1322,7 @@ function MeetingRoom({
         </div>
       )}
       {canManage && (
-        <RecordingRecovery owner={user.id} school={user.school_id} active="" />
+        <RecordingRecovery owner={user.id} school={user.school_id} active={browserRecording.activeId} />
       )}
       <div className="room-status-line">
         <MeetingBreakouts resumeMeeting={loadRoomResume(user)?.meeting} parent={parentMeeting} current={meeting.id} user={user} manage={canManage} joined={joined} open={breakoutsOpen} onClose={()=>setBreakoutsOpen(false)} onMove={moveRoom}/>
@@ -1352,10 +1360,12 @@ function MeetingRoom({
           </span>
         )}
       </div>
+      {browserRecording.status&&canManage&&<div className="room-browser-recording" role="status">{browserRecording.status}</div>}
       <div className="room-toolbar" ref={toolbarRef}>
         <MeetingControls
           onBreakouts={()=>setBreakoutsOpen(true)}
           canRecord={canManage && !isBreakout && state !== "ended"}
+          recordingMode={recordingMode}
           recordingEnabled={recordingEnabled}
           recordingState={serverRecording}
           onRecording={changeRecording}

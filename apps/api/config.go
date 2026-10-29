@@ -35,6 +35,7 @@ type backupSettings struct {
 	Interval int  `json:"interval_hours"`
 }
 type systemSettings struct {
+	RecordingMode    string           `json:"recording_mode"`
 	Platform         string           `json:"platform_mode"`
 	Commerce         commerceSettings `json:"commerce"`
 	CommerceRevision int              `json:"commerce_revision"`
@@ -131,6 +132,9 @@ var configID = regexp.MustCompile(`^[a-zA-Z0-9_-]{1,80}$`)
 var cfID = regexp.MustCompile(`^[a-zA-Z0-9_-]{1,100}$`)
 
 func validateSettings(next *systemSettings, old systemSettings) error {
+	if next.RecordingMode != "" && !validRecordingMode(next.RecordingMode) {
+		return errors.New("Phương thức ghi không hợp lệ")
+	}
 	if next.Platform == "" {
 		next.Platform = "school"
 	}

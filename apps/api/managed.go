@@ -34,6 +34,22 @@ func managedCommand(db *sql.DB, action string) error {
 	if action == "managed-academy" {
 		return errors.New("business management is available only on the website")
 	}
+	if action == "managed-recorders" {
+		var school string
+		var count int
+		if db.QueryRow("SELECT COUNT(*),COALESCE(MIN(id),'') FROM schools").Scan(&count, &school) != nil || count != 1 {
+			return errors.New("single school required")
+		}
+		req := httptest.NewRequest("POST", "/api/recording-workers", bytes.NewReader(raw))
+		req = req.WithContext(context.WithValue(req.Context(), authKey{}, identity{ID: "control-plane", School: school, Role: "admin"}))
+		rec := httptest.NewRecorder()
+		a.recordingWorkers(rec, req)
+		if rec.Code != 200 && rec.Code != 201 {
+			return fmt.Errorf("recorder operation rejected (%d)", rec.Code)
+		}
+		fmt.Println(`{"ok":true}`)
+		return nil
+	}
 	if action == "managed-status" {
 		var live int
 		if err = db.QueryRow("SELECT COUNT(*) FROM meetings WHERE status='live'").Scan(&live); err != nil {
@@ -70,7 +86,26 @@ func managedCommand(db *sql.DB, action string) error {
 		if err != nil {
 			return err
 		}
-		return json.NewEncoder(os.Stdout).Encode(map[string]any{"sfu_usage": usage, "sfu_usage_kind": "estimated_webrtc", "live": live, "admins": accounts, "version": buildVersion, "commit": buildCommit, "platform_mode": mode, "school_state": state, "features": []string{"local_academy_management", "lifecycle", "relocation", "sfu_round_robin", "sfu_usage", "sfu_failover"}})
+		nodes := []map[string]any{}
+		rowsN, e := db.Query("SELECT id,name,enabled,COALESCE(DATE_FORMAT(last_seen,'%Y-%m-%dT%H:%i:%sZ'),''),platform FROM recorder_nodes LIMIT 200")
+		if e != nil {
+			return e
+		}
+		for rowsN.Next() {
+			var id, name, seen, platform string
+			var enabled bool
+			if rowsN.Scan(&id, &name, &enabled, &seen, &platform) != nil {
+				rowsN.Close()
+				return errors.New("recorder status unavailable")
+			}
+			nodes = append(nodes, map[string]any{"id": id, "name": name, "enabled": enabled, "last_seen": seen, "platform": platform})
+		}
+		e = rowsN.Err()
+		rowsN.Close()
+		if e != nil {
+			return e
+		}
+		return json.NewEncoder(os.Stdout).Encode(map[string]any{"recording_nodes": nodes, "sfu_usage": usage, "sfu_usage_kind": "estimated_webrtc", "live": live, "admins": accounts, "version": buildVersion, "commit": buildCommit, "platform_mode": mode, "school_state": state, "features": []string{"local_academy_management", "lifecycle", "relocation", "sfu_round_robin", "sfu_usage", "sfu_failover", "recording_workers"}})
 	}
 	if action == "managed-config" {
 		var in struct {
@@ -95,6 +130,28 @@ func managedCommand(db *sql.DB, action string) error {
 		if n > 1 || n == 1 && slug != in.School.Slug {
 			return errors.New("deployment school mismatch")
 		}
+		if in.Settings.RecordingMode == "" {
+			in.Settings.RecordingMode = "vps"
+		}
+		if !a.recordingBackendReady(context.Background(), in.Settings.RecordingMode) {
+			return errors.New("update local recorder before changing recording backend")
+		}
+		if n == 1 {
+			var school string
+			if db.QueryRow("SELECT id FROM schools LIMIT 1").Scan(&school) != nil {
+				return errors.New("school unavailable")
+			}
+			old, e := a.recordingMode(context.Background(), school)
+			if e != nil {
+				return e
+			}
+			if old != in.Settings.RecordingMode {
+				var live int
+				if db.QueryRow("SELECT COUNT(*) FROM meetings WHERE status='live' AND recording_allowed=TRUE").Scan(&live) != nil || live > 0 {
+					return errors.New("stop active recordings before changing recording mode")
+				}
+			}
+		}
 		body, _ := json.Marshal(map[string]any{"settings": in.Settings, "school": in.School})
 		req := httptest.NewRequest("POST", "/api/setup/settings", bytes.NewReader(body))
 		rec := httptest.NewRecorder()
@@ -103,6 +160,9 @@ func managedCommand(db *sql.DB, action string) error {
 			return fmt.Errorf("managed config rejected (%d): %s", rec.Code, rec.Body.String())
 		}
 		if _, err = db.Exec("UPDATE schools SET name=? WHERE slug=?", in.School.Name, in.School.Slug); err != nil {
+			return err
+		}
+		if _, err = db.Exec("INSERT INTO recording_policies(school_id,mode) SELECT id,? FROM schools WHERE slug=? ON DUPLICATE KEY UPDATE mode=VALUES(mode)", in.Settings.RecordingMode, in.School.Slug); err != nil {
 			return err
 		}
 		if in.Settings.Platform == "academy" {

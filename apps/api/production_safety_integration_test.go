@@ -200,7 +200,18 @@ func TestProductionSafetyIntegration(t *testing.T) {
 		t.Fatal("cleanup not retried", n, closeCalls)
 	}
 	must(request("POST", "/api/meetings/demo-meeting/recordings/multipart", `{}`, student), 403)
-	w := request("POST", "/api/meetings/demo-meeting/recordings/multipart", `{}`, teacher)
+	must(request("POST", "/api/meetings/demo-meeting/recordings/multipart", `{}`, teacher), 409)
+	j, claimed := a.claimRecording(httptest.NewRequest("POST", "/", nil), "school-demo", "demo-meeting", "demo-teacher", "")
+	if !claimed {
+		t.Fatal("cannot claim recording lease")
+	}
+	defer cache.Del(ctx, recordingLeaseKey(j))
+	req := httptest.NewRequest("POST", "/api/meetings/demo-meeting/recordings/multipart", strings.NewReader(`{}`))
+	req.SetPathValue("id", "demo-meeting")
+	req.AddCookie(teacher)
+	req = req.WithContext(context.WithValue(req.Context(), recordingJobKey{}, j))
+	w := httptest.NewRecorder()
+	a.auth(a.recordingMultipartStart)(w, req)
 	must(w, 201)
 	var start struct {
 		ID string `json:"id"`

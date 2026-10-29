@@ -230,4 +230,23 @@ class ControlTests(unittest.TestCase):
         self.assertEqual(self.request(base+'/relocations',{'action':'cancel','id':rid},owner)[0],400)
         with c.connect() as db:self.assertNotIn('private-move-root',db.execute("SELECT payload FROM jobs WHERE id=?",(out['job'],)).fetchone()['payload'])
 
+    def test_recording_worker_enrollment_is_owner_scoped_and_encrypted(self):
+        owner=self.login()
+        status,out,_=self.request('/api/schools/save',{'name':'Recorder QA','domain':'recorder.example.test','ip':'8.8.4.4','config':{'recording_mode':'cluster'}},owner)
+        self.assertEqual(status,200);sid=out['id'];base='/api/schools/'+sid
+        _,issued,_=self.request(base+'/enroll',{},owner)
+        _,registered,_=self.request('/agent/enroll',{'token':issued['token']});agent=registered['token']
+        _,polled,_=self.request('/agent/poll',{'status':{'features':['recording_workers'],'recording_nodes':[{'id':'a'*32,'name':'PC','enabled':True,'token':'must-not-retain'}]}},agent=agent)
+        job=polled['job']
+        if job:self.request('/agent/ack',{'id':job['id'],'lease':job['lease'],'state':'success','code':'OK'},agent=agent)
+        self.assertEqual(self.request(base+'/action',{'action':'recorders','payload':{'Action':'shell'}},owner)[0],400)
+        status,out,_=self.request(base+'/action',{'action':'recorders','payload':{'Action':'enroll','Name':'PC 01'}},owner)
+        self.assertEqual(status,200);self.assertEqual(len(out['code']),64)
+        with c.connect() as db:
+            job=db.execute('SELECT * FROM jobs WHERE id=?',(out['id'],)).fetchone()
+            self.assertNotIn(out['code'],job['payload']);self.assertEqual(c.decrypt(job['payload'],sid)['Code'],out['code'])
+            row=db.execute('SELECT status FROM schools WHERE id=?',(sid,)).fetchone();self.assertNotIn('must-not-retain',row['status'])
+        self.assertNotIn(out['code'],json.dumps(self.request(base+'/jobs',cookie=owner)[1]))
+        with self.assertRaises(ValueError):c.validate_config({'recording_mode':'shell'})
+
 if __name__=='__main__':unittest.main()

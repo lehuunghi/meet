@@ -351,3 +351,6 @@ CREATE TABLE IF NOT EXISTS student_transfers(id CHAR(36) PRIMARY KEY,school_id C
 CREATE TABLE IF NOT EXISTS lesson_schedule(school_id CHAR(36) NOT NULL,meeting_id CHAR(36) NOT NULL,ends_at DATETIME(6) NOT NULL,PRIMARY KEY(school_id,meeting_id),FOREIGN KEY(school_id,meeting_id) REFERENCES meetings(school_id,id) ON DELETE CASCADE);
 
 CREATE TABLE IF NOT EXISTS lesson_cancellations(school_id CHAR(36) NOT NULL,meeting_id CHAR(36) NOT NULL,actor_id CHAR(36) NOT NULL,at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),PRIMARY KEY(school_id,meeting_id),FOREIGN KEY(school_id,meeting_id) REFERENCES meetings(school_id,id) ON DELETE CASCADE);
+
+CREATE TABLE IF NOT EXISTS recording_policies(school_id CHAR(36) PRIMARY KEY,mode VARCHAR(16) NOT NULL DEFAULT 'vps',FOREIGN KEY(school_id) REFERENCES schools(id));
+CREATE TABLE IF NOT EXISTS recorder_nodes(id CHAR(32) PRIMARY KEY,school_id CHAR(36) NOT NULL,name VARCHAR(100) NOT NULL,token_hash CHAR(64) NOT NULL UNIQUE,enabled BOOLEAN NOT NULL DEFAULT TRUE,last_seen DATETIME(6) NULL,platform VARCHAR(32) NOT NULL DEFAULT '',version VARCHAR(40) NOT NULL DEFAULT '',FOREIGN KEY(school_id) REFERENCES schools(id));

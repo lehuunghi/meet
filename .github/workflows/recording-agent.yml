@@ -1,0 +1,58 @@
+name: Recording agent packages
+on:
+  workflow_dispatch:
+  push:
+    paths: ['apps/recording-agent/**', 'apps/recorder/browser.ts', 'apps/web/src/media.ts', 'apps/web/src/drawing-model.ts', '.github/workflows/recording-agent.yml']
+permissions:
+  contents: read
+jobs:
+  package:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-24.04]
+    runs-on: ${{ matrix.os }}
+    env:
+      PLAYWRIGHT_BROWSERS_PATH: '0'
+    defaults:
+      run:
+        working-directory: apps/recording-agent
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: apps/recording-agent/package-lock.json
+      - run: npm ci
+      - run: npm audit --omit=dev --audit-level=high
+      - run: npm test && npm run build
+      - run: npx playwright install --with-deps chromium
+      - name: Allow sandbox user namespaces for the isolated Ubuntu runner
+        if: runner.os == 'Linux'
+        run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+      - name: Test standalone headless recording and bundled FFmpeg
+        run: node agent.mjs --self-test
+      - run: npm prune --omit=dev
+      - run: node package-release.mjs
+      - name: Archive Linux package
+        if: runner.os == 'Linux'
+        run: |
+          cd release
+          tar -czf meet-recorder-linux-x64.tar.gz meet-recorder-linux-x64
+          sha256sum meet-recorder-linux-x64.tar.gz > meet-recorder-linux-x64.tar.gz.sha256
+      - name: Archive Windows package
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Compress-Archive -Path release/meet-recorder-win32-x64 -DestinationPath release/meet-recorder-win32-x64.zip
+          $digest = (Get-FileHash release/meet-recorder-win32-x64.zip -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$digest  meet-recorder-win32-x64.zip" | Set-Content release/meet-recorder-win32-x64.zip.sha256
+      - uses: actions/upload-artifact@v4
+        with:
+          name: meet-recorder-${{ runner.os }}-x64
+          path: |
+            apps/recording-agent/release/*.zip
+            apps/recording-agent/release/*.gz
+            apps/recording-agent/release/*.sha256
+          retention-days: 30

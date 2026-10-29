@@ -184,6 +184,7 @@ async function markUploaded(id: string, uploaded: number) {
   });
 }
 const uploading = new Map<string, Promise<void>>();
+if(typeof window!=="undefined")window.addEventListener("beforeunload",e=>{if(uploading.size){e.preventDefault();e.returnValue="";}});
 export async function acquireCapture(id: string): Promise<() => void> {
   if (!navigator.locks)
     throw new Error("Trình duyệt chưa hỗ trợ khóa ghi an toàn giữa các tab");
