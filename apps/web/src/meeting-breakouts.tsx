@@ -169,10 +169,20 @@ export function MeetingBreakouts(p: {
     else if (
       p.current === p.parent &&
       data.status === "active" &&
-      data.current_room_id && (p.joined || p.resumeMeeting===data.current_room_id || p.resumeMeeting===p.parent)
+      data.current_room_id &&
+      (p.joined ||
+        p.resumeMeeting === data.current_room_id ||
+        p.resumeMeeting === p.parent)
     )
       void move(data.current_room_id, true);
-  }, [data.current_room_id, data.status, data.round_id, p.current,p.joined,p.resumeMeeting]);
+  }, [
+    data.current_room_id,
+    data.status,
+    data.round_id,
+    p.current,
+    p.joined,
+    p.resumeMeeting,
+  ]);
   const act = async (action: string, extra: Record<string, unknown> = {}) => {
     if (writing.current) return;
     writing.current = true;
@@ -301,6 +311,14 @@ export function MeetingBreakouts(p: {
     current !== p.parent || (data.status === "active" && data.assigned_room_id);
   return (
     <>
+      {error && !p.open && (
+        <div className="breakout-error" role="alert">
+          {error}
+          <button disabled={busy} onClick={() => reload.current()}>
+            Kiểm tra lại
+          </button>
+        </div>
+      )}
       {banner && (
         <div className="breakout-banner" role="status">
           <span>

@@ -70,7 +70,7 @@ test("student moves to their assigned group, resumes there, and returns when gro
     rootJoins = 0,
     childJoins = 0,
     parentLeaves = 0,
-    closedChild = false;
+    failMove = true;
   const moves: string[] = [];
   const root = {
     id: "root",
@@ -111,6 +111,14 @@ test("student moves to their assigned group, resumes there, and returns when gro
       data = child;
     else if (path.endsWith("/breakouts")) {
       if (q.method() === "POST") {
+        if (failMove) {
+          failMove = false;
+          await route.fulfill({
+            status: 503,
+            json: { error: "Chưa đóng được kết nối phòng cũ" },
+          });
+          return;
+        }
         current = q.postDataJSON().room_id;
         moves.push(current);
         data = { meeting_id: current || "root" };
@@ -139,21 +147,26 @@ test("student moves to their assigned group, resumes there, and returns when gro
   await page.goto("/?room=root");
   await page.getByRole("button", { name: "Vào lớp học", exact: true }).click();
   await page.getByRole("button", { name: "Vào nhóm", exact: true }).click();
+  await expect(page.getByRole("alert")).toContainText(
+    "Chưa đóng được kết nối phòng cũ",
+  );
+  await expect(page.locator(".room>header h2")).toHaveText("Phòng chính");
+  await page.getByRole("button", { name: "Vào nhóm", exact: true }).click();
   await expect(page.locator(".room>header h2")).toHaveText("Nhóm nghiên cứu");
   await expect.poll(() => childJoins).toBe(1);
   expect(parentLeaves).toBe(0);
   expect(rootJoins).toBe(2);
   expect(moves).toEqual(["group1"]);
-  await page.reload({waitUntil:'domcontentloaded'});
+  await page.reload({ waitUntil: "domcontentloaded" });
   await expect(page.locator(".room>header h2")).toHaveText("Nhóm nghiên cứu");
   await expect.poll(() => childJoins).toBe(2);
-  await page.getByRole('button',{name:'Rời lớp',exact:true}).click();
-  await expect(page.locator('.room')).toHaveCount(0);
-  await page.goto('/?room=root',{waitUntil:'domcontentloaded'});
-  await expect(page.locator('.prejoin')).toBeVisible();
-  await page.getByRole('button',{name:'Vào lớp học',exact:true}).click();
-  await expect.poll(()=>childJoins).toBe(3);
-  await expect(page.locator('.room>header h2')).toHaveText('Nhóm nghiên cứu');
+  await page.getByRole("button", { name: "Rời lớp", exact: true }).click();
+  await expect(page.locator(".room")).toHaveCount(0);
+  await page.goto("/?room=root", { waitUntil: "domcontentloaded" });
+  await expect(page.locator(".prejoin")).toBeVisible();
+  await page.getByRole("button", { name: "Vào lớp học", exact: true }).click();
+  await expect.poll(() => childJoins).toBe(3);
+  await expect(page.locator(".room>header h2")).toHaveText("Nhóm nghiên cứu");
   state = "closed";
   await expect(page.locator(".room>header h2")).toHaveText("Phòng chính", {
     timeout: 12000,

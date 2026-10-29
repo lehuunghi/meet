@@ -229,3 +229,70 @@
 .room:has(.breakout-banner) > .video-grid {
   height: calc(100dvh - var(--toolbar-height, 96px) - 156px);
 }
+.meeting-modal .breakout-room > header {
+  height: auto;
+  min-height: 0;
+  position: static;
+  flex-direction: row;
+  padding: 0;
+  margin: 0 0 10px;
+  gap: 8px;
+}
+.meeting-modal .breakout-footer,
+.meeting-modal .breakout-footer > span {
+  color: #c4c7c5;
+}
+@media (max-width: 700px) {
+  .meeting-modal:has(.breakout-columns) {
+    height: min(850px, calc(100dvh - 24px));
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .meeting-modal:has(.breakout-columns) .breakout-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .breakout-top,
+  .breakout-footer {
+    flex: none;
+  }
+  .breakout-columns {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+  }
+  .breakout-rooms {
+    overflow: visible;
+    max-height: none;
+  }
+  .breakout-footer {
+    margin-top: 12px;
+    padding-top: 12px;
+  }
+  .breakout-footer > button {
+    width: 100%;
+  }
+  .breakout-panel > small {
+    margin-top: 10px;
+  }
+}
+.room .room-status-line > .breakout-error {
+  width: 100%;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+.room .room-status-line > .breakout-error button {
+  background: #333537;
+  color: #fff;
+  border: 1px solid #c4c7c5;
+  border-radius: 8px;
+  padding: 8px;
+  min-height: 36px;
+}
