@@ -11,7 +11,7 @@ main.room {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  padding: 12px 20px calc(var(--toolbar-height, 96px) + 8px);
+  padding: 12px 20px calc(var(--toolbar-height, 96px) + 12px);
   gap: 8px;
   z-index: 40;
 }
@@ -92,13 +92,23 @@ main.room .preview-tiles { flex: 0 0 auto; max-height: 120px; overflow: auto; }
 main.room .preview-tiles article { min-height: 0; padding: 6px; }
 main.room .preview-tiles article > span { width: 28px; height: 28px; line-height: 28px; margin: 0 auto 4px; font-size: 16px; }
 main.room .room-toolbar { z-index: 45; }
-main.room > .room-tools { position: absolute; top: 56px; right: 12px; bottom: calc(var(--toolbar-height, 96px) + 8px); width: 340px; max-height: none; overflow: auto; z-index: 44; }
+main.room > .room-tools { position: fixed; top: 56px; right: 12px; bottom: calc(var(--toolbar-height, 96px) + 8px); width: 340px; height: calc(100dvh - var(--toolbar-height, 96px) - 64px); max-height: calc(100dvh - var(--toolbar-height, 96px) - 64px); min-height: 0; overflow: auto; z-index: 44; }
 main.room.room-tools-open > .video-grid,
 main.room.room-tools-open > .preview-classroom { margin-right: 352px; }
 main.room > .room-notices,
 main.room > .recording-recovery { position: absolute; top: 50px; left: 16px; right: 16px; max-height: 30%; overflow: auto; z-index: 46; }
-main.room.room-prejoin { padding-bottom: 12px; overflow: auto; }
-main.room.room-prejoin .prejoin { order: 3; flex: 1; margin: 0 auto; min-height: 0; }
+main.room > .room-notices { position: static; order: 1; flex: 0 0 auto; max-height: 15%; overflow: auto; }
+main.room.room-prejoin { padding-bottom: calc(var(--toolbar-height, 96px) + 12px); overflow: auto; }
+main.room.room-prejoin .prejoin { order: 3; flex: 1; margin: 0 auto; min-height: 0; overflow: auto; }
+@media (min-width: 701px) {
+  main.room.room-prejoin.room-tools-open .prejoin {
+    width: calc(100% - 352px);
+    margin-left: 0;
+    margin-right: 352px;
+    grid-template-columns: minmax(0, 1fr) minmax(180px, 0.85fr);
+    gap: 20px;
+  }
+}
 main.room.room-prejoin .prejoin-media,
 main.room.room-prejoin .prejoin-placeholder { min-height: 0; height: min(45dvh, 420px); }
 @media (max-height: 500px) {
@@ -109,7 +119,7 @@ main.room.room-prejoin .prejoin-placeholder { min-height: 0; height: min(45dvh, 
   main.room .drawing-pages select { min-height: 28px; padding: 4px 6px; }
 }
 @media (max-width: 700px) {
-  main.room { padding: 8px 10px calc(var(--toolbar-height, 96px) + 6px); gap: 6px; }
+  main.room { padding: 8px 10px calc(var(--toolbar-height, 96px) + 12px); gap: 6px; }
   main.room > .room-tools { left: 10px; right: 10px; width: auto; }
   main.room.room-tools-open > .video-grid,
   main.room.room-tools-open > .preview-classroom { margin-right: 0; }
