@@ -10,27 +10,30 @@ import (
 	"time"
 )
 
-func TestWeightedClassAllocation(t *testing.T) {
-	pool := []sfuProvider{{ID: "a", Weight: 2, Enabled: true}, {ID: "b", Weight: 1, Enabled: true}}
-	counts := map[string]int64{}
-	for i := 0; i < 300; i++ {
-		p, e := chooseProvider(pool, counts)
-		if e != nil {
-			t.Fatal(e)
+func TestRoundRobinLessonAllocation(t *testing.T) {
+	pool := []sfuProvider{{ID: "z", Enabled: true}, {ID: "a", Enabled: true}, {ID: "b", Enabled: false}}
+	last := ""
+	for i, want := range []string{"z", "a", "z", "a"} {
+		p, e := chooseProvider(pool, last)
+		if e != nil || p.ID != want {
+			t.Fatalf("round %d: %v %v", i, p, e)
 		}
-		counts[p.ID]++
+		last = p.ID
 	}
-	if counts["a"] != 200 || counts["b"] != 100 {
-		t.Fatalf("weighted counts: %v", counts)
+	pool = append(pool, sfuProvider{ID: "c", Enabled: true})
+	p, e := chooseProvider(pool, "a")
+	if e != nil || p.ID != "c" {
+		t.Fatal("new provider not in cycle")
 	}
 	pool[0].Enabled = false
-	p, e := chooseProvider(pool, counts)
-	if e != nil || p.ID != "b" {
-		t.Fatal("disabled app received a new class")
+	p, e = chooseProvider(pool, "z")
+	if e != nil || p.ID != "a" {
+		t.Fatal("disabled provider selected")
 	}
 	pool[1].Enabled = false
-	if _, e = chooseProvider(pool, counts); e == nil {
-		t.Fatal("empty enabled pool accepted")
+	pool[3].Enabled = false
+	if _, e = chooseProvider(pool, last); e == nil {
+		t.Fatal("all disabled accepted")
 	}
 }
 func TestConfigSecretsAndValidation(t *testing.T) {

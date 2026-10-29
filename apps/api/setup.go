@@ -80,7 +80,7 @@ func (a *app) setupGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	counts := map[string]int{}
-	rows, e := a.db.QueryContext(r.Context(), "SELECT provider_id,COUNT(*) FROM class_sfu_bindings GROUP BY provider_id")
+	rows, e := a.db.QueryContext(r.Context(), "SELECT provider_id,COUNT(*) FROM meeting_sfu_bindings GROUP BY provider_id")
 	if e != nil {
 		problem(w, 503, "Database unavailable")
 		return
@@ -164,7 +164,7 @@ func (a *app) setupSave(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer release()
-	rows, e := conn.QueryContext(r.Context(), "SELECT DISTINCT provider_id,app_id FROM class_sfu_bindings UNION SELECT DISTINCT provider_id,app_id FROM meeting_sfu_bindings")
+	rows, e := conn.QueryContext(r.Context(), "SELECT DISTINCT provider_id,app_id FROM class_sfu_bindings UNION SELECT DISTINCT provider_id,app_id FROM meeting_sfu_bindings UNION SELECT DISTINCT provider_id,app_id FROM media_session_routes")
 	if e != nil {
 		problem(w, 503, "Database unavailable")
 		return

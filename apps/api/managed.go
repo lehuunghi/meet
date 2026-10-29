@@ -66,7 +66,11 @@ func managedCommand(db *sql.DB, action string) error {
 		if schoolSuspended() {
 			state = "suspended"
 		}
-		return json.NewEncoder(os.Stdout).Encode(map[string]any{"live": live, "admins": accounts, "version": buildVersion, "commit": buildCommit, "platform_mode": mode, "school_state": state, "features": []string{"local_academy_management", "lifecycle", "relocation"}})
+		usage, err := readSFUUsage(context.Background(), db)
+		if err != nil {
+			return err
+		}
+		return json.NewEncoder(os.Stdout).Encode(map[string]any{"sfu_usage": usage, "sfu_usage_kind": "estimated_webrtc", "live": live, "admins": accounts, "version": buildVersion, "commit": buildCommit, "platform_mode": mode, "school_state": state, "features": []string{"local_academy_management", "lifecycle", "relocation", "sfu_round_robin", "sfu_usage", "sfu_failover"}})
 	}
 	if action == "managed-config" {
 		var in struct {

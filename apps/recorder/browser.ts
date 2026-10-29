@@ -170,8 +170,11 @@ window.capture = {
     drawing: (DrawingState & { target_user?: string }) | null = null,
   ) {
     ink = drawing;
-    await media.recover();
-    await media.subscribe(list, "__server_recorder__");
+    try {
+      await media.recover();
+      await media.subscribe(list, "__server_recorder__");
+    } catch { return; } // Keep the recording/spool alive through SFU recovery.
+
     const levels = await media.audioLevels();
     const loudest = Object.entries(levels)
       .filter(([key]) => !key.endsWith(":screen"))

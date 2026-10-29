@@ -48,10 +48,40 @@ export async function gather(pc: RTCPeerConnection) {
     check();
   });
 }
+// Transport counters include protocol overhead; these are operational estimates,
+// not Cloudflare billing. Never add RTP counters to transport totals (double count).
+export function transportUsage(report: RTCStatsReport) {
+ const all:any[]=[];report.forEach(v=>all.push(v));
+ let rows=all.filter(v=>v.type==='transport' && Number.isSafeInteger(v.bytesSent)&&Number.isSafeInteger(v.bytesReceived));
+ if(!rows.length)rows=all.filter(v=>v.type==='candidate-pair'&&(v.selected||(v.nominated&&v.state==='succeeded'))&&Number.isSafeInteger(v.bytesSent)&&Number.isSafeInteger(v.bytesReceived));
+ if(!rows.length)return null;
+ return rows.reduce((s,v)=>({bytes_sent:s.bytes_sent+Math.max(0,v.bytesSent),bytes_received:s.bytes_received+Math.max(0,v.bytesReceived)}),{bytes_sent:0,bytes_received:0});
+}
 export class ClassroomMedia {
   private peers: RTCPeerConnection[] = [];
   private peerCreated = new Map<RTCPeerConnection, number>();
   private sessionIDs = new Map<RTCPeerConnection, string>();
+  private peerGenerations=new Map<RTCPeerConnection,number>();
+  private providerCheckedAt=-Infinity;
+  private async providerChanged(){
+   if(!this.peerGenerations.size)return false;
+   if(Date.now()-this.providerCheckedAt<2000)return false;
+   this.providerCheckedAt=Date.now();const c=new AbortController(),timer=setTimeout(()=>c.abort(),1500);
+   try{const v=await this.request(`/meetings/${this.meeting}/media/provider`,undefined,undefined,c.signal);
+    return Number.isSafeInteger(v?.generation)&&[...this.peerGenerations.values()].some(n=>n!==v.generation);
+   }catch{return false}finally{clearTimeout(timer)}
+  }
+
+  private usageTimer?: ReturnType<typeof setInterval>;
+  private usagePending=false;
+  private async flushUsage(){
+   if(this.usagePending)return;this.usagePending=true;
+   try{await Promise.allSettled([...this.sessionIDs].map(async([pc,sid])=>{
+    if(!pc.getStats)return;const sample=transportUsage(await pc.getStats());
+    if(sample)await this.request(`/meetings/${this.meeting}/media/usage`,{session_id:sid,...sample});
+   }));}finally{this.usagePending=false}
+  }
+
   private local: MediaStream | null = null;
   private known = new Set<string>();
   private knownOwners = new Map<string, string>();
@@ -127,6 +157,8 @@ export class ClassroomMedia {
       op: "new",
     });
     this.sessionIDs.set(pc, s.sessionId);
+    if(Number.isSafeInteger(s.meet_generation))this.peerGenerations.set(pc,s.meet_generation);
+    if(!this.usageTimer)this.usageTimer=setInterval(()=>void this.flushUsage().catch(()=>{}),15000);
     if (this.closed) {
       pc.close();
       throw new Error("Đã rời lớp");
@@ -138,7 +170,14 @@ export class ClassroomMedia {
     return this.request(`/meetings/${this.meeting}/sfu`, body);
   }
   publish(stream: MediaStream) {
-    return this.serial(() => this.publishInternal(stream));
+    return this.serial(async()=>{
+      try {await this.publishInternal(stream)}catch(e){
+        if((e as {status?:number})?.status!==409)throw e;
+        await this.request(`/meetings/${this.meeting}/media/reset`,{});
+        this.peers.forEach(p=>p.close());this.peers=[];this.peerCreated.clear();this.sessionIDs.clear();this.peerGenerations.clear();
+        await this.publishInternal(stream);
+      }
+    });
   }
   private async publishInternal(stream: MediaStream, presentation = false) {
     if (!presentation && this.local && this.local !== stream) {
@@ -299,6 +338,7 @@ export class ClassroomMedia {
       this.peerCreated.delete(pc);
       const sid = this.sessionIDs.get(pc);
       this.sessionIDs.delete(pc);
+      this.peerGenerations.delete(pc);
       if (sid)
         await this.request(`/meetings/${this.meeting}/media/reset`, {
           session_id: sid,
@@ -440,6 +480,7 @@ export class ClassroomMedia {
   recover(force = false, self?: string) {
     if (this.recoveryPending) return this.recoveryPending;
     const pending = this.serial(async () => {
+      if(await this.providerChanged()){force=true;this.retryAt=0;this.onState("Đang chuyển sang SFU dự phòng…");}
       const now = Date.now();
       const failed = this.peers.some(
         (p) =>
@@ -466,11 +507,14 @@ export class ClassroomMedia {
       if (now < this.retryAt) return;
       this.onState("Đang kết nối lại…");
       try {
+        if(failed||(this.disconnectedAt&&now-this.disconnectedAt>=1500))await this.request(`/meetings/${this.meeting}/media/failover`,{}).catch(()=>{});
+
         await this.request(`/meetings/${this.meeting}/media/reset`, {});
         this.peers.forEach((p) => p.close());
         this.peers = [];
         this.peerCreated.clear();
         this.sessionIDs.clear();
+        this.peerGenerations.clear();
         this.screenPeer = undefined;
         // The capture permission remains valid across a transport replacement.
         // Republish live display tracks instead of asking for screen access again.
@@ -523,6 +567,8 @@ export class ClassroomMedia {
     return pending;
   }
   close() {
+    if(this.usageTimer)clearInterval(this.usageTimer);
+    void this.flushUsage().catch(()=>{});
     this.closed = true;
     this.screen?.getTracks().forEach((t) => t.stop());
     this.screen = undefined;

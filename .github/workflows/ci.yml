@@ -6,12 +6,20 @@ jobs:
   recorder:
     runs-on: ubuntu-24.04
     services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: ci-only-password
+          MYSQL_DATABASE: meet_recorder_test
+        ports: ["3306:3306"]
+        options: --health-cmd="mysqladmin ping -h localhost -pci-only-password" --health-interval=10s --health-retries=30
       redis:
         image: redis:7.4-alpine
         ports: ["6379:6379"]
         options: --health-cmd="redis-cli ping" --health-interval=5s --health-timeout=5s --health-retries=10
     env:
       TEST_REDIS_URL: redis://127.0.0.1:6379/15
+      TEST_MYSQL_DSN: root:ci-only-password@tcp(127.0.0.1:3306)/meet_recorder_test?parseTime=true
       PW_CHANNEL: chrome
     defaults:
       run:
@@ -131,6 +139,7 @@ jobs:
       - run: sudo apt-get update && sudo apt-get install -y python3-cryptography
       - run: node ../../control/test_ui.cjs
       - run: node ../../control/test_features_ui.cjs
+      - run: node ../../control/test_sfu_ui.cjs
         env:
           CONTROL_TEST_PYTHON: /usr/bin/python3
       - uses: actions/upload-artifact@v4

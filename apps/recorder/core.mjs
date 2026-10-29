@@ -57,3 +57,17 @@ export function retentionDays(settings) {
     ? settings.retention_days
     : 30;
 }
+
+// Cumulative, idempotent telemetry; a recorder's receive bytes are SFU egress.
+export async function recordSFUUsage(db, school, provider, sample) {
+ if(!sample?.session_id || ![sample.bytes_sent,sample.bytes_received].every(v=>Number.isSafeInteger(v)&&v>=0))throw Error('INVALID_USAGE');
+ const c=await db.getConnection();try{
+  await c.beginTransaction();const key=[school,provider.id,provider.app_id,sample.session_id];
+  await c.execute('INSERT IGNORE INTO sfu_usage_sessions(school_id,provider_id,app_id,session_id) VALUES(?,?,?,?)',key);
+  const [rows]=await c.execute('SELECT bytes_sent,bytes_received FROM sfu_usage_sessions WHERE school_id=? AND provider_id=? AND app_id=? AND session_id=? FOR UPDATE',key);
+  const old=rows[0],sent=BigInt(sample.bytes_sent)>BigInt(old.bytes_sent)?BigInt(sample.bytes_sent):BigInt(old.bytes_sent),received=BigInt(sample.bytes_received)>BigInt(old.bytes_received)?BigInt(sample.bytes_received):BigInt(old.bytes_received);
+  await c.execute('UPDATE sfu_usage_sessions SET bytes_sent=?,bytes_received=?,updated_at=UTC_TIMESTAMP(6) WHERE school_id=? AND provider_id=? AND app_id=? AND session_id=?',[sent.toString(),received.toString(),...key]);
+  await c.execute('INSERT INTO sfu_usage_daily(school_id,provider_id,app_id,day,ingress_bytes,egress_bytes,sample_count) VALUES(?,?,?,UTC_DATE(),?,?,1) ON DUPLICATE KEY UPDATE ingress_bytes=ingress_bytes+VALUES(ingress_bytes),egress_bytes=egress_bytes+VALUES(egress_bytes),sample_count=sample_count+1,updated_at=UTC_TIMESTAMP(6)',[...key.slice(0,3),(sent-BigInt(old.bytes_sent)).toString(),(received-BigInt(old.bytes_received)).toString()]);
+  await c.commit();
+ }catch(e){await c.rollback();throw e}finally{c.release()}
+}

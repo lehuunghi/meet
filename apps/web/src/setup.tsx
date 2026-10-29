@@ -280,10 +280,10 @@ export function Setup() {
               <section className="section" id="setup-sfu">
                 <div className="section-title">
                   <div>
-                    <h2>2. Cân bằng SFU theo lớp học</h2>
+                    <h2>2. Quay vòng SFU theo buổi học</h2>
                     <p>
                       Mỗi dòng là một SFU App ID + App Secret. Tất cả người
-                      trong một buổi dùng chung app đã gán cho lớp đó.
+                      trong một buổi dùng chung SFU đã chọn cho buổi đó.
                     </p>
                   </div>
                   <button
@@ -311,10 +311,8 @@ export function Setup() {
                   </button>
                 </div>
                 <div className="banner">
-                  Trọng số 2 nhận khoảng gấp đôi số lớp mới so với trọng số 1.
-                  Phân bổ được lưu ở MySQL; thay trọng số chỉ ảnh hưởng lớp mới.
-                  Tắt “Nhận lớp mới” vẫn giữ phục vụ lớp đã gán. Không tự chuyển
-                  app giữa buổi khi upstream lỗi.
+                  Buổi học mới lần lượt dùng SFU đang kích hoạt theo thứ tự danh sách rồi lặp lại.
+                  Bỏ tích sẽ không nhận buổi mới. Kết nối đang chạy giữ nguyên, trừ khi hệ thống xác nhận lỗi SFU và chuyển cả phòng sang dự phòng.
                 </div>
                 {settings.sfu.length === 0 && (
                   <p>
@@ -327,7 +325,7 @@ export function Setup() {
                     <div className="setup-provider-title">
                       <strong>{p.name || `SFU ${i + 1}`}</strong>
                       <span className="pill">
-                        {counts[p.id] || 0} lớp đã gán
+                        {counts[p.id] || 0} buổi đã gán
                       </span>
                     </div>
                     <div className="setup-grid">
@@ -370,19 +368,7 @@ export function Setup() {
                           required={!p.secret_set}
                         />
                       </label>
-                      <label>
-                        Trọng số phân lớp
-                        <input
-                          type="number"
-                          min={1}
-                          max={100}
-                          value={p.weight}
-                          onChange={(e) =>
-                            provider(i, { weight: Number(e.target.value) })
-                          }
-                          required
-                        />
-                      </label>
+
                     </div>
                     <div className="setup-provider-actions">
                       <label className="checkbox">
@@ -393,7 +379,7 @@ export function Setup() {
                             provider(i, { enabled: e.target.checked })
                           }
                         />{" "}
-                        Nhận lớp mới
+                        Kích hoạt SFU
                       </label>
                       <button
                         type="button"

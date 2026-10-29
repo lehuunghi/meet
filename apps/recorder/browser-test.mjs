@@ -33,7 +33,7 @@ test(
  constructor(id,onTrack){this.onTrack=onTrack;this.streams=[];}
  async subscribe(){if(this.streams.length)return;const canvas=document.createElement('canvas');canvas.width=640;canvas.height=360;const c=canvas.getContext('2d');c.fillStyle='#0055ff';c.fillRect(0,0,640,360);const audio=new AudioContext();await audio.resume();const osc=audio.createOscillator(),dest=audio.createMediaStreamDestination();osc.connect(dest);osc.start();const stream=new MediaStream([...canvas.captureStream(15).getTracks(),...dest.stream.getTracks()]);this.streams.push(stream);this.audio=audio;this.onTrack('student:screen',stream,'Học sinh · Màn hình');const second=document.createElement('canvas');second.width=640;second.height=360;const red=second.getContext('2d');red.fillStyle='#ff0000';red.fillRect(0,0,640,360);const secondStream=second.captureStream(15);this.streams.push(secondStream);this.onTrack('other:screen',secondStream,'Màn hình thứ hai');}
  async audioLevels(){return {};}
- async recover(){}
+ async recover(){if(window.syntheticSFUFailure){window.syntheticSFUFailure=false;throw Error("SFU unavailable");}}
  close(){this.streams.forEach(s=>s.getTracks().forEach(t=>t.stop()));this.audio?.close();}
  }`,
             }));
@@ -84,6 +84,7 @@ test(
       const white=await page.evaluate(()=>Array.from(document.querySelector('canvas').getContext('2d').getImageData(20,20,1,1).data));assert.deepEqual(white,[255,255,255,255]);
       const inkPixel=await page.evaluate(()=>Array.from(document.querySelector('canvas').getContext('2d').getImageData(80,120,1,1).data));assert.equal(inkPixel[0],255);assert.ok(inkPixel[1]<100);
       await page.evaluate(async()=>{await window.capture.tick([],null)});
+      await page.evaluate(async()=>{window.syntheticSFUFailure=true;await window.capture.tick([])});
       const before = total;
       await teacher.close();
       while (total < before + 2) await new Promise((r) => setTimeout(r, 250));

@@ -1,5 +1,5 @@
 import { afterEach, expect, it, vi } from "vitest";
-import { ClassroomMedia, gather, classroomIceServers } from "./media";
+import { ClassroomMedia, gather, classroomIceServers, transportUsage } from "./media";
 afterEach(() => vi.unstubAllGlobals());
 it("tolerates short network blips, then restores subscriptions and the existing screen capture", async () => {
   const clock = vi.spyOn(Date, "now");
@@ -342,4 +342,26 @@ it("does not stall direct SFU calls on STUN-only pools, and preserves authentica
     },
   ];
   expect(classroomIceServers(pool)).toBe(pool);
+});
+
+it("counts one transport layer, not both RTP and ICE bytes",()=>{
+ const report=new Map([['t',{type:'transport',bytesSent:100,bytesReceived:200}],['p',{type:'candidate-pair',selected:true,bytesSent:100,bytesReceived:200}],['r',{type:'inbound-rtp',bytesReceived:180}]]);
+ expect(transportUsage(report as any)).toEqual({bytes_sent:100,bytes_received:200});
+ expect(transportUsage(new Map([['p',{type:'candidate-pair',nominated:true,state:'succeeded',bytesSent:50,bytesReceived:60}]]) as any)).toEqual({bytes_sent:50,bytes_received:60});
+ expect(transportUsage(new Map() as any)).toBeNull();
+});
+it("reconnects the whole local transport when the server SFU generation changes",async()=>{
+ const close=vi.fn(),request=vi.fn(async(path:string)=>path.endsWith('/provider')?{generation:2}:{ok:true}) as any;
+ const media=new ClassroomMedia('lesson',()=>{},()=>{},()=>{},request),peer={connectionState:'connected',close},track={enabled:false,stop:vi.fn()},local={getTracks:()=>[track]};
+ Object.assign(media,{peers:[peer],peerGenerations:new Map([[peer,1]]),created:Date.now(),local});
+ const publish=vi.spyOn(media as any,'publishInternal').mockResolvedValue(undefined);
+ await media.recover();expect(close).toHaveBeenCalledOnce();expect(publish).toHaveBeenCalledWith(local);expect(track.stop).not.toHaveBeenCalled();expect(track.enabled).toBe(false);
+ expect(request.mock.calls.some((v:any)=>v[0].endsWith('/media/reset'))).toBe(true);
+ expect(request.mock.calls.some((v:any)=>v[0].endsWith('/media/failover'))).toBe(false);
+});
+
+it("retries the initial publish after a coordinated SFU switch without stopping capture",async()=>{
+ const request=vi.fn(async()=>({ok:true})) as any,stop=vi.fn(),close=vi.fn(),stream={getTracks:()=>[{stop}]};
+ const media=new ClassroomMedia('lesson',()=>{},()=>{},()=>{},request);Object.assign(media,{peers:[{close}]});const publish=vi.spyOn(media as any,'publishInternal').mockRejectedValueOnce(Object.assign(Error('generation changed'),{status:409})).mockResolvedValueOnce(undefined);
+ await media.publish(stream as any);expect(publish).toHaveBeenCalledTimes(2);expect(close).toHaveBeenCalledOnce();expect(stop).not.toHaveBeenCalled();
 });

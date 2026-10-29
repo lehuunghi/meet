@@ -17,6 +17,11 @@ with c.connect() as db:
     cfg={'retention_days':30,'sfu':[],'turn':[],'r2':{'enabled':False},'backup':{'enabled':False,'interval_hours':24}}
     db.execute('INSERT INTO schools(id,name,domain,ip,config,status,seen,applied) VALUES(?,?,?,?,?,?,?,1)',(sid,'Trường nội bộ QA','school.example.test','8.8.8.8',c.encrypt(cfg,sid),json.dumps({'version':'0.8.1','live':0}),int(time.time())))
 
+if os.environ.get('CONTROL_SFU_FIXTURES')=='1':
+    cfg['sfu']=[{'id':'p1','name':'SFU 1','app_id':'app1','secret':'fixture-secret-1','weight':1,'enabled':True},{'id':'p2','name':'SFU 2','app_id':'app2','secret':'fixture-secret-2','weight':1,'enabled':False}]
+    status={'version':'0.32.0','features':['sfu_round_robin','sfu_usage'],'sfu_usage':[{'id':'p1','app_id':'app1','ingress_bytes':400000000,'egress_bytes':600000000,'month_ingress_bytes':100000000,'month_egress_bytes':200000000,'samples':12,'updated_at':'2026-10-29T05:00:00Z','meetings':4}]}
+    with c.connect() as db:db.execute('UPDATE schools SET config=?,status=? WHERE id=?',(c.encrypt(cfg,sid),json.dumps(status),sid))
+
 if os.environ.get('CONTROL_FEATURE_FIXTURES')=='1':
     with c.connect() as db:
         db.execute("UPDATE schools SET desired_state='suspended',applied_state='suspended',agent_hash=?,status=? WHERE id=?",(c.digest('fixture-only-agent'),json.dumps({'version':'0.13.0','live':0,'control_protocol':3}),sid))

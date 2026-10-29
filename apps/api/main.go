@@ -231,6 +231,9 @@ func (a *app) routes() http.Handler {
 	m.HandleFunc("GET /api/meetings/{id}/attendance", a.auth(a.attendance))
 	m.HandleFunc("POST /api/meetings/{id}/sfu", a.auth(a.sfu))
 	m.HandleFunc("POST /api/meetings/{id}/media/reset", a.auth(a.mediaReset))
+	m.HandleFunc("POST /api/meetings/{id}/media/usage", a.auth(a.mediaUsage))
+	m.HandleFunc("GET /api/meetings/{id}/media/provider", a.auth(a.mediaProvider))
+	m.HandleFunc("POST /api/meetings/{id}/media/failover", a.auth(a.mediaFailover))
 	m.HandleFunc("GET /api/meetings/{id}/tracks", a.auth(a.tracks))
 	m.HandleFunc("GET /api/meetings/{id}/drawing", a.auth(a.roomDrawing))
 	m.HandleFunc("POST /api/meetings/{id}/drawing", a.auth(a.roomDrawing))
@@ -318,7 +321,7 @@ func migrate(db *sql.DB) error {
 	if _, e = c.ExecContext(context.Background(), "INSERT IGNORE INTO academy_live_memberships(school_id,user_id,expires_at) SELECT school_id,user_id,expires_at FROM academy_memberships WHERE live_enabled=TRUE"); e != nil {
 		return e
 	}
-	_, e = c.ExecContext(context.Background(), "INSERT IGNORE INTO schema_migrations VALUES(6),(7),(8),(9),(10),(11),(12),(13),(14),(15),(16),(17),(18)")
+	_, e = c.ExecContext(context.Background(), "INSERT IGNORE INTO schema_migrations VALUES(6),(7),(8),(9),(10),(11),(12),(13),(14),(15),(16),(17),(18),(19)")
 	return e
 }
 func main() {
@@ -376,6 +379,7 @@ func main() {
 		go a.academyGeneralMailLoop(ctx)
 	}
 	go a.mediaCleanupLoop(ctx)
+	go a.sfuFailoverLoop(ctx)
 	go func() {
 		<-ctx.Done()
 		c, cancel := context.WithTimeout(context.Background(), 10*time.Second)

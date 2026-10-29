@@ -168,10 +168,10 @@ func TestSetupAndRetentionIntegration(t *testing.T) {
 		}
 	}
 	var countA, countB int
-	db.QueryRow("SELECT COUNT(*) FROM class_sfu_bindings WHERE provider_id='a'").Scan(&countA)
-	db.QueryRow("SELECT COUNT(*) FROM class_sfu_bindings WHERE provider_id='b'").Scan(&countB)
-	if countA != 4 || countB != 2 {
-		t.Fatalf("weighted class assignments %d:%d", countA, countB)
+	db.QueryRow("SELECT COUNT(*) FROM meeting_sfu_bindings WHERE provider_id='a'").Scan(&countA)
+	db.QueryRow("SELECT COUNT(*) FROM meeting_sfu_bindings WHERE provider_id='b'").Scan(&countB)
+	if countA != 3 || countB != 3 {
+		t.Fatalf("round-robin lesson assignments %d:%d", countA, countB)
 	}
 	// Concurrent participants stay on the persisted provider rather than splitting the classroom.
 	var wg sync.WaitGroup
@@ -226,6 +226,7 @@ func TestSetupAndRetentionIntegration(t *testing.T) {
 		t.Fatal("admin login failed")
 	}
 	userCookie := login.Result().Cookies()[0]
+	testSFURotationUsageFailover(t, a, school, owner, meetingIDs[0], userCookie, request)
 	if w = request("GET", "/api/setup/settings", nil, userCookie); w.Code != 401 {
 		t.Fatal("school admin gained global configuration")
 	}

@@ -187,3 +187,13 @@ test(
     }
   },
 );
+
+test('recorder cumulative traffic is durable and idempotent in MySQL',{skip:!process.env.TEST_MYSQL_DSN},async()=>{
+ const mysql=await import('mysql2/promise'),fs=await import('node:fs/promises'),{recordSFUUsage}=await import('./core.mjs');const db=mysql.createPool(parseDSN(process.env.TEST_MYSQL_DSN));
+ try{const schema=await fs.readFile('../api/schema.sql','utf8');for(const q of schema.split(';'))if(q.includes('CREATE TABLE IF NOT EXISTS sfu_usage_'))await db.execute(q);
+ const school='recorder-usage-'+Date.now(),p={id:'provider',app_id:'app'},sample=(bytes_sent,bytes_received)=>({session_id:'sid',bytes_sent,bytes_received});
+ await recordSFUUsage(db,school,p,sample(100,200));await recordSFUUsage(db,school,p,sample(100,200));await Promise.all([recordSFUUsage(db,school,p,sample(130,230)),recordSFUUsage(db,school,p,sample(110,210))]);
+ const [rows]=await db.execute('SELECT SUM(ingress_bytes) AS sent,SUM(egress_bytes) AS received FROM sfu_usage_daily WHERE school_id=?',[school]);assert.equal(Number(rows[0].sent),130);assert.equal(Number(rows[0].received),230);
+ await db.execute('DELETE FROM sfu_usage_daily WHERE school_id=?',[school]);await db.execute('DELETE FROM sfu_usage_sessions WHERE school_id=?',[school]);
+ }finally{await db.end()}
+});

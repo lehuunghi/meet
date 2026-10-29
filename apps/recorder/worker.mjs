@@ -21,6 +21,7 @@ import {
   renewScript,
   releaseScript,
   recordingStopReason,
+  recordSFUUsage,
 } from "./core.mjs";
 const run = promisify(execFile),
   spool = process.env.SPOOL_DIR || "/var/lib/meet-recorder";
@@ -195,7 +196,7 @@ async function record(job, lease) {
     handle,
     started = false,
     lost = false;
-  const sessions = new Set();
+  const sessions = new Map();
   const renew = setInterval(async () => {
     try {
       if (
@@ -245,17 +246,17 @@ async function record(job, lease) {
   async function cloud(op, body) {
     const cfg = await settings(),
       [rows] = await db.execute(
-        "SELECT provider_id,app_id FROM meeting_sfu_bindings WHERE school_id=? AND meeting_id=?",
+        "SELECT b.provider_id,b.app_id,COALESCE(e.generation,0) AS generation FROM meeting_sfu_bindings b LEFT JOIN meeting_sfu_epochs e ON e.school_id=b.school_id AND e.meeting_id=b.meeting_id WHERE b.school_id=? AND b.meeting_id=?",
         [job.school_id, job.meeting_id],
       );
     if (!rows[0]) throw new Error("SFU_NOT_YET_BOUND");
-    const provider = pinnedProvider(cfg, rows[0]);
+    let provider = pinnedProvider(cfg, rows[0]), generation=Number(rows[0].generation);
     let suffix = "new",
       method = "POST",
       payload;
     if (op !== "new") {
-      if (!sessions.has(body.session_id))
-        throw new Error("UNKNOWN_RECORDER_SESSION");
+      const route=sessions.get(body.session_id);if(!route)throw new Error("UNKNOWN_RECORDER_SESSION");
+      provider=pinnedProvider(cfg,{provider_id:route.provider.id,app_id:route.provider.app_id});generation=route.generation;
       suffix = encodeURIComponent(body.session_id);
       if (op === "tracks") {
         assertRemoteTracks(body.tracks, await publications(job));
@@ -267,7 +268,7 @@ async function record(job, lease) {
         payload = { sessionDescription: body.sessionDescription };
       } else throw new Error("RECORDER_RECEIVE_ONLY");
     }
-    const response = await fetch(
+    let response;try {response = await fetch(
       `https://rtc.live.cloudflare.com/v1/apps/${encodeURIComponent(provider.app_id)}/sessions/${suffix}`,
       {
         method,
@@ -279,14 +280,26 @@ async function record(job, lease) {
         signal: AbortSignal.timeout(25000),
       },
     );
-    if (!response.ok) throw new Error("SFU_PROVIDER_REJECTED");
+    }catch(e){await redis.set(`sfu-failover-request:${job.school_id}:${job.meeting_id}`,JSON.stringify({school:job.school_id,meeting:job.meeting_id,provider_id:provider.id,app_id:provider.app_id,generation,verified:true}),{EX:20}).catch(()=>{});throw e}
+    if (!response.ok) {
+      if([401,403,429].includes(response.status)||response.status>=500)await redis.set(`sfu-failover-request:${job.school_id}:${job.meeting_id}`,JSON.stringify({school:job.school_id,meeting:job.meeting_id,provider_id:provider.id,app_id:provider.app_id,generation,verified:true}),{EX:20});
+      throw new Error("SFU_PROVIDER_REJECTED");
+    }
     const result = await response.json();
     if (op === "new") {
       if (sessions.size >= 4 || !result.sessionId)
         throw new Error("RECORDER_SESSION_LIMIT");
-      sessions.add(result.sessionId);
+      sessions.set(result.sessionId,{provider,generation,mids:new Set()});
+      result.meet_generation=generation;
     }
+    const route=sessions.get(body.session_id);if(route&&op==='tracks')for(const t of result.tracks||[])if(t.mid)route.mids.add(t.mid);
     return result;
+  }
+  async function retireRecorderSessions(){
+    const old=[...sessions];sessions.clear();
+    void Promise.allSettled(old.map(async([sid,route])=>{
+      const mids=[...route.mids];while(mids.length){const tracks=mids.splice(0,50).map(mid=>({mid}));await fetch(`https://rtc.live.cloudflare.com/v1/apps/${encodeURIComponent(route.provider.app_id)}/sessions/${encodeURIComponent(sid)}/tracks/close`,{method:'PUT',headers:{Authorization:`Bearer ${route.provider.secret}`,'Content-Type':'application/json'},body:JSON.stringify({force:true,tracks}),signal:AbortSignal.timeout(2000)})}
+    }));return {ok:true};
   }
   try {
     await state(job, "starting");
@@ -311,6 +324,16 @@ async function record(job, lease) {
     await page.exposeFunction("recorderRPC", async (url, body) => {
       if (lost || stopping) throw new Error("RECORDER_LEASE_LOST");
       if (url === `/meetings/${job.meeting_id}/ice`) return { iceServers: [] };
+      if(url===`/meetings/${job.meeting_id}/media/usage`){
+        const route=sessions.get(body.session_id);if(!route)throw Error('UNKNOWN_RECORDER_SESSION');await recordSFUUsage(db,job.school_id,route.provider,body);return {ok:true};
+      }
+      if(url===`/meetings/${job.meeting_id}/media/provider`){
+        const [rows]=await db.execute('SELECT generation FROM meeting_sfu_epochs WHERE school_id=? AND meeting_id=?',[job.school_id,job.meeting_id]);return {generation:Number(rows[0]?.generation||0)};
+      }
+      if(url===`/meetings/${job.meeting_id}/media/reset`)return retireRecorderSessions();
+      if(url===`/meetings/${job.meeting_id}/media/failover`){
+        const route=[...sessions.values()][0];if(route)await redis.set(`sfu-failover-request:${job.school_id}:${job.meeting_id}`,JSON.stringify({school:job.school_id,meeting:job.meeting_id,provider_id:route.provider.id,app_id:route.provider.app_id,generation:route.generation}),{EX:20});return {ok:true};
+      }
       if (url === `/meetings/${job.meeting_id}/sfu`)
         return cloud(body.op, body);
       throw new Error("RECORDER_RECEIVE_ONLY");

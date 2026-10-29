@@ -63,7 +63,8 @@ func (a *app) mediaReset(w http.ResponseWriter, r *http.Request) {
 
 // Inspect identifiers from the provider rather than trusting client-supplied mids.
 func (a *app) closeSFUSession(ctx context.Context, school, meeting, sid string) error {
-	provider, e := a.meetingProvider(ctx, school, meeting)
+	provider, e := a.sessionProvider(ctx, school, meeting, sid)
+
 	if e != nil {
 		return e
 	}

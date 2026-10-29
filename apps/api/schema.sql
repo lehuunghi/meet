@@ -311,3 +311,33 @@ CREATE TABLE IF NOT EXISTS meeting_breakout_members (
  school_id CHAR(36) NOT NULL,round_id CHAR(36) NOT NULL,user_id CHAR(36) NOT NULL,room_id CHAR(36) NULL,current_room_id CHAR(36) NULL,
  PRIMARY KEY(school_id,round_id,user_id),FOREIGN KEY(school_id,round_id) REFERENCES meeting_breakout_rounds(school_id,id),FOREIGN KEY(school_id,user_id) REFERENCES users(school_id,id)
 );
+
+CREATE TABLE IF NOT EXISTS sfu_allocation_cursor (
+ id TINYINT NOT NULL PRIMARY KEY, last_provider VARCHAR(80) NOT NULL
+);
+CREATE TABLE IF NOT EXISTS sfu_usage_sessions (
+ school_id CHAR(36) NOT NULL,session_id VARCHAR(200) NOT NULL,provider_id VARCHAR(80) NOT NULL,app_id VARCHAR(100) NOT NULL,
+ bytes_sent BIGINT UNSIGNED NOT NULL DEFAULT 0,bytes_received BIGINT UNSIGNED NOT NULL DEFAULT 0,
+ created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),updated_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+ PRIMARY KEY(school_id,provider_id,app_id,session_id),KEY recent_usage(updated_at)
+);
+CREATE TABLE IF NOT EXISTS sfu_usage_daily (
+ school_id CHAR(36) NOT NULL,provider_id VARCHAR(80) NOT NULL,app_id VARCHAR(100) NOT NULL,day DATE NOT NULL,
+ ingress_bytes BIGINT UNSIGNED NOT NULL DEFAULT 0,egress_bytes BIGINT UNSIGNED NOT NULL DEFAULT 0,sample_count BIGINT UNSIGNED NOT NULL DEFAULT 0,updated_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+ PRIMARY KEY(school_id,provider_id,app_id,day)
+);
+
+CREATE TABLE IF NOT EXISTS meeting_sfu_epochs (
+ school_id CHAR(36) NOT NULL,meeting_id CHAR(36) NOT NULL,generation BIGINT NOT NULL DEFAULT 1,
+ PRIMARY KEY(school_id,meeting_id),FOREIGN KEY(school_id,meeting_id) REFERENCES meetings(school_id,id) ON DELETE CASCADE
+);
+CREATE TABLE IF NOT EXISTS media_session_routes (
+ session_id VARCHAR(100) NOT NULL PRIMARY KEY,provider_id VARCHAR(80) NOT NULL,app_id VARCHAR(100) NOT NULL,generation BIGINT NOT NULL,
+ FOREIGN KEY(session_id) REFERENCES media_sessions(id) ON DELETE CASCADE
+);
+INSERT IGNORE INTO media_session_routes(session_id,provider_id,app_id,generation)
+ SELECT s.id,b.provider_id,b.app_id,COALESCE(e.generation,0) FROM media_sessions s JOIN meeting_sfu_bindings b ON b.school_id=s.school_id AND b.meeting_id=s.meeting_id LEFT JOIN meeting_sfu_epochs e ON e.school_id=b.school_id AND e.meeting_id=b.meeting_id;
+CREATE TABLE IF NOT EXISTS meeting_sfu_failovers (
+ id BIGINT AUTO_INCREMENT PRIMARY KEY,school_id CHAR(36) NOT NULL,meeting_id CHAR(36) NOT NULL,from_provider VARCHAR(80) NOT NULL,to_provider VARCHAR(80) NOT NULL,
+ at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),KEY meeting_failovers(school_id,meeting_id,at)
+);

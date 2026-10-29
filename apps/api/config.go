@@ -11,13 +11,14 @@ import (
 )
 
 type sfuProvider struct {
-	ID        string `json:"id"`
-	Name      string `json:"name"`
-	AppID     string `json:"app_id"`
-	Secret    string `json:"secret"`
-	Weight    int    `json:"weight"`
-	Enabled   bool   `json:"enabled"`
-	SecretSet bool   `json:"secret_set,omitempty"`
+	Generation int64  `json:"-"`
+	ID         string `json:"id"`
+	Name       string `json:"name"`
+	AppID      string `json:"app_id"`
+	Secret     string `json:"secret"`
+	Weight     int    `json:"weight"`
+	Enabled    bool   `json:"enabled"`
+	SecretSet  bool   `json:"secret_set,omitempty"`
 }
 type r2Settings struct {
 	Enabled   bool   `json:"enabled"`

@@ -1030,18 +1030,9 @@
         cfg._ip = get("ip");
       }
       if (tab === "sfu") {
-        cfg.sfu = [...f.querySelectorAll("[data-sfu]")].map((row) =>
-          Object.fromEntries(
-            [...row.querySelectorAll("input")].map((x) => [
-              x.name,
-              x.type === "checkbox"
-                ? x.checked
-                : x.name === "weight"
-                  ? Number(x.value)
-                  : x.value,
-            ]),
-          ),
-        );
+        cfg.sfu = [...f.querySelectorAll("[data-sfu]")].map(row=>({
+          ...Object.fromEntries([...row.querySelectorAll("input")].map(x=>[x.name,x.type==="checkbox"?x.checked:x.value])), weight:1
+        }));
         cfg.turn = [];
       }
       if (tab === "r2") {
@@ -1940,7 +1931,7 @@
           "</div><p>Admin đầu tiên chỉ dùng lúc khởi tạo. Để trống mã nội bộ để hệ thống tự tạo. Các thay đổi tài khoản sau cài đặt dùng mục Tài khoản quản trị; đổi domain dùng Cài đặt / Nâng cấp.</p>";
       if (tab === "sfu") {
         f.innerHTML =
-          '<h3>SFU Apps · cân bằng có trọng số theo lớp</h3><div id="sfus"></div><div id="addsf"></div>';
+          '<h3>SFU · quay vòng theo từng buổi học</h3><p>Các buổi mới dùng lần lượt SFU đang kích hoạt, theo thứ tự các dòng rồi lặp lại. Bỏ tích sẽ không nhận buổi mới; phòng đang chạy giữ kết nối hiện tại. Nếu SFU lỗi, hệ thống kiểm tra dự phòng rồi kết nối lại cả phòng.</p><div id="sfus"></div><div id="addsf"></div><section id="sfu-usage"></section>';
         for (const v of cfg.sfu || []) sfuRow(v);
         $("#addsf").append(
           button("+ SFU App", () => {
@@ -1949,6 +1940,7 @@
           }),
         );
       }
+      if(tab==="sfu") renderSFUUsage();
       if (tab === "r2")
         f.innerHTML =
           check("enabled", "Bật lưu video R2", cfg.r2?.enabled) +
@@ -2000,7 +1992,22 @@
         b.textContent = "Lưu & đồng bộ";
         b.className = "primary";
         f.append(b);
-      } else for (const e of f.elements) e.disabled = true;
+      } else for (const e of f.elements) if(!e.dataset.readonlyAction)e.disabled = true;
+    }
+    function renderSFUUsage() {
+      const el=$("#sfu-usage");if(!el)return;
+      let st={};try{st=JSON.parse(selected?.status||"{}")}catch{}
+      const rows=Array.isArray(st.sfu_usage)?st.sfu_usage:[];
+      const bytes=v=>{const n=Number(v||0);return Number.isFinite(n)&&n>=0?(n>=1e9?(n/1e9).toFixed(2)+" GB":n>=1e6?(n/1e6).toFixed(2)+" MB":n.toLocaleString('vi-VN')+" byte"):"—"};
+      el.innerHTML='<h3>Lưu lượng SFU</h3><p>Ước tính từ các kết nối trình duyệt và bộ ghi máy chủ, bắt đầu từ v0.32.0. Không phải số liệu hóa đơn Cloudflare; có thể thiếu mẫu khi thiết bị mất mạng hoặc đóng đột ngột.</p>'+
+        (!st.features?.includes('sfu_round_robin')?'<p class="backup-note">VPS cần nâng cấp v0.32.0 để áp dụng quay vòng từng buổi và gửi thống kê.</p>':'')+
+        '<div class="table-wrap" style="overflow:auto;max-width:100%"><table><thead><tr><th>SFU</th><th>Buổi đã gán</th><th>Gửi lên</th><th>Nhận xuống</th><th>Tổng đã đo</th><th>Tháng này (UTC)</th><th>Mẫu cuối</th></tr></thead><tbody>'+(cfg.sfu||[]).map(p=>{
+         const r=rows.find(v=>v.id===p.id&&v.app_id===p.app_id),has=r&&Number(r.samples)>0;
+         return '<tr><td>'+esc(p.name||p.id)+'</td><td>'+esc(r?.meetings??'—')+'</td><td>'+esc(has?bytes(r.ingress_bytes):'Chưa có mẫu')+'</td><td>'+esc(has?bytes(r.egress_bytes):'—')+'</td><td>'+esc(has?bytes(Number(r.ingress_bytes)+Number(r.egress_bytes)):'—')+'</td><td>'+esc(has?bytes(Number(r.month_ingress_bytes)+Number(r.month_egress_bytes)):'—')+'</td><td>'+esc(has?controlDate(r.updated_at,true):'—')+'</td></tr>';
+        }).join('')+'</tbody></table></div>';
+      if(selected){const b=button('Làm mới lưu lượng',async()=>{
+        const latest=await api('schools');const row=latest.find(x=>x.id===selected.id);if(row){selected.status=row.status;selected.seen=row.seen;renderSFUUsage()}
+      });b.dataset.readonlyAction='true';el.append(b)}
     }
     function sfuRow(v) {
       const row = document.createElement("div");
@@ -2012,9 +2019,8 @@
         input("name", "Tên", v.name) +
         input("app_id", "App ID", v.app_id) +
         input("secret", "App Secret", v.secret, "password") +
-        input("weight", "Trọng số", v.weight || 1, "number") +
         "</div>" +
-        check("enabled", "Nhận lớp mới", v.enabled);
+        check("enabled", "Kích hoạt SFU", v.enabled);
       row.append(
         button("Xóa dòng", () => {
           dirty = true;

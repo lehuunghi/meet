@@ -149,6 +149,11 @@ func (a *app) sfu(w http.ResponseWriter, r *http.Request) {
 			problem(w, 404, "Session not found")
 			return
 		}
+		route, err := a.sessionProvider(r.Context(), u.School, id, in.Session)
+		if err != nil || route.ID != provider.ID || route.AppID != provider.AppID || route.Generation != provider.Generation {
+			problem(w, 409, "SFU đã chuyển; đang kết nối lại")
+			return
+		}
 		path += url.PathEscape(in.Session)
 		switch in.Op {
 		case "tracks":
@@ -202,8 +207,21 @@ func (a *app) sfu(w http.ResponseWriter, r *http.Request) {
 		requestBody = nil
 	}
 	out, e := a.cloud(r, method, path, provider.Secret, requestBody)
+	if e != nil && retrySFUFailure(r.Context(), e) {
+		changed, _ := a.trySFUFailover(r.Context(), u.School, id, provider, true)
+		if changed {
+			if in.Op != "new" {
+				problem(w, 409, "Đã chuyển SFU dự phòng; đang kết nối lại")
+				return
+			}
+			provider, e = a.meetingProvider(r.Context(), u.School, id)
+			if e == nil {
+				out, e = a.cloud(r, "POST", "apps/"+url.PathEscape(provider.AppID)+"/sessions/new", provider.Secret, nil)
+			}
+		}
+	}
 	if e != nil {
-		problem(w, 502, "SFU negotiation failed")
+		problem(w, 502, "SFU chưa sẵn sàng; hệ thống sẽ tự thử lại")
 		return
 	}
 	if in.Op == "new" {
@@ -212,10 +230,17 @@ func (a *app) sfu(w http.ResponseWriter, r *http.Request) {
 			problem(w, 502, "SFU returned no session")
 			return
 		}
-		if _, e = a.db.ExecContext(r.Context(), "INSERT INTO media_sessions(id,school_id,meeting_id,user_id) VALUES(?,?,?,?)", sid, u.School, id, u.ID); e != nil {
+		stale, err := a.registerMediaSession(r.Context(), u.School, id, u.ID, sid, provider)
+		if err != nil {
 			problem(w, 500, "Session persistence failed")
 			return
 		}
+		if stale {
+			a.cache.SetNX(r.Context(), "media-retired:"+sid, time.Now().Unix(), 0)
+			problem(w, 409, "SFU đã chuyển; đang kết nối lại")
+			return
+		}
+		out["meet_generation"] = provider.Generation
 		if cookie, e := r.Cookie("meet_session"); e == nil {
 			if a.cache.MSet(r.Context(), "media-owner:"+sid, digest(cookie.Value), "media-version:"+sid, u.Version).Err() != nil {
 				a.cache.SetNX(r.Context(), "media-retired:"+sid, time.Now().Unix(), 0)
@@ -242,6 +267,20 @@ func (a *app) sfu(w http.ResponseWriter, r *http.Request) {
 			problem(w, 409, "Media session retired during negotiation")
 			return
 		}
+		tx, err := a.db.BeginTx(r.Context(), nil)
+		if err != nil {
+			problem(w, 503, "Không lưu được media")
+			return
+		}
+		defer tx.Rollback()
+		var boundID, boundApp string
+		var generation int64
+		err = tx.QueryRowContext(r.Context(), `SELECT b.provider_id,b.app_id,COALESCE(ep.generation,0) FROM meeting_sfu_bindings b LEFT JOIN meeting_sfu_epochs ep ON ep.school_id=b.school_id AND ep.meeting_id=b.meeting_id WHERE b.school_id=? AND b.meeting_id=? FOR UPDATE`, u.School, id).Scan(&boundID, &boundApp, &generation)
+		if err != nil || boundID != provider.ID || boundApp != provider.AppID || generation != provider.Generation {
+			a.cache.SetNX(r.Context(), "media-retired:"+in.Session, time.Now().Unix(), 0)
+			problem(w, 409, "SFU đã chuyển; đang kết nối lại")
+			return
+		}
 		results, _ := out["tracks"].([]any)
 		for i, t := range in.Tracks {
 			if t.Location != "local" || i >= len(results) {
@@ -251,11 +290,16 @@ func (a *app) sfu(w http.ResponseWriter, r *http.Request) {
 			if result == nil || (result["errorCode"] != nil && result["errorCode"] != "") {
 				continue
 			}
-			if _, e = a.db.ExecContext(r.Context(), "INSERT IGNORE INTO publications(school_id,meeting_id,session_id,track_name,user_id) VALUES(?,?,?,?,?)", u.School, id, in.Session, t.Name, u.ID); e != nil {
+			if _, e = tx.ExecContext(r.Context(), "INSERT IGNORE INTO publications(school_id,meeting_id,session_id,track_name,user_id) VALUES(?,?,?,?,?)", u.School, id, in.Session, t.Name, u.ID); e != nil {
 				problem(w, 500, "Publication persistence failed")
 				return
 			}
 		}
+		if e = tx.Commit(); e != nil {
+			problem(w, 503, "Không lưu được media")
+			return
+		}
+
 	}
 	send(w, 200, out)
 }

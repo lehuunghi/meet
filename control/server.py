@@ -103,6 +103,7 @@ def validate_config(value):
         if not isinstance(value.get(name,[]),list) or len(value.get(name,[]))>50:raise ValueError('Danh sách credential không hợp lệ')
         if any(not isinstance(x,dict) for x in value.get(name,[])):raise ValueError('Credential không hợp lệ')
     for item in value.get('sfu',[]):
+        if type(item.get('enabled',False)) is not bool:raise ValueError('Kích hoạt SFU phải là ô chọn bật/tắt')
         if not isinstance(item.get('weight',1),int) or not 1<=item.get('weight',1)<=100:raise ValueError('Trọng số SFU phải từ 1 đến 100')
     commerce=value.get('commerce',{})
     if not isinstance(commerce,dict):raise ValueError('Cấu hình kinh doanh không hợp lệ')
@@ -247,6 +248,10 @@ class Handler(BaseHTTPRequestHandler):
         sid=row['id'];status=data.get('status',{})
         # Only known, non-secret telemetry is retained.
         safe={k:status[k] for k in ('version','commit','live','disk_free','config_revision','backup','update','admins','platform_mode','features','school_state','control_protocol') if k in status}
+        usage=status.get('sfu_usage',[])
+        if isinstance(usage,list) and len(usage)<=50:
+            safe['sfu_usage']=[{k:v for k,v in x.items() if k in ('id','app_id','ingress_bytes','egress_bytes','month_ingress_bytes','month_egress_bytes','samples','updated_at','first_day','meetings') and isinstance(v,(str,int)) and not isinstance(v,bool)} for x in usage if isinstance(x,dict)]
+            safe['sfu_usage_kind']='estimated_webrtc'
         if self.path=='/agent/poll':db.execute('UPDATE schools SET seen=?,status=? WHERE id=?',(now,json.dumps(safe),sid))
         else:db.execute('UPDATE schools SET seen=? WHERE id=?',(now,sid))
         if self.path=='/agent/poll':
