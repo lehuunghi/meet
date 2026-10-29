@@ -358,6 +358,10 @@ func (a *app) breakouts(w http.ResponseWriter, r *http.Request) {
 					problem(w, 400, "Cần từ 2 đến 20 nhóm")
 					return
 				}
+				_, e = tx.ExecContext(r.Context(), `INSERT INTO room_settings(school_id,meeting_id,lobby,chat_enabled,present_enabled) SELECT br.school_id,br.meeting_id,FALSE,COALESCE(rs.chat_enabled,TRUE),COALESCE(rs.present_enabled,TRUE) FROM meeting_breakout_rooms br JOIN meeting_breakout_rounds b ON b.school_id=br.school_id AND b.id=br.round_id LEFT JOIN room_settings rs ON rs.school_id=b.school_id AND rs.meeting_id=b.parent_id WHERE br.school_id=? AND br.round_id=?`, u.School, round)
+				if fail(e) {
+					return
+				}
 				_, e = tx.ExecContext(r.Context(), `UPDATE meetings m JOIN meeting_breakout_rooms br ON br.school_id=m.school_id AND br.meeting_id=m.id SET m.status='live' WHERE br.school_id=? AND br.round_id=?`, u.School, round)
 				if fail(e) {
 					return

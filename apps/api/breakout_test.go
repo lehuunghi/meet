@@ -101,7 +101,12 @@ func testBreakouts(t *testing.T, a *app, request func(string, string, string, *h
 	must(request("POST", base+"/breakouts", `{"action":"rename","revision":0,"room_id":"`+r1+`","name":"Stale"}`, teacher), 409)
 	must(post("rename", map[string]any{"room_id": r1, "name": "Nhóm phân tích"}), 200)
 	must(request("GET", "/api/meetings/"+r1, "", student), 404)
+	exec(`INSERT INTO room_settings(school_id,meeting_id,present_enabled) VALUES('school-demo',?,FALSE)`, parent)
 	must(post("start", nil), 200)
+	var present bool
+	if e := a.db.QueryRow(`SELECT present_enabled FROM room_settings WHERE meeting_id=?`, r1).Scan(&present); e != nil || present {
+		t.Fatal("group did not inherit presentation restriction", e)
+	}
 	must(post("assign", map[string]any{"room_id": r2, "users": []string{"demo-student"}}), 409)
 	// A failed upstream close must not move membership or open the new room.
 	exec(`INSERT INTO media_sessions(id,school_id,meeting_id,user_id) VALUES('break-root','school-demo',?,'demo-student')`, parent)
