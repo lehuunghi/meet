@@ -1339,20 +1339,6 @@ function MeetingRoom({
             {waitingCount} người đang xin vào lớp · Xem
           </button>
         )}
-        {canManage && state === "scheduled" && (
-          <button
-            className="room-start-action"
-            disabled={busy}
-            onClick={() =>
-              void run(async () => {
-                await api(`/meetings/${meeting.id}/state`, { status: "live" });
-                setState("live");
-              })
-            }
-          >
-            Bắt đầu buổi học
-          </button>
-        )}
         {["recording", "waiting", "starting", "saving"].includes(
           serverRecording,
         ) && (
@@ -1559,6 +1545,21 @@ function MeetingRoom({
                 Chọn mic/camera hoặc tắt cả hai để vào chỉ nghe. Camera chỉ chia
                 sẻ khi tham gia.
               </p>
+              {!canManage && state === "scheduled" && (
+                <p role="status">Đang chờ giáo viên bắt đầu buổi học.</p>
+              )}
+              {canManage && state === "scheduled" && (
+                <div className="prejoin-actions">
+                  <button
+                    className="room-start-action"
+                    disabled={busy}
+                    onClick={() => void run(async () => {
+                      await api(`/meetings/${meeting.id}/state`, { status: "live" });
+                      setState("live");
+                    })}
+                  >Bắt đầu buổi học</button>
+                </div>
+              )}
               {state === "live" && (
                 <div className="prejoin-actions">
                   <button

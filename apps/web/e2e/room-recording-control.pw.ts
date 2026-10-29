@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 
-for (const [role,initialStatus] of [["teacher","live"],["student","live"],["teacher","scheduled"]]) {
-  test(`${role} ${initialStatus}: lesson recording preference and call controls`, async ({
+for (const [role,initialStatus,mode] of [["teacher","live","school"],["student","live","school"],["teacher","scheduled","school"],["teacher","live","academy"],["student","live","academy"],["teacher","scheduled","academy"]]) {
+  test(`${mode} ${role} ${initialStatus}: lesson recording preference and call controls`, async ({
     page,
   }) => {
     let enabled = true,
@@ -48,7 +48,7 @@ for (const [role,initialStatus] of [["teacher","live"],["student","live"],["teac
       await route.fulfill({ json: data });
     });
     await page.setViewportSize({ width: 320, height: 680 });
-    await page.goto("/?room=lesson");
+    await page.goto(mode === "academy" ? "/hoc/buoi-hoc/lesson" : "/?room=lesson");
     const preview=await page.locator('.prejoin-media').boundingBox();
     for(const button of await page.locator('.prejoin-device-icons button').all()){
       const r=await button.boundingBox();expect(r!.x).toBeGreaterThanOrEqual(preview!.x);expect(r!.x+r!.width).toBeLessThanOrEqual(preview!.x+preview!.width+1);expect(r!.y+r!.height).toBeLessThanOrEqual(preview!.y+preview!.height+1);
@@ -74,7 +74,13 @@ for (const [role,initialStatus] of [["teacher","live"],["student","live"],["teac
       await expect(box).toHaveCount(0);
     }
     await page.keyboard.press("Escape");
-    if(initialStatus==="scheduled") await page.getByRole("button",{name:"Bắt đầu buổi học",exact:true}).click();
+    if(initialStatus==="scheduled") {
+      await expect(page.locator(".room-status-line").getByRole("button",{name:"Bắt đầu buổi học",exact:true})).toHaveCount(0);
+      const start=page.locator(".prejoin-intro").getByRole("button",{name:"Bắt đầu buổi học",exact:true});
+      await expect(start).toBeVisible();
+      await expect(page.locator(".prejoin-intro h2")).toHaveText("Sẵn sàng tham gia?");
+      await start.click();
+    }
     await page
       .getByRole("button", { name: "Vào lớp học", exact: true })
       .click();
