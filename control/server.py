@@ -129,7 +129,7 @@ def deployment_readiness(row,cfg):
     slug=cfg.get('school_slug','')
     add('slug','Mã nội bộ',not slug or bool(re.fullmatch('[a-z0-9-]{2,64}',slug)),'Để trống để hệ thống tự tạo; mã không xuất hiện ở đăng nhập.',True)
     add('host','Domain và VPS',bool(row['domain'] and row['ip']),'DNS sẽ được đối chiếu với IP trước khi cài qua SSH.',True)
-    active=[v for v in cfg.get('sfu',[]) if v.get('enabled',True) and v.get('app_id') and v.get('secret') and int(v.get('weight',1))>0]
+    active=[v for v in cfg.get('sfu',[]) if v.get('enabled',False) and v.get('app_id') and v.get('secret') and int(v.get('weight',1))>0]
     add('sfu','Lớp Live / SFU',bool(active),str(len(active))+' SFU đã điền. Chưa kiểm tra cuộc gọi thật.' if active else 'Có thể cài trước; thêm SFU để mở lớp Live.')
     r2=cfg.get('r2',{});complete=all(r2.get(k) for k in ('account_id','bucket','access_key_id','secret_access_key'))
     add('r2','Video, ảnh và biên lai R2',bool(r2.get('enabled') and complete),'R2 đã điền; cần nghiệm thu tải lên/phát video.' if complete and r2.get('enabled') else 'Chưa bật hoặc thiếu cấu hình. Cần R2 để dùng kho video và ảnh.',bool(r2.get('enabled')))

@@ -45,7 +45,7 @@ func recordSFUUsage(ctx context.Context, db *sql.DB, school, pid, aid string, in
 		return e
 	}
 	defer tx.Rollback()
-	if _, e = tx.ExecContext(ctx, `INSERT IGNORE INTO sfu_usage_sessions(school_id,provider_id,app_id,session_id) VALUES(?,?,?,?)`, school, pid, aid, in.Session); e != nil {
+	if _, e = tx.ExecContext(ctx, `INSERT INTO sfu_usage_sessions(school_id,provider_id,app_id,session_id) VALUES(?,?,?,?) ON DUPLICATE KEY UPDATE session_id=VALUES(session_id)`, school, pid, aid, in.Session); e != nil {
 		return e
 	}
 	var sent, received uint64
