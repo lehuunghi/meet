@@ -15,7 +15,7 @@ func exportAttendance(w http.ResponseWriter, r *http.Request, rows []map[string]
 	defer f.Close()
 	sheet := "Điểm danh"
 	f.SetSheetName("Sheet1", sheet)
-	cols := []struct{ key, title string }{{"term_name", "Năm học / học kỳ"}, {"legacy_history", "Lịch sử kế thừa (1=cần đối chiếu)"}, {"class_name", "Lớp"}, {"course", "Môn học"}, {"meeting_title", "Buổi học"}, {"lesson_start", "Giờ vào chung (VN)"}, {"lesson_end", "Giờ ra chung (VN)"}, {"name", "Họ tên học sinh"}, {"email", "Email"}, {"joined_at", "Vào lớp (VN)"}, {"last_seen", "Ra lớp / ghi nhận cuối (VN)"}, {"seconds", "Giây kết nối"}, {"attendance_result", "Kết quả"}}
+	cols := []struct{ key, title string }{{"class_name", "Lớp"}, {"course", "Môn học"}, {"meeting_title", "Buổi học"}, {"lesson_start", "Giờ vào chung (VN)"}, {"lesson_end", "Giờ ra chung (VN)"}, {"name", "Họ tên học sinh"}, {"email", "Email"}, {"joined_at", "Vào lớp (VN)"}, {"last_seen", "Ra lớp / ghi nhận cuối (VN)"}, {"seconds", "Giây kết nối"}, {"attendance_result", "Kết quả"}, {"term_name", "Năm học / học kỳ"}, {"legacy_history", "Lịch sử kế thừa (1=cần đối chiếu)"}}
 	style, _ := f.NewStyle(&excelize.Style{Font: &excelize.Font{Family: "Arial", Size: 11}})
 	f.SetColStyle(sheet, "A:M", style)
 	f.SetColWidth(sheet, "A", "M", 26)

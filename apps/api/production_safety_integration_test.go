@@ -237,10 +237,11 @@ func TestProductionSafetyIntegration(t *testing.T) {
 		t.Fatal(e)
 	}
 	testTeachingWindow(t, a, request, teacher, student, adminCookie)
+	testBreakouts(t, a, request, teacher, student, other)
 	if _, e = db.Exec("UPDATE meetings SET status='live' WHERE id='demo-meeting'"); e != nil {
 		t.Fatal(e)
 	}
-	testBreakouts(t, a, request, teacher, student, other)
+
 	testRoomDrawing(t, a, request, teacher, student, other)
 	testRoomModeration(t, a, request, teacher, student, other)
 	testCourseWorkspace(t, a, request, teacher, student, other)
