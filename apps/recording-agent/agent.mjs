@@ -130,9 +130,12 @@ async function record(job){
 }
 console.log("Meet Recorder đang chờ lớp học",os.platform());
 let recovering=false;
+let previousCPU=os.cpus().reduce((v,c)=>({idle:v.idle+c.times.idle,total:v.total+Object.values(c.times).reduce((a,b)=>a+b,0)}),{idle:0,total:0});
+function capacity(){const cpu=os.cpus().reduce((v,c)=>({idle:v.idle+c.times.idle,total:v.total+Object.values(c.times).reduce((a,b)=>a+b,0)}),{idle:0,total:0});const total=cpu.total-previousCPU.total,busy=total>0?1-(cpu.idle-previousCPU.idle)/total:0;previousCPU=cpu;return os.freemem()>=2*1024**3&&busy<0.75;}
+
 const recoveryTimer=setInterval(()=>{if(!recovering&&!stopping){recovering=true;void recover().catch(()=>{}).finally(()=>recovering=false)}},15000);
 while(!stopping){
- try{const {job}=await request("claim");if(job)await record(job)}catch(e){console.error("Máy ghi đang thử kết nối lại",e.status||"LOCAL_OR_NETWORK_ERROR")}
+ try{const disk=await fs.statfs(root),available=capacity()&&Number(disk.bavail)*Number(disk.bsize)>=5*1024**3;const {job}=await request("claim",{Available:available});if(job)await record(job)}catch(e){console.error("Máy ghi đang thử kết nối lại",e.status||"LOCAL_OR_NETWORK_ERROR")}
  await sleep(5000);
 }
 clearInterval(recoveryTimer);while(recovering)await sleep(250);

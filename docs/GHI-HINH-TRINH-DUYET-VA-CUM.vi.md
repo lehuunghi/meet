@@ -74,7 +74,7 @@ Chromium chạy với sandbox. Ubuntu có hạn chế user namespace sẽ dùng 
 
 ## 4. Cách vận hành cụm
 
-- Bản đầu: **một máy nhận tối đa một lớp**, không tự định công suất từ tên CPU.
+- Bản đầu: **một máy nhận tối đa một lớp**, không tự định công suất từ tên CPU. Máy chỉ xin việc mới khi RAM trống ít nhất 2 GiB, đĩa trống ít nhất 5 GiB và tải CPU đo giữa hai lượt kiểm tra dưới 75%. Đây là ngưỡng tiếp nhận, không phải bảo đảm chất lượng.
 - Mỗi công việc và mỗi máy có khóa nhận việc 60 giây. Gia hạn định kỳ; không được gia hạn nếu khóa đã thuộc máy khác.
 - Máy dừng thu khi mất liên lạc điều phối quá 45 giây hoặc quyền bị thu hồi. Máy khác có thể nhận sau khi khóa hết hạn, có thể có khoảng trống.
 - Các đoạn độc lập khoảng 5 phút được remux để có duration/cues, tải R2 ở nền; chúng hiện thành các bản ghi của cùng buổi học, chưa tự ghép toàn bộ đoạn thành một MP4.

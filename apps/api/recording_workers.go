@@ -247,6 +247,14 @@ func (a *app) recorderClaim(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
+	var availability struct{ Available *bool }
+	if !decode(w, r, &availability) {
+		return
+	}
+	if availability.Available != nil && !*availability.Available {
+		send(w, 200, map[string]any{"job": nil})
+		return
+	}
 	mode, e := a.recordingMode(r.Context(), school)
 	if e != nil || mode != "cluster" {
 		send(w, 200, map[string]any{"job": nil})

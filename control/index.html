@@ -2000,7 +2000,7 @@
     function renderRecordingWorkers(){
       const el=$("#recording-workers");if(!el||!selected)return;
       let st={};try{st=JSON.parse(selected.status||"{}")}catch{}
-      el.innerHTML='<h3>Cụm máy ghi Windows / Linux</h3><p>Mỗi máy nhận một lớp. Tạo mã đăng ký, cài ứng dụng trên máy rồi nhập domain website đơn vị và mã. Mã chỉ hiển thị một lần; đợi tác vụ đồng bộ thành công trước khi nhập.</p>';
+      el.innerHTML='<h3>Cụm máy ghi Windows / Linux</h3><p><a href="https://github.com/lehuunghi/meet/actions/workflows/recording-agent.yml" target="_blank" rel="noreferrer">Tải bộ cài Windows / Linux từ lần kiểm thử thành công</a></p><p>Mỗi máy nhận một lớp. Tạo mã đăng ký, cài ứng dụng trên máy rồi nhập domain website đơn vị và mã. Mã chỉ hiển thị một lần; đợi tác vụ đồng bộ thành công trước khi nhập.</p>';
       if(!st.features?.includes('recording_workers')){el.append(document.createTextNode('Nâng cấp client và agent điều khiển để quản lý cụm ghi.'));return;}
       const rows=Array.isArray(st.recording_nodes)?st.recording_nodes:[];
       const table=document.createElement('div');table.className='table-wrap';table.innerHTML='<table><thead><tr><th>Máy</th><th>Hệ điều hành</th><th>Lần kết nối</th><th>Trạng thái</th><th></th></tr></thead><tbody>'+rows.map(n=>'<tr><td>'+esc(n.name)+'</td><td>'+esc(n.platform)+'</td><td>'+esc(n.last_seen?controlDate(n.last_seen,true):'Chưa kết nối')+'</td><td>'+esc(n.enabled?'Đang bật':'Đã thu hồi')+'</td><td data-recorder-node="'+esc(n.id)+'"></td></tr>').join('')+'</tbody></table>';el.append(table);
