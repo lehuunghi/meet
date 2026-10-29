@@ -84,7 +84,7 @@ func (a *app) prepareCourse(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var id string
-	e = tx.QueryRowContext(r.Context(), "SELECT id FROM meetings WHERE NOT EXISTS(SELECT 1 FROM meeting_breakout_rooms bx WHERE bx.school_id=meetings.school_id AND bx.meeting_id=meetings.id) AND school_id=? AND course_id=? AND status IN ('live','scheduled') ORDER BY (status='live') DESC,starts_at ASC LIMIT 1", u.School, r.PathValue("id")).Scan(&id)
+	e = tx.QueryRowContext(r.Context(), "SELECT id FROM meetings WHERE NOT EXISTS(SELECT 1 FROM meeting_breakout_rooms bx WHERE bx.school_id=meetings.school_id AND bx.meeting_id=meetings.id) AND school_id=? AND course_id=? AND (status='live' OR (status='scheduled' AND starts_at BETWEEN UTC_TIMESTAMP()-INTERVAL 2 HOUR AND UTC_TIMESTAMP()+INTERVAL 30 MINUTE)) ORDER BY (status='live') DESC,starts_at ASC LIMIT 1", u.School, r.PathValue("id")).Scan(&id)
 	if e == sql.ErrNoRows {
 		id = uid()
 		_, e = tx.ExecContext(r.Context(), "INSERT INTO meetings(id,school_id,course_id,title,starts_at,recording_allowed) VALUES(?,?,?,?,?,TRUE)", id, u.School, r.PathValue("id"), name, time.Now().UTC())

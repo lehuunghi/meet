@@ -33,8 +33,8 @@ func shortCode(tx *sql.Tx, kind, id string) (string, error) {
 	if err = tx.QueryRow("SELECT value FROM code_counters WHERE kind=?", kind).Scan(&n); err != nil {
 		return "", err
 	}
-	if n > 9999 {
-		return "", fmt.Errorf("four-digit %s identifier capacity exhausted", kind)
+	if n > 99999999 {
+		return "", fmt.Errorf("identifier capacity exhausted")
 	}
 	if _, err = tx.Exec("INSERT INTO entity_short_codes(kind,number,entity_id) VALUES(?,?,?)", kind, n, id); err != nil {
 		return "", err
@@ -207,6 +207,10 @@ func (a *app) saveAccounts(w http.ResponseWriter, r *http.Request, rows []accoun
 		if class != "" {
 			if _, e = tx.ExecContext(r.Context(), "INSERT IGNORE INTO enrollments(school_id,class_id,user_id) VALUES(?,?,?)", school, class, id); e != nil {
 				problem(w, 409, "Không phân lớp được; chưa lưu dòng nào")
+				return
+			}
+			if e = syncLiveRoster(r.Context(), tx, school, class, id); e != nil {
+				problem(w, 503, "Chưa cập nhật được danh sách buổi đang học")
 				return
 			}
 		}

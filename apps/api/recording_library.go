@@ -25,6 +25,6 @@ func (a *app) recordingLibrary(w http.ResponseWriter, r *http.Request) {
  FROM recordings rec JOIN meetings m ON m.school_id=rec.school_id AND m.id=rec.meeting_id
  JOIN courses c ON c.school_id=m.school_id AND c.id=m.course_id
  JOIN classes cl ON cl.school_id=c.school_id AND cl.id=c.class_id
- WHERE `+courseAccess+` AND (?='' OR c.id=?) AND (?='' OR c.class_id=?) AND (?='' OR m.id=?) AND rec.status='ready' AND rec.deleted_at IS NULL AND rec.expires_at>UTC_TIMESTAMP(6)
+ WHERE `+lessonAccess+` AND (?='' OR c.id=?) AND (?='' OR c.class_id=?) AND (?='' OR m.id=?) AND rec.status='ready' AND rec.deleted_at IS NULL AND rec.expires_at>UTC_TIMESTAMP(6)
  ORDER BY m.starts_at DESC,m.id,rec.created_at DESC,rec.id LIMIT 51 OFFSET ?`, u.School, u.Role, u.Role, u.ID, u.Role, u.ID, course, course, class, class, meeting, meeting, page*50)
 }

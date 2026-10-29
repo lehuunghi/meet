@@ -1,3 +1,4 @@
+import { AcademicOperations } from "./academic-operations";
 import { ClassManager } from "./class-manager";
 import { useEffect, useState, useRef } from "react";
 import { api } from "./api";
@@ -280,6 +281,7 @@ export function AcademicAdmin({
       <div className="academic-tabs" role="tablist" aria-label="Quản lý học vụ">
         {[
           ["classes", "Lớp học"],
+          ["operations", "Năm học & lịch dạy"],
           ["courses", "Môn học"],
           ["students", "Học sinh theo lớp"],
           ["teachers", "Giáo viên"],
@@ -316,6 +318,17 @@ export function AcademicAdmin({
           {notice}
         </div>
       )}
+      {tab === "operations" && (
+        <AcademicOperations
+          demo={demo}
+          classes={classes}
+          courses={courses}
+          onChange={async () => {
+            await load();
+            await onChange();
+          }}
+        />
+      )}
       <section className="section">
         <div className="academic-filters">
           <button
@@ -335,7 +348,7 @@ export function AcademicAdmin({
           >
             Tải lại / bỏ thay đổi
           </button>
-          {!["teachers", "classes"].includes(tab) && (
+          {!["teachers", "classes", "operations"].includes(tab) && (
             <label>
               Lớp học
               <select

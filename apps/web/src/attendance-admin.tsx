@@ -19,7 +19,7 @@ export function AttendancePolicy({ demo }: { demo: boolean }) {
     <details className="compact-details school-attendance-policy">
       <summary>Quy tắc điểm danh của trường</summary>
       <p>
-        Đạt khi đủ tỷ lệ thời gian, vào không trễ quá ngưỡng và ra không sớm quá
+        Dữ liệu trước v0.33 là lịch sử kế thừa; cần đối chiếu danh sách nếu đã chuyển lớp hoặc đổi giáo viên trước đây. Thời gian thể hiện kết nối, không xác nhận học sinh đang chú ý. Đạt khi đủ tỷ lệ thời gian, vào không trễ quá ngưỡng và ra không sớm quá
         ngưỡng. Buổi đang học chưa kết luận. Mặc định buổi dài 60 phút; chọn một
         buổi để chỉnh khung giờ chung.
       </p>

@@ -227,6 +227,7 @@ func TestSetupAndRetentionIntegration(t *testing.T) {
 	}
 	userCookie := login.Result().Cookies()[0]
 	testSFURotationUsageFailover(t, a, school, owner, meetingIDs[0], userCookie, request)
+	testAcademicHistory(t, a, school, owner)
 	if w = request("GET", "/api/setup/settings", nil, userCookie); w.Code != 401 {
 		t.Fatal("school admin gained global configuration")
 	}

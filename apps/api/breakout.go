@@ -10,7 +10,7 @@ import (
 	"unicode/utf8"
 )
 
-const mainLessonSQL = `NOT EXISTS(SELECT 1 FROM meeting_breakout_rooms bx WHERE bx.school_id=m.school_id AND bx.meeting_id=m.id)`
+const mainLessonSQL = `NOT EXISTS(SELECT 1 FROM meeting_breakout_rooms bx WHERE bx.school_id=m.school_id AND bx.meeting_id=m.id) AND NOT EXISTS(SELECT 1 FROM lesson_cancellations lc WHERE lc.school_id=m.school_id AND lc.meeting_id=m.id)`
 
 func (a *app) breakoutParent(r *http.Request) (string, error) {
 	var id string

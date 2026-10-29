@@ -849,7 +849,7 @@
       )) {
         const st = JSON.parse(s.status),
           tr = document.createElement("tr");
-        tr.innerHTML = `<td><strong>${esc(s.name)}</strong><br><span class="badge">${s.platform_mode === "academy" ? "Khóa học / VIP" : "Trường nội bộ"}</span> <span class="muted">${esc({ active: "Hoạt động", suspended: "Tạm ngưng", deleted: "Thùng rác" }[s.desired_state || "active"])}${s.desired_state !== s.applied_state ? " · chờ VPS" : ""}</span></td><td>${esc(s.domain)}<br><small>${esc(s.ip)}</small></td><td>${esc(st.version || "Chưa cài")}</td><td>${s.applied === s.revision ? "Đã áp dụng" : "Đang chờ"} ${s.applied}/${s.revision}</td><td>${Date.now() / 1000 - s.seen < 90 ? "Đang kết nối" : "Chưa kết nối"}</td><td>${esc(st.live ?? "—")}</td><td></td>`;
+        tr.innerHTML = `<td><strong>${esc(s.name)}</strong><br><span class="badge">${s.platform_mode === "academy" ? "Khóa học / VIP" : "Trường nội bộ"}</span> <span class="muted">${esc({ active: "Hoạt động", suspended: "Tạm ngưng", deleted: "Thùng rác" }[s.desired_state || "active"])}${s.desired_state !== s.applied_state ? " · chờ VPS" : ""}</span></td><td>${esc(s.domain)}<br><small>${esc(s.ip)}</small></td><td>${esc(st.version || "Chưa cài")}</td><td>${s.applied === s.revision ? "Đã áp dụng" : "Đang chờ"} ${s.applied}/${s.revision}</td><td>${Date.now() / 1000 - s.seen < 90 ? "Đang kết nối" : "Chưa kết nối"}${(s.alerts||[]).map(a=>`<br><strong class="error">${esc(a.message)}</strong>`).join("")}</td><td>${esc(st.live ?? "—")}</td><td></td>`;
         tr.lastChild.append(button("Chi tiết", () => edit(s)));
         $("#rows").append(tr);
       }

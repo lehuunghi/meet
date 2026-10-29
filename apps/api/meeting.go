@@ -23,7 +23,7 @@ type meetingInfo struct {
 func (a *app) access(w http.ResponseWriter, r *http.Request, manage bool) (meetingInfo, bool) {
 	u := who(r)
 	var m meetingInfo
-	e := a.db.QueryRowContext(r.Context(), `SELECT m.status,m.recording_allowed,COALESCE(c.teacher_id,''),m.title,c.id,c.name,cl.name,m.starts_at FROM meetings m JOIN courses c ON c.id=m.course_id AND c.school_id=m.school_id JOIN classes cl ON cl.id=c.class_id AND cl.school_id=c.school_id WHERE m.id=? AND `+courseAccess, r.PathValue("id"), u.School, u.Role, u.Role, u.ID, u.Role, u.ID).Scan(&m.Status, &m.Recording, &m.Teacher, &m.Title, &m.CourseID, &m.Course, &m.Class, &m.Starts)
+	e := a.db.QueryRowContext(r.Context(), `SELECT m.status,m.recording_allowed,COALESCE(c.teacher_id,''),m.title,c.id,c.name,cl.name,m.starts_at FROM meetings m JOIN courses c ON c.id=m.course_id AND c.school_id=m.school_id JOIN classes cl ON cl.id=c.class_id AND cl.school_id=c.school_id WHERE m.id=? AND `+lessonAccess, r.PathValue("id"), u.School, u.Role, u.Role, u.ID, u.Role, u.ID).Scan(&m.Status, &m.Recording, &m.Teacher, &m.Title, &m.CourseID, &m.Course, &m.Class, &m.Starts)
 	if e != nil {
 		problem(w, 404, "Meeting not found")
 		return m, false
@@ -60,7 +60,7 @@ func (a *app) meetings(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	u := who(r)
-	a.query(w, r, `SELECT m.id,m.title,m.starts_at,m.status,m.recording_allowed,c.id AS course_id,c.class_id,c.name AS course,cl.name AS class_name FROM meetings m JOIN courses c ON c.id=m.course_id AND c.school_id=m.school_id JOIN classes cl ON cl.id=c.class_id AND cl.school_id=c.school_id WHERE `+courseAccess+` AND `+mainLessonSQL+` AND (?='' OR c.id=?) AND (?='' OR (m.starts_at>=? AND m.starts_at<?)) ORDER BY (m.status='live') DESC,(m.status='scheduled') DESC,m.starts_at DESC,m.id DESC LIMIT 200 OFFSET ?`, u.School, u.Role, u.Role, u.ID, u.Role, u.ID, r.URL.Query().Get("course_id"), r.URL.Query().Get("course_id"), month, from, to, page*200)
+	a.query(w, r, `SELECT m.id,m.title,m.starts_at,m.status,m.recording_allowed,c.id AS course_id,c.class_id,c.name AS course,cl.name AS class_name FROM meetings m JOIN courses c ON c.id=m.course_id AND c.school_id=m.school_id JOIN classes cl ON cl.id=c.class_id AND cl.school_id=c.school_id WHERE `+lessonAccess+` AND `+mainLessonSQL+` AND (?='' OR c.id=?) AND (?='' OR (m.starts_at>=? AND m.starts_at<?)) ORDER BY (m.status='live') DESC,(m.status='scheduled') DESC,m.starts_at DESC,m.id DESC LIMIT 200 OFFSET ?`, u.School, u.Role, u.Role, u.ID, u.Role, u.ID, r.URL.Query().Get("course_id"), r.URL.Query().Get("course_id"), month, from, to, page*200)
 }
 func (a *app) createMeeting(w http.ResponseWriter, r *http.Request) {
 	u := who(r)
@@ -84,8 +84,23 @@ func (a *app) createMeeting(w http.ResponseWriter, r *http.Request) {
 	if !a.liveClassState(w, r, in.Course) {
 		return
 	}
+	tx, e := a.db.BeginTx(r.Context(), nil)
+	if e != nil {
+		problem(w, 503, "Không mở được lịch dạy")
+		return
+	}
+	defer tx.Rollback()
+	var schoolLock string
+	if tx.QueryRowContext(r.Context(), "SELECT id FROM schools WHERE id=? FOR UPDATE", u.School).Scan(&schoolLock) != nil {
+		problem(w, 503, "Không khóa được lịch dạy")
+		return
+	}
+	if conflict, err := a.scheduleConflict(tx, r, in.Course, in.Starts, in.Starts.Add(time.Hour)); err != nil || conflict {
+		problem(w, 409, "Lịch trùng lớp, giáo viên hoặc trợ giảng")
+		return
+	}
 	id := uid()
-	res, e := a.db.ExecContext(r.Context(), `INSERT INTO meetings(id,school_id,course_id,title,starts_at,recording_allowed) SELECT ?,?,?, ?,?,? FROM courses WHERE id=? AND school_id=? AND (?='admin' OR teacher_id=?)`, id, u.School, in.Course, in.Title, in.Starts.UTC(), in.Recording, in.Course, u.School, u.Role, u.ID)
+	res, e := tx.ExecContext(r.Context(), `INSERT INTO meetings(id,school_id,course_id,title,starts_at,recording_allowed) SELECT ?,?,?, ?,?,? FROM courses WHERE id=? AND school_id=? AND (?='admin' OR teacher_id=?)`, id, u.School, in.Course, in.Title, in.Starts.UTC(), in.Recording, in.Course, u.School, u.Role, u.ID)
 	if e != nil {
 		problem(w, 400, "Create failed")
 		return
@@ -93,6 +108,14 @@ func (a *app) createMeeting(w http.ResponseWriter, r *http.Request) {
 	n, _ := res.RowsAffected()
 	if n != 1 {
 		problem(w, 404, "Course not found")
+		return
+	}
+	if _, e = tx.ExecContext(r.Context(), "INSERT INTO lesson_schedule(school_id,meeting_id,ends_at) VALUES(?,?,?)", u.School, id, in.Starts.UTC().Add(time.Hour)); e != nil {
+		problem(w, 503, "Chưa lưu được lịch")
+		return
+	}
+	if e = tx.Commit(); e != nil {
+		problem(w, 503, "Chưa lưu được buổi")
 		return
 	}
 	a.audit(r, "meeting.create", id)
@@ -126,6 +149,11 @@ func (a *app) meetingState(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer tx.Rollback()
+	var lockedSchool string
+	if e = tx.QueryRowContext(r.Context(), "SELECT id FROM schools WHERE id=? FOR UPDATE", u.School).Scan(&lockedSchool); e != nil {
+		problem(w, 503, "Không khóa được lịch dạy")
+		return
+	}
 	var assigned sql.NullString
 	if e = tx.QueryRowContext(r.Context(), "SELECT c.teacher_id FROM courses c JOIN meetings m ON m.course_id=c.id AND m.school_id=c.school_id WHERE m.school_id=? AND m.id=? FOR UPDATE", u.School, r.PathValue("id")).Scan(&assigned); e != nil {
 		problem(w, 404, "Meeting not found")
@@ -150,6 +178,17 @@ func (a *app) meetingState(w http.ResponseWriter, r *http.Request) {
 		}
 		if e = a.lockActiveClass(tx, r, subject); e != nil {
 			problem(w, 409, "Lớp đã ngưng hoặc đã xóa")
+			return
+		}
+	}
+	if in.Status == "live" {
+		var conflicts int
+		if e = tx.QueryRowContext(r.Context(), `SELECT COUNT(*) FROM meetings other JOIN courses oc ON oc.school_id=other.school_id AND oc.id=other.course_id JOIN meetings target ON target.school_id=other.school_id JOIN courses tc ON tc.school_id=target.school_id AND tc.id=target.course_id WHERE target.school_id=? AND target.id=? AND other.id<>target.id AND other.status='live' AND NOT EXISTS(SELECT 1 FROM meeting_breakout_rooms b WHERE b.school_id=other.school_id AND b.meeting_id=other.id) AND (oc.class_id=tc.class_id OR EXISTS(SELECT 1 FROM users staff WHERE staff.school_id=oc.school_id AND (staff.id=oc.teacher_id OR EXISTS(SELECT 1 FROM course_assistants ca WHERE ca.school_id=oc.school_id AND ca.course_id=oc.id AND ca.user_id=staff.id)) AND (staff.id=tc.teacher_id OR EXISTS(SELECT 1 FROM course_assistants ca WHERE ca.school_id=tc.school_id AND ca.course_id=tc.id AND ca.user_id=staff.id))))`, u.School, r.PathValue("id")).Scan(&conflicts); e != nil || conflicts > 0 {
+			problem(w, 409, "Lớp hoặc giáo viên đang có buổi học khác")
+			return
+		}
+		if e = snapshotLesson(r.Context(), tx, u.School, r.PathValue("id")); e != nil {
+			problem(w, 503, "Chưa lưu được danh sách buổi học")
 			return
 		}
 	}
@@ -296,6 +335,12 @@ func (a *app) presence(w http.ResponseWriter, r *http.Request) {
 	if e != nil {
 		problem(w, 500, "Presence failed")
 		return
+	}
+	if u.Role == "student" {
+		if _, e = tx.ExecContext(r.Context(), "INSERT IGNORE INTO lesson_roster(school_id,meeting_id,user_id) VALUES(?,?,?)", u.School, id, u.ID); e != nil {
+			problem(w, 503, "Chưa lưu được học sinh buổi học")
+			return
+		}
 	}
 	event := in.Kind
 	if event == "ready" {

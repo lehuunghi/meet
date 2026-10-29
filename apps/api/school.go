@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/mail"
+	"strconv"
 	"strings"
 
 	"github.com/xuri/excelize/v2"
@@ -12,6 +13,24 @@ import (
 )
 
 func (a *app) query(w http.ResponseWriter, r *http.Request, q string, args ...any) {
+	pageSize := 1000
+	if r.URL.Path == "/api/academic/operations" && strings.HasSuffix(q, "LIMIT 200") {
+		pageSize = 200
+	}
+	directory := (strings.HasSuffix(q, "LIMIT 1000") && (r.URL.Path == "/api/catalog" || r.URL.Path == "/api/users" || r.URL.Path == "/api/accounts" || r.URL.Path == "/api/classes" || strings.HasSuffix(r.URL.Path, "/students"))) || (pageSize == 200)
+	page := 0
+	if directory {
+		var err error
+		if raw := r.URL.Query().Get("page"); raw != "" {
+			page, err = strconv.Atoi(raw)
+		}
+		if err != nil || page < 0 || page > 100000 {
+			problem(w, 400, "Trang không hợp lệ")
+			return
+		}
+		q = strings.TrimSuffix(q, fmt.Sprintf("LIMIT %d", pageSize)) + fmt.Sprintf("LIMIT %d OFFSET ?", pageSize+1)
+		args = append(args, page*pageSize)
+	}
 	rows, e := a.db.QueryContext(r.Context(), q, args...)
 	if e != nil {
 		problem(w, 500, "Database unavailable")
@@ -48,13 +67,17 @@ func (a *app) query(w http.ResponseWriter, r *http.Request, q string, args ...an
 		exportAttendance(w, r, out)
 		return
 	}
+	if directory && len(out) > pageSize {
+		out = out[:pageSize]
+		w.Header().Set("X-Next-Page", strconv.Itoa(page+1))
+	}
 	send(w, 200, out)
 }
 func (a *app) catalog(w http.ResponseWriter, r *http.Request) {
 	u := who(r)
 	a.query(w, r, `SELECT c.id,c.short_id,c.revision,
 (SELECT lm.id FROM meetings lm WHERE NOT EXISTS(SELECT 1 FROM meeting_breakout_rooms bx WHERE bx.school_id=lm.school_id AND bx.meeting_id=lm.id) AND lm.school_id=c.school_id AND lm.course_id=c.id AND lm.status IN ('live','scheduled') ORDER BY (lm.status='live') DESC,lm.starts_at ASC LIMIT 1) AS ready_meeting_id,
-(SELECT lm.status FROM meetings lm WHERE NOT EXISTS(SELECT 1 FROM meeting_breakout_rooms bx WHERE bx.school_id=lm.school_id AND bx.meeting_id=lm.id) AND lm.school_id=c.school_id AND lm.course_id=c.id AND lm.status IN ('live','scheduled') ORDER BY (lm.status='live') DESC,lm.starts_at ASC LIMIT 1) AS ready_status,(SELECT COUNT(*) FROM meetings lm WHERE NOT EXISTS(SELECT 1 FROM meeting_breakout_rooms bx WHERE bx.school_id=lm.school_id AND bx.meeting_id=lm.id) AND lm.school_id=c.school_id AND lm.course_id=c.id) AS lesson_count,COALESCE((SELECT JSON_ARRAYAGG(ca.user_id) FROM course_assistants ca WHERE ca.school_id=c.school_id AND ca.course_id=c.id),JSON_ARRAY()) AS assistant_ids,c.name,c.class_id,cl.name AS class_name,COALESCE((SELECT state FROM class_controls cc WHERE cc.school_id=c.school_id AND cc.class_id=c.class_id),'active') AS class_state,c.teacher_id,COALESCE(u.name,'Chưa phân công') AS teacher FROM courses c JOIN classes cl ON cl.id=c.class_id AND cl.school_id=c.school_id LEFT JOIN users u ON u.id=c.teacher_id AND u.school_id=c.school_id WHERE c.school_id=? AND (?='admin' OR (?='teacher' AND EXISTS(SELECT 1 FROM users assigned WHERE assigned.id=? AND assigned.school_id=c.school_id AND (assigned.id=c.teacher_id OR EXISTS(SELECT 1 FROM course_assistants ca WHERE ca.school_id=c.school_id AND ca.course_id=c.id AND ca.user_id=assigned.id)))) OR (?='student' AND EXISTS(SELECT 1 FROM enrollments e WHERE e.school_id=c.school_id AND e.class_id=c.class_id AND e.user_id=?))) ORDER BY c.name LIMIT 1000`, u.School, u.Role, u.Role, u.ID, u.Role, u.ID)
+(SELECT lm.status FROM meetings lm WHERE NOT EXISTS(SELECT 1 FROM meeting_breakout_rooms bx WHERE bx.school_id=lm.school_id AND bx.meeting_id=lm.id) AND lm.school_id=c.school_id AND lm.course_id=c.id AND lm.status IN ('live','scheduled') ORDER BY (lm.status='live') DESC,lm.starts_at ASC LIMIT 1) AS ready_status,(SELECT COUNT(*) FROM meetings lm WHERE NOT EXISTS(SELECT 1 FROM meeting_breakout_rooms bx WHERE bx.school_id=lm.school_id AND bx.meeting_id=lm.id) AND lm.school_id=c.school_id AND lm.course_id=c.id AND NOT EXISTS(SELECT 1 FROM lesson_cancellations lc WHERE lc.school_id=lm.school_id AND lc.meeting_id=lm.id)) AS lesson_count,COALESCE((SELECT JSON_ARRAYAGG(ca.user_id) FROM course_assistants ca WHERE ca.school_id=c.school_id AND ca.course_id=c.id),JSON_ARRAY()) AS assistant_ids,c.name,c.class_id,cl.name AS class_name,COALESCE((SELECT state FROM class_controls cc WHERE cc.school_id=c.school_id AND cc.class_id=c.class_id),'active') AS class_state,c.teacher_id,COALESCE(u.name,'Chưa phân công') AS teacher FROM courses c JOIN classes cl ON cl.id=c.class_id AND cl.school_id=c.school_id LEFT JOIN users u ON u.id=c.teacher_id AND u.school_id=c.school_id WHERE c.school_id=? AND (?='admin' OR (?='teacher' AND EXISTS(SELECT 1 FROM users assigned WHERE assigned.id=? AND assigned.school_id=c.school_id AND (assigned.id=c.teacher_id OR EXISTS(SELECT 1 FROM course_assistants ca WHERE ca.school_id=c.school_id AND ca.course_id=c.id AND ca.user_id=assigned.id)))) OR (?='student' AND EXISTS(SELECT 1 FROM enrollments e WHERE e.school_id=c.school_id AND e.class_id=c.class_id AND e.user_id=?))) ORDER BY c.name LIMIT 1000`, u.School, u.Role, u.Role, u.ID, u.Role, u.ID)
 }
 func (a *app) users(w http.ResponseWriter, r *http.Request) {
 	if !admin(w, r) {
@@ -162,7 +185,13 @@ func (a *app) enroll(w http.ResponseWriter, r *http.Request) {
 	}
 	in.Class = resolvedClass
 	in.User = resolvedUser
-	res, e := a.db.ExecContext(r.Context(), `INSERT IGNORE INTO enrollments(school_id,class_id,user_id) SELECT ?,c.id,u.id FROM classes c JOIN users u ON u.school_id=c.school_id AND u.id=? AND u.role='student' WHERE c.school_id=? AND c.id=?`, u.School, in.User, u.School, in.Class)
+	tx, e := a.db.BeginTx(r.Context(), nil)
+	if e != nil {
+		problem(w, 503, "Chưa lưu được học sinh")
+		return
+	}
+	defer tx.Rollback()
+	res, e := tx.ExecContext(r.Context(), `INSERT IGNORE INTO enrollments(school_id,class_id,user_id) SELECT ?,c.id,u.id FROM classes c JOIN users u ON u.school_id=c.school_id AND u.id=? AND u.role='student' WHERE c.school_id=? AND c.id=?`, u.School, in.User, u.School, in.Class)
 	if e != nil {
 		problem(w, 400, "Enrollment failed")
 		return
@@ -170,6 +199,14 @@ func (a *app) enroll(w http.ResponseWriter, r *http.Request) {
 	n, _ := res.RowsAffected()
 	if n != 1 {
 		problem(w, 409, "Invalid or existing enrollment")
+		return
+	}
+	if e = syncLiveRoster(r.Context(), tx, u.School, in.Class, in.User); e != nil {
+		problem(w, 503, "Chưa cập nhật buổi đang học")
+		return
+	}
+	if e = tx.Commit(); e != nil {
+		problem(w, 503, "Chưa lưu được học sinh")
 		return
 	}
 	a.audit(r, "enrollment.create", in.User)
@@ -299,6 +336,10 @@ func (a *app) importUsers(w http.ResponseWriter, r *http.Request) {
 			}
 			if _, e = tx.ExecContext(r.Context(), "INSERT INTO enrollments VALUES(?,?,?)", u.School, class, id); e != nil {
 				problem(w, 409, "Enrollment failed; no users imported")
+				return
+			}
+			if e = syncLiveRoster(r.Context(), tx, u.School, class, id); e != nil {
+				problem(w, 503, "Chưa cập nhật danh sách buổi đang học")
 				return
 			}
 		}

@@ -11,7 +11,7 @@ func (a *app) classList(w http.ResponseWriter, r *http.Request) {
 	if !admin(w, r) {
 		return
 	}
-	a.query(w, r, "SELECT cl.id,cl.short_id,cl.name,COALESCE(cc.state,'active') AS state,COALESCE(cc.revision,0) AS revision,(SELECT COUNT(*) FROM courses c WHERE c.school_id=cl.school_id AND c.class_id=cl.id) AS subject_count,(SELECT COUNT(*) FROM enrollments e WHERE e.school_id=cl.school_id AND e.class_id=cl.id) AS student_count FROM classes cl LEFT JOIN class_controls cc ON cc.school_id=cl.school_id AND cc.class_id=cl.id WHERE cl.school_id=? AND (?='1' OR COALESCE(cc.state,'active')<>'deleted') ORDER BY cl.name LIMIT 1000", who(r).School, r.URL.Query().Get("include_deleted"))
+	a.query(w, r, "SELECT cl.id,cl.short_id,cl.name,(SELECT t.name FROM class_terms ct JOIN academic_terms t ON t.school_id=ct.school_id AND t.id=ct.term_id WHERE ct.school_id=cl.school_id AND ct.class_id=cl.id) AS term_name,COALESCE(cc.state,'active') AS state,COALESCE(cc.revision,0) AS revision,(SELECT COUNT(*) FROM courses c WHERE c.school_id=cl.school_id AND c.class_id=cl.id) AS subject_count,(SELECT COUNT(*) FROM enrollments e WHERE e.school_id=cl.school_id AND e.class_id=cl.id) AS student_count FROM classes cl LEFT JOIN class_controls cc ON cc.school_id=cl.school_id AND cc.class_id=cl.id WHERE cl.school_id=? AND (?='1' OR COALESCE(cc.state,'active')<>'deleted') ORDER BY cl.name LIMIT 1000", who(r).School, r.URL.Query().Get("include_deleted"))
 }
 func (a *app) classManage(w http.ResponseWriter, r *http.Request) {
 	if !admin(w, r) {
@@ -89,10 +89,15 @@ func (a *app) lockActiveClass(tx *sql.Tx, r *http.Request, subject string) error
 	var state string
 	e := tx.QueryRowContext(r.Context(), "SELECT state FROM class_controls WHERE school_id=? AND class_id=?", who(r).School, class).Scan(&state)
 	if e == sql.ErrNoRows {
-		return nil
+		state = "active"
+		e = nil
 	}
 	if e != nil {
 		return e
+	}
+	var closed int
+	if tx.QueryRowContext(r.Context(), "SELECT COUNT(*) FROM class_terms ct JOIN academic_terms t ON t.id=ct.term_id AND t.school_id=ct.school_id WHERE ct.school_id=? AND ct.class_id=? AND t.closed=TRUE", who(r).School, class).Scan(&closed) != nil || closed > 0 {
+		return fmt.Errorf("Năm học/học kỳ đã khóa")
 	}
 	if state != "active" {
 		return fmt.Errorf("Lớp đã ngưng hoặc đã xóa; không thể mở lớp trực tuyến")

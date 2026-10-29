@@ -148,6 +148,22 @@ def merge_secrets(new,old):
         return [merge_secrets(v,prior.get(v.get('id'),{})) if isinstance(v,dict) else v for v in new]
     return new
 
+def operational_alerts(row,cfg,now=None):
+    now=int(time.time()) if now is None else now
+    if row['desired_state']=='deleted':return []
+    status=json.loads(row['status'] or '{}');alerts=[]
+    if row['seen'] and now-row['seen']>180:alerts.append({'code':'AGENT_OFFLINE','level':'error','message':'VPS mất liên lạc trên 3 phút'})
+    free=status.get('disk_free')
+    if isinstance(free,int) and free<3*1024**3:alerts.append({'code':'DISK_LOW','level':'error','message':'Dung lượng trống dưới 3 GB; cần dọn bộ nhớ đệm trước khi nâng cấp'})
+    policy=cfg.get('backup',{})
+    if policy.get('enabled'):
+        backup=status.get('backup') or {};backup=backup if isinstance(backup,dict) else {};stamp=backup.get('timestamp',0)
+        if not isinstance(stamp,(int,float)):stamp=0
+        hours=max(1,int(policy.get('interval_hours',24)))
+        if not backup.get('verified') or now-stamp>(hours+2)*3600:alerts.append({'code':'BACKUP_OVERDUE','level':'error','message':'Chưa có bản sao lưu được xác minh trong chu kỳ đã đặt'})
+    if isinstance(status.get('update'),dict) and status['update'].get('state') in ('recovery_required','rolled_back','failed'):alerts.append({'code':'UPDATE_ATTENTION','level':'warning','message':'Kiểm tra tác vụ nâng cấp gần nhất'})
+    return alerts
+
 def queue(db,school,action,payload,revision):
     if action not in ACTIONS:raise ValueError('Thao tác không được hỗ trợ')
     key=secrets.token_hex(16)
@@ -471,7 +487,7 @@ class Handler(BaseHTTPRequestHandler):
             if not old and not password:raise ValueError('Cần mật khẩu tài khoản mới')
             db.execute('INSERT INTO admins(id,email,hash,role,active) VALUES(?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET email=excluded.email,hash=excluded.hash,role=excluded.role,active=excluded.active',(id,email,password_hash(password) if password else old['hash'],role,int(data.get('active',True))))
             db.execute('DELETE FROM sessions WHERE admin=?',(id,));db.execute('DELETE FROM mfa_challenges WHERE admin=?',(id,));audit(db,actor,'admin.save',id);return {'ok':True}
-        if path=='/api/schools' and self.command=='GET':return [{**{k:r[k] for k in ('id','name','domain','ip','revision','applied','seen','status','desired_state','applied_state')},'sync':sync_status(db,r),'platform_mode':decrypt(r['config'],r['id']).get('platform_mode','school')} for r in db.execute('SELECT * FROM schools ORDER BY name')]
+        if path=='/api/schools' and self.command=='GET':return [{**{k:r[k] for k in ('id','name','domain','ip','revision','applied','seen','status','desired_state','applied_state')},'alerts':operational_alerts(r,decrypt(r['config'],r['id'])),'sync':sync_status(db,r),'platform_mode':decrypt(r['config'],r['id']).get('platform_mode','school')} for r in db.execute('SELECT * FROM schools ORDER BY name')]
         if path=='/api/academies/save':
             if user['role']!='owner' or data.get('config',{}).get('platform_mode')!='academy':raise ValueError('Luồng này chỉ tạo nền tảng khóa học/VIP mới bằng quyền owner')
             prior=db.execute('SELECT * FROM schools WHERE id=?',(str(data.get('id','')),)).fetchone()

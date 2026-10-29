@@ -1,6 +1,39 @@
 import { afterEach, expect, it, vi } from "vitest";
 import { api } from "./api";
 afterEach(() => vi.unstubAllGlobals());
+it("combines paginated directories without dropping later rows", async () => {
+  vi.stubGlobal("window", { location: { origin: "https://school.test" } });
+  const fetch = vi
+    .fn()
+    .mockResolvedValueOnce(
+      new Response(JSON.stringify([{ id: "first" }]), {
+        headers: { "X-Next-Page": "1" },
+      }),
+    )
+    .mockResolvedValueOnce(new Response(JSON.stringify([{ id: "last" }])));
+  vi.stubGlobal("fetch", fetch);
+  expect(await api("/users?q=abc")).toEqual([{ id: "first" }, { id: "last" }]);
+  expect(fetch.mock.calls[1][0]).toBe("/api/users?q=abc&page=1");
+});
+it("does not return a partial directory when a later page fails", async () => {
+  vi.stubGlobal("window", { location: { origin: "https://school.test" } });
+  vi.stubGlobal(
+    "fetch",
+    vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify([{ id: "first" }]), {
+          headers: { "X-Next-Page": "1" },
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ error: "Database unavailable" }), {
+          status: 503,
+        }),
+      ),
+  );
+  await expect(api("/users")).rejects.toMatchObject({ status: 503 });
+});
 it("sends cookie-based requests without exposing credentials", async () => {
   const fetch = vi
     .fn()

@@ -91,9 +91,13 @@ func (a *app) recordingDownload(w http.ResponseWriter, r *http.Request) {
 	}
 	var key string
 	var expires time.Time
-	if a.db.QueryRowContext(r.Context(), "SELECT object_key,expires_at FROM recordings WHERE id=? AND school_id=? AND meeting_id=? AND status='ready' AND deleted_at IS NULL AND expires_at>UTC_TIMESTAMP(6)", r.PathValue("recording"), who(r).School, r.PathValue("id")).Scan(&key, &expires) != nil {
+	var bucket string
+	if a.db.QueryRowContext(r.Context(), "SELECT object_key,expires_at,bucket FROM recordings WHERE id=? AND school_id=? AND meeting_id=? AND status='ready' AND deleted_at IS NULL AND expires_at>UTC_TIMESTAMP(6)", r.PathValue("recording"), who(r).School, r.PathValue("id")).Scan(&key, &expires, &bucket) != nil {
 		problem(w, 404, "Recording not found")
 		return
+	}
+	if bucket != "" {
+		store.Bucket = bucket
 	}
 	ttl := remainingLifetime(time.Now().UTC(), expires)
 	if ttl < time.Second {

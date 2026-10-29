@@ -14,6 +14,8 @@ export type ReportCourse = {
   teacher: string;
 };
 type ReportRow = {
+  legacy_history?: number | string;
+  term_name?: string;
   course?: string;
   class_name?: string;
   lesson_start?: string;
@@ -108,7 +110,7 @@ function mockRows(
 }
 export function AttendanceReport({
   role,
-  courses,
+  courses: currentCourses,
   demo = false,
   preferredCourseId,
   preferredMeetingId = "",
@@ -124,6 +126,24 @@ export function AttendanceReport({
   routed?: boolean;
 }) {
   useAcademyRoute();
+  const [historicalCourses, setHistoricalCourses] = useState<ReportCourse[]>(
+    [],
+  );
+  useEffect(() => {
+    if (demo) return;
+    const c = new AbortController();
+    api<ReportCourse[]>("/attendance/catalog", undefined, "GET", c.signal)
+      .then(setHistoricalCourses)
+      .catch((e) => {
+        if (!c.signal.aborted) setError(e.message);
+      });
+    return () => c.abort();
+  }, [demo]);
+  const courses = [
+    ...new Map(
+      [...historicalCourses, ...currentCourses].map((c) => [c.id, c]),
+    ).values(),
+  ];
   const [revision, setRevision] = useState(0);
   const [classChoice, setClass] = useState(""),
     [courseChoice, setCourse] = useState(""),
@@ -339,7 +359,15 @@ export function AttendanceReport({
               {role === "admin" && (
                 <>
                   <AttendancePolicy demo={demo} />
- {meeting && <DeleteLearningData kind="attendance" label="Xóa điểm danh buổi này" scope={{meeting_id:meeting}} demo={demo} onDeleted={()=>setRevision(v=>v+1)}/>}
+                  {meeting && (
+                    <DeleteLearningData
+                      kind="attendance"
+                      label="Xóa điểm danh buổi này"
+                      scope={{ meeting_id: meeting }}
+                      demo={demo}
+                      onDeleted={() => setRevision((v) => v + 1)}
+                    />
+                  )}
                   {
                     <LessonTiming
                       meeting={meeting}
@@ -405,7 +433,25 @@ export function AttendanceReport({
                   ) : (
                     shown.length > 0 && (
                       <>
-                        {meeting&&shown[0]?.teaching_started_at&&<p className="report-context">Giáo viên vào dạy: {vnDateTime(shown[0].teaching_started_at)} · Kết thúc lớp: {shown[0].teaching_ended_at?vnDateTime(shown[0].teaching_ended_at):"Đang giảng dạy"}. Điểm danh tính trong khung giảng dạy; không cộng thời gian chờ.</p>}
+                        {shown.some((r) => Number(r.legacy_history)) && (
+                          <p className="report-context">
+                            Có dữ liệu lịch sử kế thừa. Cần đối chiếu danh sách
+                            lớp/phân công trước v0.33; thời gian thể hiện kết
+                            nối được ghi nhận.
+                          </p>
+                        )}
+                        {meeting && shown[0]?.teaching_started_at && (
+                          <p className="report-context">
+                            Giáo viên vào dạy:{" "}
+                            {vnDateTime(shown[0].teaching_started_at)} · Kết
+                            thúc lớp:{" "}
+                            {shown[0].teaching_ended_at
+                              ? vnDateTime(shown[0].teaching_ended_at)
+                              : "Đang giảng dạy"}
+                            . Điểm danh tính trong khung giảng dạy; không cộng
+                            thời gian chờ.
+                          </p>
+                        )}
                         <div
                           className="comparison-scroll"
                           role="region"
@@ -478,7 +524,14 @@ export function AttendanceReport({
                                       >
                                         {r.meeting_title || "Buổi học"}
                                       </strong>
-                                      {r.teaching_started_at&&<small title="Mốc giảng dạy của giáo viên">{vnTime(r.teaching_started_at)} – {r.teaching_ended_at?vnTime(r.teaching_ended_at):"Đang dạy"}</small>}
+                                      {r.teaching_started_at && (
+                                        <small title="Mốc giảng dạy của giáo viên">
+                                          {vnTime(r.teaching_started_at)} –{" "}
+                                          {r.teaching_ended_at
+                                            ? vnTime(r.teaching_ended_at)
+                                            : "Đang dạy"}
+                                        </small>
+                                      )}
                                     </td>
                                   )}
                                   {!meeting && (

@@ -184,6 +184,8 @@ func (a *app) routes() http.Handler {
 	m.HandleFunc("POST /api/accounts", a.auth(a.accountSave))
 	m.HandleFunc("POST /api/accounts/{user}/delete", a.auth(a.accountDelete))
 	m.HandleFunc("POST /api/2fa", a.auth(a.twoFactor))
+	m.HandleFunc("GET /api/academic/operations", a.auth(a.academicOperations))
+	m.HandleFunc("POST /api/academic/operations", a.auth(a.academicOperations))
 	m.HandleFunc("GET /api/catalog", a.auth(a.catalog))
 	m.HandleFunc("POST /api/classes", a.auth(a.createClass))
 	m.HandleFunc("POST /api/courses", a.auth(a.createCourse))
@@ -212,6 +214,8 @@ func (a *app) routes() http.Handler {
 	m.HandleFunc("GET /api/meetings/{id}/members", a.auth(a.roomMembers))
 	m.HandleFunc("POST /api/meetings/{id}/controls", a.auth(a.roomControl))
 	m.HandleFunc("POST /api/meetings/{id}/moderate", a.auth(a.moderateMember))
+	m.HandleFunc("GET /api/attendance/catalog", a.auth(a.historicalCatalog))
+	m.HandleFunc("GET /api/recordings/catalog", a.auth(a.historicalCatalog))
 	m.HandleFunc("GET /api/attendance/report", a.auth(a.attendanceReport))
 	// Shared learning reports are available in both school and academy deployments.
 	m.HandleFunc("GET /api/academy/admin/data-cleanup", a.auth(a.academyCleanup))
@@ -319,6 +323,9 @@ func migrate(db *sql.DB) error {
 		return e
 	}
 	if _, e = c.ExecContext(context.Background(), "INSERT IGNORE INTO academy_live_memberships(school_id,user_id,expires_at) SELECT school_id,user_id,expires_at FROM academy_memberships WHERE live_enabled=TRUE"); e != nil {
+		return e
+	}
+	if e = migrateAcademicHistory(c); e != nil {
 		return e
 	}
 	_, e = c.ExecContext(context.Background(), "INSERT IGNORE INTO schema_migrations VALUES(6),(7),(8),(9),(10),(11),(12),(13),(14),(15),(16),(17),(18),(19)")

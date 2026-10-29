@@ -16,7 +16,7 @@ type Row = {
 };
 type Lesson = { id: string; title: string; starts_at: string };
 export function RecordingLibrary({
-  courses,
+  courses: currentCourses,
   demo = false,
   role,
 }: {
@@ -24,6 +24,24 @@ export function RecordingLibrary({
   demo?: boolean;
   role: string;
 }) {
+  const [historicalCourses, setHistoricalCourses] = useState<ScopedCourse[]>(
+    [],
+  );
+  useEffect(() => {
+    if (demo) return;
+    const c = new AbortController();
+    api<ScopedCourse[]>("/recordings/catalog", undefined, "GET", c.signal)
+      .then(setHistoricalCourses)
+      .catch((e) => {
+        if (!c.signal.aborted) setError(e.message);
+      });
+    return () => c.abort();
+  }, [demo]);
+  const courses = [
+    ...new Map(
+      [...historicalCourses, ...currentCourses].map((c) => [c.id, c]),
+    ).values(),
+  ];
   const [classChoice, setClass] = useState(""),
     [courseChoice, setCourse] = useState(""),
     [meeting, setMeeting] = useState(""),
@@ -325,7 +343,21 @@ export function RecordingLibrary({
                               {vnDate(r.expires_at)}
                             </td>
                             <td>
-                              {role === "admin" && <DeleteLearningData kind="videos" label="Xóa video" scope={{recording_id:r.id}} demo={demo} onDeleted={()=>{playRequest.current++;setPlayer(null);setRows(v=>v.filter(x=>x.id!==r.id))}}/>}
+                              {role === "admin" && (
+                                <DeleteLearningData
+                                  kind="videos"
+                                  label="Xóa video"
+                                  scope={{ recording_id: r.id }}
+                                  demo={demo}
+                                  onDeleted={() => {
+                                    playRequest.current++;
+                                    setPlayer(null);
+                                    setRows((v) =>
+                                      v.filter((x) => x.id !== r.id),
+                                    );
+                                  }}
+                                />
+                              )}
                               <button
                                 className="secondary"
                                 disabled={opening}

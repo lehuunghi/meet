@@ -53,6 +53,26 @@ export async function api<T = any>(
         res.status,
       );
     }
+    const next = res.headers?.get("X-Next-Page") ?? null;
+    if (
+      method === "GET" &&
+      next !== null &&
+      /^\d+$/.test(next) &&
+      Array.isArray(data)
+    ) {
+      const url = new URL(path, window.location.origin);
+      const previous = Number(url.searchParams.get("page") || 0);
+      if (Number(next) <= previous)
+        throw new ApiError("Trang dữ liệu không hợp lệ", 502);
+      url.searchParams.set("page", next);
+      const more = await api<any[]>(
+        url.pathname + url.search,
+        undefined,
+        "GET",
+        signal,
+      );
+      data = [...data, ...more];
+    }
     finish(true);
     return data;
   } catch (error) {

@@ -161,4 +161,41 @@
   }
 }
 
-.academic-panels { border: 0; padding: 0; margin: 0; min-inline-size: 0; }
+.academic-panels {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-inline-size: 0;
+}
+
+.academic-admin section[aria-label="Năm học, chuyển lớp và lịch dạy"] fieldset {
+  border: 1px solid #dce3ed;
+  border-radius: 12px;
+  margin: 16px 0;
+  padding: 16px;
+  min-width: 0;
+}
+.academic-admin section[aria-label="Năm học, chuyển lớp và lịch dạy"] form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  align-items: end;
+  margin: 12px 0;
+}
+.academic-admin section[aria-label="Năm học, chuyển lớp và lịch dạy"] label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.academic-admin section[aria-label="Năm học, chuyển lớp và lịch dạy"] input,
+.academic-admin section[aria-label="Năm học, chuyển lớp và lịch dạy"] select {
+  max-width: 100%;
+  min-width: 0;
+}
+.academic-admin
+  section[aria-label="Năm học, chuyển lớp và lịch dạy"]
+  .table-wrap {
+  overflow: auto;
+  max-width: 100%;
+}
