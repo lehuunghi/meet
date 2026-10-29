@@ -1164,6 +1164,10 @@ function MeetingRoom({
         );
         return;
       }
+      if(!isBreakout){
+        const groups=await api<{status?:string;current_room_id?:string}>(`/meetings/${parentMeeting}/breakouts`);
+        if(groups?.status==='active'&&groups.current_room_id){await moveRoom(groups.current_room_id,true);return;}
+      }
       try {
         stream =
           previewRef.current || (await captureDevices(preMic, preCamera));
@@ -1312,7 +1316,7 @@ function MeetingRoom({
         <RecordingRecovery owner={user.id} school={user.school_id} active="" />
       )}
       <div className="room-status-line">
-        <MeetingBreakouts parent={parentMeeting} current={meeting.id} user={user} manage={canManage} joined={joined} open={breakoutsOpen} onClose={()=>setBreakoutsOpen(false)} onMove={moveRoom}/>
+        <MeetingBreakouts resumeMeeting={loadRoomResume(user)?.meeting} parent={parentMeeting} current={meeting.id} user={user} manage={canManage} joined={joined} open={breakoutsOpen} onClose={()=>setBreakoutsOpen(false)} onMove={moveRoom}/>
         {localScreen && <div className="room-presenting-banner"><CallIcon kind="present"/><span>Bạn đang trình bày</span><button disabled={busy} onClick={share}>Dừng trình bày</button></div>}
         {connection && (
           <div

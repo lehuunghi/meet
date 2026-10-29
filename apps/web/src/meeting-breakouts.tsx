@@ -40,6 +40,7 @@ export function MeetingBreakouts(p: {
   onClose: () => void;
   onMove: (id: string, restore?: boolean) => Promise<void>;
   demo?: boolean;
+  resumeMeeting?: string;
 }) {
   const [data, setData] = useState<BreakoutState>(() =>
     p.demo
@@ -168,10 +169,10 @@ export function MeetingBreakouts(p: {
     else if (
       p.current === p.parent &&
       data.status === "active" &&
-      data.current_room_id
+      data.current_room_id && (p.joined || p.resumeMeeting===data.current_room_id || p.resumeMeeting===p.parent)
     )
       void move(data.current_room_id, true);
-  }, [data.current_room_id, data.status, data.round_id, p.current]);
+  }, [data.current_room_id, data.status, data.round_id, p.current,p.joined,p.resumeMeeting]);
   const act = async (action: string, extra: Record<string, unknown> = {}) => {
     if (writing.current) return;
     writing.current = true;

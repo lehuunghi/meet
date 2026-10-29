@@ -147,6 +147,13 @@ test("student moves to their assigned group, resumes there, and returns when gro
   await page.reload({waitUntil:'domcontentloaded'});
   await expect(page.locator(".room>header h2")).toHaveText("Nhóm nghiên cứu");
   await expect.poll(() => childJoins).toBe(2);
+  await page.getByRole('button',{name:'Rời lớp',exact:true}).click();
+  await expect(page.locator('.room')).toHaveCount(0);
+  await page.goto('/?room=root',{waitUntil:'domcontentloaded'});
+  await expect(page.locator('.prejoin')).toBeVisible();
+  await page.getByRole('button',{name:'Vào lớp học',exact:true}).click();
+  await expect.poll(()=>childJoins).toBe(3);
+  await expect(page.locator('.room>header h2')).toHaveText('Nhóm nghiên cứu');
   state = "closed";
   await expect(page.locator(".room>header h2")).toHaveText("Phòng chính", {
     timeout: 12000,

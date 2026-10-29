@@ -43,7 +43,7 @@ func testBreakouts(t *testing.T, a *app, request func(string, string, string, *h
 		}
 		rows.Close()
 		for _, id := range ids {
-			for _, table := range []string{"publications", "media_sessions", "meeting_messages", "meeting_hands", "meeting_reactions", "meeting_drawing_state", "attendance_events", "presence", "meeting_teaching_windows", "meeting_links", "meeting_sfu_bindings", "room_settings", "room_members"} {
+			for _, table := range []string{"publications", "media_sessions", "meeting_messages", "meeting_hands", "meeting_drawing_state", "attendance_events", "presence", "meeting_teaching_windows", "meeting_links", "meeting_sfu_bindings", "room_settings", "room_members"} {
 				if _, e = a.db.Exec("DELETE FROM "+table+" WHERE meeting_id=?", id); e != nil {
 					t.Error(table, e)
 				}
@@ -109,6 +109,9 @@ func testBreakouts(t *testing.T, a *app, request func(string, string, string, *h
 	}
 	must(post("assign", map[string]any{"room_id": r2, "users": []string{"demo-student"}}), 409)
 	// A failed upstream close must not move membership or open the new room.
+	if _, e := a.meetingProvider(t.Context(), "school-demo", parent); e != nil {
+		t.Fatal(e)
+	}
 	exec(`INSERT INTO media_sessions(id,school_id,meeting_id,user_id) VALUES('break-root','school-demo',?,'demo-student')`, parent)
 	exec(`INSERT INTO publications(school_id,meeting_id,session_id,track_name,user_id) VALUES('school-demo',?,'break-root','audio-old','demo-student')`, parent)
 	original := a.client
@@ -149,6 +152,11 @@ func testBreakouts(t *testing.T, a *app, request func(string, string, string, *h
 	must(move(r2, student), 403)
 	must(move(r2, teacher), 200)
 	must(request("POST", "/api/meetings/"+r2+"/presence", `{"kind":"join"}`, teacher), 200)
+	for _, id := range []string{r1, r2} {
+		if _, e := a.meetingProvider(t.Context(), "school-demo", id); e != nil {
+			t.Fatal(e)
+		}
+	}
 	exec(`INSERT INTO media_sessions(id,school_id,meeting_id,user_id) VALUES('break-a','school-demo',?,'demo-student'),('break-b','school-demo',?,'demo-teacher')`, r1, r2)
 	exec(`INSERT INTO publications(school_id,meeting_id,session_id,track_name,user_id) VALUES('school-demo',?,'break-b','audio-private','demo-teacher')`, r2)
 	must(request("POST", "/api/meetings/"+r1+"/sfu", `{"op":"tracks","session_id":"break-a","tracks":[{"location":"remote","sessionId":"break-b","trackName":"audio-private"}]}`, student), 403)
