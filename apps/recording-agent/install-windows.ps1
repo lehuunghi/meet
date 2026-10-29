@@ -13,16 +13,6 @@ Get-ChildItem -LiteralPath $PSScriptRoot | Where-Object Name -ne 'data' | Copy-I
 if ($LASTEXITCODE -ne 0) { throw 'Không đặt được quyền thư mục.' }
 & icacls.exe $MeetDataRoot /inheritance:r /grant:r '*S-1-5-18:(OI)(CI)F' '*S-1-5-32-544:(OI)(CI)F' '*S-1-5-19:(OI)(CI)M' | Out-Null
 if ($LASTEXITCODE -ne 0) { throw 'Không bảo vệ được dữ liệu.' }
-$env:MEET_ORIGIN = $MeetOrigin
-$env:MEET_AGENT_DATA = $MeetDataRoot
-$MeetCodePointer = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($MeetCode)
-try {
-    [Runtime.InteropServices.Marshal]::PtrToStringBSTR($MeetCodePointer) | & (Join-Path $MeetAppRoot 'runtime/node.exe') (Join-Path $MeetAppRoot 'agent.mjs') --enroll
-    if ($LASTEXITCODE -ne 0) { throw 'Đăng ký máy thất bại.' }
-} finally {
-    [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($MeetCodePointer)
-    Remove-Item Env:MEET_ORIGIN, Env:MEET_AGENT_DATA -ErrorAction SilentlyContinue
-}
 $MeetAction = New-ScheduledTaskAction -Execute (Join-Path $MeetAppRoot 'runtime/node.exe') -Argument ('"' + (Join-Path $MeetAppRoot 'agent.mjs') + '" --data "' + $MeetDataRoot + '"') -WorkingDirectory $MeetAppRoot
 $MeetTrigger = New-ScheduledTaskTrigger -AtStartup
 $MeetPrincipal = New-ScheduledTaskPrincipal -UserId 'S-1-5-19' -LogonType ServiceAccount
@@ -39,6 +29,16 @@ try {
 } finally {
     Stop-ScheduledTask -TaskName 'MeetRecorderProbe' -ErrorAction SilentlyContinue
     Unregister-ScheduledTask -TaskName 'MeetRecorderProbe' -Confirm:$false -ErrorAction SilentlyContinue
+}
+$env:MEET_ORIGIN = $MeetOrigin
+$env:MEET_AGENT_DATA = $MeetDataRoot
+$MeetCodePointer = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($MeetCode)
+try {
+    [Runtime.InteropServices.Marshal]::PtrToStringBSTR($MeetCodePointer) | & (Join-Path $MeetAppRoot 'runtime/node.exe') (Join-Path $MeetAppRoot 'agent.mjs') --enroll
+    if ($LASTEXITCODE -ne 0) { throw 'Đăng ký máy thất bại.' }
+} finally {
+    [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($MeetCodePointer)
+    Remove-Item Env:MEET_ORIGIN, Env:MEET_AGENT_DATA -ErrorAction SilentlyContinue
 }
 Register-ScheduledTask -TaskName 'MeetRecorder' -Action $MeetAction -Trigger $MeetTrigger -Principal $MeetPrincipal -Settings $MeetSettings -Force | Out-Null
 Start-ScheduledTask -TaskName 'MeetRecorder'

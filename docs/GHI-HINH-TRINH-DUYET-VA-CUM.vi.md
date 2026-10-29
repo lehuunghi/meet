@@ -55,7 +55,7 @@ Tải artifact từ đúng repository và commit đã kiểm tra. Đối chiếu
 
 1. Giải nén gói, mở PowerShell bằng quyền Administrator.
 2. Chạy `./install-windows.ps1` từ thư mục đã giải nén, theo chính sách thực thi script của tổ chức. Không tắt bảo vệ toàn hệ thống để chạy script không được kiểm tra.
-3. Nhập domain website trường và mã đăng ký.
+3. Nhập domain website trường và mã đăng ký. Mã chỉ được gửi sau khi kiểm tra tài khoản nền thành công.
 4. Bộ cài đặt chương trình tại `%ProgramData%\MeetRecorder\app`, dữ liệu tại `%ProgramData%\MeetRecorder\data`.
 5. Chạy thử ghi bằng chính tài khoản nền **LocalService** qua tác vụ `MeetRecorderProbe`; kiểm tra thành công mới bật tác vụ `MeetRecorder` khởi động cùng máy.
 6. Kiểm tra máy xuất hiện trong trung tâm. Thử khi khóa màn hình, đăng xuất và ngắt Remote Desktop trước khi giao lớp thật.
