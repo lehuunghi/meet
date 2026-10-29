@@ -376,7 +376,14 @@ func (a *app) recordingJobDispatch(w http.ResponseWriter, r *http.Request, j rec
 		}
 		r.SetPathValue("recording", in.Recording)
 		r.SetPathValue("part", fmtInt(in.Part))
-		raw, _ := json.Marshal(map[string]any{"size": in.Size, "parts": in.Parts})
+		payload := map[string]any{}
+		if action == "part" {
+			payload["size"] = in.Size
+		}
+		if action == "finish" {
+			payload["parts"] = in.Parts
+		}
+		raw, _ := json.Marshal(payload)
 		r.Body = ioBody(raw)
 		switch action {
 		case "part":

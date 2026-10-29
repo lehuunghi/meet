@@ -31,3 +31,34 @@ test("multipart browser spool survives a failed upload and completes in byte ord
  });
  expect(result.retained).toBe(16*1024*1024+100);expect(result.removed).toBe(true);expect(lengths).toEqual([16*1024*1024,300]);expect(finished).toBe(1);
 });
+test("browser recording starts on joined teacher and flushes before stopping",async({page})=>{
+ let enabled=true,starts=0,finishes=0,releases=0,uploaded=0;
+ const lesson={id:"lesson",title:"Browser lesson",status:"live",course_id:"math",starts_at:new Date().toISOString(),short_code:"abc123"};
+ await page.route("**/api/**",async route=>{
+  const p=new URL(route.request().url()).pathname;let data:any=[];
+  if(p==="/api/setup/status")data={initialized:true};
+  else if(p==="/api/public-config")data={platform_mode:"school",managed:false};
+  else if(p==="/api/me")data={id:"teacher",school_id:"school",name:"Teacher",role:"teacher"};
+  else if(p==="/api/meetings")data=[{...lesson,recording_allowed:enabled}];
+  else if(p==="/api/meetings/lesson")data={...lesson,recording_allowed:enabled,can_manage:true,admission:"admitted",server_recording:{state:"queued",mode:"browser"}};
+  else if(p.endsWith("/admission"))data={admission:"admitted"};
+  else if(p.endsWith("/browser-recording"))data={id:"job",meeting:"lesson",lease:"lease"};
+  else if(p.endsWith("/job/start")){starts++;data={id:"browser-file"};}
+  else if(p.endsWith("/job/tick"))data={stop:false,list:[],drawing:null};
+  else if(p.endsWith("/job/release")){releases++;data={ok:true};}
+  else if(p.includes("/browser-file/parts/"))data={url:"http://127.0.0.1:5173/synthetic-r2"};
+  else if(p.endsWith("/browser-file/finish")){finishes++;data={ok:true};}
+  else if(p.endsWith("/recording-control")){enabled=route.request().postDataJSON().enabled;data={recording_allowed:enabled};}
+  else if(route.request().method()==="POST")data={ok:true};
+  await route.fulfill({json:data});
+ });
+ await page.route("**/synthetic-r2",r=>{uploaded+=r.request().postDataBuffer()!.length;return r.fulfill({body:""})});
+ await page.goto("/?room=lesson");
+ await page.getByRole("button",{name:"Vào lớp học",exact:true}).click();
+ await expect.poll(()=>starts).toBe(1);
+ await expect(page.locator(".room-browser-recording")).toContainText("Đang ghi trên thiết bị");
+ await page.getByRole("button",{name:"Dừng ghi hình",exact:true}).click();
+ await expect.poll(()=>finishes).toBe(1);await expect.poll(()=>releases).toBe(1);
+ expect(uploaded).toBeGreaterThan(100);
+ await expect(page.locator(".room-browser-recording")).toContainText("Đã lưu bản ghi");
+});

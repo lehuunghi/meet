@@ -4,7 +4,7 @@ import { vnDateTime } from "./date-format";
 type Node={id:string;name:string;enabled:boolean;online:boolean;last_seen:string;platform:string;version:string};
 export function RecordingWorkers({demo=false}:{demo?:boolean}){
  const [mode,setMode]=useState("vps"),[nodes,setNodes]=useState<Node[]>([]),[name,setName]=useState(""),[code,setCode]=useState(""),[notice,setNotice]=useState(""),[busy,setBusy]=useState(false),[managed,setManaged]=useState(false);
- const load=async()=>{if(demo)return;const v=await api<{mode:string;nodes:Node[]}>("/recording-workers");setMode(v.mode);setNodes(v.nodes)};
+ const load=async()=>{if(demo)return;const v=await api<{mode:string;nodes:Node[]}>("/recording-workers");if(!["vps","browser","cluster"].includes(v.mode)||!Array.isArray(v.nodes))throw Error("Chưa đọc được cấu hình máy ghi.");setMode(v.mode);setNodes(v.nodes)};
  useEffect(()=>{void api<{managed?:boolean}>("/public-config").then(v=>setManaged(!!v.managed)).catch(()=>{});void load().catch(e=>setNotice(e.message));const t=setInterval(()=>void load().catch(()=>{}),15000);return()=>clearInterval(t)},[demo]);
  const run=async(body:unknown)=>{setBusy(true);setNotice("");try{const v=await api("/recording-workers",body);await load();return v}catch(e){setNotice((e as Error).message)}finally{setBusy(false)}};
  if(managed)return <section className="section"><h2>Ghi hình</h2><p>Phương thức ghi và máy ghi do trung tâm quản lý.</p><a href="https://admin.tn.edu.vn/" target="_blank" rel="noreferrer">Mở quản trị hạ tầng</a></section>;

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	mysql "github.com/go-sql-driver/mysql"
 	"github.com/redis/go-redis/v9"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -138,6 +139,27 @@ func TestRecordingWorkersIntegration(t *testing.T) {
 	w = call(a.recorderJobAction, `{"State":"recording"}`, creds[0].Token, j.ID, j.Lease, "tick", identity{})
 	if w.Code != 200 || strings.Contains(w.Body.String(), `"stop":true`) {
 		t.Fatal(w.Code, w.Body.String())
+	}
+	recording := uid()
+	key := recordingPrefix + school + "/" + meeting + "/" + recording + ".webm"
+	exec("INSERT INTO recordings(id,school_id,meeting_id,owner_id,object_key,bucket,expires_at) VALUES(?,?,?,?,?,'test',UTC_TIMESTAMP()+INTERVAL 30 DAY)", recording, school, meeting, teacher, key)
+	state, _ := json.Marshal(multipartRecording{Upload: "upload", Key: key, Bucket: "test"})
+	cache.Set(t.Context(), "recording-multipart:"+recording, state, time.Hour)
+	cache.Set(t.Context(), "recorder-file-job:"+recording, j.ID, time.Hour)
+	defer cache.Del(t.Context(), "recording-multipart:"+recording, "recorder-file-job:"+recording)
+	w = call(a.recorderJobAction, `{"Recording":"`+recording+`","Part":1,"Size":1024}`, creds[0].Token, j.ID, j.Lease, "part", identity{})
+	if w.Code != 200 || !strings.Contains(w.Body.String(), "X-Amz-Signature") {
+		t.Fatal("remote signed upload", w.Code, w.Body.String())
+	}
+	if w = call(a.recorderJobAction, `{"Recording":"other","Part":1,"Size":1024}`, creds[0].Token, j.ID, j.Lease, "part", identity{}); w.Code != 403 {
+		t.Fatal("cross job file accepted", w.Code)
+	}
+	a.client.Transport = testTransport(func(r *http.Request) (*http.Response, error) {
+		return &http.Response{StatusCode: 200, Header: http.Header{"Content-Type": []string{"video/webm"}, "Content-Length": []string{"1024"}}, ContentLength: 1024, Body: io.NopCloser(strings.NewReader("")), Request: r}, nil
+	})
+	w = call(a.recorderJobAction, `{"Recording":"`+recording+`","Parts":1}`, creds[0].Token, j.ID, j.Lease, "finish", identity{})
+	if w.Code != 200 {
+		t.Fatal("remote completion", w.Code, w.Body.String())
 	}
 	w = call(a.recordingWorkers, `{"Action":"mode","Mode":"browser"}`, "", "", "", "", adminUser)
 	if w.Code != 409 {

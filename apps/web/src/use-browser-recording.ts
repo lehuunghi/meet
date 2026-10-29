@@ -15,7 +15,7 @@ export function useBrowserRecording(p:{enabled:boolean;meeting:string;owner:stri
   let drawing:DrawingState|undefined,target:string|undefined;
   let initialized:Promise<void>=Promise.resolve(),started=false;
   const call=async(action:string)=>{
-   const res=await fetch(`/api/meetings/${p.meeting}/browser-recording/${job!.id}/${action}`,{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","X-Recording-Lease":job!.lease},body:JSON.stringify({State:started?"recording":"starting"}),signal:AbortSignal.timeout(20000)});
+   const res=await fetch(`/api/meetings/${p.meeting}/browser-recording/${job!.id}/${action}`,{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","X-Recording-Lease":job!.lease},body:JSON.stringify(action==="tick"?{State:started?"recording":"starting"}:{}),signal:AbortSignal.timeout(20000)});
    const body=await res.json();if(!res.ok)throw Object.assign(Error(body.error||"Không điều khiển được ghi hình"),{status:res.status});return body;
   };
   const stop=()=>stopping??=(async()=>{
