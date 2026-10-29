@@ -1,4 +1,4 @@
-# Học vụ và lịch sử — v0.33.1 / schema 20
+# Học vụ và lịch sử — v0.33.2 / schema 20
 
 Trong **Lớp & giáo viên → Năm học & lịch dạy** (trường nội bộ: **Quản trị → Năm học & lịch dạy**):
 
@@ -24,3 +24,5 @@ Diễn tập phục hồi dùng luồng **Backup / Chuyển VPS → chuẩn bị
 Schema 20 chỉ thêm bảng; không sửa dữ liệu điểm danh đã ghi. Chạy bằng bộ nâng cấp có snapshot và yêu cầu không có buổi live. Giữ bản sao lưu/key ở nơi riêng, không đưa credential vào Git.
 
 Kiểm thử tích hợp kiểm tra học sinh thêm sau buổi, chuyển lớp, quyền xem của giáo viên cũ, khóa kỳ, lịch trùng và ký URL bucket cũ. Kiểm thử giao diện không tạo dữ liệu kinh doanh thật. Năng lực nhiều lớp/ghi đồng thời phải đo riêng; VPS 1 GB RAM không phải năng lực đã được chứng minh.
+
+Bản 0.33.2 giữ cache module/biên dịch Go trong BuildKit và đặt giới hạn bộ nhớ mềm 512 MiB cho trình biên dịch, chạy một gói mỗi lượt. Giới hạn này chỉ áp dụng lúc dựng image, không áp cho tiến trình API đang phục vụ. Cần Docker BuildKit như bộ cài Ubuntu hiện hành; cache không chứa secrets/runtime-config. Cài lần đầu vẫn cần tải dependency; không cam kết mọi cập nhật xong trong một thời gian cố định.
