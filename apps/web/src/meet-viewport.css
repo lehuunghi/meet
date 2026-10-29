@@ -88,8 +88,11 @@ main.room > .meeting-drawing-anchor:has(.meeting-drawing-tools:not(.drawing-comp
 main.room .preview-classroom > section { display: flex; flex-direction: column; flex: 1; min-height: 0; gap: 8px; }
 main.room .preview-classroom .drawing-board-stage { flex: 1 1 0; height: 0; }
 main.room .preview-stage { flex: 1 1 0; height: 0; min-height: 0; padding: 12px; overflow: hidden; }
-main.room .preview-tiles { flex: 0 0 auto; max-height: 120px; overflow: auto; }
-main.room .preview-tiles article { min-height: 0; padding: 6px; }
+main.room .preview-tiles { display: flex; gap: 8px; flex: 0 0 auto; height: 110px; max-height: 110px; overflow-x: auto; overflow-y: hidden; }
+main.room .preview-tiles article { flex: 1 0 100px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 0; padding: 6px; overflow: hidden; }
+main.room .preview-tiles button { min-height: 24px; padding: 3px 8px; font-size: 10px; }
+main.room .video-grid.has-focus .video-avatar,
+main.room:has(.drawing-board-stage) .video-grid .video-avatar { width: 40px; height: 40px; font-size: 20px; }
 main.room .preview-tiles article > span { width: 28px; height: 28px; line-height: 28px; margin: 0 auto 4px; font-size: 16px; }
 main.room .room-toolbar { z-index: 45; }
 main.room > .room-tools { position: fixed; top: 56px; right: 12px; bottom: calc(var(--toolbar-height, 96px) + 8px); width: 340px; height: calc(100dvh - var(--toolbar-height, 96px) - 64px); max-height: calc(100dvh - var(--toolbar-height, 96px) - 64px); min-height: 0; overflow: auto; z-index: 44; }
@@ -112,7 +115,7 @@ main.room.room-prejoin .prejoin { order: 3; flex: 1; margin: 0 auto; min-height:
 main.room.room-prejoin .prejoin-media,
 main.room.room-prejoin .prejoin-placeholder { min-height: 0; height: min(45dvh, 420px); }
 @media (max-height: 500px) {
-  main.room .preview-tiles { max-height: 70px; }
+  main.room .preview-tiles { height: 70px; max-height: 70px; }
   main.room .preview-tiles article > span,
   main.room .preview-tiles small { display: none; }
   main.room .drawing-pages button,
@@ -123,7 +126,7 @@ main.room.room-prejoin .prejoin-placeholder { min-height: 0; height: min(45dvh, 
   main.room > .room-tools { left: 10px; right: 10px; width: auto; }
   main.room.room-tools-open > .video-grid,
   main.room.room-tools-open > .preview-classroom { margin-right: 0; }
-  main.room .preview-tiles { max-height: 100px; }
+  main.room .preview-tiles { height: 94px; max-height: 94px; }
   main.room.room-prejoin .prejoin { gap: 12px; }
   main.room.room-prejoin .prejoin-media,
   main.room.room-prejoin .prejoin-placeholder { height: min(35dvh, 260px); }
