@@ -3,6 +3,10 @@ import { api } from "./api";
 import { vnDateTime } from "./date-format";
 type Node={id:string;name:string;enabled:boolean;online:boolean;last_seen:string;platform:string;version:string};
 export function RecordingWorkers({demo=false}:{demo?:boolean}){
+ const [open,setOpen]=useState(false);
+ return <details className="section" onToggle={e=>setOpen(e.currentTarget.open)}><summary>Ghi hình và máy ghi</summary>{open&&<RecordingWorkersPanel demo={demo}/>}</details>;
+}
+function RecordingWorkersPanel({demo=false}:{demo?:boolean}){
  const [mode,setMode]=useState("vps"),[nodes,setNodes]=useState<Node[]>([]),[name,setName]=useState(""),[code,setCode]=useState(""),[notice,setNotice]=useState(""),[busy,setBusy]=useState(false),[managed,setManaged]=useState(false);
  const load=async()=>{if(demo)return;const v=await api<{mode:string;nodes:Node[]}>("/recording-workers");if(!["vps","browser","cluster"].includes(v.mode)||!Array.isArray(v.nodes))throw Error("Chưa đọc được cấu hình máy ghi.");setMode(v.mode);setNodes(v.nodes)};
  useEffect(()=>{void api<{managed?:boolean}>("/public-config").then(v=>setManaged(!!v.managed)).catch(()=>{});void load().catch(e=>setNotice(e.message));const t=setInterval(()=>void load().catch(()=>{}),15000);return()=>clearInterval(t)},[demo]);

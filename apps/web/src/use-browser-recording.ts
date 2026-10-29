@@ -22,7 +22,7 @@ export function useBrowserRecording(p:{enabled:boolean;meeting:string;owner:stri
    cancelled=true;clearInterval(timer);
    await initialized.catch(()=>{});
    try {await capture?.stop();}catch(e){setStatus((e as Error).message);}
-   try {if(id){const stored=await getJob(id);if(stored?.bytes){await stopJob(id);await uploadRecording(id,setStatus);await uploadRecording(id,setStatus);}else{await api(`/meetings/${p.meeting}/recordings/${id}/abort`,{});await removeJob(id);}}}catch(e){setStatus((e as Error).message+" · Có thể tải lại trong Bản ghi còn trên thiết bị.");}
+   try {if(id){const stored=await getJob(id);if(stored?.bytes){await stopJob(id);await uploadRecording(id,setStatus);await uploadRecording(id,setStatus);}else{await api(`/meetings/${p.meeting}/recordings/${id}/abort`,{});await removeJob(id);setStatus("Bản ghi quá ngắn hoặc chưa có dữ liệu; chưa lưu video.");}}}catch(e){setStatus((e as Error).message+" · Có thể tải lại trong Bản ghi còn trên thiết bị.");}
    finally{releaseFile?.();release?.();if(job)await call("release").catch(()=>{});setActiveId("");}
   })();
   current.current={stop};

@@ -57,6 +57,7 @@ test("browser recording starts on joined teacher and flushes before stopping",as
  await page.getByRole("button",{name:"Vào lớp học",exact:true}).click();
  await expect.poll(()=>starts).toBe(1);
  await expect(page.locator(".room-browser-recording")).toContainText("Đang ghi trên thiết bị");
+ await expect.poll(()=>page.evaluate(async()=>{const s=await import("/src/recording-store.ts" as string);return (await s.getJob("browser-file"))?.bytes||0;}),{timeout:15000}).toBeGreaterThan(100);
  await page.getByRole("button",{name:"Dừng ghi hình",exact:true}).click();
  await expect.poll(()=>finishes).toBe(1);await expect.poll(()=>releases).toBe(1);
  expect(uploaded).toBeGreaterThan(100);
