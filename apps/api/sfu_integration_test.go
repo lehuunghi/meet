@@ -39,7 +39,7 @@ func testSFURotationUsageFailover(t *testing.T, a *app, school, owner string, ba
 			body = `{"tracks":[{"mid":"0","status":"active"}]}`
 		}
 		if strings.HasSuffix(r.URL.Path, "/tracks/close") {
-			body = `{}`
+			body = `{"tracks":[{"mid":"0"}]}`
 		}
 		return &http.Response{StatusCode: status, Header: http.Header{"Content-Type": []string{"application/json"}}, Body: io.NopCloser(strings.NewReader(body)), Request: r}, nil
 	})}
