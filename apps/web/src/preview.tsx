@@ -144,7 +144,7 @@ export function PreviewRoom({
   return (
     <main className={"room" + (toolsOpen ? " room-tools-open" : "")}>
       <header>
-        <span className="room-header-identity"><MeetingClock/><span className="room-header-code">Phòng minh họa</span></span><span className="brand room-brand">VA Meet</span>
+        <span className="room-header-identity"><MeetingClock/><span className="room-header-code">Phòng minh họa</span></span><span className="brand room-brand">Meet</span>
         <h2>{title}</h2>
       </header>
       <div className="banner">

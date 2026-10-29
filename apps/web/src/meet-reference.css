@@ -843,3 +843,53 @@
     text-overflow: ellipsis;
   }
 }
+
+/* Room typography is compact; dialog colors are local so prejoin/site branding
+   cannot turn descriptive text pale against a light dialog background. */
+.room { font-size: 13px; }
+.room > header h2 { font-size: 12px; }
+.room.room-prejoin > header .room-brand { font-size: 18px; }
+.room.room-prejoin .prejoin h2 { font-size: 22px; }
+.room.room-prejoin .prejoin-intro p { font-size: 13px; line-height: 1.65; }
+.room.room-prejoin .prejoin-actions button { font-size: 14px; }
+.room .room-panel-heading strong { font-size: 16px; }
+.room .room-toolbar .meeting-menu button { font-size: 13px; }
+.room .meeting-modal {
+  --brand-blue: #a8c7fa;
+  --brand-blue-soft: #303134;
+  --brand-blue-border: #747775;
+  --brand-navy: #e3e3e3;
+  color-scheme: dark;
+  background: #202124;
+  color: #e3e3e3;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.room .meeting-modal :is(h2,h3,strong,label,legend,summary) { color: #e3e3e3; }
+.room .meeting-modal h2 { font-size: 18px; line-height: 1.4; }
+.room .meeting-modal :is(p,small) { color: #c4c7c5; font-size: 13px; line-height: 1.65; }
+.room .meeting-modal label { font-size: 13px; }
+.room .meeting-modal :is(input,select,textarea) {
+  background: #303134;
+  color: #e3e3e3;
+  border-color: #747775;
+  font-size: 13px;
+  opacity: 1;
+}
+.room .meeting-modal input[readonly] { color: #f1f3f4; opacity: 1; }
+.room .meeting-modal :is(input,textarea)::placeholder { color: #bdc1c6; opacity: 1; }
+.room .meeting-modal button { background: #333537; color: #e3e3e3; border-color: #747775; font-size: 13px; }
+.room .meeting-modal button:hover:not(:disabled) { background: #454746; color: #fff; }
+.room .meeting-modal button:disabled { background: #303134; color: #bdc1c6; border-color: #747775; opacity: 1; }
+.room .meeting-modal .breakout-primary { background: #a8c7fa; color: #062e6f; border-color: #a8c7fa; }
+.room .meeting-modal .breakout-primary:hover:not(:disabled) { background: #c2d7ff; color: #062e6f; }
+.room .meeting-modal .breakout-danger { color: #ffb4ab; }
+.room .meeting-modal .meeting-danger { background: #b3261e; color: #fff; border-color: #f2b8b5; }
+.room .meeting-modal .meeting-danger:hover:not(:disabled) { background: #8c1d18; color: #fff; }
+.room .meeting-modal a { color: #a8c7fa; text-decoration: underline; }
+.room .error, .room > .room-notices .error, .room .room-tools .error, .room .meeting-modal p.error { background: #5f1412; color: #ffdad6; }
+@media (max-width: 700px) {
+  .room.room-prejoin .prejoin h2 { font-size: 20px; }
+  /* Keep editable mobile fields at 16px to avoid browser focus zoom. */
+  .room .meeting-modal :is(input:not([readonly]),select,textarea) { font-size: 16px; }
+}

@@ -1282,7 +1282,7 @@ function MeetingRoom({
     >
       <header>
         <span className="room-header-identity"><MeetingClock/><span className="room-header-code">{meeting.short_code||"Phòng học"}</span></span>
-        <span className="brand room-brand">VA Meet</span>
+        <span className="brand room-brand">Meet</span>
         <h2>{meeting.title}</h2>
         <button
           className="secondary"
