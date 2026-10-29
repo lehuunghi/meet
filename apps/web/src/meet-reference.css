@@ -893,3 +893,12 @@
   /* Keep editable mobile fields at 16px to avoid browser focus zoom. */
   .room .meeting-modal :is(input:not([readonly]),select,textarea) { font-size: 16px; }
 }
+
+.room.room-prejoin .meeting-menu .meeting-shortcuts { color: #5f6368; border-color: #dadce0; }
+.room .room-polls form > button { background: #a8c7fa; color: #062e6f; }
+.room .room-poll > div > button.selected { background: #a8c7fa; color: #062e6f; border-color: #a8c7fa; }
+.room .room-poll > div > button.selected :is(span,small) { color: #062e6f; }
+
+.room .room-polls .room-poll > button { background: #333537; color: #e3e3e3; border-color: #747775; }
+.room .room-polls .room-poll > button:hover:not(:disabled) { background: #454746; color: #fff; }
+.room .room-polls form > button:hover:not(:disabled) { background: #c2d7ff; color: #062e6f; }
