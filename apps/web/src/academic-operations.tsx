@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "./api";
 import { VNDateInput } from "./date-input";
-import { vnTime } from "./date-format";
+import { vnDate, vnDateTime } from "./date-format";
 type Row = Record<string, any>;
 export function AcademicOperations({
   demo,
@@ -262,7 +262,7 @@ export function AcademicOperations({
                 <tr key={t.id}>
                   <td>{t.name}</td>
                   <td>
-                    {vnTime(t.starts_on)} – {vnTime(t.ends_on)}
+                    {vnDate(t.starts_on)} – {vnDate(t.ends_on)}
                   </td>
                   <td>{Number(t.closed) ? "Đã khóa" : "Hoạt động"}</td>
                   <td>
@@ -403,7 +403,7 @@ export function AcademicOperations({
                   </td>
                   <td>{t.from_name}</td>
                   <td>{t.to_name}</td>
-                  <td>{vnTime(t.at)}</td>
+                  <td>{vnDateTime(t.at)}</td>
                   <td>{t.reason}</td>
                 </tr>
               ))}
@@ -422,10 +422,10 @@ export function AcademicOperations({
                 Course: schedule.Course,
                 Name: schedule.Name,
                 Starts: new Date(
-                  schedule.Starts + "T" + schedule.startTime,
+                  schedule.Starts + "T" + schedule.startTime + ":00+07:00",
                 ).toISOString(),
                 Ends: new Date(
-                  schedule.Ends + "T" + schedule.endTime,
+                  schedule.Ends + "T" + schedule.endTime + ":00+07:00",
                 ).toISOString(),
               });
             } catch {
@@ -524,8 +524,8 @@ export function AcademicOperations({
                   </td>
                   <td>{s.title}</td>
                   <td>
-                    {vnTime(s.starts_at)}
-                    {s.ends_at ? " – " + vnTime(s.ends_at) : ""}
+                    {vnDateTime(s.starts_at)}
+                    {s.ends_at ? " – " + vnDateTime(s.ends_at) : ""}
                   </td>
                   <td>
                     {Number(s.cancelled)

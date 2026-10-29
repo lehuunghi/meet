@@ -66,6 +66,7 @@ jobs:
       - uses: actions/checkout@v4
       - run: sudo apt-get update && sudo apt-get install -y python3-cryptography python3-paramiko
       - run: /usr/bin/python3 control/test_control.py
+      - run: /usr/bin/python3 control/test_operational_alerts.py
       - run: /usr/bin/python3 control/test_purge.py
       - run: /usr/bin/python3 control/test_agent.py
       - run: /usr/bin/python3 deploy/managed_restore_test.py
