@@ -146,6 +146,16 @@ test("student moves to their assigned group, resumes there, and returns when gro
   });
   await page.goto("/?room=root");
   await page.getByRole("button", { name: "Vào lớp học", exact: true }).click();
+  for (const [width, height] of [[1366,650],[390,640],[844,390]]) {
+    await page.setViewportSize({width,height});
+    const bounds = await page.locator(".room").evaluate(e=>{
+      const stage=e.querySelector(".video-grid")!.getBoundingClientRect(), toolbar=e.querySelector(".room-toolbar")!.getBoundingClientRect();
+      return {bottom:stage.bottom, controls:toolbar.top, page:document.documentElement.scrollHeight};
+    });
+    expect(bounds.bottom).toBeLessThanOrEqual(bounds.controls+1);
+    expect(bounds.page).toBeLessThanOrEqual(height+1);
+  }
+  await page.setViewportSize({width:1280,height:720});
   await page.getByRole("button", { name: "Vào nhóm", exact: true }).click();
   await expect(page.getByRole("alert")).toContainText(
     "Chưa đóng được kết nối phòng cũ",

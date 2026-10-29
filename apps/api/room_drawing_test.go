@@ -115,7 +115,7 @@ func testRoomDrawing(t *testing.T, a *app, request func(string, string, string, 
 	must(request("GET", url, "", student), 200)
 	must(request("POST", url, `{"action":"open_board","revision":0}`, student), 403)
 	must(request("POST", url, `{"action":"open_board","revision":0}`, teacher), 200)
-	payload := `{"action":"stroke","context":"board:p1","epoch":0,"stroke":{"id":"demo-student-line","kind":"pen","color":"#0B4ED8","width":4,"seq":1,"points":[{"x":10,"y":10},{"x":80,"y":90}]}}`
+	payload := `{"action":"stroke","context":"board:p1","epoch":0,"stroke":{"id":"demo-student-line","kind":"pen","color":"#34A853","width":4,"seq":1,"points":[{"x":10,"y":10},{"x":80,"y":90}]}}`
 	must(request("POST", url, payload, student), 403)
 	must(request("POST", url, `{"action":"allow","allow_students":true,"revision":1}`, teacher), 200)
 	must(request("POST", url, payload, student), 200)
@@ -167,5 +167,25 @@ func testRoomDrawing(t *testing.T, a *app, request func(string, string, string, 
 	var raw string
 	if a.db.QueryRowContext(ctx, "SELECT content FROM meeting_drawing_state WHERE school_id='school-demo' AND meeting_id='demo-meeting'").Scan(&raw) != nil || !strings.Contains(raw, "p1") {
 		t.Fatal("drawing state not persisted")
+	}
+}
+
+// Demo drawing bypasses the server; exercise all advertised colors and tools here.
+func TestDrawingPaletteContract(t *testing.T) {
+	for _, color := range []string{"#0B4ED8", "#00C2E8", "#FFAA1D", "#FF4D4F", "#162B49", "#FFFFFF", "#006F86", "#34A853"} {
+		for _, kind := range []string{"pen", "marker", "laser", "line", "arrow", "rect", "ellipse", "text", "note", "stamp"} {
+			s := newDrawingState()
+			s.Active = true
+			in := drawingInput{Action: "stroke", Context: "board:p1", Stroke: drawStroke{ID: "teacher-test", Kind: kind, Color: color, Width: 4, Seq: 1, Text: "Test", Points: []drawPoint{{10, 10}, {100, 80}}}}
+			code, message := applyDrawing(&s, in, "teacher", true, nil, 0)
+			if code != 200 {
+				t.Fatalf("%s %s rejected: %d %s", color, kind, code, message)
+			}
+		}
+	}
+	for _, color := range []string{"", "#34A853<script>", "red", "#00000000"} {
+		if validDrawStroke(drawStroke{ID: "teacher-test", Kind: "pen", Color: color, Width: 4, Seq: 1, Points: []drawPoint{{10, 10}}}) {
+			t.Fatalf("invalid color accepted: %s", color)
+		}
 	}
 }

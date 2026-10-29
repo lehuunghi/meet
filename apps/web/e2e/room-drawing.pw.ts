@@ -50,9 +50,7 @@ test("shared drawing controls support pages, export, presentation overlay and mo
   expect((await downloaded).suggestedFilename()).toMatch(/\.png$/);
   await page.getByRole("button", { name: "Thêm trang", exact: true }).click();
   await expect(page.getByLabel("Trang bảng trắng")).toHaveValue(/.+/);
-  expect(
-    await page.getByLabel("Trang bảng trắng").locator("option").count(),
-  ).toBe(2);
+  await expect(page.getByLabel("Trang bảng trắng").locator("option")).toHaveCount(2);
   page.on("dialog", (d) => d.accept());
   await page.getByRole("button", { name: "Xóa trang", exact: true }).click();
   await expect(

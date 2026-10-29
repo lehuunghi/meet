@@ -86,7 +86,7 @@ func validDrawStroke(v drawStroke) bool {
 	if !drawingID.MatchString(v.ID) || v.Seq < 1 || v.Seq > 10000 || v.Width < 1 || v.Width > 16 || len(v.Points) < 1 || len(v.Points) > 1000 || len(v.Text) > 2000 {
 		return false
 	}
-	if !strings.Contains("|#0B4ED8|#00C2E8|#FFAA1D|#FF4D4F|#162B49|#FFFFFF|#006F86|", "|"+v.Color+"|") {
+	if !strings.Contains("|#0B4ED8|#00C2E8|#FFAA1D|#FF4D4F|#162B49|#FFFFFF|#006F86|#34A853|", "|"+v.Color+"|") {
 		return false
 	}
 	switch v.Kind {
