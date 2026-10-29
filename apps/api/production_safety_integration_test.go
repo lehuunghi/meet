@@ -232,7 +232,14 @@ func TestProductionSafetyIntegration(t *testing.T) {
 		t.Fatal(state)
 	}
 	adminCookie := login("demo", "admin")
+	// Isolate the clock scenario; a class/teacher cannot run two root lessons at once.
+	if _, e = db.Exec("UPDATE meetings SET status='ended' WHERE id='demo-meeting'"); e != nil {
+		t.Fatal(e)
+	}
 	testTeachingWindow(t, a, request, teacher, student, adminCookie)
+	if _, e = db.Exec("UPDATE meetings SET status='live' WHERE id='demo-meeting'"); e != nil {
+		t.Fatal(e)
+	}
 	testBreakouts(t, a, request, teacher, student, other)
 	testRoomDrawing(t, a, request, teacher, student, other)
 	testRoomModeration(t, a, request, teacher, student, other)

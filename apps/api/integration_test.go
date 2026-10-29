@@ -133,8 +133,9 @@ func TestIntegration(t *testing.T) {
 	if w.Code != 200 || json.Unmarshal(w.Body.Bytes(), &records) != nil || len(records) != 2 || records[0]["id"] != "demo-student" || records[0]["session_count"] != float64(1) || records[0]["meeting_id"] == records[1]["meeting_id"] {
 		t.Fatalf("student per-session report: %s", w.Body)
 	}
+	// The second student enrolled after this lesson: do not invent an old absence.
 	w = request("GET", "/api/attendance/report?course_id=demo-math&meeting_id=demo-meeting", "", teacher)
-	if w.Code != 200 || json.Unmarshal(w.Body.Bytes(), &records) != nil || len(records) != 2 || records[0]["session_count"] != float64(1) {
+	if w.Code != 200 || json.Unmarshal(w.Body.Bytes(), &records) != nil || len(records) != 1 || records[0]["session_count"] != float64(1) {
 		t.Fatalf("teacher meeting report: %s", w.Body)
 	}
 	administrator := login("demo", "admin")
