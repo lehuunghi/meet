@@ -15,7 +15,7 @@ func (a *app) roomParticipants(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	u := who(r)
-	a.query(w, r, `SELECT u.id,u.short_id,u.name,u.role,COALESCE(h.raised,FALSE) AS hand_raised FROM presence p JOIN users u ON u.school_id=p.school_id AND u.id=p.user_id LEFT JOIN meeting_hands h ON h.school_id=p.school_id AND h.meeting_id=p.meeting_id AND h.user_id=p.user_id JOIN meetings m ON m.school_id=p.school_id AND m.id=p.meeting_id WHERE p.school_id=? AND p.meeting_id=? AND p.online=TRUE AND p.last_seen>=UTC_TIMESTAMP()-INTERVAL 45 SECOND AND m.status='live' ORDER BY hand_raised DESC,u.name LIMIT 200`, u.School, r.PathValue("id"))
+	a.query(w, r, `SELECT u.id,u.short_id,u.name,u.role,COALESCE(h.raised,FALSE) AS hand_raised FROM presence p JOIN users u ON u.school_id=p.school_id AND u.id=p.user_id LEFT JOIN meeting_hands h ON h.school_id=p.school_id AND h.meeting_id=p.meeting_id AND h.user_id=p.user_id JOIN meetings m ON m.school_id=p.school_id AND m.id=p.meeting_id WHERE p.school_id=? AND p.meeting_id=? AND p.online=TRUE AND p.last_seen>=UTC_TIMESTAMP()-INTERVAL 45 SECOND AND m.status='live' AND NOT EXISTS(SELECT 1 FROM meeting_breakout_members bm JOIN meeting_breakout_rounds b ON b.school_id=bm.school_id AND b.id=bm.round_id WHERE b.school_id=p.school_id AND b.parent_id=p.meeting_id AND b.status='active' AND bm.user_id=p.user_id AND bm.current_room_id IS NOT NULL) ORDER BY hand_raised DESC,u.name LIMIT 200`, u.School, r.PathValue("id"))
 }
 func (a *app) liveMember(r *http.Request) bool {
 	u := who(r)

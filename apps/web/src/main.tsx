@@ -1,3 +1,4 @@
+import { MeetingBreakouts } from "./meeting-breakouts";
 import {MeetingDrawing,requestDrawing} from "./meeting-drawing";
 import { AcademyApp } from "./academy";
 import { vnDate } from "./date-format";
@@ -61,6 +62,7 @@ type Meeting = {
   starts_at: string;
   status: string;
   recording_allowed: number | boolean;
+  breakout_parent_id?: string;
   short_code?: string;
   course_id?: string;
 };
@@ -681,19 +683,30 @@ function App() {
     </div>
   );
 }
-function Room({
+function Room(props: React.ComponentProps<typeof MeetingRoom>){
+ const [current,setCurrent]=useState(props.meeting);
+ useEffect(()=>setCurrent(props.meeting),[props.meeting.id]);
+ return <MeetingRoom {...props} key={current.id} meeting={current} onRoomMove={setCurrent}/>;
+}
+function MeetingRoom({
+  onRoomMove,
   meeting,
   user,
   onExit,
   onError,
   error,
 }: {
+  onRoomMove?: (meeting:Meeting)=>void;
   meeting: Meeting;
   user: User;
   onExit: () => void;
   onError: (s: string) => void;
   error: string;
 }) {
+  const parentMeeting=meeting.breakout_parent_id||meeting.id;
+  const isBreakout=parentMeeting!==meeting.id;
+  const [breakoutsOpen,setBreakoutsOpen]=useState(false);
+  const switching=useRef(false);
   const [state, setState] = useState(meeting.status),
     [joined, setJoined] = useState(false),
     [boardOpen,setBoardOpen]=useState(false),
@@ -884,15 +897,15 @@ function Room({
       joinedRef.current = false;
       media.current?.close();
       setJoined(false);
-      if (wasJoined)
-        void api(`/meetings/${meeting.id}/presence`, { kind: "leave" }).catch(
-          () => {},
-        );
+      if (wasJoined) {
+        await api(`/meetings/${meeting.id}/presence`, { kind: "leave" }).catch(()=>{});
+        if(isBreakout)await api(`/meetings/${parentMeeting}/presence`,{kind:"leave"}).catch(()=>{});
+      }
       onExit();
     });
   const end = () =>
     void run(async () => {
-      await api(`/meetings/${meeting.id}/state`, { status: "ended" });
+      await api(`/meetings/${parentMeeting}/state`, { status: "ended" });
       setState("ended");
       clearRoomResume(user);
       resumeHint.current = null;
@@ -1025,12 +1038,13 @@ function Room({
       ticking = false;
     let lastHeartbeat = 0;
     const tick = async () => {
-      if (ticking || stopped) return;
+      if (ticking || stopped || switching.current) return;
       ticking = true;
       let heartbeatPassed = false;
       try {
         if (Date.now() - lastHeartbeat >= 15000) {
           await api(`/meetings/${meeting.id}/presence`, { kind: "heartbeat" });
+          if(isBreakout)await api(`/meetings/${parentMeeting}/presence`, {kind:"heartbeat"});
           lastHeartbeat = Date.now();
         }
         heartbeatPassed = true;
@@ -1068,7 +1082,7 @@ function Room({
     if (!joined) return;
     let pending = false;
     const recover = async (force = false) => {
-      if (pending || !navigator.onLine || !joinedRef.current) return;
+      if (pending || switching.current || !navigator.onLine || !joinedRef.current) return;
       pending = true;
       try {
         await media.current?.recover(force, user.id);
@@ -1104,10 +1118,10 @@ function Room({
       media.current?.close();
       previewRef.current?.getTracks().forEach((t) => t.stop());
 
-      if (joinedRef.current)
-        void api(`/meetings/${meeting.id}/presence`, { kind: "leave" }).catch(
-          () => {},
-        );
+      if (joinedRef.current) {
+        void api(`/meetings/${meeting.id}/presence`, { kind: "leave" }).catch(()=>{});
+        if(isBreakout)void api(`/meetings/${parentMeeting}/presence`,{kind:"leave"}).catch(()=>{});
+      }
     },
     [],
   );
@@ -1163,6 +1177,7 @@ function Room({
       await api(`/meetings/${meeting.id}/media/reset`, {});
       await api(`/meetings/${meeting.id}/presence`, { kind: "join" });
       entered = true;
+      if(isBreakout)await api(`/meetings/${parentMeeting}/presence`,{kind:"join"});
       stream.getAudioTracks().forEach((t) => (t.enabled = preMic));
       stream.getVideoTracks().forEach((t) => (t.enabled = preCamera));
       setPreMic(preMic && stream.getAudioTracks().length > 0);
@@ -1184,6 +1199,7 @@ function Room({
       );
       if (stream.getTracks().length) await media.current.publish(stream);
       if(user.role==='teacher') await api(`/meetings/${meeting.id}/presence`,{kind:'ready'});
+      if(user.role==='teacher'&&isBreakout)await api(`/meetings/${parentMeeting}/presence`,{kind:'ready'});
       setPreview(null);
       saveRoomResume(
         user,
@@ -1237,6 +1253,17 @@ function Room({
     user.school_id,
     user.session_version,
   ]);
+  const moveRoom=async(id:string,restore=false)=>{
+    if(switching.current)return;switching.current=true;setBusy(true);onError("");
+    try{
+      if(!restore)await api(`/meetings/${parentMeeting}/breakouts`,{action:"join",room_id:id===parentMeeting?"":id},"POST",AbortSignal.timeout(90000));
+      const next=await api<Meeting>(`/meetings/${id}`);
+      const remembered=restore?loadRoomResume(user):null;
+      if(next.status!=="ended")saveRoomResume(user,next.id,remembered?.mic??preMic,remembered?.camera??preCamera);else clearRoomResume(user);
+      joinedRef.current=false;media.current?.close();previewRef.current?.getTracks().forEach(t=>t.stop());
+      onRoomMove?.(next);
+    } finally {switching.current=false;setBusy(false);}
+  };
   const focusKey =
     pinned ||
     (localScreen
@@ -1285,6 +1312,7 @@ function Room({
         <RecordingRecovery owner={user.id} school={user.school_id} active="" />
       )}
       <div className="room-status-line">
+        <MeetingBreakouts parent={parentMeeting} current={meeting.id} user={user} manage={canManage} joined={joined} open={breakoutsOpen} onClose={()=>setBreakoutsOpen(false)} onMove={moveRoom}/>
         {localScreen && <div className="room-presenting-banner"><CallIcon kind="present"/><span>Bạn đang trình bày</span><button disabled={busy} onClick={share}>Dừng trình bày</button></div>}
         {connection && (
           <div
@@ -1335,7 +1363,8 @@ function Room({
       </div>
       <div className="room-toolbar" ref={toolbarRef}>
         <MeetingControls
-          canRecord={canManage && state !== "ended"}
+          onBreakouts={()=>setBreakoutsOpen(true)}
+          canRecord={canManage && !isBreakout && state !== "ended"}
           recordingEnabled={recordingEnabled}
           recordingState={serverRecording}
           onRecording={changeRecording}

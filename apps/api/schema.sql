@@ -299,3 +299,15 @@ CREATE TABLE IF NOT EXISTS academy_invoices (
 );
 CREATE TABLE IF NOT EXISTS meeting_drawing_state (school_id CHAR(36) NOT NULL,meeting_id CHAR(36) NOT NULL,content JSON NOT NULL,revision BIGINT NOT NULL DEFAULT 0,PRIMARY KEY(school_id,meeting_id),FOREIGN KEY(school_id,meeting_id) REFERENCES meetings(school_id,id));
 CREATE TABLE IF NOT EXISTS meeting_teaching_windows (school_id CHAR(36) NOT NULL,meeting_id CHAR(36) NOT NULL,started_at DATETIME(6) NULL,ended_at DATETIME(6) NULL,teacher_id CHAR(36) NULL,PRIMARY KEY(school_id,meeting_id),FOREIGN KEY(school_id,meeting_id) REFERENCES meetings(school_id,id));
+CREATE TABLE IF NOT EXISTS meeting_breakout_rounds (
+ id CHAR(36) PRIMARY KEY,school_id CHAR(36) NOT NULL,parent_id CHAR(36) NOT NULL,status ENUM('draft','active','closed') NOT NULL DEFAULT 'draft',revision INT NOT NULL DEFAULT 1,created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+ UNIQUE KEY br_tenant(school_id,id),KEY br_parent(school_id,parent_id,created_at),FOREIGN KEY(school_id,parent_id) REFERENCES meetings(school_id,id)
+);
+CREATE TABLE IF NOT EXISTS meeting_breakout_rooms (
+ school_id CHAR(36) NOT NULL,round_id CHAR(36) NOT NULL,meeting_id CHAR(36) NOT NULL,position INT NOT NULL,
+ PRIMARY KEY(school_id,round_id,meeting_id),UNIQUE KEY br_child(school_id,meeting_id),FOREIGN KEY(school_id,round_id) REFERENCES meeting_breakout_rounds(school_id,id),FOREIGN KEY(school_id,meeting_id) REFERENCES meetings(school_id,id)
+);
+CREATE TABLE IF NOT EXISTS meeting_breakout_members (
+ school_id CHAR(36) NOT NULL,round_id CHAR(36) NOT NULL,user_id CHAR(36) NOT NULL,room_id CHAR(36) NULL,current_room_id CHAR(36) NULL,
+ PRIMARY KEY(school_id,round_id,user_id),FOREIGN KEY(school_id,round_id) REFERENCES meeting_breakout_rounds(school_id,id),FOREIGN KEY(school_id,user_id) REFERENCES users(school_id,id)
+);

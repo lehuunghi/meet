@@ -9,6 +9,10 @@ import (
 
 // Recording preference belongs to the lesson, not a particular browser.
 func (a *app) controlRecording(w http.ResponseWriter, r *http.Request) {
+	if parent, e := a.breakoutParent(r); e != nil || parent != "" {
+		problem(w, 409, "Ghi hình chỉ hỗ trợ phòng chính")
+		return
+	}
 	if _, ok := a.access(w, r, true); !ok {
 		return
 	}

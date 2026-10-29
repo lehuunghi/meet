@@ -48,7 +48,7 @@ func (a *app) academyWorkspace(w http.ResponseWriter, r *http.Request) {
 	meetings, tasks, resume := []map[string]any{}, []map[string]any{}, []map[string]any{}
 	var err error
 	if u.Role == "teacher" || a.hasVIP(ctx, u.School, u.ID, true) {
-		meetings, err = a.workspaceRows(ctx, `SELECT m.id,m.title,m.starts_at,m.status,c.name AS course,cl.name AS class_name,c.id AS course_id FROM meetings m JOIN courses c ON c.id=m.course_id AND c.school_id=m.school_id JOIN classes cl ON cl.id=c.class_id AND cl.school_id=c.school_id WHERE `+courseAccess+` AND (m.status='live' OR (m.status='scheduled' AND m.starts_at BETWEEN UTC_TIMESTAMP()-INTERVAL 1 HOUR AND UTC_TIMESTAMP()+INTERVAL 7 DAY)) ORDER BY (m.status='live') DESC,m.starts_at LIMIT 6`, u.School, u.Role, u.Role, u.ID, u.Role, u.ID)
+		meetings, err = a.workspaceRows(ctx, `SELECT m.id,m.title,m.starts_at,m.status,c.name AS course,cl.name AS class_name,c.id AS course_id FROM meetings m JOIN courses c ON c.id=m.course_id AND c.school_id=m.school_id JOIN classes cl ON cl.id=c.class_id AND cl.school_id=c.school_id WHERE `+courseAccess+` AND `+mainLessonSQL+` AND (m.status='live' OR (m.status='scheduled' AND m.starts_at BETWEEN UTC_TIMESTAMP()-INTERVAL 1 HOUR AND UTC_TIMESTAMP()+INTERVAL 7 DAY)) ORDER BY (m.status='live') DESC,m.starts_at LIMIT 6`, u.School, u.Role, u.Role, u.ID, u.Role, u.ID)
 		if err != nil {
 			problem(w, 503, "Chưa tải được lịch học")
 			return

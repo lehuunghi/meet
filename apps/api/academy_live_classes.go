@@ -8,7 +8,7 @@ import (
 )
 
 // Discovery deliberately excludes roster, chat, recordings and provider credentials.
-const openAcademyClass = `m.school_id=? AND m.status IN ('scheduled','live') AND COALESCE(cc.state,'active')='active'`
+const openAcademyClass = `NOT EXISTS(SELECT 1 FROM meeting_breakout_rooms bx WHERE bx.school_id=m.school_id AND bx.meeting_id=m.id) AND m.school_id=? AND m.status IN ('scheduled','live') AND COALESCE(cc.state,'active')='active'`
 
 func (a *app) academyLiveClasses(w http.ResponseWriter, r *http.Request) {
 	u := who(r)

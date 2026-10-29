@@ -1,3 +1,4 @@
+import { MeetingBreakouts } from "./meeting-breakouts";
 import {MeetingDrawing,requestDrawing} from "./meeting-drawing";
 import { useState } from "react";
 import { RoomTools } from "./room-tools";
@@ -133,6 +134,7 @@ export function PreviewRoom({
     [camera, setCamera] = useState(true),
     [toolsOpen, setToolsOpen] = useState(false),
     [message, setMessage] = useState("");
+  const [breakoutsOpen,setBreakoutsOpen]=useState(false);
   const [recordingEnabled,setRecordingEnabled]=useState(false);
   const [pinned, setPinned] = useState("");
   const [panelTab,setPanelTab]=useState<MeetingPanel>('people'),[raised,setRaised]=useState(false),[people,setPeople]=useState(2),[unread,setUnread]=useState(0),[mirror,setMirror]=useState(true);
@@ -149,6 +151,7 @@ export function PreviewRoom({
         Phòng học xem trước · Các ô bên dưới là minh họa, không có luồng video
         hoặc ghi hình thật.
       </div>
+      <div className="room-status-line"><MeetingBreakouts demo parent="preview" current="preview" user={{id:role,name:previewRoles.find(v=>v.id===role)?.name||"Bạn"}} manage={role!=="student"} joined open={breakoutsOpen} onClose={()=>setBreakoutsOpen(false)} onMove={async()=>{}}/></div>
       <div className="preview-classroom">
         <section>
           <div className="preview-stage" data-presentation={role!=="student"?role:"teacher"}>
@@ -182,7 +185,7 @@ export function PreviewRoom({
               ),
             )}
           </div>
-          <div className="room-toolbar"><MeetingControls recordingEnabled={recordingEnabled} recordingState={recordingEnabled?"recording":"stopped"} onRecording={()=>{setRecordingEnabled(!recordingEnabled);setMessage(recordingEnabled?"Đã dừng ghi hình (xem trước)":"Đã bật ghi hình (xem trước)");}} onBoard={()=>requestDrawing("preview", "board")} joined mic={mic} camera={camera} sharing={false} raised={raised} busy={false} canManage={role!=='student'} people={people} unread={unread} panel={toolsOpen?panelTab:null} code="Phòng minh họa" onMic={()=>setMic(!mic)} onCamera={()=>setCamera(!camera)} onShare={()=>setMessage('Chia sẻ màn hình cần cuộc gọi thật. Bản xem trước không yêu cầu quyền thiết bị.')} onHand={()=>setRaised(!raised)} onReact={emoji=>setMessage('Phản ứng minh họa: '+emoji)} onPanel={openPanel} onLeave={()=>role!=='student'?setLeaveChoice('leave'):onExit()} onEnd={()=>setLeaveChoice('end')} onSettings={()=>setInfo('Cài đặt thiết bị')} onInfo={()=>setInfo('Thông tin phòng học')} mirror={mirror} onMirror={()=>setMirror(!mirror)} onFullscreen={()=>void document.querySelector<HTMLElement>('.room')?.requestFullscreen?.().catch(()=>setMessage('Trình duyệt chưa hỗ trợ toàn màn hình'))}/></div>
+          <div className="room-toolbar"><MeetingControls onBreakouts={()=>setBreakoutsOpen(true)} recordingEnabled={recordingEnabled} recordingState={recordingEnabled?"recording":"stopped"} onRecording={()=>{setRecordingEnabled(!recordingEnabled);setMessage(recordingEnabled?"Đã dừng ghi hình (xem trước)":"Đã bật ghi hình (xem trước)");}} onBoard={()=>requestDrawing("preview", "board")} joined mic={mic} camera={camera} sharing={false} raised={raised} busy={false} canManage={role!=='student'} people={people} unread={unread} panel={toolsOpen?panelTab:null} code="Phòng minh họa" onMic={()=>setMic(!mic)} onCamera={()=>setCamera(!camera)} onShare={()=>setMessage('Chia sẻ màn hình cần cuộc gọi thật. Bản xem trước không yêu cầu quyền thiết bị.')} onHand={()=>setRaised(!raised)} onReact={emoji=>setMessage('Phản ứng minh họa: '+emoji)} onPanel={openPanel} onLeave={()=>role!=='student'?setLeaveChoice('leave'):onExit()} onEnd={()=>setLeaveChoice('end')} onSettings={()=>setInfo('Cài đặt thiết bị')} onInfo={()=>setInfo('Thông tin phòng học')} mirror={mirror} onMirror={()=>setMirror(!mirror)} onFullscreen={()=>void document.querySelector<HTMLElement>('.room')?.requestFullscreen?.().catch(()=>setMessage('Trình duyệt chưa hỗ trợ toàn màn hình'))}/></div>
           {leaveChoice&&<MeetingLeaveDialog busy={false} ending={leaveChoice==='end'} onLeave={onExit} onEnd={onExit} onClose={()=>setLeaveChoice(false)}/>}
           {info&&<MeetingModal title={info} onClose={()=>setInfo('')}><p>Đây là bản xem trước. Không có kết nối SFU, truy cập camera/micro hoặc thay đổi buổi học thật.</p></MeetingModal>}
           {message && (

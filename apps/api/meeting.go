@@ -28,6 +28,10 @@ func (a *app) access(w http.ResponseWriter, r *http.Request, manage bool) (meeti
 		problem(w, 404, "Meeting not found")
 		return m, false
 	}
+	if !a.breakoutAccess(r, a.roomHost(r, m)) {
+		problem(w, 404, "Không có quyền vào phòng nhóm")
+		return m, false
+	}
 	if manage && !a.roomHost(r, m) {
 		problem(w, 403, "Teacher required")
 		return m, false
@@ -56,7 +60,7 @@ func (a *app) meetings(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	u := who(r)
-	a.query(w, r, `SELECT m.id,m.title,m.starts_at,m.status,m.recording_allowed,c.id AS course_id,c.class_id,c.name AS course,cl.name AS class_name FROM meetings m JOIN courses c ON c.id=m.course_id AND c.school_id=m.school_id JOIN classes cl ON cl.id=c.class_id AND cl.school_id=c.school_id WHERE `+courseAccess+` AND (?='' OR c.id=?) AND (?='' OR (m.starts_at>=? AND m.starts_at<?)) ORDER BY (m.status='live') DESC,(m.status='scheduled') DESC,m.starts_at DESC,m.id DESC LIMIT 200 OFFSET ?`, u.School, u.Role, u.Role, u.ID, u.Role, u.ID, r.URL.Query().Get("course_id"), r.URL.Query().Get("course_id"), month, from, to, page*200)
+	a.query(w, r, `SELECT m.id,m.title,m.starts_at,m.status,m.recording_allowed,c.id AS course_id,c.class_id,c.name AS course,cl.name AS class_name FROM meetings m JOIN courses c ON c.id=m.course_id AND c.school_id=m.school_id JOIN classes cl ON cl.id=c.class_id AND cl.school_id=c.school_id WHERE `+courseAccess+` AND `+mainLessonSQL+` AND (?='' OR c.id=?) AND (?='' OR (m.starts_at>=? AND m.starts_at<?)) ORDER BY (m.status='live') DESC,(m.status='scheduled') DESC,m.starts_at DESC,m.id DESC LIMIT 200 OFFSET ?`, u.School, u.Role, u.Role, u.ID, u.Role, u.ID, r.URL.Query().Get("course_id"), r.URL.Query().Get("course_id"), month, from, to, page*200)
 }
 func (a *app) createMeeting(w http.ResponseWriter, r *http.Request) {
 	u := who(r)
@@ -95,6 +99,10 @@ func (a *app) createMeeting(w http.ResponseWriter, r *http.Request) {
 	send(w, 201, map[string]string{"id": id})
 }
 func (a *app) meetingState(w http.ResponseWriter, r *http.Request) {
+	if parent, e := a.breakoutParent(r); e != nil || parent != "" {
+		problem(w, 409, "Điều hành buổi học tại phòng chính")
+		return
+	}
 	if _, ok := a.access(w, r, true); !ok {
 		return
 	}
@@ -156,6 +164,10 @@ func (a *app) meetingState(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if in.Status == "ended" {
+		if e = closeBreakoutsTx(tx, r, r.PathValue("id")); e != nil {
+			problem(w, 503, "Không đóng được phòng nhóm")
+			return
+		}
 		var ended time.Time
 		if e = tx.QueryRowContext(r.Context(), "SELECT UTC_TIMESTAMP(6)").Scan(&ended); e != nil {
 			problem(w, 500, "Clock unavailable")

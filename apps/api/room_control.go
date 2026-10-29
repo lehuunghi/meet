@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -43,6 +44,9 @@ func (a *app) roomGate(w http.ResponseWriter, r *http.Request) bool {
 	if !ok {
 		return false
 	}
+	if !strings.HasSuffix(r.URL.Path, "/presence") && !strings.HasSuffix(r.URL.Path, "/breakouts") && !a.breakoutMainMedia(w, r) {
+		return false
+	}
 	rules, state, _, e := a.roomView(r)
 	if e != nil {
 		problem(w, 503, "Không đọc được quyền phòng học")
@@ -81,7 +85,7 @@ func (a *app) roomState(w http.ResponseWriter, r *http.Request) {
 		problem(w, 503, "Chưa tạo được liên kết phòng")
 		return
 	}
-	send(w, 200, map[string]any{"server_recording": a.serverRecordingStatus(r, m.Recording), "short_code": code, "id": r.PathValue("id"), "title": m.Title, "course_id": m.CourseID, "course": m.Course, "class_name": m.Class, "starts_at": m.Starts, "recording_allowed": m.Recording, "status": m.Status, "can_manage": host, "rules": rules, "admission": state, "mute_request": mute})
+	send(w, 200, map[string]any{"server_recording": a.serverRecordingStatus(r, m.Recording), "breakout_parent_id": func() string { p, _ := a.breakoutParent(r); return p }(), "short_code": code, "id": r.PathValue("id"), "title": m.Title, "course_id": m.CourseID, "course": m.Course, "class_name": m.Class, "starts_at": m.Starts, "recording_allowed": m.Recording, "status": m.Status, "can_manage": host, "rules": rules, "admission": state, "mute_request": mute})
 }
 func (a *app) requestAdmission(w http.ResponseWriter, r *http.Request) {
 	m, ok := a.access(w, r, false)
@@ -290,7 +294,7 @@ func (a *app) moderateMember(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	if in.Action == "deny" || in.Action == "remove" {
-		rows, err := tx.QueryContext(r.Context(), "SELECT id FROM media_sessions WHERE school_id=? AND meeting_id=? AND user_id=?", u.School, id, in.User)
+		rows, err := tx.QueryContext(r.Context(), "SELECT id FROM media_sessions WHERE school_id=? AND (meeting_id=? OR meeting_id IN (SELECT br.meeting_id FROM meeting_breakout_rooms br JOIN meeting_breakout_rounds b ON b.school_id=br.school_id AND b.id=br.round_id WHERE b.parent_id=?)) AND user_id=?", u.School, id, id, in.User)
 		if err != nil {
 			problem(w, 503, "Không đọc được media")
 			return

@@ -76,7 +76,7 @@ func (a *app) academyNotifications(w http.ResponseWriter, r *http.Request) {
 		for _, p := range posts {
 			add("announcement", fmt.Sprint(p["id"]), fmt.Sprint(p["title"]), fmt.Sprint(p["course"]), "/hoc/mon/"+fmt.Sprint(p["course_id"])+"/bang-tin")
 		}
-		meetings, e := a.workspaceRows(r.Context(), `SELECT m.id,m.title,m.starts_at,c.name AS course FROM meetings m JOIN courses c ON c.id=m.course_id AND c.school_id=m.school_id WHERE `+courseAccess+` AND (m.status='live' OR (m.status='scheduled' AND m.starts_at BETWEEN UTC_TIMESTAMP() AND UTC_TIMESTAMP()+INTERVAL 7 DAY)) ORDER BY m.starts_at LIMIT 8`, u.School, u.Role, u.Role, u.ID, u.Role, u.ID)
+		meetings, e := a.workspaceRows(r.Context(), `SELECT m.id,m.title,m.starts_at,c.name AS course FROM meetings m JOIN courses c ON c.id=m.course_id AND c.school_id=m.school_id WHERE `+courseAccess+` AND `+mainLessonSQL+` AND (m.status='live' OR (m.status='scheduled' AND m.starts_at BETWEEN UTC_TIMESTAMP() AND UTC_TIMESTAMP()+INTERVAL 7 DAY)) ORDER BY m.starts_at LIMIT 8`, u.School, u.Role, u.Role, u.ID, u.Role, u.ID)
 		if e != nil {
 			problem(w, 503, "Chưa tải được lịch học")
 			return
