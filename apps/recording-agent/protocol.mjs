@@ -6,7 +6,7 @@ export function validateOrigin(value) {
 export const partSize=16*1024*1024;
 export function allowedRPC(meeting,path){
  const base=`/meetings/${meeting}`;
- return new Map([[base+"/sfu","sfu"],[base+"/media/provider","provider"],[base+"/media/reset","reset"],[base+"/media/failover","provider"],[base+"/media/usage","usage"],[base+"/tracks","tracks"],[base+"/ice","ice"]]).get(path);
+ return new Map([[base+"/sfu","sfu"],[base+"/media/provider","provider"],[base+"/media/reset","reset"],[base+"/media/failover","failover"],[base+"/media/usage","usage"],[base+"/tracks","tracks"],[base+"/ice","ice"]]).get(path);
 }
 export function targetDrawing(drawing,list,hash){
  if(!drawing)return null;

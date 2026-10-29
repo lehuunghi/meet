@@ -509,6 +509,20 @@ func (a *app) recordingJobDispatch(w http.ResponseWriter, r *http.Request, j rec
 		a.recorderSFU(w, r, j)
 		return
 	}
+	if action == "failover" {
+		p, e := a.meetingProvider(r.Context(), j.School, j.Meeting)
+		if e != nil {
+			problem(w, 503, "SFU chưa sẵn sàng")
+			return
+		}
+		raw, _ := json.Marshal(map[string]any{"school": j.School, "meeting": j.Meeting, "provider_id": p.ID, "app_id": p.AppID, "generation": p.Generation, "verified": false})
+		if a.cache.Set(r.Context(), "sfu-failover-request:"+j.School+":"+j.Meeting, raw, 20*time.Second).Err() != nil {
+			problem(w, 503, "Không kiểm tra được SFU dự phòng")
+			return
+		}
+		send(w, 200, map[string]bool{"ok": true})
+		return
+	}
 	if action == "provider" {
 		p, e := a.meetingProvider(r.Context(), j.School, j.Meeting)
 		if e != nil {
@@ -590,6 +604,10 @@ func (a *app) recorderSFU(w http.ResponseWriter, r *http.Request, j recordingWor
 		return
 	}
 	out, e := a.cloud(r, method, path, p.Secret, body)
+	if e != nil && retrySFUFailure(r.Context(), e) {
+		raw, _ := json.Marshal(map[string]any{"school": j.School, "meeting": j.Meeting, "provider_id": p.ID, "app_id": p.AppID, "generation": p.Generation, "verified": true})
+		a.cache.Set(r.Context(), "sfu-failover-request:"+j.School+":"+j.Meeting, raw, 20*time.Second)
+	}
 	if e != nil {
 		problem(w, 502, "Không kết nối được SFU")
 		return

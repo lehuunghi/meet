@@ -140,6 +140,21 @@ func TestRecordingWorkersIntegration(t *testing.T) {
 	if w.Code != 200 || strings.Contains(w.Body.String(), `"stop":true`) {
 		t.Fatal(w.Code, w.Body.String())
 	}
+	if w = call(a.recorderJobAction, `{"op":"publish"}`, creds[0].Token, j.ID, j.Lease, "sfu", identity{}); w.Code != 403 {
+		t.Fatal("recorder allowed publishing", w.Code, w.Body.String())
+	}
+	a.client.Transport = testTransport(func(r *http.Request) (*http.Response, error) {
+		return &http.Response{StatusCode: 503, Header: http.Header{}, Body: io.NopCloser(strings.NewReader("{}")), Request: r}, nil
+	})
+	w = call(a.recorderJobAction, `{"op":"new"}`, creds[0].Token, j.ID, j.Lease, "sfu", identity{})
+	if w.Code != 502 {
+		t.Fatal(w.Code, w.Body.String())
+	}
+	failoverKey := "sfu-failover-request:" + school + ":" + meeting
+	defer cache.Del(t.Context(), failoverKey)
+	if !strings.Contains(cache.Get(t.Context(), failoverKey).Val(), `"verified":true`) {
+		t.Fatal("worker upstream failure was not sent to failover coordinator")
+	}
 	recording := uid()
 	key := recordingPrefix + school + "/" + meeting + "/" + recording + ".webm"
 	exec("INSERT INTO recordings(id,school_id,meeting_id,owner_id,object_key,bucket,expires_at) VALUES(?,?,?,?,?,'test',UTC_TIMESTAMP()+INTERVAL 30 DAY)", recording, school, meeting, teacher, key)
