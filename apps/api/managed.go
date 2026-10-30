@@ -111,7 +111,7 @@ func managedCommand(db *sql.DB, action string) error {
 		if e != nil {
 			return e
 		}
-		return json.NewEncoder(os.Stdout).Encode(map[string]any{"recording_nodes": nodes, "sfu_usage": usage, "sfu_usage_kind": "estimated_webrtc", "live": live, "admins": accounts, "version": buildVersion, "commit": buildCommit, "platform_mode": mode, "school_state": state, "features": []string{"demo_import", "local_academy_management", "lifecycle", "relocation", "sfu_round_robin", "sfu_usage", "sfu_failover", "recording_workers"}})
+		return json.NewEncoder(os.Stdout).Encode(map[string]any{"recording_nodes": nodes, "sfu_usage": usage, "sfu_usage_kind": "estimated_webrtc", "live": live, "admins": accounts, "version": buildVersion, "commit": buildCommit, "platform_mode": mode, "school_state": state, "features": []string{"demo_import", "demo_merge", "local_academy_management", "lifecycle", "relocation", "sfu_round_robin", "sfu_usage", "sfu_failover", "recording_workers"}})
 	}
 	if action == "managed-config" {
 		var in struct {
