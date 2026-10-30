@@ -26,6 +26,10 @@ type demoCourse struct {
 	Page                             academyCoursePage
 }
 type demoPreset struct {
+	Logo struct {
+		Media string `json:"media_type"`
+		Data  []byte `json:"data"`
+	} `json:"logo"`
 	Version  string
 	Site     academySite
 	Courses  []demoCourse
@@ -195,6 +199,11 @@ func managedDemo(db *sql.DB, raw []byte) error {
 	if academyEnabled() {
 		for i, p := range preset.Plans {
 			if _, err = tx.Exec("INSERT INTO academy_plans(id,school_id,name,price_vnd,days,live_enabled,active) VALUES(?,?,?,?,?,?,TRUE)", demoID(school, fmt.Sprintf("plan-%d", i)), school, p.Name, p.Price, p.Days, p.Live != 0); err != nil {
+				return err
+			}
+		}
+		if len(preset.Logo.Data) > 0 && len(preset.Logo.Data) <= 512<<10 && (preset.Logo.Media == "image/jpeg" || preset.Logo.Media == "image/png") {
+			if _, err = tx.Exec("INSERT IGNORE INTO academy_logos(school_id,media_type,image_data,revision) VALUES(?,?,?,?)", school, preset.Logo.Media, preset.Logo.Data, uid()); err != nil {
 				return err
 			}
 		}
