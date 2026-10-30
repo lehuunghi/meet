@@ -94,7 +94,7 @@ func (a *app) finishLogin(w http.ResponseWriter, r *http.Request, u identity) {
 	}
 	token := uid() + uid()
 	raw, _ := json.Marshal(u)
-	const replaceSession = `local old=redis.call('GET',KEYS[1]);if old then redis.call('DEL','session:'..old) end;redis.call('SET',KEYS[1],ARGV[1],'EX',43200);redis.call('SET',KEYS[2],ARGV[2],'EX',43200);return 1`
+	const replaceSession = `local old=redis.call('GET',KEYS[1]);if old then redis.call('DEL',string.sub(KEYS[2],1,-65)..old) end;redis.call('SET',KEYS[1],ARGV[1],'EX',43200);redis.call('SET',KEYS[2],ARGV[2],'EX',43200);return 1`
 	if a.cache.Eval(r.Context(), replaceSession, []string{"current-session:" + u.ID, "session:" + digest(token)}, digest(token), string(raw)).Err() != nil {
 		problem(w, 503, "Authentication unavailable")
 		return

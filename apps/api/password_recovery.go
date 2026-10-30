@@ -33,7 +33,7 @@ func (a *app) issuePasswordRecovery(w http.ResponseWriter, r *http.Request) {
 	token := uid() + uid()
 	hash := digest(token)
 	raw, _ := json.Marshal(passwordRecovery{id, actor.School, version})
-	script := `local old=redis.call('GET',KEYS[1]);if old then redis.call('DEL','password-recovery:'..old) end;redis.call('SET',KEYS[1],ARGV[1],'EX',1800);redis.call('SET',KEYS[2],ARGV[2],'EX',1800);return 1`
+	script := `local old=redis.call('GET',KEYS[1]);if old then redis.call('DEL',string.sub(KEYS[2],1,-65)..old) end;redis.call('SET',KEYS[1],ARGV[1],'EX',1800);redis.call('SET',KEYS[2],ARGV[2],'EX',1800);return 1`
 	if a.cache.Eval(r.Context(), script, []string{"password-recovery-user:" + id, "password-recovery:" + hash}, hash, string(raw)).Err() != nil {
 		problem(w, 503, "Không cấp được liên kết khôi phục")
 		return

@@ -371,13 +371,20 @@ func main() {
 		panic(e)
 	}
 	cache := redis.NewClient(opt)
+	if err := configureRedisNamespace(cache); err != nil {
+		panic(err)
+	}
 	defer cache.Close()
 	origin := os.Getenv("APP_ORIGIN")
 	if origin == "" {
 		panic("APP_ORIGIN required")
 	}
 	a := &app{db: db, cache: cache, client: &http.Client{Timeout: 20 * time.Second}, origin: origin, secure: strings.HasPrefix(origin, "https://")}
-	srv := &http.Server{Addr: ":8080", Handler: a.routes(), ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 30 * time.Second, WriteTimeout: 120 * time.Second, IdleTimeout: 60 * time.Second, MaxHeaderBytes: 16384}
+	listen := os.Getenv("HTTP_LISTEN")
+	if listen == "" {
+		listen = ":8080"
+	}
+	srv := &http.Server{Addr: listen, Handler: a.routes(), ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 30 * time.Second, WriteTimeout: 120 * time.Second, IdleTimeout: 60 * time.Second, MaxHeaderBytes: 16384}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 	go a.retentionLoop(ctx)

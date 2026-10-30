@@ -29,6 +29,9 @@ func managedCommand(db *sql.DB, action string) error {
 		return err
 	}
 	cache := redis.NewClient(opt)
+	if err := configureRedisNamespace(cache); err != nil {
+		panic(err)
+	}
 	defer cache.Close()
 	a := &app{db: db, cache: cache, client: &http.Client{Timeout: 45 * time.Second}, origin: os.Getenv("APP_ORIGIN")}
 	if action == "managed-academy" {

@@ -292,7 +292,7 @@ func (a *app) sfuFailoverLoop(ctx context.Context) {
 			if _, err := os.Stat(configPath("maintenance")); !os.IsNotExist(err) {
 				continue
 			}
-			keys, _, e := a.cache.Scan(ctx, 0, "sfu-failover-request:*", 20).Result()
+			keys, e := a.cache.SPopN(ctx, "sfu-failover-pending", 5).Result()
 			if e != nil {
 				continue
 			}
@@ -336,4 +336,15 @@ func (a *app) sfuFailoverLoop(ctx context.Context) {
 			wg.Wait()
 		}
 	}
+}
+
+// Avoid global keyspace scans when multiple websites share Redis.
+func (a *app) queueSFUFailover(ctx context.Context, school, meeting string, raw []byte) error {
+	key := "sfu-failover-request:" + school + ":" + meeting
+	pipe := a.cache.TxPipeline()
+	pipe.Set(ctx, key, raw, 20*time.Second)
+	pipe.SAdd(ctx, "sfu-failover-pending", key)
+	pipe.Expire(ctx, "sfu-failover-pending", time.Minute)
+	_, err := pipe.Exec(ctx)
+	return err
 }
