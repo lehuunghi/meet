@@ -354,7 +354,7 @@ func main() {
 				a := &app{client: &http.Client{Timeout: 40 * time.Second}, origin: os.Getenv("APP_ORIGIN")}
 				e = a.configureBucket(context.Background(), cfg.R2, cfg.Retention)
 			}
-		case "managed-recorders", "managed-config", "managed-account", "managed-status", "managed-academy":
+		case "managed-recorders", "managed-config", "managed-account", "managed-status", "managed-academy", "managed-demo":
 			e = managedCommand(db, os.Args[1])
 		case "bootstrap":
 			e = bootstrap(db)
