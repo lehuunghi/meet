@@ -16,3 +16,8 @@ test("drawing follows its publisher; stale screen ink is hidden",()=>{
  assert.equal(targetDrawing(ink,[{session_id:"s",track_name:"screen-video",user_id:"teacher"}],hash).target_user,"teacher");
  assert.equal(targetDrawing(ink,[],hash).active,false);assert.equal(ink.active,true);
 });
+
+import {retrySchedule} from './protocol.mjs';
+test('upload recovery backs off and stops automatically without deleting video',()=>{
+ assert.equal(retrySchedule(1,0),60000);assert.ok(retrySchedule(7,0)<=3600000);assert.equal(retrySchedule(8,0),null);assert.equal(retrySchedule(-1,0),null);
+});

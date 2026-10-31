@@ -4,7 +4,7 @@
 [Setup]
 AppId={{A0EC10F7-21D9-46BD-AF8B-875042B863F8}
 AppName=Meet Recorder
-AppVersion=0.3.1
+AppVersion=0.4.0
 AppPublisher=Meet Server
 DefaultDirName={commonappdata}\MeetRecorder\app
 DisableDirPage=yes
@@ -23,13 +23,19 @@ RestartApplications=no
 [Files]
 Source: "{#SourceDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 [Code]
-var EnrollPage: TInputQueryWizardPage;
+var EnrollPage: TInputQueryWizardPage; ExistingIdentity: Boolean;
 function SetEnv(Name, Value: string): Boolean;
   external 'SetEnvironmentVariableW@kernel32.dll stdcall';
 function InitializeSetup(): Boolean;
+var Status: Integer;
 begin
-  Result := not FileExists(ExpandConstant('{commonappdata}\MeetRecorder\data\identity.json'));
-  if not Result then MsgBox('Máy đã đăng ký. Dừng nhận lớp và giữ thư mục data trước khi cập nhật phần mềm máy ghi.', mbInformation, MB_OK);
+  ExistingIdentity := FileExists(ExpandConstant('{commonappdata}\MeetRecorder\data\identity.json'));
+  Result := Exec(ExpandConstant('{sys}\WindowsPowerShell\v1.0\powershell.exe'), '-NoProfile -NonInteractive -Command "if ((Get-ScheduledTask -TaskName MeetRecorder -ErrorAction SilentlyContinue).State -eq ''Running'') { exit 12 }"', '', SW_HIDE, ewWaitUntilTerminated, Status) and (Status = 0);
+  if not Result then MsgBox('Ngừng nhận lớp, đợi ghi/tải hoàn tất rồi dừng tác vụ MeetRecorder trước khi cập nhật. Danh tính và video được giữ nguyên.', mbInformation, MB_OK);
+end;
+function ShouldSkipPage(PageID: Integer): Boolean;
+begin
+  Result := ExistingIdentity and (PageID = EnrollPage.ID);
 end;
 procedure InitializeWizard();
 begin

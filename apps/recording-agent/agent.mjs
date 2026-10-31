@@ -1,11 +1,12 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import os from "node:os";
+import {fileURLToPath} from "node:url";
 import {createHash} from "node:crypto";
 import {execFile} from "node:child_process";
 import {promisify} from "node:util";
 import ffmpeg from "ffmpeg-static";
-import {validateOrigin,partSize,allowedRPC,targetDrawing} from "./protocol.mjs";
+import {validateOrigin,partSize,allowedRPC,targetDrawing,retrySchedule} from "./protocol.mjs";
 process.env.PLAYWRIGHT_BROWSERS_PATH??="0";
 const {chromium}=await import("playwright");
 const run=promisify(execFile),root=path.resolve(process.env.MEET_AGENT_DATA||(process.argv.includes("--data")?process.argv[process.argv.indexOf("--data")+1]:"./data")),configFile=path.join(root,"identity.json");
@@ -45,7 +46,10 @@ if(process.argv.includes("--enroll")){
 }
 cfg=JSON.parse(await fs.readFile(configFile,"utf8"));cfg.origin=validateOrigin(cfg.origin);
 const bundle=await fs.readFile(new URL("./dist/browser.js",import.meta.url),"utf8"),sleep=ms=>new Promise(r=>setTimeout(r,ms));
-let stopping=false;
+let stopping=false,lastError='',uploading=false,interrupted=0,agentCommands=new Set();
+try{interrupted=JSON.parse(await fs.readFile(path.join(root,'agent-state.json'),'utf8')).interrupted||0}catch{}
+async function saveAgentState(value){await atomic(path.join(root,'agent-state.json'),{interrupted,...value,seen:Date.now()})}
+
 process.on("SIGINT",()=>stopping=true);process.on("SIGTERM",()=>stopping=true);
 const jobCall=(job,action,body={})=>request(`jobs/${job.id}/${action}`,body,job);
 const hash=s=>createHash("sha256").update(s).digest("hex");
@@ -80,7 +84,13 @@ async function recover(){
   if(stopping)break;
   if(!/^[a-f0-9]{32}-\d+\.json$/.test(name)||writing.has(name))continue;
   const f=path.join(root,name);
-  try{await finalize(f)}catch(e){console.error("Bản ghi chờ tải lại",name,e.status||"LOCAL_OR_NETWORK_ERROR")}
+  let meta;try{meta=JSON.parse(await fs.readFile(f,'utf8'))}catch{lastError='SPOOL_METADATA_INVALID';continue}
+  if((meta.retry_count||0)>=8||(meta.next_retry||0)>Date.now())continue;
+  try{uploading=true;await finalize(f);lastError=''}catch(e){
+   lastError=[401,403,409].includes(e.status)?'UPLOAD_AUTH_OR_LEASE_FAILED':'UPLOAD_RETRY';
+   meta=JSON.parse(await fs.readFile(f,'utf8'));meta.retry_count=(meta.retry_count||0)+1;meta.next_retry=retrySchedule(meta.retry_count)||0;meta.upload_error=lastError;await atomic(f,meta);
+   console.error('Bản ghi chờ xử lý',name,lastError,meta.retry_count);
+  }finally{uploading=false}
  }
 }
 async function record(job){
@@ -128,6 +138,7 @@ async function record(job){
    await sleep(1000);
   }
  }finally{
+  if(lost&&!currentState?.stop){interrupted++;lastError='RECORDING_INTERRUPTED';await saveAgentState({}).catch(()=>{})}
   // Flush while the lease is still ours, then release; late ownership loss never writes more media.
   try{await page?.evaluate(()=>window.capture?.stop())}catch{}
   await handle?.close().catch(()=>{});writing.delete(path.basename(currentFile));
@@ -138,7 +149,8 @@ async function record(job){
 console.log("Meet Recorder đang chờ lớp học",os.platform());
 let recovering=false;
 let previousCPU=os.cpus().reduce((v,c)=>({idle:v.idle+c.times.idle,total:v.total+Object.values(c.times).reduce((a,b)=>a+b,0)}),{idle:0,total:0});
-function capacity(){const cpu=os.cpus().reduce((v,c)=>({idle:v.idle+c.times.idle,total:v.total+Object.values(c.times).reduce((a,b)=>a+b,0)}),{idle:0,total:0});const total=cpu.total-previousCPU.total,busy=total>0?1-(cpu.idle-previousCPU.idle)/total:0;previousCPU=cpu;return os.freemem()>=2*1024**3&&busy<0.75;}
+let cpuPercent=0;
+function capacity(){const cpu=os.cpus().reduce((v,c)=>({idle:v.idle+c.times.idle,total:v.total+Object.values(c.times).reduce((a,b)=>a+b,0)}),{idle:0,total:0});const total=cpu.total-previousCPU.total,busy=total>0?1-(cpu.idle-previousCPU.idle)/total:0;previousCPU=cpu;cpuPercent=Math.round(busy*100);return os.freemem()>=2*1024**3&&busy<0.75;}
 
 const recoveryTimer=setInterval(()=>{if(!recovering&&!stopping){recovering=true;void recover().catch(()=>{}).finally(()=>recovering=false)}},15000);
 const active=new Map();let slots=1,legacy=false;
@@ -146,7 +158,23 @@ while(!stopping){
  try{
   const disk=await fs.statfs(root),available=capacity()&&Number(disk.bavail)*Number(disk.bsize)>=5*1024**3;
   // Heartbeat even when every slot is busy, so the hub can change the limit.
-  let probe;try{probe=await request("claim",legacy?{Available:false}:{Available:false,Protocol:2})}catch(e){if(e.status!==400)throw e;legacy=true;probe=await request("claim",{Available:false})}
+  const files=(await fs.readdir(root)).filter(name=>/^[a-f0-9]{32}-\d+\.json$/.test(name)&&!writing.has(name));
+  let blocked=0;for(const name of files){try{if(JSON.parse(await fs.readFile(path.join(root,name),'utf8')).retry_count>=8)blocked++}catch{}}
+  const telemetry={cpu_percent:cpuPercent,ram_free:os.freemem(),ram_total:os.totalmem(),disk_free:Number(disk.bavail)*Number(disk.bsize),active_jobs:active.size,upload_queue:files.length,blocked_uploads:blocked,interrupted,uploading,last_error:lastError,agent_version:JSON.parse(await fs.readFile(new URL('./package.json',import.meta.url),'utf8')).version};
+  await saveAgentState(telemetry).catch(()=>{});
+  let probe;try{probe=await request("claim",legacy?{Available:false}:{Available:false,Protocol:2,Telemetry:telemetry})}catch(e){if(e.status!==400)throw e;legacy=true;probe=await request("claim",{Available:false})}
+  for(const command of probe.commands||[]){
+   if(agentCommands.has(command.id))continue;
+   if(command.kind==='retry_uploads'){
+    for(const name of files){const file=path.join(root,name);try{const meta=JSON.parse(await fs.readFile(file,'utf8'));meta.retry_count=0;meta.next_retry=0;await atomic(file,meta)}catch{}}
+    agentCommands.add(command.id);lastError='';
+    await request('command-result',{id:command.id,ok:true});
+   }else if(command.kind==='self_test'&&active.size===0&&!uploading){
+    try{await run(process.execPath,[fileURLToPath(new URL('./agent.mjs',import.meta.url)),'--self-test','--data',root],{timeout:60000});await request('command-result',{id:command.id,ok:true})}
+    catch{await request('command-result',{id:command.id,ok:false})}
+    agentCommands.add(command.id);
+   }
+  }
   slots=Number.isInteger(probe.capacity)?Math.max(1,Math.min(32,probe.capacity)):1;
   if(available){
    const slot=Array.from({length:slots},(_,i)=>i).find(i=>!active.has(i));

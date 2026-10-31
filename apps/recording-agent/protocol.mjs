@@ -17,3 +17,8 @@ export function targetDrawing(drawing,list,hash){
  }
  return ink;
 }
+
+export function retrySchedule(attempt,now=Date.now()){
+ if(!Number.isInteger(attempt)||attempt<1||attempt>=8)return null;
+ return now+Math.min(3600000,60000*2**(attempt-1));
+}

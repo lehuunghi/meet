@@ -3,11 +3,15 @@ $ErrorActionPreference = 'Stop'
 $MeetInstallRoot = Join-Path $env:ProgramData 'MeetRecorder'
 $MeetAppRoot = Join-Path $MeetInstallRoot 'app'
 $MeetDataRoot = Join-Path $MeetInstallRoot 'data'
-if (Test-Path -LiteralPath (Join-Path $MeetDataRoot 'identity.json')) { throw 'Máy đã đăng ký. Dừng tác vụ MeetRecorder trước khi cập nhật; giữ nguyên thư mục data.' }
+$MeetExisting = Test-Path -LiteralPath (Join-Path $MeetDataRoot 'identity.json')
+if ((Get-ScheduledTask -TaskName 'MeetRecorder' -ErrorAction SilentlyContinue).State -eq 'Running') { throw 'Ngừng nhận lớp, đợi hoàn tất ghi/tải rồi dừng tác vụ MeetRecorder trước khi cập nhật.' }
 if (-not (Test-Path -LiteralPath (Join-Path $PSScriptRoot 'runtime/node.exe'))) { throw 'Thiếu runtime. Dùng gói phát hành Windows đầy đủ.' }
 $MeetOrigin = $env:MEET_SETUP_ORIGIN
+if ($MeetExisting) { $MeetOrigin = (Get-Content -LiteralPath (Join-Path $MeetDataRoot 'identity.json') -Raw | ConvertFrom-Json).origin }
 if ([string]::IsNullOrWhiteSpace($MeetOrigin)) { $MeetOrigin = Read-Host 'Địa chỉ Meet Server hoặc website trực tiếp (https://...)' }
+if (-not $MeetExisting) {
 if ($env:MEET_SETUP_CODE) { $MeetCode = ConvertTo-SecureString $env:MEET_SETUP_CODE -AsPlainText -Force } else { $MeetCode = Read-Host 'Mã đăng ký máy dùng một lần' -AsSecureString }
+}
 Remove-Item Env:MEET_SETUP_ORIGIN, Env:MEET_SETUP_CODE -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Force -Path $MeetAppRoot, $MeetDataRoot | Out-Null
 if ([IO.Path]::GetFullPath($PSScriptRoot).TrimEnd('\') -ne [IO.Path]::GetFullPath($MeetAppRoot).TrimEnd('\')) { Get-ChildItem -LiteralPath $PSScriptRoot | Where-Object Name -ne 'data' | Copy-Item -Destination $MeetAppRoot -Recurse -Force }
@@ -18,7 +22,7 @@ if ($LASTEXITCODE -ne 0) { throw 'Không bảo vệ được dữ liệu.' }
 $MeetAction = New-ScheduledTaskAction -Execute (Join-Path $MeetAppRoot 'runtime/node.exe') -Argument ('"' + (Join-Path $MeetAppRoot 'agent.mjs') + '" --data "' + $MeetDataRoot + '"') -WorkingDirectory $MeetAppRoot
 $MeetTrigger = New-ScheduledTaskTrigger -AtStartup
 $MeetPrincipal = New-ScheduledTaskPrincipal -UserId 'S-1-5-19' -LogonType ServiceAccount
-$MeetSettings = New-ScheduledTaskSettingsSet -StartWhenAvailable -RestartCount 100 -RestartInterval (New-TimeSpan -Minutes 1) -ExecutionTimeLimit ([TimeSpan]::Zero) -MultipleInstances IgnoreNew
+$MeetSettings = New-ScheduledTaskSettingsSet -StartWhenAvailable -RestartCount 100 -RestartInterval (New-TimeSpan -Minutes 1) -ExecutionTimeLimit ([TimeSpan]::Zero) -MultipleInstances IgnoreNew -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries
 # Validate the actual non-interactive account, not just the installer user's desktop.
 $MeetProbe = New-ScheduledTaskAction -Execute (Join-Path $MeetAppRoot 'runtime/node.exe') -Argument ('"' + (Join-Path $MeetAppRoot 'agent.mjs') + '" --self-test --data "' + $MeetDataRoot + '"') -WorkingDirectory $MeetAppRoot
 Register-ScheduledTask -TaskName 'MeetRecorderProbe' -Action $MeetProbe -Principal $MeetPrincipal -Force | Out-Null
@@ -32,6 +36,7 @@ try {
     Stop-ScheduledTask -TaskName 'MeetRecorderProbe' -ErrorAction SilentlyContinue
     Unregister-ScheduledTask -TaskName 'MeetRecorderProbe' -Confirm:$false -ErrorAction SilentlyContinue
 }
+if (-not $MeetExisting) {
 $env:MEET_ORIGIN = $MeetOrigin
 $env:MEET_AGENT_DATA = $MeetDataRoot
 $MeetCodePointer = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($MeetCode)
@@ -41,6 +46,7 @@ try {
 } finally {
     [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($MeetCodePointer)
     Remove-Item Env:MEET_ORIGIN, Env:MEET_AGENT_DATA -ErrorAction SilentlyContinue
+}
 }
 Register-ScheduledTask -TaskName 'MeetRecorder' -Action $MeetAction -Trigger $MeetTrigger -Principal $MeetPrincipal -Settings $MeetSettings -Force | Out-Null
 Start-ScheduledTask -TaskName 'MeetRecorder'
