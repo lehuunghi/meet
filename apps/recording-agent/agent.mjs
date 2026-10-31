@@ -13,7 +13,7 @@ await fs.mkdir(root,{recursive:true,mode:0o700});
 if(process.argv.includes("--self-test")){
  await run(ffmpeg,["-version"],{timeout:10000});
  await Promise.all([0,1].map(async slot=>{
-  const browser=await chromium.launch({headless:true,chromiumSandbox:true,args:["--autoplay-policy=no-user-gesture-required"]});
+  const browser=await chromium.launch({headless:true,chromiumSandbox:true,args:["--autoplay-policy=no-user-gesture-required",...(process.platform==="win32"?["--disable-gpu","--disable-accelerated-video-encode"]:[])]});
   try{
    const page=await browser.newPage();let bytes=0;
    await page.exposeFunction("recorderChunk",encoded=>{bytes+=Buffer.from(encoded,"base64").length});
@@ -101,7 +101,7 @@ async function record(job){
  try{
   currentState=await jobCall(job,"tick",{State:"starting"});if(currentState.stop)return;
   await open();
-  browser=await chromium.launch({headless:true,chromiumSandbox:true,args:["--autoplay-policy=no-user-gesture-required"]});
+  browser=await chromium.launch({headless:true,chromiumSandbox:true,args:["--autoplay-policy=no-user-gesture-required",...(process.platform==="win32"?["--disable-gpu","--disable-accelerated-video-encode"]:[])]});
   const context=await browser.newContext({permissions:[]});page=await context.newPage();
   await page.route("**/*",route=>route.request().url()==="http://localhost/recorder"?route.fulfill({contentType:"text/html",body:"<!doctype html><title>Meet Recorder</title><style>video{display:none}</style>"}):route.abort());
   await page.exposeFunction("recorderRPC",async(route,body)=>{

@@ -45,6 +45,7 @@ function remove(key: string) {
   tile?.video.remove();
   tiles.delete(key);
 }
+let captureError="";
 let frameTrack: CanvasCaptureMediaStreamTrack | undefined;
 let paintedFrames=0;
 function draw(){paint();frameTrack?.requestFrame();paintedFrames++;}
@@ -122,6 +123,7 @@ function startSegment() {
     videoBitsPerSecond: 1500000,
     audioBitsPerSecond: 96000,
   });
+  recorder.onerror = (event) => {captureError=(event as any).error?.name||"MEDIA_RECORDER_FAILED";};
   recorder.ondataavailable = (e) => {
     if (e.data.size)
       writes = writes.then(async () => {
@@ -145,7 +147,7 @@ async function finishSegment() {
   recorder.stream.getVideoTracks().forEach((t) => t.stop());
 }
 window.capture = {
-  diagnostics() {return {audio:audio.state,audioTime:audio.currentTime,sink:(audio as any).sinkId,paintedFrames,sampleRate:audio.sampleRate,silentSink:"setSinkId" in AudioContext.prototype,recorder:recorder?.state,tracks:recorder?.stream.getTracks().map(t=>({kind:t.kind,state:t.readyState,muted:t.muted}))};},
+  diagnostics() {return {error:captureError,audio:audio.state,audioTime:audio.currentTime,sink:(audio as any).sinkId,paintedFrames,sampleRate:audio.sampleRate,silentSink:"setSinkId" in AudioContext.prototype,recorder:recorder?.state,tracks:recorder?.stream.getTracks().map(t=>({kind:t.kind,state:t.readyState,muted:t.muted}))};},
   async start(id: string) {
     await audio.resume();
     media = new ClassroomMedia(
@@ -177,6 +179,7 @@ window.capture = {
     list: any[],
     drawing: (DrawingState & { target_user?: string }) | null = null,
   ) {
+    if(captureError)throw new Error(captureError);
     ink = drawing;
     try {
       await media.recover();
