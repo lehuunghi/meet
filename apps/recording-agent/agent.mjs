@@ -19,9 +19,11 @@ if(process.argv.includes("--self-test")){
    await page.exposeFunction("recorderChunk",encoded=>{bytes+=Buffer.from(encoded,"base64").length});
    await page.exposeFunction("recorderRPC",()=>({ok:true}));
    await page.exposeFunction("recorderSegment",()=>{});await page.exposeFunction("recorderOpen",()=>{});
-   await page.goto("about:blank");await page.addScriptTag({content:await fs.readFile(new URL("./dist/browser.js",import.meta.url),"utf8")});
+   await page.route("http://localhost/recorder",route=>route.fulfill({contentType:"text/html",body:"<!doctype html><title>Recorder self-test</title>"}));
+   await page.goto("http://localhost/recorder");await page.addScriptTag({content:await fs.readFile(new URL("./dist/browser.js",import.meta.url),"utf8")});
    await page.evaluate(()=>window.capture.start("self-test"));
    const deadline=Date.now()+20000;while(bytes<100&&Date.now()<deadline)await new Promise(r=>setTimeout(r,250));
+   if(bytes<100)console.error("CAPTURE_DIAGNOSTICS",slot,await page.evaluate(()=>window.capture.diagnostics()));
    await page.evaluate(()=>window.capture.stop());
    if(bytes<100)throw Error("CAPTURE_SELF_TEST_FAILED");console.log("SELF_TEST_OK",slot,bytes);
   }finally{await browser.close()}

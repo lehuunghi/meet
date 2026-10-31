@@ -18,7 +18,9 @@ canvas.width = 1280;
 canvas.height = 720;
 document.body.append(canvas);
 const ctx = canvas.getContext("2d")!;
-const audio = new AudioContext();
+// A silent render sink keeps the audio clock running without a sound card
+// (Windows services and headless recorder hosts may have no output device).
+const audio = new AudioContext({sinkId:{type:"none"}} as AudioContextOptions);
 const mix = audio.createMediaStreamDestination();
 // Keep one stable audio track even while the room is temporarily empty.
 const silent = audio.createOscillator(),
@@ -139,6 +141,7 @@ async function finishSegment() {
   recorder.stream.getVideoTracks().forEach((t) => t.stop());
 }
 window.capture = {
+  diagnostics() {return {audio:audio.state,sampleRate:audio.sampleRate,silentSink:"setSinkId" in AudioContext.prototype,recorder:recorder?.state,tracks:recorder?.stream.getTracks().map(t=>({kind:t.kind,state:t.readyState,muted:t.muted}))};},
   async start(id: string) {
     await audio.resume();
     media = new ClassroomMedia(
