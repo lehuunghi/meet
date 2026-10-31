@@ -10,3 +10,5 @@ await fs.mkdir(path.join(out,"runtime"),{recursive:true});
 await fs.copyFile(process.execPath,path.join(out,"runtime",process.platform==="win32"?"node.exe":"node"));
 if(process.platform!=="win32")await fs.chmod(path.join(out,"runtime/node"),0o755);
 console.log(out);
+
+if(process.platform==="win32"){const file=path.join(out,"install-windows.ps1");await fs.writeFile(file,"\ufeff"+(await fs.readFile(file,"utf8")).replace(/^\ufeff/,""),"utf8");}

@@ -5,10 +5,12 @@ $MeetAppRoot = Join-Path $MeetInstallRoot 'app'
 $MeetDataRoot = Join-Path $MeetInstallRoot 'data'
 if (Test-Path -LiteralPath (Join-Path $MeetDataRoot 'identity.json')) { throw 'Máy đã đăng ký. Dừng tác vụ MeetRecorder trước khi cập nhật; giữ nguyên thư mục data.' }
 if (-not (Test-Path -LiteralPath (Join-Path $PSScriptRoot 'runtime/node.exe'))) { throw 'Thiếu runtime. Dùng gói phát hành Windows đầy đủ.' }
-$MeetOrigin = Read-Host 'Địa chỉ Meet Server hoặc website trực tiếp (https://...)'
-$MeetCode = Read-Host 'Mã đăng ký máy dùng một lần' -AsSecureString
+$MeetOrigin = $env:MEET_SETUP_ORIGIN
+if ([string]::IsNullOrWhiteSpace($MeetOrigin)) { $MeetOrigin = Read-Host 'Địa chỉ Meet Server hoặc website trực tiếp (https://...)' }
+if ($env:MEET_SETUP_CODE) { $MeetCode = ConvertTo-SecureString $env:MEET_SETUP_CODE -AsPlainText -Force } else { $MeetCode = Read-Host 'Mã đăng ký máy dùng một lần' -AsSecureString }
+Remove-Item Env:MEET_SETUP_ORIGIN, Env:MEET_SETUP_CODE -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Force -Path $MeetAppRoot, $MeetDataRoot | Out-Null
-Get-ChildItem -LiteralPath $PSScriptRoot | Where-Object Name -ne 'data' | Copy-Item -Destination $MeetAppRoot -Recurse -Force
+if ([IO.Path]::GetFullPath($PSScriptRoot).TrimEnd('\') -ne [IO.Path]::GetFullPath($MeetAppRoot).TrimEnd('\')) { Get-ChildItem -LiteralPath $PSScriptRoot | Where-Object Name -ne 'data' | Copy-Item -Destination $MeetAppRoot -Recurse -Force }
 & icacls.exe $MeetInstallRoot /inheritance:r /grant:r '*S-1-5-18:(OI)(CI)F' '*S-1-5-32-544:(OI)(CI)F' '*S-1-5-19:(OI)(CI)RX' | Out-Null
 if ($LASTEXITCODE -ne 0) { throw 'Không đặt được quyền thư mục.' }
 & icacls.exe $MeetDataRoot /inheritance:r /grant:r '*S-1-5-18:(OI)(CI)F' '*S-1-5-32-544:(OI)(CI)F' '*S-1-5-19:(OI)(CI)M' | Out-Null

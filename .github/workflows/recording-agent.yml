@@ -48,6 +48,19 @@ jobs:
           cd release
           tar -czf meet-recorder-linux-x64.tar.gz meet-recorder-linux-x64
           sha256sum meet-recorder-linux-x64.tar.gz > meet-recorder-linux-x64.tar.gz.sha256
+      - name: Build Windows setup executable
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $Compiler = Join-Path ${env:ProgramFiles(x86)} 'Inno Setup 6/ISCC.exe'
+          if (-not (Test-Path -LiteralPath $Compiler)) { throw 'Inno Setup compiler is missing' }
+          & $Compiler windows-setup.iss
+          if ($LASTEXITCODE -ne 0) { throw 'Windows setup build failed' }
+          $File = 'release/meet-recorder-windows-x64-setup.exe'
+          $Header = [IO.File]::ReadAllBytes((Resolve-Path $File))
+          if ($Header[0] -ne 77 -or $Header[1] -ne 90) { throw 'Invalid Windows executable' }
+          $Digest = (Get-FileHash $File -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$Digest  meet-recorder-windows-x64-setup.exe" | Set-Content "$File.sha256"
       - name: Archive Windows package
         if: runner.os == 'Windows'
         shell: pwsh
@@ -59,7 +72,38 @@ jobs:
         with:
           name: meet-recorder-${{ runner.os }}-x64
           path: |
+            apps/recording-agent/release/*.exe
             apps/recording-agent/release/*.zip
             apps/recording-agent/release/*.gz
             apps/recording-agent/release/*.sha256
           retention-days: 30
+
+  publish:
+    needs: package
+    if: github.ref == 'refs/heads/codex/multi-school-platform'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: meet-recorder-*-x64
+          merge-multiple: true
+          path: recorder-assets
+      - name: Publish immutable recorder release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          head=$(gh api repos/${GITHUB_REPOSITORY}/git/ref/heads/codex/multi-school-platform --jq .object.sha)
+          if [[ "$head" != "$GITHUB_SHA" ]]; then echo 'A newer commit exists; do not publish an older installer'; exit 0; fi
+          version=$(node -p "JSON.parse(require('fs').readFileSync('apps/recording-agent/package.json','utf8')).version")
+          tag="recorder-agent-v$version"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            existing=$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/$tag" --jq .object.sha)
+            [[ "$existing" == "$GITHUB_SHA" ]] || { echo 'Installer version already exists at another commit; bump its version'; exit 1; }
+          else
+            gh release create "$tag" --target "$GITHUB_SHA" --prerelease --latest=false --title "Meet Recorder $version" --notes 'Windows Setup EXE and Ubuntu x64 recorder. SHA256 files included. The installer is not code-signed; no signing certificate is configured. Preserve data/identity during updates.'
+          fi
+          gh release upload "$tag" recorder-assets/* --clobber

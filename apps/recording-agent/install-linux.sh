@@ -4,7 +4,8 @@ set -euo pipefail
 source_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 [[ -x "$source_dir/runtime/node" ]] || { echo 'Thiếu runtime; dùng gói Linux đầy đủ.' >&2; exit 1; }
 [[ ! -f /var/lib/meet-recorder-agent/identity.json ]] || { echo 'Đã đăng ký. Dừng dịch vụ trước khi cập nhật; giữ thư mục dữ liệu.' >&2; exit 1; }
-read -r -p 'Địa chỉ Meet Server hoặc website trực tiếp (https://...): ' meet_origin
+meet_origin=${MEET_ORIGIN:-}
+if [[ -z "$meet_origin" ]]; then read -r -p 'Địa chỉ Meet Server hoặc website trực tiếp (https://...): ' meet_origin </dev/tty; fi
 id meet-recorder >/dev/null 2>&1 || useradd --system --home-dir /var/lib/meet-recorder-agent --shell /usr/sbin/nologin meet-recorder
 install -d -m 755 /opt/meet-recorder-agent
 cp -a "$source_dir/." /opt/meet-recorder-agent/
@@ -26,7 +27,7 @@ EOF
   apparmor_parser -r /etc/apparmor.d/meet-recorder-browser
 fi
 runuser -u meet-recorder -- env HOME=/var/lib/meet-recorder-agent MEET_AGENT_DATA=/var/lib/meet-recorder-agent /opt/meet-recorder-agent/runtime/node /opt/meet-recorder-agent/agent.mjs --self-test
-read -r -s -p 'Mã đăng ký máy dùng một lần: ' meet_code; echo
+read -r -s -p 'Mã đăng ký máy dùng một lần: ' meet_code </dev/tty; echo
 printf '%s' "$meet_code" | MEET_ORIGIN="$meet_origin" MEET_AGENT_DATA=/var/lib/meet-recorder-agent /opt/meet-recorder-agent/runtime/node /opt/meet-recorder-agent/agent.mjs --enroll
 unset meet_code
 chown -R meet-recorder:meet-recorder /var/lib/meet-recorder-agent
