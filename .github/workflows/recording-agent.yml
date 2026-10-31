@@ -7,7 +7,7 @@ permissions:
   contents: read
 jobs:
   package:
-    timeout-minutes: 15
+    timeout-minutes: 25
     strategy:
       fail-fast: false
       matrix:
@@ -42,11 +42,17 @@ jobs:
         run: setpriv --no-new-privs node agent.mjs --self-test
       - run: npm prune --omit=dev
       - run: node package-release.mjs
+      - name: Test fresh Ubuntu service installation with AppArmor enabled
+        if: runner.os == 'Linux'
+        run: |
+          bash -n install-linux.sh bootstrap-linux.sh
+          sudo env MEET_DISPOSABLE_INSTALL_TEST=1 python3 test-linux-install.py release/meet-recorder-linux-x64
       - name: Archive Linux package
         if: runner.os == 'Linux'
         run: |
           cd release
           tar -czf meet-recorder-linux-x64.tar.gz meet-recorder-linux-x64
+          python3 ../check-linux-package.py meet-recorder-linux-x64.tar.gz
           sha256sum meet-recorder-linux-x64.tar.gz > meet-recorder-linux-x64.tar.gz.sha256
       - name: Build Windows setup executable
         if: runner.os == 'Windows'

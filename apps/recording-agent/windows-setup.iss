@@ -4,7 +4,7 @@
 [Setup]
 AppId={{A0EC10F7-21D9-46BD-AF8B-875042B863F8}
 AppName=Meet Recorder
-AppVersion=0.3.0
+AppVersion=0.3.1
 AppPublisher=Meet Server
 DefaultDirName={commonappdata}\MeetRecorder\app
 DisableDirPage=yes
