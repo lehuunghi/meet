@@ -1,0 +1,97 @@
+.room-tool-tabs {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.room-people {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 15px;
+  margin-top: 20px;
+}
+.room-people > div {
+  padding: 15px;
+  border: 1px solid var(--brand-line);
+  border-radius: 9px;
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  align-items: center;
+  gap: 10px;
+}
+.room-people .avatar {
+  grid-row: span 2;
+  padding: 12px;
+}
+.room-people strong {
+  font-size: 12px;
+}
+.room-people small {
+  font-size: 10px;
+  color: #7b8b70;
+}
+.room-messages {
+  max-height: 340px;
+  overflow: auto;
+  margin-top: 20px;
+}
+.room-messages article {
+  padding: 14px;
+  background: #f3f7ed;
+  border-radius: 8px;
+  margin: 10px 0;
+  overflow-wrap: anywhere;
+}
+.room-messages article strong {
+  font-size: 12px;
+}
+.room-messages article small {
+  float: right;
+  font-size: 10px;
+  color: #7b8b70;
+}
+.room-messages p {
+  white-space: pre-wrap;
+  color: var(--brand-ink);
+  margin: 8px 0 0;
+  font-size: 13px;
+}
+.room-chat-form {
+  display: flex;
+  gap: 12px;
+  align-items: end;
+}
+.room-chat-form label {
+  flex: 1;
+}
+.prejoin {
+  width: 100%;
+  grid-column: 1/-1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 25px;
+}
+.prejoin video {
+  width: 100%;
+  border-radius: 12px;
+  background: var(--brand-navy);
+  max-height: 320px;
+}
+.prejoin p {
+  font-size: 12px;
+}
+@media (max-width: 700px) {
+  .prejoin {
+    grid-template-columns: 1fr;
+  }
+  .room-tool-tabs button {
+    flex: 1;
+    font-size: 11px;
+    min-height: 44px;
+  }
+  .room-chat-form {
+    flex-wrap: wrap;
+  }
+  .room-chat-form label {
+    min-width: 100%;
+  }
+}

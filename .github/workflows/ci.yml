@@ -1,0 +1,213 @@
+name: CI
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  recorder:
+    runs-on: ubuntu-24.04
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: ci-only-password
+          MYSQL_DATABASE: meet_recorder_test
+        ports: ["3306:3306"]
+        options: --health-cmd="mysqladmin ping -h localhost -pci-only-password" --health-interval=10s --health-retries=30
+      redis:
+        image: redis:7.4-alpine
+        ports: ["6379:6379"]
+        options: --health-cmd="redis-cli ping" --health-interval=5s --health-timeout=5s --health-retries=10
+    env:
+      TEST_REDIS_URL: redis://127.0.0.1:6379/15
+      TEST_MYSQL_DSN: root:ci-only-password@tcp(127.0.0.1:3306)/meet_recorder_test?parseTime=true
+      PW_CHANNEL: chrome
+    defaults:
+      run:
+        working-directory: apps/recorder
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: apps/recorder/package-lock.json
+      - run: npm ci
+      - run: npm audit --omit=dev --audit-level=high
+      - run: npm test && npm run build
+      - name: Verify preinstalled Chrome
+        run: google-chrome --version
+      - name: Ensure ffmpeg is available
+        timeout-minutes: 10
+        run: |
+          if ! command -v ffmpeg >/dev/null 2>&1; then
+            sudo find /etc/apt -maxdepth 2 -type f \( -name '*.list' -o -name '*.sources' -o -name '*mirrors*.txt' \) -exec sed -i 's|azure.archive.ubuntu.com|archive.ubuntu.com|g' {} +
+            sudo apt-get -o Acquire::Retries=2 -o Acquire::http::Timeout=30 update
+            sudo apt-get -o Acquire::Retries=2 -o Acquire::http::Timeout=30 install -y --no-install-recommends ffmpeg
+          fi
+          ffmpeg -version
+      - run: node --test browser-test.mjs
+      - name: Reproduce restrictive recorder source permissions
+        run: chmod 600 apps/recorder/package.json apps/recorder/worker.mjs apps/recorder/core.mjs
+        working-directory: .
+      - run: docker build -f apps/recorder/Dockerfile apps -t meet-recorder:ci
+        working-directory: .
+      - name: Verify recorder runtime user can read its modules and bundle
+        run: docker run --rm --entrypoint node meet-recorder:ci --input-type=module -e "import fs from 'node:fs'; import './core.mjs'; import 'mysql2/promise'; import 'redis'; import 'playwright'; import '@aws-sdk/client-s3'; for (const p of ['package.json','worker.mjs','dist/browser.js']) fs.readFileSync(p);"
+        working-directory: .
+      - run: bash -n deploy/install-recorder.sh
+        working-directory: .
+      - run: |
+          bash deploy/init-secrets.sh
+          docker compose -f deploy/recorder.compose.yaml config --format json | python3 -c 'import sys,json; c=json.load(sys.stdin); assert c["services"]["recorder"]["tmpfs"] == ["/tmp:size=256m,mode=1777"]'
+        working-directory: .
+  control:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y python3-cryptography python3-paramiko
+      - run: /usr/bin/python3 control/test_control.py
+      - run: /usr/bin/python3 control/test_operational_alerts.py
+      - run: /usr/bin/python3 control/test_purge.py
+      - run: /usr/bin/python3 control/test_agent.py
+      - run: /usr/bin/python3 deploy/managed_restore_test.py
+      - run: /usr/bin/python3 deploy/relocate_test.py
+      - run: /usr/bin/python3 -m py_compile control/server.py control/agent.py control/provision.py
+      - run: bash -n control/install.sh control/install-agent.sh deploy/install.sh
+  api:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: ci-only-password
+          MYSQL_DATABASE: meet_test
+        ports: ["3306:3306"]
+        options: --health-cmd="mysqladmin ping -h localhost -pci-only-password" --health-interval=10s --health-retries=30
+      redis:
+        image: redis:7.4-alpine
+        ports: ["6379:6379"]
+        options: --health-cmd="redis-cli ping" --health-interval=5s --health-retries=20
+    defaults:
+      run:
+        working-directory: apps/api
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash -n deploy/install.sh deploy/init-secrets.sh deploy/install-update-agent.sh deploy/enable-updates.sh
+        working-directory: .
+      - run: sudo apt-get update && sudo apt-get install -y python3-cryptography
+        working-directory: .
+      - run: /usr/bin/python3 deploy/update_test.py
+        working-directory: .
+      - run: /usr/bin/python3 deploy/backup_test.py
+        working-directory: .
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: apps/api/go.mod
+          check-latest: true
+          cache-dependency-path: apps/api/go.sum
+      - run: go vet ./...
+      - run: go run golang.org/x/vuln/cmd/govulncheck@v1.9.0 ./...
+      - run: go test -race -count=1 -v ./...
+        env:
+          TEST_MYSQL_DSN: root:ci-only-password@tcp(127.0.0.1:3306)/meet_test?parseTime=true&loc=UTC
+          TEST_REDIS_URL: redis://127.0.0.1:6379/15
+      - run: go build ./...
+  web:
+    runs-on: ubuntu-24.04
+    env:
+      PW_CHANNEL: chrome
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - name: Verify preinstalled Chrome
+        run: google-chrome --version
+      - run: npx playwright test
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: apps/api/go.mod
+          cache-dependency-path: apps/api/go.sum
+      - run: node ../../control/test_grade_layout.cjs
+      - run: sudo apt-get update && sudo apt-get install -y python3-cryptography
+      - run: node ../../control/test_ui.cjs
+      - run: node ../../control/test_features_ui.cjs
+      - run: node ../../control/test_sfu_ui.cjs
+        env:
+          CONTROL_TEST_PYTHON: /usr/bin/python3
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: browser-test-results
+          path: apps/web/test-results/
+          retention-days: 7
+  containers:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo bash deploy/init-secrets.sh
+      - run: docker compose -f deploy/compose.yaml config --quiet
+        env:
+          APP_ORIGIN: http://localhost:8080
+      - name: Reproduce restrictive public asset permissions
+        run: chmod 600 apps/web/public/academy-site.css
+      - run: docker compose -f deploy/compose.yaml up --build -d
+        env:
+          APP_ORIGIN: http://localhost:8080
+      - run: |
+          for i in $(seq 1 90); do
+            if curl -fsS http://localhost:8080/api/health; then exit 0; fi
+            sleep 2
+          done
+          docker compose -f deploy/compose.yaml logs
+          exit 1
+        env:
+          APP_ORIGIN: http://localhost:8080
+      - name: Verify public stylesheet is served as CSS
+        run: |
+          python3 - <<'PY'
+          import urllib.request
+          with urllib.request.urlopen('http://localhost:8080/academy-site.css') as r:
+              assert r.status == 200
+              assert r.headers.get_content_type() == 'text/css'
+              assert b'.hero' in r.read()
+          PY
+      - run: sudo apt-get update && sudo apt-get install -y python3-cryptography
+      - run: sudo --preserve-env=APP_ORIGIN,MEET_DISPOSABLE_BACKUP_TEST python3 deploy/academy_bootstrap_integration.py
+        env:
+          APP_ORIGIN: http://localhost:8080
+          MEET_DISPOSABLE_BACKUP_TEST: 'true'
+      - run: sudo --preserve-env=APP_ORIGIN,MEET_DISPOSABLE_BACKUP_TEST python3 deploy/managed_restore_integration.py
+        env:
+          APP_ORIGIN: http://localhost:8080
+          MEET_DISPOSABLE_BACKUP_TEST: 'true'
+      - run: sudo --preserve-env=APP_ORIGIN,MEET_DISPOSABLE_BACKUP_TEST python3 deploy/relocate_integration.py
+        env:
+          APP_ORIGIN: http://localhost:8080
+          MEET_DISPOSABLE_BACKUP_TEST: 'true'
+      - run: sudo --preserve-env=APP_ORIGIN,MEET_DISPOSABLE_BACKUP_TEST python3 deploy/backup_integration.py
+        env:
+          APP_ORIGIN: http://localhost:8080
+          MEET_DISPOSABLE_BACKUP_TEST: 'true'
+      - run: sudo --preserve-env=APP_ORIGIN,MEET_DISPOSABLE_BACKUP_TEST python3 deploy/update_integration.py
+        env:
+          APP_ORIGIN: http://localhost:8080
+          MEET_DISPOSABLE_BACKUP_TEST: 'true'
+      - run: sudo --preserve-env=MEET_DISPOSABLE_BACKUP_TEST python3 deploy/recorder_update_integration.py
+        env:
+          MEET_DISPOSABLE_BACKUP_TEST: 'true'
+      - run: sudo --preserve-env=MEET_DISPOSABLE_BACKUP_TEST python3 control/purge_integration.py
+        env:
+          MEET_DISPOSABLE_BACKUP_TEST: 'true'
+      - run: docker compose -f deploy/compose.yaml down -v
+        if: always()
+        env:
+          APP_ORIGIN: http://localhost:8080

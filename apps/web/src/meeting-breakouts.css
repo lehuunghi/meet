@@ -1,0 +1,298 @@
+.meeting-modal:has(.breakout-panel) {
+  width: min(1000px, calc(100vw - 24px));
+  background: #202124;
+  color: #e3e3e3;
+  max-height: calc(100dvh - 24px);
+  padding: 24px;
+}
+.meeting-modal:has(.breakout-panel) h2,
+.meeting-modal:has(.breakout-panel) h3 {
+  color: #e3e3e3;
+}
+.meeting-modal:has(.breakout-panel) p,
+.meeting-modal:has(.breakout-panel) label,
+.meeting-modal:has(.breakout-panel) small {
+  color: #c4c7c5;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.meeting-modal:has(.breakout-panel) button {
+  background: #333537;
+  color: #e3e3e3;
+  border: 1px solid #747775;
+  border-radius: 8px;
+  min-height: 40px;
+  padding: 8px 12px;
+}
+.meeting-modal:has(.breakout-panel) input {
+  background: #303134;
+  color: #e3e3e3;
+  border: 1px solid #747775;
+  min-height: 40px;
+  border-radius: 8px;
+  margin: 0;
+  padding: 8px 12px;
+}
+.meeting-modal:has(.breakout-panel) button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.breakout-create {
+  max-width: 480px;
+  margin: 32px auto;
+  display: grid;
+  gap: 14px;
+}
+.breakout-stepper {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+.breakout-stepper input {
+  max-width: 90px;
+  text-align: center;
+}
+.breakout-top {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.breakout-top > input {
+  flex: 1;
+  min-width: 0;
+}
+.breakout-columns {
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr);
+  gap: 20px;
+}
+.breakout-columns.breakout-student {
+  grid-template-columns: 1fr;
+}
+.breakout-main {
+  padding-right: 16px;
+  border-right: 1px solid #454746;
+}
+.breakout-main h3 {
+  font-size: 14px;
+}
+.breakout-main small {
+  display: block;
+  margin-top: 20px;
+}
+.breakout-rooms {
+  display: grid;
+  gap: 12px;
+  max-height: 52vh;
+  overflow: auto;
+  padding-right: 6px;
+}
+.breakout-room {
+  border: 1px solid #454746;
+  background: #292a2d;
+  padding: 14px;
+  border-radius: 12px;
+}
+.breakout-room > header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 10px;
+}
+.breakout-room > header input {
+  min-width: 0;
+  flex: 1;
+}
+.breakout-room h3 {
+  margin: 0;
+  font-size: 16px;
+}
+.breakout-room p {
+  margin: 4px 0 12px;
+}
+.breakout-person {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 6px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.breakout-person.is-selected {
+  background: #314665;
+}
+.meeting-modal .breakout-person input {
+  width: 18px;
+  height: 18px;
+  min-height: 18px;
+  flex: none;
+  accent-color: #a8c7fa;
+  padding: 0;
+}
+.breakout-avatar {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  flex: none;
+  background: #45594e;
+  border-radius: 50%;
+  color: white;
+}
+.breakout-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-top: 1px solid #454746;
+  margin-top: 20px;
+  padding-top: 16px;
+  font-size: 13px;
+}
+.meeting-modal button.breakout-primary {
+  background: #a8c7fa;
+  color: #062e6f;
+  border-color: #a8c7fa;
+}
+.meeting-modal button.breakout-danger {
+  color: #ffb4ab;
+}
+.breakout-error {
+  padding: 12px;
+  background: #601410;
+  border-radius: 8px;
+}
+.breakout-error button {
+  margin-left: 12px;
+}
+.room .room-status-line > .breakout-banner {
+  grid-column: 1/-1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: #202124;
+  border: 1px solid #747775;
+  border-radius: 12px;
+  padding: 10px 16px;
+  color: #e3e3e3;
+  font-size: 14px;
+}
+.breakout-banner button {
+  background: #a8c7fa;
+  color: #062e6f;
+  border: 0;
+  border-radius: 22px;
+  min-height: 40px;
+  padding: 8px 16px;
+}
+@media (max-width: 700px) {
+  .meeting-modal:has(.breakout-panel) {
+    padding: 18px;
+  }
+  .breakout-columns {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .breakout-main {
+    border-right: 0;
+    border-bottom: 1px solid #454746;
+    padding: 0 0 12px;
+    max-height: 28vh;
+    overflow: auto;
+  }
+  .breakout-top {
+    flex-wrap: wrap;
+  }
+  .breakout-top > input {
+    flex-basis: 100%;
+  }
+  .breakout-room > header {
+    flex-wrap: wrap;
+  }
+  .breakout-room > header input {
+    flex-basis: 100%;
+  }
+  .breakout-rooms {
+    max-height: none;
+    overflow: visible;
+  }
+  .breakout-footer {
+    flex-wrap: wrap;
+  }
+  .room .room-status-line > .breakout-banner {
+    font-size: 12px;
+    padding: 10px;
+  }
+}
+
+.room:has(.breakout-banner) > .video-grid {
+  height: calc(100dvh - var(--toolbar-height, 96px) - 156px);
+}
+.meeting-modal .breakout-room > header {
+  height: auto;
+  min-height: 0;
+  position: static;
+  flex-direction: row;
+  padding: 0;
+  margin: 0 0 10px;
+  gap: 8px;
+}
+.meeting-modal .breakout-footer,
+.meeting-modal .breakout-footer > span {
+  color: #c4c7c5;
+}
+@media (max-width: 700px) {
+  .meeting-modal:has(.breakout-columns) {
+    height: min(850px, calc(100dvh - 24px));
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .meeting-modal:has(.breakout-columns) .breakout-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .breakout-top,
+  .breakout-footer {
+    flex: none;
+  }
+  .breakout-columns {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+  }
+  .breakout-rooms {
+    overflow: visible;
+    max-height: none;
+  }
+  .breakout-footer {
+    margin-top: 12px;
+    padding-top: 12px;
+  }
+  .breakout-footer > button {
+    width: 100%;
+  }
+  .breakout-panel > small {
+    margin-top: 10px;
+  }
+}
+.room .room-status-line > .breakout-error {
+  width: 100%;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+.room .room-status-line > .breakout-error button {
+  background: #333537;
+  color: #fff;
+  border: 1px solid #c4c7c5;
+  border-radius: 8px;
+  padding: 8px;
+  min-height: 36px;
+}

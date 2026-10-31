@@ -1,0 +1,558 @@
+/* Classroom-inspired learning workspace. Original brand and existing permissions. */
+.classroom-shell {
+  background: #fff;
+  color: #3c4043;
+}
+.shell.classroom-shell > aside,
+.academy-shell.classroom-shell > aside {
+  background: #fff;
+  border-right: 1px solid #e0e3e7;
+  color: #3c4043;
+  box-shadow: none;
+}
+.classroom-shell .brand,
+.classroom-shell .school strong,
+.classroom-shell .aside-bottom strong,
+.academy-shell.classroom-shell .academy-brand-name {
+  color: #3c4043;
+}
+.classroom-shell .school,
+.classroom-shell .aside-bottom,
+.academy-shell.classroom-shell .academy-user-card {
+  background: #fff;
+  border-color: #e0e3e7;
+  color: #3c4043;
+}
+.classroom-shell nav :is(button, a[role="button"]),
+.academy-shell.classroom-shell nav :is(button, a[role="button"]) {
+  background: transparent;
+  color: #3c4043;
+  border: 0;
+  border-radius: 0 24px 24px 0;
+  font-weight: 500;
+  min-height: 48px;
+  font-size: 13px;
+  box-shadow: none;
+}
+.classroom-shell nav :is(button, a[role="button"])[aria-current="page"],
+.academy-shell.classroom-shell nav :is(button, a[role="button"]).active {
+  background: var(--brand-blue-soft);
+  color: var(--brand-blue);
+}
+.classroom-shell > main,
+.academy-shell.classroom-shell > main {
+  background: white;
+}
+.classroom-shell > main > header,
+.academy-shell.classroom-shell > main > header {
+  border-bottom: 1px solid #e0e3e7;
+  background: white;
+  color: #5f6368;
+}
+.classroom-workspace {
+  color: #3c4043;
+  max-width: 1400px;
+  margin: auto;
+  font-size: 14px;
+}
+.classroom-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 28px;
+}
+.classroom-heading small {
+  font-size: 10px;
+  letter-spacing: 1.2px;
+  color: #5f6368;
+}
+.classroom-heading h2 {
+  font-size: 27px;
+  line-height: 1.4;
+  font-weight: 500;
+  color: #3c4043;
+  margin: 7px 0;
+}
+.classroom-heading p {
+  font-size: 13px;
+  line-height: 1.7;
+  color: #5f6368;
+  margin: 0;
+}
+.classroom-search {
+  display: grid;
+  gap: 6px;
+  width: min(320px, 40%);
+  font-size: 11px;
+  color: #5f6368;
+}
+.classroom-search input {
+  width: 100%;
+  border: 1px solid #dadce0;
+  border-radius: 8px;
+  background: #f8fafd;
+  color: #3c4043;
+  padding: 12px 14px;
+  font-size: 13px;
+  min-height: 44px;
+}
+.classroom-filter {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  color: #5f6368;
+  margin-bottom: 24px;
+}
+.classroom-filter select {
+  border: 1px solid #dadce0;
+  border-radius: 7px;
+  padding: 10px 12px;
+  max-width: 100%;
+  font-size: 13px;
+  background: #fff;
+  color: #3c4043;
+}
+.classroom-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 285px), 1fr));
+  gap: 24px;
+  align-items: start;
+}
+.classroom-card {
+  border: 1px solid #dadce0;
+  border-radius: 10px;
+  overflow: hidden;
+  background: white;
+  min-width: 0;
+  transition: box-shadow 0.15s;
+}
+.classroom-card:hover {
+  box-shadow: 0 2px 8px #3c404325;
+}
+.classroom-card-cover,
+.classroom-subject-banner {
+  position: relative;
+  isolation: isolate;
+  background: var(--class-color, var(--brand-blue));
+  color: white;
+  overflow: hidden;
+  padding: 22px 22px 28px;
+  min-height: 135px;
+}
+.classroom-card-cover small {
+  font-size: 12px;
+  color: #ffffffdc;
+  letter-spacing: 0.4px;
+}
+.classroom-card-cover h3 {
+  font-size: 22px;
+  line-height: 1.4;
+  font-weight: 500;
+  color: white;
+  margin: 8px 0;
+}
+.classroom-card-cover span {
+  font-size: 12px;
+  color: #fff;
+}
+.classroom-card-cover h3 :is(button, a) {
+  font: inherit;
+  color: white;
+  background: transparent !important;
+  border: 0;
+  padding: 0;
+  text-align: left;
+  min-height: 0;
+  line-height: 1.4;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  box-shadow: none;
+}
+.classroom-card-cover h3 :is(button, a):hover {
+  text-decoration: underline;
+}
+.classroom-cover-lines {
+  position: absolute;
+  right: -20px;
+  bottom: -58px;
+  width: 190px;
+  height: 150px;
+  transform: rotate(-22deg);
+  border: 18px solid #ffffff15;
+  border-radius: 22px;
+  z-index: -1;
+}
+.classroom-cover-lines:after {
+  content: "";
+  position: absolute;
+  inset: 18px;
+  border: 8px solid #ffffff12;
+  border-radius: 8px;
+}
+.classroom-card-content {
+  position: relative;
+  padding: 35px 22px 22px;
+  min-height: 125px;
+}
+.classroom-card-avatar {
+  position: absolute;
+  right: 20px;
+  top: -24px;
+  background: var(--brand-blue-soft);
+  color: var(--brand-blue);
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border: 3px solid white;
+  border-radius: 50%;
+  font-size: 20px;
+  font-weight: 500;
+}
+.classroom-card-content p {
+  font-size: 13px;
+  color: #5f6368;
+  line-height: 1.7;
+  margin: 8px 0;
+  overflow-wrap: anywhere;
+}
+.classroom-card-content small {
+  color: #5f6368;
+  font-size: 12px;
+}
+.classroom-state {
+  font-size: 12px;
+  color: #5f6368;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.classroom-state.is-live {
+  color: var(--brand-teal);
+}
+.classroom-state.is-live:before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  background: var(--brand-teal);
+  border-radius: 50%;
+}
+.classroom-card > footer {
+  border-top: 1px solid #e0e3e7;
+  padding: 14px 15px;
+  display: flex;
+  justify-content: end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.classroom-workspace button {
+  font-size: 12px;
+  border-radius: 5px;
+  min-height: 38px;
+  padding: 9px 13px;
+  box-shadow: none;
+}
+.classroom-workspace button:not(.secondary):not([role="tab"]) {
+  background: var(--brand-blue);
+  color: white;
+  border: 1px solid transparent;
+}
+.classroom-workspace button:disabled {
+  background: #f1f3f4 !important;
+  color: #80868b !important;
+  cursor: default;
+  opacity: 1;
+}
+.classroom-workspace .secondary {
+  background: white;
+  color: var(--brand-blue);
+  border: 1px solid #dadce0;
+}
+.classroom-workspace .secondary:hover {
+  background: #f5f9ff;
+}
+.classroom-subject-banner {
+  border-radius: 10px;
+  min-height: 200px;
+  padding: 34px;
+  display: flex;
+  flex-direction: column;
+  justify-content: end;
+}
+.classroom-subject-banner small {
+  color: #ffffffda;
+  font-size: 14px;
+}
+.classroom-subject-banner h2 {
+  color: white;
+  font-size: 34px;
+  font-weight: 500;
+  line-height: 1.4;
+  margin: 9px 0;
+}
+.classroom-subject-banner p {
+  color: #ffffffe6;
+  font-size: 14px;
+  margin: 0;
+}
+.classroom-subject-banner .classroom-cover-lines {
+  width: 300px;
+  height: 240px;
+  right: 20px;
+}
+.classroom-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  border-bottom: 1px solid #dadce0;
+  margin: 14px 0 28px;
+  scrollbar-width: thin;
+}
+.classroom-workspace .classroom-tabs :is(button, a) {
+  white-space: nowrap;
+  background: white;
+  border: 0;
+  border-radius: 4px 4px 0 0;
+  color: #5f6368;
+  padding: 17px 20px;
+  min-height: 54px;
+  font-size: 13px;
+  border-bottom: 3px solid transparent;
+}
+.classroom-workspace .classroom-tabs :is(button, a)[aria-selected="true"] {
+  color: var(--brand-blue);
+  border-bottom-color: var(--brand-blue);
+  background: #f8faff;
+}
+.classroom-stream {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 24px;
+}
+.classroom-stream > aside,
+.classroom-info {
+  position: static;
+  width: auto;
+  height: auto;
+  min-height: 0;
+  background: white;
+  color: #3c4043;
+  padding: 22px;
+  border: 1px solid #dadce0;
+  border-radius: 8px;
+  align-self: start;
+}
+.classroom-stream h3,
+.classroom-info h3 {
+  font-size: 16px;
+  font-weight: 500;
+  color: #3c4043;
+  margin: 0 0 16px;
+}
+.classroom-stream > aside p {
+  font-size: 12px;
+  line-height: 1.8;
+  color: #5f6368;
+  margin-bottom: 16px;
+}
+.classroom-stream-item {
+  display: flex;
+  align-items: start;
+  gap: 17px;
+  border: 1px solid #dadce0;
+  background: white;
+  border-radius: 8px;
+  padding: 22px;
+  margin-bottom: 16px;
+}
+.classroom-stream-item strong {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.6;
+}
+.classroom-stream-item p {
+  font-size: 12px;
+  color: #5f6368;
+  line-height: 1.8;
+  margin: 5px 0 12px;
+}
+.classroom-event-icon {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--brand-blue-soft);
+  color: var(--brand-blue);
+  font-size: 23px;
+}
+.classroom-empty {
+  padding: 32px 22px;
+  border: 1px dashed #dadce0;
+  border-radius: 8px;
+  color: #5f6368;
+  font-size: 13px;
+  line-height: 1.8;
+  margin-top: 20px;
+}
+.classroom-empty h3 {
+  color: #3c4043;
+  font-size: 18px;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+.classroom-info dl {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  gap: 18px;
+  font-size: 14px;
+}
+.classroom-info dt {
+  color: #5f6368;
+}
+.classroom-info dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 800px) {
+  .classroom-heading {
+    align-items: start;
+    flex-direction: column;
+    gap: 17px;
+    margin-bottom: 22px;
+  }
+  .classroom-heading h2 {
+    font-size: 25px;
+  }
+  .classroom-search {
+    width: 100%;
+  }
+  .classroom-search input,
+  .classroom-filter select {
+    font-size: 16px;
+  }
+  .classroom-card-grid {
+    gap: 18px;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 265px), 1fr));
+  }
+  .classroom-subject-banner {
+    padding: 24px;
+    min-height: 170px;
+  }
+  .classroom-subject-banner h2 {
+    font-size: 28px;
+  }
+  .classroom-tabs {
+    gap: 0;
+  }
+  .classroom-workspace .classroom-tabs :is(button, a) {
+    padding: 15px 13px;
+    font-size: 12px;
+    min-height: 50px;
+  }
+  .classroom-stream {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+  }
+  .classroom-stream > aside {
+    padding: 20px;
+  }
+  .classroom-stream-item {
+    padding: 18px;
+  }
+  .classroom-filter {
+    flex-wrap: wrap;
+  }
+  .classroom-info dl {
+    grid-template-columns: 95px minmax(0, 1fr);
+    font-size: 13px;
+  }
+  .classroom-shell nav :is(button, a[role="button"]),
+  .academy-shell.classroom-shell nav :is(button, a[role="button"]) {
+    border-radius: 8px;
+    font-size: 12px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .classroom-card {
+    transition: none;
+  }
+}
+
+.classroom-shell
+  .classroom-workspace[data-detail="false"]
+  .classroom-heading
+  h2,
+.classroom-shell
+  .classroom-workspace[data-detail="false"]
+  .classroom-heading
+  > div
+  > small {
+  display: none;
+}
+.shell.classroom-shell .heading {
+  margin-bottom: 18px;
+}
+.shell.classroom-shell .heading .eyebrow,
+.shell.classroom-shell .heading .leaf,
+.shell.classroom-shell .heading p {
+  display: none;
+}
+.shell.classroom-shell .heading h1 {
+  font-size: 25px;
+  font-weight: 500;
+  margin: 0;
+}
+.academy-shell.classroom-shell > main > header h1 {
+  font-size: 25px;
+  font-weight: 500;
+  letter-spacing: -0.4px;
+  color: #3c4043;
+}
+.classroom-shell .classroom-workspace .classroom-card-cover small,
+.classroom-shell .classroom-workspace .classroom-card-cover span,
+.classroom-shell .classroom-workspace .classroom-subject-banner small,
+.classroom-shell .classroom-workspace .classroom-subject-banner p {
+  color: #ffffffeb;
+}
+.classroom-shell .classroom-workspace .classroom-card-cover h3,
+.classroom-shell .classroom-workspace .classroom-subject-banner h2 {
+  color: white;
+  font-weight: 500;
+}
+.academy-shell.classroom-shell
+  .classroom-workspace
+  .classroom-card-cover
+  h3
+  button {
+  font-size: 22px;
+  font-weight: 500;
+  line-height: 1.4;
+  min-height: 0;
+  padding: 0;
+  color: #fff;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+}
+.classroom-shell .classroom-workspace .classroom-card > footer {
+  margin: 0;
+  padding: 14px 15px;
+  display: flex;
+  gap: 8px;
+  border-top: 1px solid #e0e3e7;
+}
+
+.classroom-workspace a[role="button"] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+.classroom-tabs a {
+  text-decoration: none;
+  cursor: pointer;
+}

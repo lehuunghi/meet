@@ -1,0 +1,20 @@
+import { useEffect, useState } from "react";
+import { api } from "./api";
+import { vnDateTime } from "./date-format";
+type Node={id:string;name:string;enabled:boolean;online:boolean;last_seen:string;platform:string;version:string};
+export function RecordingWorkers({demo=false}:{demo?:boolean}){
+ const [open,setOpen]=useState(false);
+ return <details className="section" onToggle={e=>setOpen(e.currentTarget.open)}><summary>Ghi hình và máy ghi</summary>{open&&<RecordingWorkersPanel demo={demo}/>}</details>;
+}
+function RecordingWorkersPanel({demo=false}:{demo?:boolean}){
+ const [mode,setMode]=useState("vps"),[nodes,setNodes]=useState<Node[]>([]),[name,setName]=useState(""),[code,setCode]=useState(""),[notice,setNotice]=useState(""),[busy,setBusy]=useState(false),[managed,setManaged]=useState(false);
+ const load=async()=>{if(demo)return;const v=await api<{mode:string;nodes:Node[]}>("/recording-workers");if(!["vps","browser","cluster"].includes(v.mode)||!Array.isArray(v.nodes))throw Error("Chưa đọc được cấu hình máy ghi.");setMode(v.mode);setNodes(v.nodes)};
+ useEffect(()=>{void api<{managed?:boolean}>("/public-config").then(v=>setManaged(!!v.managed)).catch(()=>{});void load().catch(e=>setNotice(e.message));const t=setInterval(()=>void load().catch(()=>{}),15000);return()=>clearInterval(t)},[demo]);
+ const run=async(body:unknown)=>{setBusy(true);setNotice("");try{const v=await api("/recording-workers",body);await load();return v}catch(e){setNotice((e as Error).message)}finally{setBusy(false)}};
+ if(managed)return <section className="section"><h2>Ghi hình</h2><p>Phương thức ghi và máy ghi do trung tâm quản lý.</p><a href="https://admin.tn.edu.vn/" target="_blank" rel="noreferrer">Mở quản trị hạ tầng</a></section>;
+ return <section className="section"><h2>Phương thức ghi hình và máy ghi</h2><p>R2 dùng chung cho mọi phương thức. Dừng ghi các buổi đang diễn ra trước khi đổi phương thức.</p><label>Ghi hình bằng<select aria-label="Phương thức ghi hình" value={mode} disabled={busy||demo} onChange={e=>void run({Action:"mode",Mode:e.target.value})}><option value="vps">VPS</option><option value="browser">Trình duyệt giáo viên</option><option value="cluster">Cụm máy Windows / Linux</option></select></label>
+ <p>{mode==="browser"?"Người điều hành nhận ghi phải giữ trang mở; đóng hoặc làm mới trang sẽ gián đoạn ghi. Các phần đã lưu có thể tiếp tục tải trên cùng thiết bị.":mode==="cluster"?"Mỗi máy nhận một lớp. Khi hết máy, hệ thống chờ máy sẵn sàng; không tự đẩy tải về VPS.":"Bộ ghi trên VPS cần được cài và đủ tài nguyên."}</p>
+ <details><summary>Đăng ký máy ghi mới</summary><p>Cài ứng dụng từ bộ phát hành đã kiểm tra. Mã dùng một lần, hết hạn sau 10 phút; không gửi mã cho người khác.</p><label>Tên máy<input value={name} maxLength={100} onChange={e=>setName(e.target.value)}/></label><button disabled={busy||demo||!name.trim()} onClick={()=>void run({Action:"enroll",Name:name}).then(v=>{if(v?.code)setCode(v.code)})}>Tạo mã đăng ký máy</button>{code&&<label>Mã đăng ký — chỉ hiển thị tại đây<input readOnly value={code} onFocus={e=>e.target.select()}/><button onClick={()=>setCode("")}>Ẩn mã</button></label>}</details>
+ {notice&&<p role="status">{notice}</p>}
+ <div className="table-wrap"><table><thead><tr><th>Máy</th><th>Hệ điều hành</th><th>Kết nối</th><th>Lần cuối</th><th>Nhận việc</th></tr></thead><tbody>{nodes.map(n=><tr key={n.id}><td>{n.name}</td><td>{n.platform}</td><td>{n.online?"Trực tuyến":"Ngoại tuyến"}</td><td>{n.last_seen&&!n.last_seen.startsWith("0001")?vnDateTime(n.last_seen):"Chưa kết nối"}</td><td><button disabled={busy||demo} onClick={()=>void run({Action:"node",Node:n.id,Enabled:!n.enabled})}>{n.enabled?"Ngừng / thu hồi":"Kích hoạt"}</button></td></tr>)}</tbody></table>{!nodes.length&&<p>Chưa có máy ghi đăng ký.</p>}</div></section>;
+}

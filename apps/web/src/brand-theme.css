@@ -1,0 +1,30 @@
+/* Brand hierarchy: blue actions, restrained cyan accents, neutral reading surfaces. */
+:root { --workspace-blue:var(--brand-blue);--workspace-line:var(--brand-line);--workspace-muted:var(--brand-muted);accent-color:var(--brand-blue) }
+.academy-shell,.academy-auth,.academy-auth-layout,.academy-loading {--ac-text:var(--brand-ink);--ac-muted:var(--brand-muted);--ac-line:var(--brand-line);--ac-blue:var(--brand-blue)}
+.academy-shell,.academy-auth-layout {background:var(--brand-canvas)}
+.academy-shell :is(h1,h2,h3),.academy-auth :is(h1,h2,h3) {color:var(--brand-ink)}
+.academy-shell > aside {border-color:var(--brand-line)}
+.academy-shell > aside nav :is(a,button)[aria-current="page"] {background:var(--brand-blue-soft);color:var(--brand-blue)}
+.academy-shell > aside nav :is(a,button)[aria-current="page"]::before {background:var(--brand-cyan)}
+.academy-shell .academy-primary,.academy-auth .academy-primary {background:var(--brand-blue);border-color:var(--brand-blue);color:var(--brand-white)}
+.academy-shell .academy-primary:hover,.academy-auth .academy-primary:hover {background:var(--brand-blue-hover);border-color:var(--brand-blue-hover)}
+.academy-shell .secondary {color:var(--brand-blue);border-color:var(--brand-line);background:var(--brand-white)}
+.academy-shell .secondary:hover {background:var(--brand-blue-soft);border-color:var(--brand-blue-border)}
+.academy-shell :is(input,textarea,select):focus,.academy-auth :is(input,textarea,select):focus {border-color:var(--brand-blue);outline:3px solid var(--brand-blue-soft)}
+.academy-shell :is(button,a):focus-visible,.academy-auth :is(button,a):focus-visible {outline:3px solid var(--brand-blue);outline-offset:3px}
+.academy-shell .academy-cms-nav {background:var(--brand-navy)}
+.academy-shell .academy-cms-nav strong {color:var(--brand-cyan-light)}
+.academy-shell .academy-cms-nav a {color:var(--brand-white)}
+.academy-shell .academy-cms-nav a[aria-current="page"] {background:var(--brand-blue);box-shadow:inset 3px 0 var(--brand-cyan);color:var(--brand-white)}
+.academy-shell :is(.error,[role="alert"].error),.academy-auth .error {color:var(--brand-danger);background:var(--brand-red-soft);border-color:var(--brand-red-border)}
+.academy-shell .danger {color:var(--brand-danger);border-color:var(--brand-red-border)}
+.academy-shell .danger:hover {background:var(--brand-red-soft)}
+.status.live {color:var(--brand-teal);background:var(--brand-cyan-soft)}
+.room {background:#111B2D;color:#F2F6FC}
+.room .call-control:focus-visible,.room a:focus-visible,.room button:focus-visible {outline:3px solid var(--brand-cyan);outline-offset:3px}
+@media(forced-colors:active){.academy-shell .academy-cms-nav a[aria-current="page"]{outline:2px solid Highlight}.room .room-toolbar .room-leave{border:2px solid ButtonText}}
+.academy-shell progress {accent-color:var(--brand-blue);border:0;border-radius:999px;overflow:hidden;background:var(--brand-blue-soft)}
+.academy-shell progress::-webkit-progress-bar {background:var(--brand-blue-soft);border-radius:999px}
+.academy-shell progress::-webkit-progress-value {background:var(--brand-blue);border-radius:999px}
+.academy-shell progress::-moz-progress-bar {background:var(--brand-blue);border-radius:999px}
+.room>.room-notices .error {background:var(--brand-danger);color:var(--brand-white);border-color:var(--brand-red)}

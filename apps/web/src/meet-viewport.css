@@ -1,0 +1,133 @@
+/* A call owns its viewport. Only the stage/panels scroll, never the page or controls. */
+main.room {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100dvh;
+  min-height: 0;
+  max-height: 100dvh;
+  max-width: none;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 12px 20px calc(var(--toolbar-height, 96px) + 12px);
+  gap: 8px;
+  z-index: 40;
+}
+main.room > header { order: 0; flex: 0 0 auto; min-height: 28px; }
+main.room > .room-status-line { order: 1; flex: 0 0 auto; max-height: 20%; overflow: auto; }
+main.room > .meeting-drawing-anchor { order: 2; flex: 0 0 auto; min-height: 0; }
+main.room > .meeting-drawing-anchor:has(> .drawing-compact) {
+  position: absolute;
+  bottom: calc(var(--toolbar-height, 96px) + 10px);
+  left: 50%;
+  width: max-content;
+  max-width: calc(100% - 24px);
+  transform: translateX(-50%);
+  z-index: 43;
+}
+main.room > .video-grid,
+main.room > .preview-classroom {
+  order: 3;
+  flex: 1 1 0;
+  height: 0;
+  min-height: 0;
+  max-height: 100%;
+  min-width: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  align-content: stretch;
+}
+main.room > .video-grid { grid-auto-rows: minmax(110px, 1fr); }
+main.room .video-grid article,
+main.room:not(.room-prejoin):not(:has(.drawing-board-stage)) .video-grid article:only-of-type,
+main.room .video-grid .is-pinned {
+  min-height: 0;
+  max-height: 100%;
+  height: 100%;
+  aspect-ratio: auto;
+}
+main.room .video-grid.has-focus,
+main.room:has(.drawing-board-stage) > .video-grid {
+  grid-template-rows: minmax(110px, 1fr) 90px;
+  grid-auto-rows: 90px;
+  height: 0;
+  min-height: 0;
+}
+main.room .video-grid .is-pinned { grid-row: 1; }
+main.room .drawing-board-stage {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  max-height: 100%;
+  align-self: stretch;
+  grid-row: 1;
+}
+main.room .drawing-pages { flex: 0 0 auto; max-height: none; overflow: visible; padding: 6px 10px; gap: 6px; }
+main.room .drawing-board-stage .meeting-drawing-canvas {
+  flex: 1 1 0;
+  min-height: 0;
+  height: 0;
+  aspect-ratio: auto;
+}
+main.room > .preview-classroom { display: flex; }
+main.room > .meeting-drawing-anchor:has(.meeting-drawing-tools:not(.drawing-compact)) {
+  position: absolute;
+  top: auto;
+  bottom: calc(var(--toolbar-height, 96px) + 12px);
+  left: 12px;
+  right: 12px;
+  width: auto;
+  transform: none;
+  max-height: 45%;
+  overflow: auto;
+  z-index: 43;
+}
+main.room .preview-classroom > section { display: flex; flex-direction: column; flex: 1; min-height: 0; gap: 8px; }
+main.room .preview-classroom .drawing-board-stage { flex: 1 1 0; height: 0; }
+main.room .preview-stage { flex: 1 1 0; height: 0; min-height: 0; padding: 12px; overflow: hidden; }
+main.room .preview-tiles { display: flex; gap: 8px; flex: 0 0 auto; height: 110px; max-height: 110px; overflow-x: auto; overflow-y: hidden; }
+main.room .preview-tiles article { flex: 1 0 100px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 0; padding: 6px; overflow: hidden; }
+main.room .preview-tiles button { min-height: 24px; padding: 3px 8px; font-size: 10px; }
+main.room .video-grid.has-focus .video-avatar,
+main.room:has(.drawing-board-stage) .video-grid .video-avatar { width: 40px; height: 40px; font-size: 20px; }
+main.room .preview-tiles article > span { width: 28px; height: 28px; line-height: 28px; margin: 0 auto 4px; font-size: 16px; }
+main.room .room-toolbar { z-index: 45; }
+main.room > .room-tools { position: fixed; top: 56px; right: 12px; bottom: calc(var(--toolbar-height, 96px) + 8px); width: 340px; height: calc(100dvh - var(--toolbar-height, 96px) - 64px); max-height: calc(100dvh - var(--toolbar-height, 96px) - 64px); min-height: 0; overflow: auto; z-index: 44; }
+main.room.room-tools-open > .video-grid,
+main.room.room-tools-open > .preview-classroom { margin-right: 352px; }
+main.room > .room-notices,
+main.room > .recording-recovery { position: absolute; top: 50px; left: 16px; right: 16px; max-height: 30%; overflow: auto; z-index: 46; }
+main.room > .room-notices { position: static; order: 1; flex: 0 0 auto; max-height: 15%; overflow: auto; }
+main.room.room-prejoin { padding-bottom: calc(var(--toolbar-height, 96px) + 12px); overflow: auto; }
+main.room.room-prejoin .prejoin { order: 3; flex: 1; margin: 0 auto; min-height: 0; overflow: auto; }
+@media (min-width: 701px) {
+  main.room.room-prejoin.room-tools-open .prejoin {
+    width: calc(100% - 352px);
+    margin-left: 0;
+    margin-right: 352px;
+    grid-template-columns: minmax(0, 1fr) minmax(180px, 0.85fr);
+    gap: 20px;
+  }
+}
+main.room.room-prejoin .prejoin-media,
+main.room.room-prejoin .prejoin-placeholder { min-height: 0; height: min(45dvh, 420px); }
+@media (max-height: 500px) {
+  main.room .preview-tiles { height: 70px; max-height: 70px; }
+  main.room .preview-tiles article > span,
+  main.room .preview-tiles small { display: none; }
+  main.room .drawing-pages button,
+  main.room .drawing-pages select { min-height: 28px; padding: 4px 6px; }
+}
+@media (max-width: 700px) {
+  main.room { padding: 8px 10px calc(var(--toolbar-height, 96px) + 12px); gap: 6px; }
+  main.room > .room-tools { left: 10px; right: 10px; width: auto; }
+  main.room.room-tools-open > .video-grid,
+  main.room.room-tools-open > .preview-classroom { margin-right: 0; }
+  main.room .preview-tiles { height: 94px; max-height: 94px; }
+  main.room.room-prejoin .prejoin { gap: 12px; }
+  main.room.room-prejoin .prejoin-media,
+  main.room.room-prejoin .prejoin-placeholder { height: min(35dvh, 260px); }
+}

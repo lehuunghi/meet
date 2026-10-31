@@ -1,0 +1,36 @@
+name: meet-recorder
+services:
+  recorder:
+    image: meet-recorder:${MEET_RECORDER_TAG:-local}
+    build:
+      context: ../apps
+      dockerfile: recorder/Dockerfile
+    restart: unless-stopped
+    init: true
+    stop_grace_period: 120s
+    shm_size: 256mb
+    mem_limit: 1536m
+    cpus: ${RECORDER_CPUS:-2}
+    read_only: true
+    tmpfs: ["/tmp:size=256m,mode=1777"]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    environment:
+      CONFIG_DIR: /var/lib/meet-config
+      MYSQL_DSN_FILE: /run/secrets/mysql_dsn
+      REDIS_URL_FILE: /run/secrets/redis_url
+      RECORDER_CONCURRENCY: ${RECORDER_CONCURRENCY:-1}
+    secrets: [mysql_dsn, redis_url]
+    volumes:
+      - ../runtime-config:/var/lib/meet-config:ro
+      - recorder_spool:/var/lib/meet-recorder
+    networks: [meet]
+networks:
+  meet:
+    external: true
+    name: meet_internal
+volumes:
+  recorder_spool:
+secrets:
+  mysql_dsn: {file: ../secrets/mysql_dsn}
+  redis_url: {file: ../secrets/redis_url}

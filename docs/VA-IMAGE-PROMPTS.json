@@ -1,0 +1,80 @@
+[
+  {
+    "name": "va-online-learning",
+    "prompt": "Premium editorial photographic illustration for Vietnamese online high-school VA Academy: Vietnamese young adult age 18–20 studying on a laptop with generic online mathematics lesson, sunny contemporary study desk, cobalt blue/amber accents, landscape 3:2, no readable text/logos/watermarks; fictional illustrative scene.",
+    "asset": "apps/web/public/images/va-online-learning-v1.webp",
+    "mode": "built-in image_gen"
+  },
+  {
+    "name": "va-study-desk",
+    "prompt": "Premium editorial education photograph: sunlit light-oak desk, open mathematics notebook with abstract geometry, blue pens, cream notebooks, tablet with nonverbal study-progress charts, ceramic cup and plant; cobalt blue/warm amber, landscape 3:2, no people, readable text, logos or watermark.",
+    "asset": "apps/web/public/images/va-study-desk-v1.webp",
+    "mode": "built-in image_gen"
+  },
+  {
+    "name": "teacher-math",
+    "prompt": "Create one high-end editorial studio portrait for a fictional profile sample on Vietnamese learning website VA Academy. Subject: Vietnamese male mathematics teacher, age 35, short neat black hair, navy open-collar shirt, friendly confident expression. Waist-up portrait, centered, realistic natural skin texture and anatomy, soft pale warm-blue classroom studio background, subtle out-of-focus books, natural soft window light, calm navy/cream education brand palette, polished professional photography. Landscape 3:2 with face centered and comfortable headroom suitable for a profile-card crop. No readable text, no logo, no watermark, no certificates, no school names. This is an AI illustration of a fictional adult, not an actual VA employee. Single person only.",
+    "asset": "apps/web/public/images/teacher-math-v1.webp",
+    "mode": "built-in image_gen"
+  },
+  {
+    "name": "teacher-literature",
+    "prompt": "Create one high-end editorial studio portrait for a fictional profile sample on Vietnamese learning website VA Academy. Subject: Vietnamese female literature teacher, age 35, shoulder-length dark hair, elegant cream blouse, warm thoughtful expression. Waist-up portrait, centered, realistic natural skin texture and anatomy, soft pale warm-blue classroom studio background, subtle out-of-focus books, natural soft window light, calm navy/cream education brand palette, polished professional photography. Landscape 3:2 with face centered and comfortable headroom suitable for a profile-card crop. No readable text, no logo, no watermark, no certificates, no school names. This is an AI illustration of a fictional adult, not an actual VA employee. Single person only.",
+    "asset": "apps/web/public/images/teacher-literature-v1.webp",
+    "mode": "built-in image_gen"
+  },
+  {
+    "name": "teacher-english",
+    "prompt": "Create one high-end editorial studio portrait for a fictional profile sample on Vietnamese learning website VA Academy. Subject: Vietnamese female English teacher, age 30, long dark hair, pale blue blouse, welcoming professional expression. Waist-up portrait, centered, realistic natural skin texture and anatomy, soft pale warm-blue classroom studio background, subtle out-of-focus books, natural soft window light, calm navy/cream education brand palette, polished professional photography. Landscape 3:2 with face centered and comfortable headroom suitable for a profile-card crop. No readable text, no logo, no watermark, no certificates, no school names. This is an AI illustration of a fictional adult, not an actual VA employee. Single person only.",
+    "asset": "apps/web/public/images/teacher-english-v1.webp",
+    "mode": "built-in image_gen"
+  },
+  {
+    "name": "teacher-physics",
+    "prompt": "Create one high-end editorial studio portrait for a fictional profile sample on Vietnamese learning website VA Academy. Subject: Vietnamese male physics teacher, age 40, neat black hair, thin glasses, light blue shirt, approachable expression. Waist-up portrait, centered, realistic natural skin texture and anatomy, soft pale warm-blue classroom studio background, subtle out-of-focus books, natural soft window light, calm navy/cream education brand palette, polished professional photography. Landscape 3:2 with face centered and comfortable headroom suitable for a profile-card crop. No readable text, no logo, no watermark, no certificates, no school names. This is an AI illustration of a fictional adult, not an actual VA employee. Single person only.",
+    "asset": "apps/web/public/images/teacher-physics-v1.webp",
+    "mode": "built-in image_gen"
+  },
+  {
+    "name": "teacher-chemistry",
+    "prompt": "Create one high-end editorial studio portrait for a fictional profile sample on Vietnamese learning website VA Academy. Subject: Vietnamese female chemistry teacher, age 38, dark hair tied neatly back, navy blouse, composed friendly expression. Waist-up portrait, centered, realistic natural skin texture and anatomy, soft pale warm-blue classroom studio background, subtle out-of-focus books, natural soft window light, calm navy/cream education brand palette, polished professional photography. Landscape 3:2 with face centered and comfortable headroom suitable for a profile-card crop. No readable text, no logo, no watermark, no certificates, no school names. This is an AI illustration of a fictional adult, not an actual VA employee. Single person only.",
+    "asset": "apps/web/public/images/teacher-chemistry-v1.webp",
+    "mode": "built-in image_gen"
+  },
+  {
+    "name": "review-student-female",
+    "prompt": "A single fictional Vietnamese young adult woman aged 18-20, white casual shirt, natural friendly smile, head-and-shoulders editorial portrait, softly blurred bright study room, cobalt and cream palette. Center face, ample headroom, landscape 3:2. No uniform, logos, readable text or watermark. Natural authentic professional photography. This will be explicitly labelled an AI sample review avatar, not a real student testimonial.",
+    "asset": "apps/web/public/images/review-student-female-v1.webp",
+    "mode": "built-in image_gen"
+  },
+  {
+    "name": "review-student-male",
+    "prompt": "A single fictional Vietnamese young adult man aged 18-20, pale blue casual shirt, short neat black hair, natural friendly smile, head-and-shoulders editorial portrait, softly blurred bright study room, cobalt and cream palette. Center face, ample headroom, landscape 3:2. No uniform, logos, readable text or watermark. Natural authentic professional photography. This will be explicitly labelled an AI sample review avatar, not a real student testimonial.",
+    "asset": "apps/web/public/images/review-student-male-v1.webp",
+    "mode": "built-in image_gen"
+  },
+  {
+    "name": "review-parent",
+    "prompt": "A single fictional Vietnamese mother aged 42, dark shoulder-length hair, cream blouse and light navy cardigan, warm gentle confident smile, head-and-shoulders editorial portrait, softly blurred bright home-study interior, cobalt and cream palette. Center face, ample headroom, landscape 3:2. No logos, text or watermark. Natural authentic professional photography. Explicitly an AI sample parent review avatar, not an actual testimonial.",
+    "asset": "apps/web/public/images/review-parent-v1.webp",
+    "mode": "built-in image_gen"
+  },
+  {
+    "name": "article-math",
+    "prompt": "Premium education editorial photograph for a Vietnamese high-school study-method article: beautiful close-up of an open mathematics notebook with coordinate axes and geometric line drawings, a blue pencil, a small ruler and cream study books on a warm light-oak desk. Soft sunlight, cobalt blue accents, clean uncluttered aspirational study aesthetic. Landscape 3:2. No people, no readable writing, no logos, no watermark. Realistic paper and pencil textures.",
+    "asset": "apps/web/public/images/article-math-v1.webp",
+    "mode": "built-in image_gen"
+  },
+  {
+    "name": "article-literature",
+    "prompt": "Premium education editorial photograph for a Vietnamese literature learning article: an open blank literary book, a cream notebook with faint abstract handwritten marks but no readable text, navy fountain pen, elegant amber bookmark, small white ceramic cup, warm sunlit light-oak desk, blurred green plant. Peaceful thoughtful reading mood. Landscape 3:2. No people, no readable text, no logos or watermark.",
+    "asset": "apps/web/public/images/article-literature-v1.webp",
+    "mode": "built-in image_gen"
+  },
+  {
+    "name": "article-english",
+    "prompt": "Premium education editorial photograph for an English-language self-study article: tasteful navy wireless headphones beside a tablet showing simple nonverbal audio-wave graphics, stack of pastel blue and cream flashcards with no readable words, open notebook and a pencil on a sunlit light-oak desk. Bright calm contemporary study atmosphere, cobalt blue and warm amber accents. Landscape 3:2. No people, no readable writing, no logos or watermark.",
+    "asset": "apps/web/public/images/article-english-v1.webp",
+    "mode": "built-in image_gen"
+  }
+]

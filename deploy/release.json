@@ -1,0 +1,7 @@
+{
+  "version": "0.36.4",
+  "schema_version": 21,
+  "restore_probe_protocol": 1,
+  "updater_protocol": 1,
+  "infrastructure_version": 1
+}

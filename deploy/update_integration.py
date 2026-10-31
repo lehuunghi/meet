@@ -1,0 +1,122 @@
+"""Disposable stack: inject a failed migration and prove database/config/image recovery."""
+import importlib.util
+import json
+import os
+from pathlib import Path
+import tempfile
+import uuid
+import urllib.request
+import urllib.error
+import shutil
+
+if os.environ.get('MEET_DISPOSABLE_BACKUP_TEST') != 'true':
+    raise SystemExit('Explicit disposable-stack opt-in required')
+spec=importlib.util.spec_from_file_location('update',Path(__file__).with_name('update.py'))
+u=importlib.util.module_from_spec(spec);spec.loader.exec_module(u)
+u.ROOT=Path(__file__).resolve().parent.parent
+current=u.git('rev-parse','HEAD')
+# Stamp the disposable baseline like the real installer does, so updater can verify image == checkout.
+u.run('docker','build','--build-arg','MEET_COMMIT='+current,'--build-arg','MEET_VERSION='+u.manifest(current)['version'],'-t','meet-api:local',str(u.ROOT/'apps/api'),timeout=900)
+u.compose('up','-d','--no-deps','--no-build','--force-recreate','api')
+u.health(current)
+# CI checks a detached merge revision. GitHub authorization/dirty checks have separate unit tests.
+u.candidate=lambda:{'current_sha':current,'available_sha':current,'can_update':True}
+u.checkout_safe=lambda:None
+original_compose=u.compose
+original_backup=u.backup_module
+objects={}
+
+def transfer(method, config, key, body=b''):
+    if method=='PUT':objects[key]=body;return b''
+    return objects[key]
+
+def compose(*args,override=None,data=None):
+    if args==('run','--rm','--no-deps','migrate'):
+        # Simulate DDL committed followed by a partially applied data migration.
+        u.sql("CREATE TABLE failed_upgrade_probe(id INT); UPDATE users SET name='BROKEN UPDATE'")
+        (u.ROOT/'runtime-config/settings.json').write_text('{"broken":true}')
+        raise RuntimeError('Injected migration failure')
+    return original_compose(*args,override=override,data=data)
+
+with tempfile.TemporaryDirectory() as tmp:
+    u.STATE=Path(tmp)/'state';u.STATE.mkdir()
+    b=original_backup();b.KEY=Path(tmp)/'recovery.key';b.transfer=transfer
+    u.backup_module=lambda:b
+    original_settings=(u.ROOT/'runtime-config/settings.json').read_bytes()
+    old_name=u.sql("SELECT name FROM users WHERE id='demo-admin'")
+    old_images=u.images()
+    u.compose=compose
+    try:
+        u.apply(current,str(uuid.uuid4()))
+        raise AssertionError('Injected failure unexpectedly succeeded')
+    except RuntimeError as error:
+        if str(error)!='Injected migration failure':raise
+    status=json.loads((u.STATE/'status.json').read_text())
+    assert status['state']=='rolled_back',status
+    assert u.sql("SELECT name FROM users WHERE id='demo-admin'")==old_name
+    assert u.sql("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='meet' AND table_name='failed_upgrade_probe'")=='0'
+    assert (u.ROOT/'runtime-config/settings.json').read_bytes()==original_settings
+    assert not (u.ROOT/'runtime-config/maintenance').exists()
+    assert u.images()==old_images
+    u.health()
+    print('Failed migration restored original schema, student/admin data, configuration and application images')
+
+    # Also exercise a successful upgrade and verify maintenance blocks requests until committed.
+    u.compose=original_compose
+    original_health=u.health
+    def guarded_health(expected=None):
+        original_health(expected)
+        if expected:
+            request=urllib.request.Request('http://127.0.0.1:8080/api/login',data=b'{}',headers={'Origin':os.environ['APP_ORIGIN'],'Content-Type':'application/json'})
+            try:urllib.request.urlopen(request,timeout=5);raise AssertionError('Maintenance allowed login')
+            except urllib.error.HTTPError as error:assert error.code==503,error.code
+    u.health=guarded_health
+    u.apply(current,str(uuid.uuid4()))
+    assert json.loads((u.STATE/'status.json').read_text())['state']=='success'
+    assert not (u.ROOT/'runtime-config/maintenance').exists()
+    original_health(current)
+    assert u.sql("SELECT name FROM users WHERE id='demo-admin'")==old_name
+    print('Successful upgrade verified commit health and blocked writes until completion')
+    # Simulate process interruption after schema/data mutation: the next worker must recover first.
+    job={'id':str(uuid.uuid4()),'active':True,'frozen':True,'db_dirty':True,'old_sha':current,'target':current,'old_images':u.images()}
+    (u.ROOT/'runtime-config/maintenance').write_text(job['id'])
+    u.compose('stop','api','web')
+    job['snapshot']=u.snapshot(b,job)
+    u.checkpoint(job)
+    u.sql("CREATE TABLE interrupted_upgrade_probe(id INT); UPDATE users SET name='INTERRUPTED'")
+    u.worker()
+    assert u.sql("SELECT name FROM users WHERE id='demo-admin'")==old_name
+    assert u.sql("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='meet' AND table_name='interrupted_upgrade_probe'")=='0'
+    assert json.loads((u.STATE/'status.json').read_text())['state']=='rolled_back'
+    assert not (u.ROOT/'runtime-config/maintenance').exists()
+    print('Interrupted update journal automatically recovered original database and application')
+
+    # Prove the one-time bridge against the previous real schema-v4 source with no updater metadata.
+    # Recreate that baseline rather than labeling the current schema as legacy.
+    legacy_web_image=u.images()['web']
+    u.compose('stop','api','web')
+    u.sql('DROP TABLE meeting_links; DROP TABLE room_votes; DROP TABLE room_polls; DROP TABLE room_members; DROP TABLE room_settings; DELETE FROM schema_migrations WHERE version>4')
+    original_root=u.ROOT
+    legacy=Path(tmp)/'legacy'
+    old_revision='52c8fab08b29a450f2de9552a4f111d43da366ac'
+    u.run('git','-C',str(original_root),'fetch','--depth=200','origin',current,timeout=120)
+    u.run('git','-C',str(original_root),'worktree','add','--detach',str(legacy),old_revision)
+    shutil.copy2(original_root/'.env',legacy/'.env')
+    for folder in ['secrets','runtime-config']:
+        shutil.copytree(original_root/folder,legacy/folder)
+        for path in [legacy/folder,*list((legacy/folder).rglob('*'))]:os.chown(path,10001,10001)
+    u.ROOT=legacy;u.BOOTSTRAP=True
+    u.candidate=lambda:{'current_sha':old_revision,'available_sha':current,'can_update':True}
+    u.run('docker','build','-t','meet-api:legacy-test',str(legacy/'apps/api'),timeout=900)
+    baseline=u.override(u.STATE/'legacy.images.json','meet-api:legacy-test',legacy_web_image)
+    u.compose('up','-d','--no-deps','--no-build','--force-recreate','api','web',override=baseline)
+    original_health()
+    assert u.manifest(old_revision)['updater_protocol']==0
+    u.apply(current,str(uuid.uuid4()))
+    original_health(current)
+    assert u.git('rev-parse','HEAD')==current
+    assert int(u.sql('SELECT MAX(version) FROM schema_migrations'))==u.manifest(current)['schema_version']
+    assert u.sql("SELECT name FROM users WHERE id='demo-admin'")==old_name
+    assert json.loads((u.STATE/'status.json').read_text())['state']=='success'
+    print('Legacy schema-v4 installation upgraded in place through the safe one-time bridge')
+    u.compose('stop','api','web')

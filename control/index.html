@@ -1,0 +1,2652 @@
+<!doctype html>
+<html lang="vi">
+  <meta charset="utf-8" /><meta
+    name="viewport"
+    content="width=device-width,initial-scale=1"
+  /><title>Meet · Quản trị trung tâm</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      background: #f7f8fa;
+      color: #202124;
+      font: 14px system-ui;
+    }
+    header {
+      background: white;
+      border-bottom: 1px solid #ddd;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    h1 {
+      font-size: 20px;
+      margin: 0;
+    }
+    h2 {
+      font-size: 18px;
+    }
+    h3 {
+      font-size: 15px;
+    }
+    main {
+      max-width: 1280px;
+      margin: auto;
+      padding: 24px;
+    }
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+      border: 1px solid #cbd0d7;
+      border-radius: 6px;
+      padding: 9px;
+    }
+    button {
+      cursor: pointer;
+      background: white;
+      color: #174ea6;
+    }
+    button.primary {
+      background: #1a73e8;
+      color: white;
+      border-color: #1a73e8;
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: wait;
+    }
+    input,
+    textarea,
+    select {
+      width: 100%;
+      background: white;
+    }
+    label {
+      display: block;
+      margin: 10px 0;
+      color: #444;
+    }
+    label span {
+      display: block;
+      margin-bottom: 5px;
+    }
+    section,
+    .card {
+      background: white;
+      border: 1px solid #e0e3e7;
+      border-radius: 10px;
+      padding: 20px;
+      margin: 16px 0;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 12px;
+    }
+    .toolbar,
+    .tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .table {
+      overflow: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      white-space: nowrap;
+    }
+    th,
+    td {
+      text-align: left;
+      padding: 12px;
+      border-bottom: 1px solid #eee;
+    }
+    th {
+      font-size: 12px;
+      color: #666;
+    }
+    p {
+      color: #5f6368;
+      line-height: 1.5;
+    }
+    .badge {
+      background: #eef3fc;
+      padding: 4px 8px;
+      border-radius: 20px;
+    }
+    #message {
+      position: sticky;
+      top: 0;
+      background: #fff7df;
+      padding: 12px;
+      border-radius: 6px;
+      display: none;
+      z-index: 5;
+    }
+    .login {
+      max-width: 420px;
+      margin: 10vh auto;
+    }
+    dialog {
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      width: min(900px, 96vw);
+      max-height: 90vh;
+      padding: 24px;
+    }
+    dialog::backdrop {
+      background: #0006;
+    }
+    .row {
+      border: 1px solid #ddd;
+      padding: 12px;
+      border-radius: 7px;
+      margin: 8px 0;
+    }
+    small {
+      color: #666;
+    }
+    pre {
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    a {
+      color: #1967d2;
+    }
+    body {
+      background: #f5f7fb;
+      color: #20324e;
+      font-family: "Segoe UI", system-ui, sans-serif;
+    }
+    header {
+      border-color: #e2e8f0;
+      padding: 18px 28px;
+      gap: 16px;
+    }
+    header small {
+      font-size: 12px;
+      font-weight: 400;
+      margin-left: 8px;
+    }
+    #identity {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      font-size: 12px;
+      color: #64748b;
+    }
+    h2 {
+      letter-spacing: -0.4px;
+      margin: 0 0 12px;
+    }
+    h3 {
+      color: #334966;
+    }
+    p {
+      color: #64748b;
+      line-height: 1.7;
+    }
+    section,
+    .card {
+      border-color: #e2e8f0;
+      box-shadow: 0 2px 4px #172b4d03;
+      border-radius: 12px;
+    }
+    button {
+      min-height: 38px;
+      padding: 9px 13px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #365681;
+      border-color: #d5deeb;
+    }
+    button:hover {
+      background: #f0f5ff;
+    }
+    button.primary {
+      background: #245de5;
+      border-color: #245de5;
+    }
+    button:focus-visible,
+    a:focus-visible {
+      outline: 3px solid #8cafff;
+      outline-offset: 3px;
+    }
+    input:focus,
+    textarea:focus,
+    select:focus {
+      outline: none;
+      border-color: #4c7bed;
+      box-shadow: 0 0 0 3px #245de514;
+    }
+    label {
+      font-size: 12px;
+      color: #52637b;
+    }
+    input,
+    textarea,
+    select {
+      padding: 11px;
+      color: #203654;
+      border-color: #d5deeb;
+    }
+    .toolbar h2 {
+      margin: 0 auto 0 0;
+    }
+    .filters {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 220px 190px;
+      gap: 16px;
+      margin-top: 22px;
+    }
+    .badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      border-radius: 6px;
+      padding: 4px 8px;
+      background: #edf3ff;
+      color: #2857a7;
+    }
+    .muted {
+      color: #71829c;
+      font-size: 12px;
+    }
+    .tabs {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 16px 0;
+      margin-bottom: 20px;
+    }
+    .tabs button {
+      flex-shrink: 0;
+      border-color: transparent;
+      color: #64748b;
+    }
+    .tabs button.active {
+      color: #1d50cb;
+      background: #edf3ff;
+    }
+    dialog {
+      border-color: #dce4f0;
+      padding: 24px;
+      width: min(1080px, 96vw);
+      box-shadow: 0 24px 80px #172b4d26;
+    }
+    #dialogtop {
+      position: sticky;
+      top: -24px;
+      background: white;
+      z-index: 2;
+      padding: 12px 0;
+    }
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin: 20px 0;
+    }
+    .summary-grid article {
+      border: 1px solid #e2e8f0;
+      background: #f8faff;
+      padding: 16px;
+      border-radius: 9px;
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+    .summary-grid strong {
+      display: block;
+      font-size: 14px;
+      margin-top: 7px;
+    }
+    .checklist {
+      display: grid;
+      gap: 8px;
+      margin: 16px 0 22px;
+    }
+    .checkitem {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px 20px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 14px;
+    }
+    .checkitem p {
+      margin: 5px 0 0;
+      font-size: 12px;
+    }
+    .state-ready {
+      color: #18764f;
+      background: #edf9f2;
+    }
+    .state-blocked {
+      color: #b13b35;
+      background: #fff1ef;
+    }
+    .state-optional {
+      color: #966022;
+      background: #fff8e8;
+    }
+    .intro {
+      padding: 14px 16px;
+      background: #edf3ff;
+      color: #42618f;
+      border-radius: 8px;
+      font-size: 13px;
+    }
+    th {
+      background: #f8fafd;
+      color: #52637b;
+    }
+    td {
+      font-size: 13px;
+    }
+    .table {
+      padding: 0;
+    }
+    .table tbody tr:hover {
+      background: #f9fbff;
+    }
+    .install-hint {
+      padding: 12px 14px;
+      background: #fff8e8;
+      color: #966022;
+      border-radius: 8px;
+    }
+    .links {
+      display: flex;
+      gap: 18px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+      font-size: 13px;
+    }
+    .step-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+    code {
+      overflow-wrap: anywhere;
+    }
+    .control-workspace {
+      display: grid;
+      grid-template-columns: 214px minmax(0, 1fr);
+      gap: 20px;
+      align-items: start;
+    }
+    .workspace-side {
+      position: sticky;
+      top: 20px;
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 16px;
+    }
+    .workspace-side strong {
+      display: block;
+      font-size: 14px;
+      overflow-wrap: anywhere;
+      margin-bottom: 6px;
+    }
+    .workspace-main {
+      min-width: 0;
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 24px;
+    }
+    #workspace #tabs {
+      display: grid;
+      max-height: calc(100dvh - 170px);
+      gap: 3px;
+      overflow: auto;
+      border: 0;
+      margin: 16px 0 0;
+      padding: 0;
+    }
+    #workspace #tabs button {
+      text-align: left;
+      white-space: normal;
+    }
+    #workspace #dialogtop {
+      position: static;
+      padding: 0 0 18px;
+      border-bottom: 1px solid #e2e8f0;
+      margin-bottom: 20px;
+    }
+    .workspace-main .intro {
+      margin-top: 0;
+    }
+    .bootstrap-banner {
+      padding: 20px;
+      background: #edf3ff;
+      border: 1px solid #d6e4ff;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+    .bootstrap-banner h3 {
+      margin: 0 0 8px;
+      color: #214d9b;
+    }
+    @media (max-width: 800px) {
+      .control-workspace {
+        display: block;
+      }
+      .workspace-side {
+        position: static;
+        margin-bottom: 16px;
+      }
+      .workspace-main {
+        padding: 16px;
+      }
+      #workspace #tabs {
+        display: flex;
+        overflow-x: auto;
+        max-height: none;
+      }
+      #workspace #tabs button {
+        white-space: nowrap;
+      }
+      .workspace-side strong {
+        display: inline;
+        margin-right: 10px;
+      }
+    }
+    @media (max-width: 600px) {
+      main {
+        padding: 12px;
+      }
+      header {
+        padding: 14px;
+        align-items: flex-start;
+        flex-direction: column;
+      }
+      .grid {
+        grid-template-columns: 1fr;
+      }
+      section {
+        padding: 14px;
+      }
+      .filters,
+      .summary-grid {
+        grid-template-columns: 1fr;
+      }
+      .filters {
+        gap: 0;
+      }
+      .summary-grid {
+        gap: 8px;
+      }
+      .summary-grid article {
+        padding: 12px;
+      }
+      dialog {
+        padding: 16px;
+      }
+      #dialogtop {
+        top: -16px;
+      }
+      input,
+      select,
+      textarea {
+        font-size: 16px;
+      }
+      #identity {
+        font-size: 11px;
+      }
+      .toolbar {
+        align-items: flex-start;
+      }
+      .toolbar h2 {
+        flex-basis: 100%;
+      }
+      .table {
+        padding: 0;
+      }
+    }
+    .job-progress {
+      display: grid;
+      gap: 6px;
+      min-width: 160px;
+    }
+    .job-progress progress {
+      width: 100%;
+      height: 12px;
+      accent-color: #2563eb;
+    }
+    .job-console {
+      background: #101827;
+      color: #dce7fb;
+      border-radius: 10px;
+      padding: 16px;
+      max-height: 360px;
+      overflow: auto;
+      white-space: pre-wrap;
+      font:
+        12px/1.8 ui-monospace,
+        monospace;
+    }
+    .job-monitor {
+      width: min(780px, 92vw);
+      border: 1px solid #dbe3ef;
+      border-radius: 14px;
+      padding: 24px;
+    }
+    .job-monitor::backdrop {
+      background: #14213d66;
+    }
+    .backup-note {
+      border-left: 3px solid #d09a30;
+      padding: 12px;
+      background: #fff9e9;
+    }
+  </style>
+  <header>
+    <h1>m·meet <small>Quản trị trung tâm</small></h1>
+    <div id="identity"></div>
+  </header>
+  <main>
+    <div id="message" role="alert"></div>
+    <div id="content"></div>
+  </main>
+  <dialog id="modal"></dialog>
+  <script>
+    function controlDate(value, withTime = false) {
+      const d = new Date(value);
+      if (!Number.isFinite(d.getTime())) return "—";
+      const parts = new Intl.DateTimeFormat("en-GB", {
+        timeZone: "Asia/Ho_Chi_Minh",
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hourCycle: "h23",
+      }).formatToParts(d);
+      const v = (key) => parts.find((p) => p.type === key)?.value || "";
+      return (
+        v("day") +
+        "/" +
+        v("month") +
+        "/" +
+        v("year") +
+        (withTime ? " " + v("hour") + ":" + v("minute") : "")
+      );
+    }
+
+    const $ = (s) => document.querySelector(s),
+      esc = (v) =>
+        String(v ?? "").replace(
+          /[&<>"']/g,
+          (c) =>
+            ({
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#39;",
+            })[c],
+        );
+    let schools = [],
+      selected = null,
+      cfg = {},
+      tab = "general",
+      me = null,
+      dirty = false,
+      jobTimer = null,
+      syncTimer = null,
+      viewMode = "";
+    function viewOpen() {
+      return !!$("#workspace") || $("#modal").open;
+    }
+    $("#modal").addEventListener("close", () => clearTimeout(jobTimer));
+    document.addEventListener("input", (e) => {
+      if (e.target.closest("#configform")) dirty = true;
+    });
+    function msg(s) {
+      $("#message").textContent = s;
+      $("#message").style.display = "block";
+    }
+    async function api(path, data) {
+      const r = await fetch("/api/" + path, {
+        method: data === undefined ? "GET" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: data === undefined ? undefined : JSON.stringify(data),
+      });
+      const v = await r.json();
+      if (!r.ok) throw Error(v.error || "Chưa hoàn tất");
+      return v;
+    }
+    function input(name, label, value = "", type = "text") {
+      return `<label><span>${esc(label)}</span><input name="${esc(name)}" type="${type}" value="${esc(value)}" ${type === "password" ? 'autocomplete="new-password"' : ""}></label>`;
+    }
+    function check(name, label, value) {
+      return `<label><input style="width:auto" type="checkbox" name="${name}" ${value ? "checked" : ""}> ${esc(label)}</label>`;
+    }
+    function button(text, fn, cls = "") {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.textContent = text;
+      b.className = cls;
+      b.onclick = async () => {
+        b.disabled = true;
+        try {
+          await fn();
+        } catch (e) {
+          msg(e.message);
+        } finally {
+          b.disabled = false;
+        }
+      };
+      return b;
+    }
+    async function boot() {
+      try {
+        me = await api("me");
+        await list();
+        const match = location.hash.match(/^#academy\/([a-f0-9]{32})$/);
+        if (match) {
+          const unit = schools.find(
+            (s) => s.id === match[1] && s.platform_mode === "academy",
+          );
+          if (unit) await edit(unit);
+        }
+      } catch {
+        login();
+      }
+    }
+    function login(challenge = "") {
+      $("#identity").textContent = "";
+      $("#content").innerHTML =
+        '<section class="login"><h2>' +
+        (challenge ? "Xác thực hai bước" : "Đăng nhập quản trị trung tâm") +
+        '</h2><form id="login">' +
+        (challenge
+          ? input("code", "Mã xác thực hoặc mã khôi phục")
+          : input("email", "Email", "", "email") +
+            input("password", "Mật khẩu", "", "password")) +
+        '<button class="primary">' +
+        (challenge ? "Xác thực" : "Đăng nhập") +
+        "</button></form></section>";
+      if (challenge) $("#login").append(button("Quay lại", () => login()));
+      $("#login").onsubmit = async (e) => {
+        e.preventDefault();
+        try {
+          const f = Object.fromEntries(new FormData(e.target));
+          const result = await api(
+            challenge ? "login/2fa" : "login",
+            challenge ? { challenge, code: f.code } : f,
+          );
+          if (result.requires_2fa) login(result.challenge);
+          else await boot();
+        } catch (e) {
+          msg(e.message);
+        }
+      };
+    }
+    async function security() {
+      me = await api("me");
+      const d = $("#modal");
+      d.innerHTML =
+        "<h2>Bảo mật tài khoản</h2><p>2FA: " +
+        (me.mfa_enabled ? "Đang bật" : "Chưa bật") +
+        '</p><form id="security">' +
+        input("password", "Mật khẩu hiện tại", "", "password") +
+        (me.mfa_enabled ? input("code", "Mã xác thực hoặc mã khôi phục") : "") +
+        '<button class="primary">' +
+        (me.mfa_enabled ? "Tắt 2FA" : "Thiết lập 2FA") +
+        "</button></form>";
+      d.append(button("Đóng", () => d.close()));
+      if (!d.open) d.showModal();
+      const profile = document.createElement("section");
+      profile.innerHTML =
+        '<h3>Email & mật khẩu đăng nhập trung tâm</h3><p>Thay đổi này chỉ áp dụng tài khoản trung tâm của bạn. Sau khi lưu, đăng nhập lại bằng thông tin mới.</p><form id="own-profile">' +
+        input("email", "Email quản trị", me.email, "email") +
+        input(
+          "current_password",
+          "Mật khẩu hiện tại để xác nhận",
+          "",
+          "password",
+        ) +
+        input(
+          "new_password",
+          "Mật khẩu mới (để trống nếu giữ nguyên)",
+          "",
+          "password",
+        ) +
+        (me.mfa_enabled
+          ? input("code", "Mã 2FA / khôi phục xác nhận thay đổi")
+          : "") +
+        '<button class="primary">Lưu email / mật khẩu</button></form>';
+      d.insertBefore(profile, d.querySelector("#security"));
+      $("#own-profile").onsubmit = async (e) => {
+        e.preventDefault();
+        const form = e.currentTarget,
+          submit = form.querySelector("button");
+        submit.disabled = true;
+        try {
+          await api("profile", Object.fromEntries(new FormData(form)));
+          form.reset();
+          d.close();
+          login();
+          msg("Đã cập nhật. Đăng nhập lại bằng email và mật khẩu mới.");
+        } catch (e) {
+          msg(e.message);
+        } finally {
+          submit.disabled = false;
+        }
+      };
+      $("#security").onsubmit = async (e) => {
+        e.preventDefault();
+        const values = Object.fromEntries(new FormData(e.target));
+        try {
+          if (me.mfa_enabled) {
+            await api("security", { ...values, action: "disable" });
+            d.close();
+            login();
+            msg("Đã tắt 2FA. Đăng nhập lại.");
+            return;
+          }
+          const result = await api("security", {
+            password: values.password,
+            action: "setup",
+          });
+          d.innerHTML =
+            '<h2>Kết nối ứng dụng xác thực</h2><p>Thêm tài khoản TOTP trong ứng dụng xác thực bằng khóa sau. Khóa chỉ dùng cho tài khoản của anh.</p><label>Khóa thiết lập<input readonly value="' +
+            esc(result.secret) +
+            '"></label><form id="enablemfa">' +
+            input("code", "Mã 6 chữ số từ ứng dụng") +
+            '<button class="primary">Bật 2FA</button></form>';
+          d.append(button("Hủy", () => d.close()));
+          $("#enablemfa").onsubmit = async (event) => {
+            event.preventDefault();
+            try {
+              const enabled = await api("security", {
+                password: values.password,
+                action: "enable",
+                code: new FormData(event.target).get("code"),
+              });
+              d.innerHTML =
+                '<h2>Lưu mã khôi phục</h2><p>Mỗi mã dùng một lần. Lưu ở nơi riêng trước khi đăng nhập lại.</p><pre id="recoverycodes"></pre>';
+              $("#recoverycodes").textContent =
+                enabled.recovery_codes.join("\n");
+              d.append(
+                button("Đã lưu · Đăng nhập lại", () => {
+                  d.close();
+                  login();
+                }),
+              );
+            } catch (e) {
+              msg(e.message);
+            }
+          };
+        } catch (e) {
+          msg(e.message);
+        }
+      };
+    }
+    async function list() {
+      schools = await api("schools");
+      $("#identity").textContent = me.email + " · " + me.role;
+      $("#identity").append(
+        button("Đăng xuất", async () => {
+          await api("logout", {});
+          login();
+        }),
+      );
+      $("#content").innerHTML =
+        '<div class="toolbar" id="actions"><h2>Nền tảng & VPS</h2></div><p>Quản lý trường nội bộ và nền tảng khóa học/VIP riêng biệt. Cấu hình chỉ hoàn tất khi VPS xác nhận đã áp dụng.</p><div class="filters"><label><span>Tìm đơn vị hoặc domain</span><input id="search" placeholder="Nhập tên hoặc domain"></label><label><span>Loại nền tảng</span><select id="modefilter"><option value="">Tất cả nền tảng</option><option value="school">Trường học nội bộ</option><option value="academy">Khóa học / VIP</option></select></label><label><span>Trạng thái</span><select id="statefilter"><option value="active">Hoạt động</option><option value="suspended">Tạm ngưng</option><option value="deleted">Thùng rác</option></select></label></div><section class="table"><table><thead><tr><th>Đơn vị / Loại nền tảng</th><th>Domain / VPS</th><th>Phiên bản</th><th>Đồng bộ</th><th>Kết nối</th><th>Đang học</th><th></th></tr></thead><tbody id="rows"></tbody></table></section>';
+      if (me.role !== "viewer")
+        $("#actions").append(
+          button("+ Trường nội bộ", () => edit(null, "school")),
+        );
+      if (me.role === "owner")
+        $("#actions").append(
+          button(
+            "+ Nền tảng khóa học / VIP",
+            () => edit(null, "academy"),
+            "primary",
+          ),
+        );
+      $("#actions").append(
+        button("Tải lại", list),
+        button("Bảo mật tài khoản", security),
+      );
+      $("#actions").append(button("Nhật ký", audit));
+      if (me.role === "owner")
+        $("#actions").append(button("Quản trị trung tâm", admins));
+      $("#search").oninput = renderRows;
+      $("#modefilter").onchange = renderRows;
+      $("#modefilter").value = viewMode;
+      $("#modefilter").onchange = () => {
+        viewMode = $("#modefilter").value;
+        renderRows();
+      };
+      $("#statefilter").onchange = renderRows;
+      renderRows();
+    }
+    function renderRows() {
+      const term = $("#search").value.toLowerCase();
+      $("#rows").innerHTML = "";
+      for (const s of schools.filter(
+        (s) =>
+          (s.name + " " + s.domain).toLowerCase().includes(term) &&
+          (!$("#modefilter").value ||
+            (s.platform_mode || "school") === $("#modefilter").value) &&
+          (s.desired_state || "active") === $("#statefilter").value,
+      )) {
+        const st = JSON.parse(s.status),
+          tr = document.createElement("tr");
+        tr.innerHTML = `<td><strong>${esc(s.name)}</strong><br><span class="badge">${s.platform_mode === "academy" ? "Khóa học / VIP" : "Trường nội bộ"}</span> <span class="muted">${esc({ active: "Hoạt động", suspended: "Tạm ngưng", deleted: "Thùng rác" }[s.desired_state || "active"])}${s.desired_state !== s.applied_state ? " · chờ VPS" : ""}</span></td><td>${esc(s.domain)}<br><small>${esc(s.ip)}</small></td><td>${esc(st.version || "Chưa cài")}</td><td>${s.applied === s.revision ? "Đã áp dụng" : "Đang chờ"} ${s.applied}/${s.revision}</td><td>${Date.now() / 1000 - s.seen < 90 ? "Đang kết nối" : "Chưa kết nối"}${(s.alerts||[]).map(a=>`<br><strong class="error">${esc(a.message)}</strong>`).join("")}</td><td>${esc(st.live ?? "—")}</td><td></td>`;
+        tr.lastChild.append(button("Chi tiết", () => edit(s)));
+        $("#rows").append(tr);
+      }
+      if (!$("#rows").children.length)
+        $("#rows").innerHTML =
+          '<tr><td colspan="7">Chưa có nền tảng phù hợp. Tạo đơn vị mới hoặc đổi bộ lọc.</td></tr>';
+    }
+    async function edit(s, mode = "school") {
+      dirty = false;
+      if ((s?.platform_mode || mode) === "academy") viewMode = "academy";
+      selected = s;
+      cfg = s
+        ? (await api("schools/" + s.id + "/config")).config
+        : {
+            retention_days: 30,
+            sfu: [],
+            turn: [],
+            r2: { enabled: false },
+            backup: { enabled: false, interval_hours: 24 },
+            initial_admin: {},
+            school_slug: "",
+            platform_mode: mode,
+          };
+      tab = selected ? "overview" : "general";
+      draw();
+    }
+    function syncLabel(s) {
+      if ((s.sync?.applied ?? s.applied) === (s.sync?.revision ?? s.revision))
+        return "Đã đồng bộ";
+      if (s.sync?.state === "failed") return "Đồng bộ thất bại";
+      if (!s.sync?.linked) return "Chờ cài đặt / liên kết VPS";
+      if (!s.sync?.online) return "VPS mất kết nối";
+      if (s.sync?.code === "LIVE_MEETINGS") return "Chờ buổi học kết thúc";
+      return "Đang đồng bộ";
+    }
+    function renderSync() {
+      const root = $("#sync-status");
+      if (!root || !selected) return;
+      const s = selected;
+      root.innerHTML =
+        "<strong>" +
+        esc(syncLabel(s)) +
+        "</strong> · " +
+        (s.sync?.applied ?? s.applied) +
+        "/" +
+        (s.sync?.revision ?? s.revision) +
+        '<p class="muted">' +
+        (s.sync?.linked
+          ? "API quản trị đã liên kết tự động qua HTTPS. Lưu tại trung tâm sẽ tự gửi xuống website; không cần tạo API key thủ công."
+          : "Liên kết API bảo mật được tạo tự động khi cài VPS.") +
+        "</p>";
+      if (s.sync?.state === "failed" && s.sync.applied !== s.sync.revision) {
+        const error = document.createElement("p");
+        error.textContent = jobMessage(s.sync.code || "APPLY_FAILED");
+        root.append(error);
+        if (me.role !== "viewer")
+          root.append(
+            button("Thử đồng bộ lại", async () => {
+              if (dirty)
+                throw Error("Lưu thay đổi đang sửa trước khi đồng bộ lại.");
+              await action("configure");
+              await monitorSync(s.id);
+            }),
+          );
+      }
+    }
+    async function monitorSync(sid) {
+      clearTimeout(syncTimer);
+      if (!viewOpen() || selected?.id !== sid || !$("#sync-status")) return;
+      try {
+        const units = await api("schools");
+        if (!viewOpen() || selected?.id !== sid || !$("#sync-status")) return;
+        const latest = units.find((s) => s.id === sid);
+        // Keep the draft revision: a concurrent edit must still conflict at save.
+        if (latest) selected = { ...latest, revision: selected.revision };
+        renderSync();
+      } catch (_) {
+        if ($("#sync-status"))
+          $("#sync-status").textContent =
+            "Chưa tải được trạng thái đồng bộ. Đang thử kết nối lại…";
+      }
+      syncTimer = setTimeout(() => void monitorSync(sid), 5000);
+    }
+    function draw() {
+      clearTimeout(jobTimer);
+      clearTimeout(syncTimer);
+      const workspace = selected && cfg.platform_mode === "academy";
+      if (workspace) {
+        if ($("#modal").open) $("#modal").close();
+        $("#modal").innerHTML = "";
+        $("#content").innerHTML =
+          '<div id="workspace" class="control-workspace"><aside class="workspace-side"><strong>' +
+          esc(selected.name) +
+          "</strong><small>" +
+          esc(selected.domain) +
+          '</small><nav id="tabs"></nav></aside><div class="workspace-main"><div class="toolbar" id="dialogtop"><h2>' +
+          esc(selected.name) +
+          '</h2></div><div id="panel"></div></div></div>';
+        history.replaceState(null, "", "#academy/" + selected.id);
+      }
+      const d = workspace ? $("#workspace") : $("#modal");
+      if (!workspace)
+        d.innerHTML =
+          '<div class="toolbar" id="dialogtop"><h2>' +
+          esc(
+            selected?.name ||
+              (cfg.platform_mode === "academy"
+                ? "Tạo nền tảng khóa học / VIP"
+                : "Tạo trường học nội bộ"),
+          ) +
+          '</h2></div><div class="tabs" id="tabs"></div><div id="panel"></div>';
+      $("#dialogtop").append(
+        button(workspace ? "Danh sách nền tảng" : "Đóng", async () => {
+          if (workspace) {
+            clearTimeout(jobTimer);
+            history.replaceState(null, "", location.pathname);
+            await list();
+          } else d.close();
+        }),
+      );
+      if (dirty && me.role !== "viewer")
+        $("#dialogtop").append(button("Lưu thay đổi", save, "primary"));
+      const entries = [
+        ["overview", "Bảng điều khiển"],
+        ...(!selected ? [["general", "Thông tin cài đặt"]] : []),
+        ["sfu", "SFU"],
+        ["r2", "R2 / Backup"],
+        ["ops", "Cài đặt / Nâng cấp"],
+        ["backups", "Phục hồi sao lưu"],
+        ["accounts", "Quản trị & phân quyền"],
+        ["jobs", "Lịch sử"],
+        ["lifecycle", "Hoạt động / Xóa"],
+        ["relocate", "Backup / Chuyển VPS"],
+        ["api", "API tích hợp"],
+      ];
+      for (const [id, title] of entries.filter(
+        ([id]) =>
+          (id !== "overview" || selected) &&
+          (!["academy", "business"].includes(id) ||
+            cfg.platform_mode === "academy"),
+      ))
+        $("#tabs").append(
+          button(
+            title,
+            async () => {
+              if ($("#configform")) collect();
+              tab = id;
+              draw();
+            },
+            tab === id ? "active" : "",
+          ),
+        );
+      if (!workspace && !d.open) d.showModal();
+      if (selected) {
+        const status = document.createElement("section");
+        status.id = "sync-status";
+        status.className = "install-hint";
+        status.setAttribute("role", "status");
+        $("#panel").before(status);
+        renderSync();
+        syncTimer = setTimeout(() => void monitorSync(selected.id), 5000);
+      }
+      panel();
+    }
+    function collect() {
+      const f = $("#configform");
+      if (!f) return;
+      const data = new FormData(f),
+        get = (n) => data.get(n) || "";
+      if (tab === "general") {
+        cfg.school_slug = get("slug");
+        cfg.initial_admin = {
+          email: get("admin_email").trim().toLowerCase(),
+          password: get("admin_password"),
+        };
+        cfg._name = get("name");
+        cfg._domain = get("domain");
+        cfg._ip = get("ip");
+      }
+      if (tab === "sfu") {
+        cfg.sfu = [...f.querySelectorAll("[data-sfu]")].map(row=>({
+          ...Object.fromEntries([...row.querySelectorAll("input")].map(x=>[x.name,x.type==="checkbox"?x.checked:x.value])), weight:1
+        }));
+        cfg.turn = [];
+      }
+      if (tab === "r2") {
+        cfg.retention_days = Number(get("retention"));
+        cfg.recording_mode=get("recording_mode")||"vps";
+        cfg.r2 = {
+          ...cfg.r2,
+          enabled: data.has("enabled"),
+          account_id: get("account"),
+          bucket: get("bucket"),
+          access_key_id: get("access"),
+          secret_access_key: get("secret"),
+        };
+        cfg.backup = {
+          enabled: data.has("backup"),
+          interval_hours: Number(get("interval")),
+        };
+      }
+    }
+    async function save() {
+      collect();
+      const value = { ...cfg };
+      delete value._name;
+      delete value._domain;
+      delete value._ip;
+      const result = await api(
+        cfg.platform_mode === "academy" ? "academies/save" : "schools/save",
+        {
+          id: selected?.id,
+          revision: selected?.revision,
+          name: cfg._name || selected?.name,
+          domain: cfg._domain || selected?.domain,
+          ip: cfg._ip || selected?.ip,
+          config: value,
+        },
+      );
+      dirty = false;
+      $("#modal").close();
+      await list();
+      msg("Đã lưu cấu hình. VPS sẽ xác nhận sau khi áp dụng.");
+      await edit(schools.find((s) => s.id === result.id));
+    }
+    async function academyRequest(method, path, body = {}) {
+      if (!selected || me.role !== "owner")
+        throw Error("Chọn trung tâm và dùng tài khoản chủ hệ thống.");
+      const st = JSON.parse(selected.status);
+      if (
+        Date.now() / 1000 - selected.seen >= 90 ||
+        selected.applied !== selected.revision ||
+        !st.features?.includes("academy_management")
+      )
+        throw Error(
+          "VPS cần kết nối, đồng bộ cấu hình và hỗ trợ quản trị khóa học. Xem Tổng quan trước.",
+        );
+      const out = await api("schools/" + selected.id + "/action", {
+        action: "academy",
+        payload: { method, path, body },
+      });
+      for (let i = 0; i < 50; i++) {
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+        const list = await api("schools/" + selected.id + "/jobs");
+        const job = list.find((j) => j.id === out.id);
+        if (job?.state === "failed")
+          throw Error(
+            "VPS chưa xử lý được. Kiểm tra phiên bản và chế độ nền tảng.",
+          );
+        if (job?.state === "success") {
+          const r =
+            typeof job.result === "string"
+              ? JSON.parse(job.result)
+              : job.result;
+          if (!r.data) throw Error("Kết quả đã hết hạn; tải lại dữ liệu.");
+          return r.data.data;
+        }
+      }
+      throw Error("Đang chờ agent; xem tab Tác vụ trước khi gửi lại thao tác.");
+    }
+    function business(preset = "") {
+      const root = $("#panel");
+      root.innerHTML = "";
+      if (!selected || cfg.platform_mode !== "academy" || me.role !== "owner") {
+        root.textContent =
+          "Phân hệ dành cho chủ hệ thống của trung tâm khóa học/VIP. Tạo đơn vị mới và chọn đúng loại nền tảng trước.";
+        return;
+      }
+      root.innerHTML =
+        '<p>Dữ liệu được lấy từ VPS theo yêu cầu. Không lưu bản rõ thông tin học viên/thanh toán tại trung tâm quản trị.</p><label>Nội dung<select id="business-kind"><option value="courses">Khóa học</option><option value="plans">Gói VIP</option><option value="orders">Đơn hàng</option><option value="students">Học viên</option><option value="finance">Thu chi</option><option value="site">Website giới thiệu</option></select></label><button id="business-load">Tải dữ liệu từ VPS</button><p role="status" id="business-status"></p><div id="business-content"></div>';
+      if (preset) {
+        $("#business-kind").value = preset;
+        $("#business-kind").closest("label").style.display = "none";
+      }
+      $("#business-load").onclick = async () => {
+        const btn = $("#business-load"),
+          target = $("#business-content"),
+          status = $("#business-status"),
+          kind = $("#business-kind").value;
+        btn.disabled = true;
+        status.textContent = "Đang chờ agent lấy dữ liệu…";
+        try {
+          const path =
+            kind === "site"
+              ? "/api/academy/site"
+              : kind === "finance"
+                ? "/api/academy/finance"
+                : "/api/academy/admin/" + kind;
+          const rows = await academyRequest("GET", path);
+          target.innerHTML = "";
+          status.textContent = "Đã lấy dữ liệu từ VPS.";
+          const table = document.createElement("table"),
+            keys = Object.keys(rows[0] || {}).filter(
+              (k) => !["content", "receipt_key", "provider_ref"].includes(k),
+            );
+          const head = document.createElement("tr");
+          keys.forEach((k) => {
+            const th = document.createElement("th");
+            th.textContent =
+              {
+                title: "Khóa học",
+                name: "Tên",
+                price_vnd: "Số tiền VND",
+                days: "Số ngày",
+                status: "Trạng thái",
+                code: "Mã đơn",
+                expires_at: "Hết hạn VIP",
+                parent_phone: "Điện thoại phụ huynh",
+                teacher_name: "Giáo viên",
+                description: "Giới thiệu",
+                published: "Xuất bản",
+              }[k] || k;
+            head.append(th);
+          });
+          if (kind === "orders") {
+            const th = document.createElement("th");
+            th.textContent = "Duyệt thanh toán";
+            head.append(th);
+          }
+          if (["courses", "plans"].includes(kind)) {
+            const th = document.createElement("th");
+            th.textContent = "Thao tác";
+            head.append(th);
+          }
+          table.append(head);
+          rows.forEach((row) => {
+            const tr = document.createElement("tr");
+            keys.forEach((k) => {
+              const td = document.createElement("td");
+              td.textContent = String(row[k] ?? "—");
+              tr.append(td);
+            });
+            if (kind === "orders") {
+              const td = document.createElement("td");
+              td.append(
+                button("Xem biên lai", async () => {
+                  try {
+                    const r = await academyRequest(
+                      "GET",
+                      "/api/academy/orders/" + row.id + "/receipt",
+                    );
+                    const a = document.createElement("a");
+                    a.href = r.url;
+                    a.target = "_blank";
+                    a.rel = "noopener";
+                    a.textContent = "Mở ảnh biên lai (link tạm thời)";
+                    td.append(a);
+                  } catch (e) {
+                    msg(e.message);
+                  }
+                }),
+              );
+              if (row.status === "pending")
+                for (const [action, label] of [
+                  ["approve", "Kích hoạt VIP"],
+                  ["reject", "Từ chối"],
+                ])
+                  td.append(
+                    button(label, async () => {
+                      try {
+                        await academyRequest(
+                          "POST",
+                          "/api/academy/orders/" + row.id + "/review",
+                          { action, note: "" },
+                        );
+                        $("#business-load").click();
+                      } catch (e) {
+                        msg(e.message);
+                      }
+                    }),
+                  );
+              tr.append(td);
+            }
+            if (["courses", "plans"].includes(kind)) {
+              const td = document.createElement("td");
+              td.append(
+                button("Sửa", () => {
+                  const f = $("#business-edit-form");
+                  if (!f) return;
+                  for (const el of f.elements) {
+                    if (!el.name) continue;
+                    const key =
+                      el.name === "teacher" ? "teacher_name" : el.name;
+                    if (el.type === "checkbox") el.checked = !!row[key];
+                    else el.value = row[key] ?? "";
+                  }
+                  f.scrollIntoView({ block: "nearest" });
+                }),
+              );
+              if (kind === "courses")
+                td.append(
+                  button("Video", () => centralCourseVideos(row.id, row.title)),
+                );
+              tr.append(td);
+            }
+            table.append(tr);
+          });
+          const wrap = document.createElement("div");
+          wrap.style.overflow = "auto";
+          wrap.append(table);
+          target.append(wrap);
+          if (kind === "students") {
+            const f = document.createElement("form");
+            f.className = "grid";
+            f.innerHTML =
+              "<h3>Tạo tài khoản học viên</h3>" +
+              input("name", "Họ tên") +
+              input("email", "Email", "", "email") +
+              input("student_code", "Mã học viên (tùy chọn)") +
+              input("password", "Mật khẩu từ 6 ký tự", "", "password") +
+              '<button class="primary">Tạo học viên</button><p>Học viên hoàn thiện hồ sơ và xác thực email tại cổng học tập.</p>';
+            f.onsubmit = async (e) => {
+              e.preventDefault();
+              try {
+                const v = Object.fromEntries(new FormData(f));
+                await academyRequest("POST", "/api/academy/control/students", {
+                  rows: [v],
+                });
+                $("#business-load").click();
+              } catch (e) {
+                msg(e.message);
+              }
+            };
+            target.append(f);
+          }
+          if (["courses", "plans", "site", "finance"].includes(kind)) {
+            const f = document.createElement("form");
+            f.id = "business-edit-form";
+            f.className = "grid";
+            if (kind === "courses")
+              f.innerHTML =
+                input("id", "ID (để trống tạo mới)") +
+                input("title", "Tên khóa học") +
+                input("description", "Giới thiệu") +
+                input("teacher", "Giáo viên hiển thị") +
+                input("academic_course_id", "ID môn học Live (nếu có)") +
+                check("published", "Xuất bản", true);
+            if (kind === "plans")
+              f.innerHTML =
+                input("id", "ID (để trống tạo mới)") +
+                input("name", "Tên gói") +
+                input("price_vnd", "Giá VND", "", "number") +
+                input("days", "Số ngày", 30, "number") +
+                check("live_enabled", "Có lớp Live", true) +
+                check("active", "Đang bán", true);
+            if (kind === "finance")
+              f.innerHTML =
+                input("title", "Nội dung chi") +
+                input("amount_vnd", "Số tiền VND", "", "number") +
+                input("paid_on", "Ngày chi", "", "date");
+            if (kind === "site") {
+              const site = rows[0] ? JSON.parse(rows[0].content) : {};
+              f.innerHTML =
+                input("headline", "Tiêu đề website", site.headline) +
+                input("description", "Giới thiệu", site.description) +
+                check("published", "Xuất bản website", site.published);
+              f._site = site;
+            }
+            const submit = document.createElement("button");
+            submit.textContent = "Lưu trên VPS";
+            f.append(submit);
+            f.onsubmit = async (e) => {
+              e.preventDefault();
+              submit.disabled = true;
+              try {
+                const fd = new FormData(f),
+                  v = Object.fromEntries(fd);
+                for (const key of ["price_vnd", "days", "amount_vnd"])
+                  if (key in v) v[key] = Number(v[key]);
+                for (const key of ["published", "live_enabled", "active"])
+                  if (f.elements.namedItem(key)) v[key] = fd.has(key);
+                if (kind === "site")
+                  await academyRequest("POST", path, {
+                    content: { ...f._site, ...v },
+                  });
+                else
+                  await academyRequest(
+                    "POST",
+                    kind === "finance"
+                      ? "/api/academy/finance"
+                      : "/api/academy/" + kind,
+                    v,
+                  );
+                status.textContent = "Đã lưu. Tải dữ liệu để đối chiếu.";
+              } catch (e) {
+                msg(e.message);
+              } finally {
+                submit.disabled = false;
+              }
+            };
+            target.append(f);
+          }
+        } catch (e) {
+          status.textContent = e.message;
+        } finally {
+          btn.disabled = false;
+        }
+      };
+      if (preset && selected.applied === selected.revision)
+        $("#business-load").click();
+    }
+    async function refreshUnit() {
+      const sid = selected.id;
+      const units = await api("schools");
+      if (selected?.id !== sid) return;
+      const latest = units.find((s) => s.id === sid);
+      if (latest) selected = { ...latest, revision: selected.revision };
+    }
+    async function lifecyclePanel() {
+      const sid = selected.id;
+      const root = $("#panel");
+      root.textContent = "Đang tải trạng thái…";
+      try {
+        await refreshUnit();
+        if (tab !== "lifecycle" || selected.id !== sid) return;
+        const state = selected.desired_state || "active",
+          applied = selected.applied_state || "active";
+        const status = JSON.parse(selected.status),
+          supported =
+            status.control_protocol >= 2 &&
+            status.features?.includes("lifecycle");
+        root.innerHTML =
+          "<h3>Trạng thái hoạt động</h3><p>Yêu cầu: <strong>" +
+          esc(
+            {
+              active: "Hoạt động",
+              suspended: "Tạm ngưng",
+              deleted: "Đã xóa khỏi danh sách",
+            }[state],
+          ) +
+          "</strong> · VPS đã áp dụng: <strong>" +
+          esc(applied === "suspended" ? "Tạm ngưng" : "Hoạt động") +
+          '</strong></p><p>Tạm ngưng chặn truy cập học và đăng nhập, giữ nguyên dữ liệu. Nếu còn buổi Live, tác vụ chờ hết buổi. VPS mất kết nối chỉ nhận được yêu cầu khi kết nối lại.</p><div class="step-actions" id="statebuttons"></div>';
+        const change = async (action, confirm) => {
+          if (dirty) throw Error("Lưu cấu hình đang sửa trước.");
+          const result = await api("schools/" + sid + "/lifecycle", {
+            action,
+            confirm,
+          });
+          await list();
+          await edit(schools.find((s) => s.id === sid));
+          msg(
+            result.message ||
+              "Đã cập nhật yêu cầu trạng thái. Xem Tổng quan / Lịch sử.",
+          );
+        };
+        if (state === "deleted") {
+          $("#statebuttons").append(
+            button(
+              "Khôi phục từ thùng rác",
+              () => change("restore"),
+              "primary",
+            ),
+          );
+
+          root.insertAdjacentHTML(
+            "beforeend",
+            '<section><h3>Xóa vĩnh viễn nền tảng và dữ liệu VPS</h3><p class="backup-note">Gỡ containers, cơ sở dữ liệu MySQL/Redis, mã nguồn, cấu hình, khóa và bản sao lưu cục bộ trên VPS. Xóa cấu hình, token và sao lưu di chuyển của đơn vị tại trung tâm. Giữ bản sao lưu/video trên R2, Ubuntu và dịch vụ dùng chung. Không thể khôi phục bằng nút Thùng rác sau khi hoàn tất.</p><form id="purge-school">' +
+              input("confirm", "Nhập domain cần xóa: " + selected.domain) +
+              input("phrase", "Nhập XOA VINH VIEN") +
+              input(
+                "admin_password",
+                "Mật khẩu quản trị trung tâm",
+                "",
+                "password",
+              ) +
+              (me.mfa_enabled
+                ? input("code", "Mã 2FA hoặc mã khôi phục")
+                : "") +
+              "<h4>Xác thực VPS cần gỡ</h4>" +
+              sshFields("purge_") +
+              '<label><input name="erase_vps" type="checkbox" required style="width:auto"> Tôi xác nhận xóa vĩnh viễn cả nền tảng và dữ liệu trên VPS này.</label><button class="primary">Xóa vĩnh viễn cả VPS và trung tâm</button></form></section>',
+          );
+          const purgeForm = $("#purge-school");
+          for (const name of [
+            "confirm",
+            "phrase",
+            "admin_password",
+            "purge_fingerprint",
+          ])
+            purgeForm.elements.namedItem(name).required = true;
+          purgeForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const submit = purgeForm.querySelector("button");
+            submit.disabled = true;
+            try {
+              if (
+                !confirm(
+                  "Xóa vĩnh viễn nền tảng " +
+                    selected.domain +
+                    " và dữ liệu của nó trên VPS " +
+                    selected.ip +
+                    "?",
+                )
+              )
+                return;
+              const v = Object.fromEntries(new FormData(purgeForm)),
+                ssh = {
+                  port: Number(v.purge_port),
+                  fingerprint: v.purge_fingerprint,
+                  password: v.purge_password,
+                  private_key: v.purge_private_key,
+                };
+              const job = await api("schools/" + sid + "/lifecycle", {
+                action: "purge",
+                confirm: v.confirm,
+                phrase: v.phrase,
+                admin_password: v.admin_password,
+                code: v.code || "",
+                erase_vps: new FormData(purgeForm).has("erase_vps"),
+                ssh,
+              });
+              purgeForm.reset();
+              await openJobMonitor(job.id, true);
+            } catch (e) {
+              msg(e.message);
+            } finally {
+              submit.disabled = false;
+            }
+          };
+        } else {
+          const b = button(
+            state === "active" ? "Tạm ngưng đơn vị" : "Kích hoạt lại",
+            () => change(state === "active" ? "suspend" : "resume"),
+            "primary",
+          );
+          b.disabled = !!selected.seen && !supported;
+          $("#statebuttons").append(b);
+          if (b.disabled)
+            root.insertAdjacentHTML(
+              "beforeend",
+              '<p class="install-hint">Client cần phiên bản 0.9.1 và agent mới để điều khiển trạng thái. Chưa áp dụng được trên client cũ.</p>',
+            );
+          root.insertAdjacentHTML(
+            "beforeend",
+            '<section><h3>Xóa vào thùng rác</h3><p>Chỉ xóa khi đã tạm ngưng thành công. Không xóa database, video R2 hay VPS; có thể khôi phục đơn vị. Các API key của đơn vị sẽ bị thu hồi.</p><form id="archive-school">' +
+              input("confirm", "Nhập domain để xác nhận: " + selected.domain) +
+              "<button>Xóa vào thùng rác</button></form></section>",
+          );
+          $("#archive-school button").disabled =
+            state !== "suspended" || applied !== "suspended";
+          $("#archive-school").onsubmit = async (e) => {
+            e.preventDefault();
+            try {
+              await change("archive", new FormData(e.target).get("confirm"));
+            } catch (e) {
+              msg(e.message);
+            }
+          };
+        }
+      } catch (e) {
+        if (tab === "lifecycle") root.textContent = e.message;
+      }
+    }
+    async function integrationPanel() {
+      const sid = selected.id,
+        root = $("#panel");
+      root.textContent = "Đang tải API key…";
+      try {
+        const keys = await api("schools/" + sid + "/keys");
+        if (tab !== "api" || selected.id !== sid) return;
+        root.innerHTML =
+          '<h3>Cập nhật nhanh bằng API</h3><p>API key chỉ dùng cho đơn vị này, có hạn và thu hồi được. Hỗ trợ tên đơn vị và thời hạn ghi hình. Cài đặt kinh doanh thuộc website của đơn vị. Không cho đổi VPS/domain, điều khiển trạng thái, đọc secret hoặc xóa dữ liệu bằng API key này.</p><p>Trung tâm cập nhật ngay; VPS đồng bộ qua HTTPS khoảng 5 giây khi kết nối, không cần SSH. Gửi revision để tránh ghi đè thay đổi của người khác.</p><form id="new-key" class="grid">' +
+          input("label", "Tên khóa tích hợp") +
+          input("days", "Hạn dùng (ngày, tối đa 90)", 30, "number") +
+          '<button class="primary">Tạo API key</button></form><div id="key-once"></div><div class="table"><table><thead><tr><th>Tên khóa</th><th>Hết hạn</th><th>Trạng thái</th><th></th></tr></thead><tbody id="key-rows"></tbody></table></div><h3>Ví dụ cập nhật</h3><pre id="api-example"></pre>';
+        $("#api-example").textContent =
+          "GET " +
+          location.origin +
+          "/api/v1/schools/" +
+          sid +
+          "\nAuthorization: Bearer YOUR_API_KEY\n\nPATCH " +
+          location.origin +
+          "/api/v1/schools/" +
+          sid +
+          "\nAuthorization: Bearer YOUR_API_KEY\nContent-Type: application/json\n\n" +
+          JSON.stringify(
+            {
+              revision: selected.revision,
+              name: selected.name,
+              retention_days: 30,
+            },
+            null,
+            2,
+          );
+        for (const key of keys) {
+          const tr = document.createElement("tr");
+          tr.innerHTML =
+            "<td>" +
+            esc(key.label) +
+            "</td><td>" +
+            controlDate(key.expires * 1000) +
+            "</td><td>" +
+            esc(
+              key.revoked
+                ? "Đã thu hồi"
+                : key.expires * 1000 < Date.now()
+                  ? "Hết hạn"
+                  : "Đang hoạt động",
+            ) +
+            "</td><td></td>";
+          if (!key.revoked)
+            tr.lastChild.append(
+              button("Thu hồi", async () => {
+                await api("schools/" + sid + "/keys", {
+                  action: "revoke",
+                  id: key.id,
+                });
+                await integrationPanel();
+              }),
+            );
+          $("#key-rows").append(tr);
+        }
+        $("#new-key").onsubmit = async (e) => {
+          e.preventDefault();
+          try {
+            const data = Object.fromEntries(new FormData(e.target));
+            data.days = Number(data.days);
+            const out = await api("schools/" + sid + "/keys", data);
+            await integrationPanel();
+            $("#key-once").innerHTML =
+              '<p class="install-hint">Khóa chỉ hiển thị lần này. Lưu vào nơi quản lý secret; không gửi qua chat hoặc commit.</p><label>API key mới<input id="issued-api-key" readonly autocomplete="off"></label>';
+            $("#issued-api-key").value = out.token;
+          } catch (e) {
+            msg(e.message);
+          }
+        };
+      } catch (e) {
+        if (tab === "api") root.textContent = e.message;
+      }
+    }
+    function sshFields(prefix, fingerprint = "") {
+      return (
+        '<div class="grid">' +
+        input(prefix + "port", "Cổng SSH", 22, "number") +
+        input(prefix + "fingerprint", "Fingerprint SSH SHA256", fingerprint) +
+        input(
+          prefix + "password",
+          "Mật khẩu root (hoặc dùng khóa riêng)",
+          "",
+          "password",
+        ) +
+        '</div><label>Khóa SSH riêng (tùy chọn)<textarea name="' +
+        prefix +
+        'private_key" rows="3" autocomplete="off"></textarea></label>'
+      );
+    }
+    async function relocationPanel() {
+      const sid = selected.id,
+        root = $("#panel");
+      root.textContent = "Đang tải sao lưu và chuyển VPS…";
+      try {
+        const records = await api("schools/" + sid + "/relocations");
+        if (tab !== "relocate" || selected.id !== sid) return;
+        const current = records.find(
+          (r) => !["completed", "canceled", "failed"].includes(r.state),
+        );
+        const status = JSON.parse(selected.status);
+        const ready =
+          selected.desired_state === "suspended" &&
+          selected.applied_state === "suspended" &&
+          status.control_protocol >= 2 &&
+          status.features?.includes("relocation");
+        root.innerHTML =
+          '<h3>Backup và chuyển sang VPS mới</h3><p class="intro">Giữ nguyên database, tài khoản, cấu hình và mã nguồn trong bản sao lưu mã hóa; khóa phục hồi được lưu riêng tại trung tâm. Video R2 giữ ở bucket hiện tại. Máy cũ không bị xóa và hai máy giữ tạm ngưng đến khi chuyển hoàn tất.</p><p>1. Tạm ngưng và sao lưu máy cũ → 2. Cài, phục hồi trên domain tạm của VPS mới → 3. Đổi DNS domain chính rồi hoàn tất. Chỉ kích hoạt lại sau khi kiểm tra máy mới.</p><p class="muted">Giới hạn bản sao lưu chuyển tự động: 128 MiB (database + nguồn + cấu hình), không gồm file video trên R2. Chỉ hỗ trợ một trường trên một VPS.</p><div id="relocationforms"></div><h3>Lịch sử sao lưu / chuyển máy</h3><div class="table"><table><thead><tr><th>Mã tác vụ</th><th>Trạng thái</th><th>VPS mới</th><th>Backup</th><th></th></tr></thead><tbody id="relocation-rows"></tbody></table></div>';
+        if (!ready)
+          $("#relocationforms").innerHTML =
+            '<p class="install-hint">Cần tạm ngưng thành công và client 0.9.1 + agent mới trước khi chuyển. Dùng Backup ngay ở Cài đặt / Nâng cấp nếu chỉ cần bản sao lưu R2 thông thường.</p>';
+        else if (!current)
+          $("#relocationforms").innerHTML =
+            "<section><h3>1. Sao lưu máy cũ về trung tâm</h3><p>IP hiện tại: " +
+            esc(selected.ip) +
+            '. Xác minh fingerprint từ Console/VNC trước khi nhập.</p><form id="relocation-form">' +
+            sshFields("source_") +
+            '<button class="primary">Sao lưu mã hóa để chuyển VPS</button></form></section>';
+        else if (current.state === "backup_ready")
+          $("#relocationforms").innerHTML =
+            '<section><h3>2. Phục hồi trên VPS Ubuntu mới</h3><p>Bản sao lưu đã xác minh và giữ tại trung tâm. Domain tạm phải trỏ riêng về IP mới; VPS chưa có /opt/meet.</p><form id="relocation-form"><div class="grid">' +
+            input("target_ip", "IP VPS mới", current.details.target_ip || "") +
+            input(
+              "staging_domain",
+              "Domain tạm (ví dụ preview.tenmien.vn)",
+              current.details.staging_domain || "",
+            ) +
+            "</div>" +
+            sshFields("target_") +
+            '<button class="primary">Cài và phục hồi VPS mới</button></form></section>';
+        else if (["prepared", "cutover_failed"].includes(current.state))
+          $("#relocationforms").innerHTML =
+            "<section><h3>3. Chuyển domain chính</h3><p>VPS mới: <strong>" +
+            esc(current.details.target_ip) +
+            "</strong> · Domain tạm: " +
+            esc(current.details.staging_domain) +
+            "</p><p>Đổi bản ghi A của <strong>" +
+            esc(selected.domain) +
+            '</strong> sang IP mới; bỏ bản ghi AAAA cũ và tắt proxy khi đối chiếu IP. Sau đó nhập lại SSH VPS mới để kiểm tra DNS/HTTPS, chuyển agent và đồng bộ cấu hình. Máy mới vẫn tạm ngưng đến khi anh kích hoạt.</p><form id="relocation-form">' +
+            sshFields("target_", current.details.target_fingerprint) +
+            '<button class="primary">Kiểm tra và hoàn tất chuyển VPS</button></form></section>';
+        else
+          $("#relocationforms").innerHTML =
+            '<p class="install-hint">Tác vụ đang chạy. Xem Lịch sử để theo dõi; không cài lại hoặc kích hoạt máy cũ.</p>';
+        const form = $("#relocation-form");
+        if (form)
+          form.onsubmit = async (e) => {
+            e.preventDefault();
+            const submit = form.querySelector("button");
+            submit.disabled = true;
+            try {
+              if (dirty) throw Error("Lưu cấu hình đang sửa trước.");
+              const values = Object.fromEntries(new FormData(form));
+              const action = !current
+                  ? "backup"
+                  : current.state === "backup_ready"
+                    ? "prepare"
+                    : "cutover",
+                prefix = action === "backup" ? "source" : "target";
+              const credential = {
+                port: Number(values[prefix + "_port"]),
+                fingerprint: values[prefix + "_fingerprint"],
+                password: values[prefix + "_password"],
+                private_key: values[prefix + "_private_key"],
+              };
+              await api("schools/" + sid + "/relocations", {
+                action,
+                id: current?.id,
+                target_ip: values.target_ip,
+                staging_domain: values.staging_domain,
+                [prefix]: credential,
+              });
+              form.reset();
+              tab = "jobs";
+              draw();
+              msg(
+                "Đã xếp hàng tác vụ. Thông tin SSH sẽ được xóa sau khi tác vụ kết thúc.",
+              );
+            } catch (e) {
+              msg(e.message);
+            } finally {
+              submit.disabled = false;
+            }
+          };
+        for (const record of records) {
+          const b = record.details.backup,
+            tr = document.createElement("tr");
+          tr.innerHTML =
+            "<td>" +
+            esc(record.id.slice(0, 8)) +
+            "</td><td>" +
+            esc(
+              {
+                preparing: "Đang xử lý",
+                backup_ready: "Đã sao lưu",
+                prepared: "Máy mới sẵn sàng",
+                cutting_over: "Đang chuyển domain",
+                cutover_failed: "Cần kiểm tra chuyển domain",
+                completed: "Đã chuyển; kiểm tra trạng thái",
+                canceled: "Đã hủy",
+                failed: "Thất bại",
+              }[record.state] || record.state,
+            ) +
+            "</td><td>" +
+            esc(record.details.target_ip || "—") +
+            "</td><td>" +
+            esc(
+              b
+                ? (b.bytes / 1048576).toFixed(1) +
+                    " MiB · " +
+                    b.counts.users +
+                    " tài khoản"
+                : "—",
+            ) +
+            "</td><td></td>";
+          if (["backup_ready", "prepared", "failed"].includes(record.state))
+            tr.lastChild.append(
+              button("Hủy chuyển", async () => {
+                await api("schools/" + sid + "/relocations", {
+                  action: "cancel",
+                  id: record.id,
+                });
+                await relocationPanel();
+              }),
+            );
+          $("#relocation-rows").append(tr);
+        }
+        root.append(button("Tải lại trạng thái", relocationPanel));
+      } catch (e) {
+        if (tab === "relocate") root.textContent = e.message;
+      }
+    }
+    async function overview() {
+      const sid = selected?.id;
+      if (!sid) return;
+      const root = $("#panel");
+      root.textContent = "Đang kiểm tra cấu hình…";
+      try {
+        const [report, units] = await Promise.all([
+          api("schools/" + sid + "/readiness"),
+          api("schools"),
+        ]);
+        if (!viewOpen() || tab !== "overview" || selected?.id !== sid) return;
+        const latest = units.find((s) => s.id === sid);
+        if (latest) selected = { ...latest, revision: selected.revision }; // Keep the draft's optimistic-lock revision.
+        const st = JSON.parse(selected.status);
+        const online = Date.now() / 1000 - selected.seen < 90;
+        root.innerHTML =
+          '<p class="intro">' +
+          (report.platform_mode === "academy"
+            ? "Nền tảng khóa học / VIP · Website giới thiệu, học viên, giáo viên và bán gói học. Trung tâm chỉ quản lý hạ tầng; nghiệp vụ quản lý tại website của đơn vị."
+            : "Trường nội bộ · Học theo lớp và phân công. Không áp dụng điều kiện VIP của nền tảng thương mại.") +
+          '</p><div class="summary-grid"><article><small>Domain / VPS</small><strong>' +
+          esc(selected.domain) +
+          "</strong><small>" +
+          esc(selected.ip) +
+          "</small></article><article><small>Trạng thái cài đặt</small><strong>" +
+          esc(
+            report.installing
+              ? "Đang cài đặt"
+              : report.connected
+                ? online
+                  ? "VPS đang kết nối"
+                  : "VPS mất kết nối"
+                : "Chưa cài VPS",
+          ) +
+          "</strong><small>" +
+          esc(st.version || "Chưa nhận phiên bản") +
+          "</small></article><article><small>Đồng bộ cấu hình</small><strong>" +
+          esc(syncLabel(selected)) +
+          "</strong><small>Phiên bản cấu hình " +
+          selected.applied +
+          "/" +
+          selected.revision +
+          '</small></article></div><h3>Kiểm tra trước khi cài</h3><p class="muted">' +
+          esc(report.notice) +
+          '</p><div class="checklist">' +
+          report.checks
+            .map(
+              (x) =>
+                '<div class="checkitem"><div><strong>' +
+                esc(x.title) +
+                "</strong><p>" +
+                esc(x.detail) +
+                '</p></div><div><span class="badge state-' +
+                esc(x.state) +
+                '">' +
+                esc(
+                  {
+                    ready: "Đã điền",
+                    blocked: "Cần bổ sung",
+                    optional: "Có thể thêm sau",
+                  }[x.state],
+                ) +
+                "</span></div></div>",
+            )
+            .join("") +
+          '</div><div id="nextsteps" class="step-actions"></div>';
+        const jump = (id) => {
+          tab = id;
+          draw();
+        };
+        $("#nextsteps").append(
+          ...(!selected?.sync?.linked
+            ? [button("Thông tin khởi tạo", () => jump("general"))]
+            : []),
+          button("SFU", () => jump("sfu")),
+          button("R2 / Backup", () => jump("r2")),
+        );
+        $("#nextsteps").append(
+          button(
+            report.connected ? "Vận hành / nâng cấp" : "Tiếp tục cài VPS",
+            () => jump("ops"),
+            "primary",
+          ),
+          button("Tải lại trạng thái", overview),
+        );
+        if (report.connected) {
+          const links = document.createElement("div");
+          links.className = "links";
+          for (const [path, label] of [
+            ["/", "Mở website"],
+            [
+              report.platform_mode === "academy" ? "/hoc" : "/",
+              report.platform_mode === "academy"
+                ? "Mở quản trị website"
+                : "Mở cổng trường",
+            ],
+          ]) {
+            const a = document.createElement("a");
+            a.href = "https://" + selected.domain + path;
+            a.target = "_blank";
+            a.rel = "noopener";
+            a.textContent = label;
+            links.append(a);
+          }
+          root.append(links);
+        }
+      } catch (e) {
+        if (tab === "overview") root.textContent = e.message;
+      }
+    }
+    function panel() {
+      const p = $("#panel");
+      if (tab === "biz_teachers" || tab === "biz_classes") {
+        void academicPanel(tab === "biz_teachers" ? "teachers" : "classes");
+        return;
+      }
+      if (tab.startsWith("biz_")) {
+        business(tab.slice(4));
+        return;
+      }
+      if (tab === "lifecycle") {
+        void lifecyclePanel();
+        return;
+      }
+      if (tab === "relocate") {
+        void relocationPanel();
+        return;
+      }
+      if (tab === "api") {
+        void integrationPanel();
+        return;
+      }
+      if (tab === "overview") {
+        void overview();
+        return;
+      }
+      if (tab === "business") {
+        business();
+        return;
+      }
+      if (tab === "backups") {
+        void backupsPanel();
+        return;
+      }
+      if (tab === "jobs") {
+        jobs();
+        return;
+      }
+      if (tab === "ops") {
+        operations();
+        return;
+      }
+      if (tab === "accounts") {
+        accounts();
+        return;
+      }
+      const f = document.createElement("form");
+      f.id = "configform";
+      f.onsubmit = (e) => {
+        e.preventDefault();
+        save().catch((e) => msg(e.message));
+      };
+      p.append(f);
+      if (tab === "general")
+        f.innerHTML =
+          '<p class="intro">' +
+          (cfg.platform_mode === "academy"
+            ? "Khóa học / VIP · Tạo trên VPS và domain mới. Sau khi lưu, cấu hình email, thanh toán, SFU và R2 rồi cài VPS."
+            : "Trường nội bộ · Quản lý lớp, giáo viên và học sinh.") +
+          '</p><div class="grid">' +
+          input(
+            "name",
+            "Tên đơn vị / thương hiệu",
+            cfg._name || selected?.name,
+          ) +
+          input("domain", "Domain website", cfg._domain || selected?.domain) +
+          input("ip", "IP public VPS", cfg._ip || selected?.ip) +
+          input("slug", "Mã nội bộ (không hiện ở login)", cfg.school_slug) +
+          input(
+            "admin_email",
+            "Email admin đầu tiên",
+            cfg.initial_admin?.email,
+            "email",
+          ) +
+          input(
+            "admin_password",
+            "Mật khẩu khởi tạo (12–72 byte)",
+            cfg.initial_admin?.password,
+            "password",
+          ) +
+          "</div><p>Admin đầu tiên chỉ dùng lúc khởi tạo. Để trống mã nội bộ để hệ thống tự tạo. Các thay đổi tài khoản sau cài đặt dùng mục Tài khoản quản trị; đổi domain dùng Cài đặt / Nâng cấp.</p>";
+      if (tab === "sfu") {
+        f.innerHTML =
+          '<h3>SFU · quay vòng theo từng buổi học</h3><p>Các buổi mới dùng lần lượt SFU đang kích hoạt, theo thứ tự các dòng rồi lặp lại. Bỏ tích sẽ không nhận buổi mới; phòng đang chạy giữ kết nối hiện tại. Nếu SFU lỗi, hệ thống kiểm tra dự phòng rồi kết nối lại cả phòng.</p><div id="sfus"></div><div id="addsf"></div><section id="sfu-usage"></section>';
+        for (const v of cfg.sfu || []) sfuRow(v);
+        $("#addsf").append(
+          button("+ SFU App", () => {
+            dirty = true;
+            sfuRow({ id: crypto.randomUUID(), weight: 1, enabled: true });
+          }),
+        );
+      }
+      if(tab==="sfu") renderSFUUsage();
+      if (tab === "r2")
+        f.innerHTML =
+          '<label>Phương thức ghi<select name="recording_mode">'+[['vps','Ghi trên VPS'],['browser','Trình duyệt giáo viên'],['cluster','Cụm máy Windows / Linux']].map(([v,n])=>'<option value="'+v+'" '+((cfg.recording_mode||'vps')===v?'selected':'')+'>'+n+'</option>').join('')+'</select></label><p>Đổi phương thức sau khi dừng ghi các buổi đang diễn ra. Máy cụm cần được đăng ký với website đơn vị.</p>'+
+          check("enabled", "Bật lưu video R2", cfg.r2?.enabled) +
+          '<div class="grid">' +
+          input("account", "Cloudflare Account ID", cfg.r2?.account_id) +
+          input("bucket", "Bucket riêng của đơn vị", cfg.r2?.bucket) +
+          input("access", "Access Key ID", cfg.r2?.access_key_id, "password") +
+          input(
+            "secret",
+            "Secret Access Key",
+            cfg.r2?.secret_access_key,
+            "password",
+          ) +
+          input(
+            "retention",
+            "Số ngày giữ ghi hình phòng học",
+            cfg.retention_days || 30,
+            "number",
+          ) +
+          "</div><h3>Sao lưu database + cấu hình + mã nguồn</h3>" +
+          check("backup", "Bật backup tự động", cfg.backup?.enabled) +
+          input(
+            "interval",
+            "Chu kỳ backup (giờ)",
+            cfg.backup?.interval_hours || 24,
+            "number",
+          ) +
+          "<section id=\"recording-workers\"></section><p>Dùng bucket riêng cho từng đơn vị. Kho video khóa học (academy/) tách khỏi ghi hình phòng học; không đặt lifecycle xóa toàn bucket sau 30 ngày. Giảm thời hạn ghi hình có thể xóa bản ghi phòng học sớm hơn.</p>";
+      if(tab==="r2")renderRecordingWorkers();
+      if (tab === "general") {
+        for (const name of ["name", "domain", "ip"])
+          f.elements.namedItem(name).required = true;
+        if (cfg.platform_mode === "academy") {
+          f.elements.namedItem("slug").closest("label").hidden = true;
+          f.insertAdjacentHTML(
+            "afterbegin",
+            '<div class="bootstrap-banner"><h3>Nền tảng khóa học / VIP mới</h3><p>Trung tâm chỉ quản lý cài đặt và hạ tầng. Khóa học, học viên, giáo viên, gói VIP, email và thanh toán được quản lý trên website của đơn vị.</p></div>',
+          );
+          if (!selected) {
+            f.elements.namedItem("admin_email").required = true;
+            f.elements.namedItem("admin_password").required = true;
+            f.elements.namedItem("admin_password").minLength = 12;
+            f.elements.namedItem("admin_password").maxLength = 72;
+          }
+        }
+        if (selected?.seen) f.elements.namedItem("domain").readOnly = true;
+      }
+      if (me.role !== "viewer") {
+        const b = document.createElement("button");
+        b.textContent = "Lưu & đồng bộ";
+        b.className = "primary";
+        f.append(b);
+      } else for (const e of f.elements) if(!e.dataset.readonlyAction)e.disabled = true;
+    }
+    function renderRecordingWorkers(){
+      const el=$("#recording-workers");if(!el||!selected)return;
+      let st={};try{st=JSON.parse(selected.status||"{}")}catch{}
+      el.innerHTML='<h3>Cụm máy ghi Windows / Linux</h3><p><a href="https://github.com/lehuunghi/meet/actions/workflows/recording-agent.yml" target="_blank" rel="noreferrer">Tải bộ cài Windows / Linux từ lần kiểm thử thành công</a></p><p>Mỗi máy nhận một lớp. Tạo mã đăng ký, cài ứng dụng trên máy rồi nhập domain website đơn vị và mã. Mã chỉ hiển thị một lần; đợi tác vụ đồng bộ thành công trước khi nhập.</p>';
+      if(!st.features?.includes('recording_workers')){el.append(document.createTextNode('Nâng cấp client và agent điều khiển để quản lý cụm ghi.'));return;}
+      const rows=Array.isArray(st.recording_nodes)?st.recording_nodes:[];
+      const table=document.createElement('div');table.className='table-wrap';table.innerHTML='<table><thead><tr><th>Máy</th><th>Hệ điều hành</th><th>Lần kết nối</th><th>Trạng thái</th><th></th></tr></thead><tbody>'+rows.map(n=>'<tr><td>'+esc(n.name)+'</td><td>'+esc(n.platform)+'</td><td>'+esc(n.last_seen?controlDate(n.last_seen,true):'Chưa kết nối')+'</td><td>'+esc(n.enabled?'Đang bật':'Đã thu hồi')+'</td><td data-recorder-node="'+esc(n.id)+'"></td></tr>').join('')+'</tbody></table>';el.append(table);
+      if(me.role==='owner'){
+       for(const n of rows){const cell=[...table.querySelectorAll('[data-recorder-node]')].find(c=>c.dataset.recorderNode===n.id);cell?.append(button(n.enabled?'Ngừng / thu hồi':'Kích hoạt',async()=>{await api('schools/'+selected.id+'/action',{action:'recorders',payload:{Action:'node',Node:n.id,Enabled:!n.enabled}});notice('Đã gửi thay đổi máy ghi. Làm mới sau khi tác vụ thành công.')}));}
+       const name=document.createElement('input');name.placeholder='Tên máy ghi';name.maxLength=100;name.setAttribute('aria-label','Tên máy ghi');el.append(name);
+       el.append(button('Tạo mã đăng ký máy',async()=>{const result=await api('schools/'+selected.id+'/action',{action:'recorders',payload:{Action:'enroll',Name:name.value}});const box=document.createElement('input');box.readOnly=true;box.value=result.code;box.setAttribute('aria-label','Mã đăng ký máy dùng một lần');box.onfocus=()=>box.select();el.append(box);el.append(button('Ẩn mã',()=>box.remove()));notice('Đã tạo mã. Đợi tác vụ thành công rồi nhập trong bộ cài; mã hết hạn sau 10 phút kể từ khi áp dụng.')}));
+      }
+      const refresh=button('Làm mới máy ghi',async()=>{const sid=selected.id,latest=await api('schools');if(selected?.id!==sid)return;const row=latest.find(x=>x.id===sid);if(row){selected.status=row.status;renderRecordingWorkers()}});refresh.dataset.readonlyAction='true';el.append(refresh);
+    }
+    function renderSFUUsage() {
+      const el=$("#sfu-usage");if(!el)return;
+      let st={};try{st=JSON.parse(selected?.status||"{}")}catch{}
+      const rows=Array.isArray(st.sfu_usage)?st.sfu_usage:[];
+      const bytes=v=>{const n=Number(v||0);return Number.isFinite(n)&&n>=0?(n>=1e9?(n/1e9).toFixed(2)+" GB":n>=1e6?(n/1e6).toFixed(2)+" MB":n.toLocaleString('vi-VN')+" byte"):"—"};
+      el.innerHTML='<h3>Lưu lượng SFU</h3><p>Ước tính từ các kết nối trình duyệt và bộ ghi máy chủ, bắt đầu từ v0.32.0. Không phải số liệu hóa đơn Cloudflare; có thể thiếu mẫu khi thiết bị mất mạng hoặc đóng đột ngột.</p>'+
+        (!st.features?.includes('sfu_round_robin')?'<p class="backup-note">VPS cần nâng cấp v0.32.0 để áp dụng quay vòng từng buổi và gửi thống kê.</p>':'')+
+        '<div class="table-wrap" style="overflow:auto;max-width:100%"><table><thead><tr><th>SFU</th><th>Buổi đã gán</th><th>Gửi lên</th><th>Nhận xuống</th><th>Tổng đã đo</th><th>Tháng này (UTC)</th><th>Mẫu cuối</th></tr></thead><tbody>'+(cfg.sfu||[]).map(p=>{
+         const r=rows.find(v=>v.id===p.id&&v.app_id===p.app_id),has=r&&Number(r.samples)>0;
+         return '<tr><td>'+esc(p.name||p.id)+'</td><td>'+esc(r?.meetings??'—')+'</td><td>'+esc(has?bytes(r.ingress_bytes):'Chưa có mẫu')+'</td><td>'+esc(has?bytes(r.egress_bytes):'—')+'</td><td>'+esc(has?bytes(Number(r.ingress_bytes)+Number(r.egress_bytes)):'—')+'</td><td>'+esc(has?bytes(Number(r.month_ingress_bytes)+Number(r.month_egress_bytes)):'—')+'</td><td>'+esc(has?controlDate(r.updated_at,true):'—')+'</td></tr>';
+        }).join('')+'</tbody></table></div>';
+      if(selected){const b=button('Làm mới lưu lượng',async()=>{
+        const latest=await api('schools');const row=latest.find(x=>x.id===selected.id);if(row){selected.status=row.status;selected.seen=row.seen;renderSFUUsage()}
+      });b.dataset.readonlyAction='true';el.append(b)}
+    }
+    function sfuRow(v) {
+      const row = document.createElement("div");
+      row.className = "row";
+      row.dataset.sfu = "";
+      row.innerHTML =
+        '<div class="grid">' +
+        input("id", "ID cấu hình", v.id) +
+        input("name", "Tên", v.name) +
+        input("app_id", "App ID", v.app_id) +
+        input("secret", "App Secret", v.secret, "password") +
+        "</div>" +
+        check("enabled", "Kích hoạt SFU", v.enabled);
+      row.append(
+        button("Xóa dòng", () => {
+          dirty = true;
+          row.remove();
+        }),
+      );
+      $("#sfus").append(row);
+    }
+    async function action(name, payload = {}) {
+      if (dirty)
+        throw Error(
+          "Có thay đổi chưa lưu. Bấm Lưu thay đổi trước khi chạy tác vụ.",
+        );
+      if (!selected) throw Error("Lưu trường trước");
+      const result = await api("schools/" + selected.id + "/action", {
+        action: name,
+        payload,
+      });
+      msg("Đã xếp hàng tác vụ. Xem Lịch sử để kiểm tra kết quả.");
+      return result;
+    }
+    async function operations() {
+      const p = $("#panel");
+      if (!selected) {
+        p.textContent = "Lưu trường trước khi cài đặt.";
+        return;
+      }
+      const status = JSON.parse(selected.status);
+      const sid = selected.id;
+      p.textContent = "Đang kiểm tra điều kiện cài đặt…";
+      let report;
+      try {
+        report = await api("schools/" + sid + "/readiness");
+      } catch (e) {
+        if (tab === "ops") p.textContent = e.message;
+        return;
+      }
+      if (tab !== "ops" || selected?.id !== sid || !viewOpen()) return;
+      p.innerHTML =
+        "<section><h3>Cài " +
+        (cfg.platform_mode === "academy"
+          ? "nền tảng khóa học / VIP"
+          : "trường nội bộ") +
+        " lên Ubuntu mới</h3><p>VPS: <strong>" +
+        esc(selected.ip) +
+        "</strong> · Domain: <strong>" +
+        esc(selected.domain) +
+        '</strong></p><p>Chỉ dùng Ubuntu 24.04/26.04 trống. DNS phải trỏ về IP trên và mở cổng 80/443. Bộ cài kiểm tra fingerprint SSH, phiên bản đã qua CI và không ghi đè /opt/meet có sẵn.</p><p class="install-hint">' +
+        esc(
+          report.connected
+            ? "VPS đã kết nối. Dùng nâng cấp bên dưới; không cài lại."
+            : report.installing
+              ? "Đã có tác vụ cài đặt. Xem Lịch sử."
+              : report.can_install
+                ? "Đủ thông tin khởi tạo. Cấu hình chưa điền được liệt kê tại Tổng quan."
+                : "Cần bổ sung thông tin khởi tạo tại Tổng quan trước khi cài.",
+        ) +
+        '</p><details><summary>Cách lấy fingerprint SSH</summary><p>Mở Console/VNC của nhà cung cấp VPS và chạy:</p><pre>ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub -E sha256</pre><p>Chép phần bắt đầu bằng SHA256:. Không lấy fingerprint từ nguồn chưa tin cậy.</p></details><form id="provision"><div class="grid">' +
+        input("port", "Cổng SSH", 22, "number") +
+        input("fingerprint", "Fingerprint SSH SHA256") +
+        input("password", "Mật khẩu root ban đầu", "", "password") +
+        '</div><label>Hoặc khóa SSH riêng<textarea name="private_key" rows="3" autocomplete="off"></textarea></label><button class="primary">Cài nền tảng lên VPS</button></form><p class="muted">Thông tin SSH được mã hóa trong tác vụ và xóa sau khi tác vụ kết thúc. Không gửi mật khẩu qua chat.</p></section><section><h3>Phiên bản & Sao lưu</h3><p>Phiên bản hiện tại: ' +
+        esc(status.version || "Chưa cài") +
+        " · Phiên bản mới: " +
+        esc(status.update?.available_version || "Chưa kiểm tra") +
+        '</p><div id="opbuttons" class="toolbar"></div></section><section><h3>Đổi domain</h3><form id="domain">' +
+        input("domain", "Domain mới") +
+        "<button>Kiểm tra DNS/HTTPS & chuyển domain</button></form><p>Cần DNS trỏ tới VPS. Thao tác chờ hết buổi live.</p></section>";
+      $("#provision").onsubmit = async (e) => {
+        e.preventDefault();
+        const values = Object.fromEntries(new FormData(e.target));
+        values.port = Number(values.port);
+        const form = e.target;
+        const submit = form.querySelector("button");
+        submit.disabled = true;
+        try {
+          const job = await action("provision", values);
+          form.reset();
+          tab = "jobs";
+          draw();
+          void openJobMonitor(job.id);
+        } catch (e) {
+          msg(e.message);
+        } finally {
+          submit.disabled = false;
+        }
+      };
+      $('#provision input[name="fingerprint"]').required = true;
+      if (!report.can_install || me.role !== "owner")
+        for (const el of $("#provision").elements) el.disabled = true;
+      if (dirty) {
+        $("#provision button").disabled = true;
+        $("#provision").insertAdjacentHTML(
+          "beforebegin",
+          '<p class="install-hint">Có cấu hình chưa lưu. Bấm Lưu thay đổi trước khi cài.</p>',
+        );
+      }
+      $("#opbuttons").append(
+        button("Kiểm tra bản mới", () => action("check")),
+        button("Nâng cấp đã kiểm tra", () =>
+          action("update", { target: status.update?.available_sha || "" }),
+        ),
+        button("Backup ngay", () => action("backup")),
+        button("Chọn bản sao lưu để phục hồi", () => {
+          tab = "backups";
+          draw();
+        }),
+        button("Đồng bộ lại", () => action("configure")),
+      );
+      $("#domain").onsubmit = async (e) => {
+        e.preventDefault();
+        try {
+          await action("domain", Object.fromEntries(new FormData(e.target)));
+        } catch (e) {
+          msg(e.message);
+        }
+      };
+      if (me.role === "viewer")
+        for (const e of p.querySelectorAll("button,input,textarea"))
+          e.disabled = true;
+    }
+    function jobMessage(code) {
+      return (
+        {
+          RESTORE_SCHOOL_MISMATCH:
+            "Bản sao lưu thuộc đơn vị khác; dữ liệu hiện tại được giữ nguyên.",
+          RESTORE_NEWER_SCHEMA:
+            "Bản sao lưu dùng phiên bản dữ liệu mới hơn. Nâng cấp trước khi phục hồi.",
+          RESTORE_KEY_MISSING:
+            "Bản sao lưu thiếu khóa tài khoản; dừng trước khi thay dữ liệu.",
+          RESTORE_REQUIRES_SUSPENDED: "Tạm ngưng VPS trước khi phục hồi.",
+          RESTORE_BUSY: "Có quy trình bảo trì đang chạy; chờ hoàn tất.",
+          BACKUP_INVALID: "Không xác minh được bản sao lưu.",
+          BACKUP_MISSING: "Không tìm thấy bản sao lưu trên VPS.",
+          BACKUP_LIST_INCOMPLETE:
+            "Danh sách R2 quá lớn hoặc chưa đầy đủ; cần kiểm tra lưu trữ.",
+          RESTORE_RECOVERY_REQUIRED:
+            "Phục hồi bị gián đoạn. Hệ thống giữ khóa ghi; cần kiểm tra bản hoàn tác trước khi mở lại.",
+          PURGED: "Đã xóa vĩnh viễn nền tảng và dữ liệu trên VPS.",
+          PURGE_WRONG_VPS:
+            "VPS không còn thuộc đơn vị này hoặc đã cài nền tảng khác. Không xóa dữ liệu.",
+          PURGE_WRONG_DATABASE: "Cơ sở dữ liệu không khớp đơn vị; không xóa.",
+          PURGE_NOT_SUSPENDED: "VPS chưa tạm ngưng; không gỡ dữ liệu.",
+          PURGE_LIVE_MEETINGS: "Vẫn còn buổi học đang chạy; không gỡ dữ liệu.",
+          PURGE_UNSAFE_PATH:
+            "Phát hiện đường dẫn liên kết/không an toàn; cần kiểm tra VPS.",
+          PURGE_UNOWNED_CONTAINER:
+            "Có container ngoài phạm vi nền tảng; không xóa.",
+          PURGE_UNOWNED_VOLUME:
+            "Volume dữ liệu đang dùng chung hoặc không thuộc nền tảng; không xóa.",
+          PURGE_CUSTOM_PROXY:
+            "Cấu hình web đã tùy chỉnh; kiểm tra trước khi gỡ.",
+          PURGE_COMMAND_FAILED:
+            "Gỡ VPS chưa hoàn tất. Đơn vị vẫn ở thùng rác; kiểm tra rồi thử lại.",
+          PURGE_INTERRUPTED_RETRY:
+            "Tác vụ xóa bị gián đoạn. Giữ đơn vị trong thùng rác; đối chiếu VPS rồi thử lại.",
+          CONFIG_R2_REJECTED:
+            "R2 chưa được chấp nhận. Kiểm tra đúng Account ID/bucket và khóa S3 có quyền Admin Read & Write để đọc/ghi CORS và lifecycle. Cấu hình mới chưa áp dụng lên website; cấu hình cũ tiếp tục hoạt động.",
+          CONFIG_REJECTED:
+            "VPS từ chối cấu hình. Kiểm tra định dạng SFU, email, thanh toán và các thông số rồi lưu lại.",
+          CONFIG_SCHOOL_MISMATCH:
+            "Mã nội bộ khác với nền tảng đã cài. Giữ nguyên mã sau khi cài đặt.",
+          CONFIG_DATABASE_UNAVAILABLE:
+            "VPS chưa kết nối được cơ sở dữ liệu. Kiểm tra dịch vụ trước khi đồng bộ lại.",
+          ACCOUNT_REJECTED:
+            "Tài khoản chưa được cập nhật. Kiểm tra email, mật khẩu và quyền được chọn.",
+          ACCOUNT_CONFLICT:
+            "Tài khoản đã thay đổi hoặc là quản trị gốc được bảo vệ. Tải lại thông tin trước khi sửa.",
+          APPLY_FAILED:
+            "VPS chưa áp dụng được thay đổi. Kiểm tra cấu hình hoặc liên hệ người vận hành; website chưa xác nhận cấu hình mới.",
+          SSH_AUTH_FAILED:
+            "Không đăng nhập SSH được: kiểm tra mật khẩu root hoặc khóa SSH.",
+          SSH_HOST_KEY_MISMATCH:
+            "Fingerprint SSH không khớp. Đối chiếu lại từ Console/VNC.",
+          SSH_TIMEOUT:
+            "Kết nối SSH quá thời gian chờ. Kiểm tra IP/cổng/tường lửa.",
+          SSH_CONNECTION_FAILED: "Không thiết lập được kết nối SSH.",
+          EXISTING_INSTALLATION:
+            "VPS đã có /opt/meet. Cần kiểm tra bản cài hiện có, không chạy cài mới đè lên.",
+          CI_NOT_READY:
+            "Bản mã nguồn mới đang chờ đủ kiểm thử. Thử lại sau khi CI hoàn tất.",
+          DNS_NOT_READY:
+            "Domain chưa trỏ đúng IP VPS. Kiểm tra bản ghi A/AAAA và tắt proxy Cloudflare khi cần đối chiếu IP trực tiếp.",
+          RELEASE_CHECK_UNAVAILABLE:
+            "Chưa kiểm tra được phiên bản trên GitHub.",
+          AGENT_INSTALL_FAILED:
+            "Đã cài ứng dụng nhưng dịch vụ đồng bộ chưa được cài thành công.",
+          PROVISION_FAILED:
+            "Bộ cài trên VPS dừng. Người vận hành cần kiểm tra nhật ký cài đặt.",
+          PROVISION_FAILED_REVIEW_VPS:
+            "Tác vụ cài đặt dừng. Cần người vận hành kiểm tra VPS.",
+          SNAPSHOT_INVALID:
+            "Bản sao lưu không qua kiểm tra toàn vẹn. Giữ nguyên máy cũ.",
+          SNAPSHOT_TOO_LARGE:
+            "Bản sao lưu vượt giới hạn 128 MiB. Cần quy trình chuyển dữ liệu dung lượng lớn riêng.",
+          BACKUP_DISK_FULL: "Trung tâm không đủ dung lượng để giữ bản sao lưu.",
+          WRONG_SOURCE_SCHOOL:
+            "Trường trên VPS nguồn không khớp đơn vị đã chọn.",
+          BACKUP_MISSING: "Thiếu bản sao lưu hoặc khóa phục hồi tại trung tâm.",
+          RESTORE_VERIFY_FAILED:
+            "Số liệu phục hồi không khớp. Máy mới được giữ tạm ngưng.",
+          WRONG_TARGET_VPS: "Máy đích không có bản phục hồi của tác vụ này.",
+          TARGET_AGENT_NOT_READY:
+            "Máy mới chưa xác nhận đồng bộ. Giữ tạm ngưng và kiểm tra agent.",
+          RELOCATION_REMOTE_FAILED:
+            "Bước chuyển VPS dừng. Kiểm tra máy nguồn đã tạm ngưng, máy đích còn trống và nhật ký cài trên máy đích; không cài đè.",
+          REMOTE_TIMEOUT:
+            "Thao tác VPS quá thời gian chờ. Cần kiểm tra trạng thái máy trước khi thử lại.",
+          BACKUP_VERIFIED:
+            "Đã giữ bản sao lưu mã hóa và khóa riêng tại trung tâm; kiểm tra toàn vẹn thành công.",
+          TARGET_PREPARED_CHANGE_DNS:
+            "Đã phục hồi máy mới và kiểm tra số liệu. Đổi DNS rồi dùng Hoàn tất chuyển VPS.",
+          RELOCATION_COMPLETED_SUSPENDED:
+            "Đã chuyển agent và đồng bộ máy mới. Kiểm tra rồi kích hoạt lại đơn vị.",
+          WAITING_AGENT: "Đã cài xong, chờ VPS kết nối trung tâm.",
+          LIVE_MEETINGS: "Đang chờ buổi học kết thúc.",
+          OK: "Hoàn tất",
+        }[code] ||
+        code ||
+        ""
+      );
+    }
+    function jobBar(job) {
+      const last = job.progress?.at(-1),
+        percent =
+          last?.percent ??
+          (job.state === "success" &&
+          (!job.progress?.length || job.action !== "provision")
+            ? 100
+            : 0);
+      return (
+        '<div class="job-progress"><progress max="100" value="' +
+        percent +
+        '" aria-label="Tiến độ tác vụ"></progress><small>' +
+        esc(
+          last?.label ||
+            {
+              queued: "Đang chờ",
+              running: "Đang xử lý",
+              success: "Đã hoàn tất",
+              failed: "Không hoàn tất",
+            }[job.state] ||
+            job.state,
+        ) +
+        " · " +
+        percent +
+        "%</small></div>"
+      );
+    }
+    async function listAfterPurge() {
+      await list();
+      msg("Đã gỡ nền tảng và dữ liệu VPS, xóa đơn vị khỏi trung tâm.");
+    }
+    async function openJobMonitor(id, purge = false) {
+      const sid = selected.id;
+      let dialog = $("#job-monitor");
+      if (dialog) dialog.close();
+      else {
+        dialog = document.createElement("dialog");
+        dialog.id = "job-monitor";
+        dialog.className = "job-monitor";
+        document.body.append(dialog);
+      }
+      let timer;
+      dialog.dataset.job = id;
+      dialog.innerHTML =
+        '<h2>Màn hình theo dõi tác vụ</h2><p>Tiến độ theo giai đoạn thực tế, không phải ước lượng thời gian. Nhật ký chỉ chứa thông báo đã lọc; mật khẩu và token không hiển thị.</p><div id="job-state"></div><pre class="job-console" id="job-console" aria-label="Nhật ký cài đặt"></pre>';
+      dialog.append(button("Đóng màn hình", () => dialog.close()));
+      dialog.onclose = () => clearTimeout(timer);
+      dialog.showModal();
+      const load = async () => {
+        try {
+          const list = purge ? null : await api("schools/" + sid + "/jobs");
+          const job = purge
+            ? await api("purges/" + id)
+            : list.find((j) => j.id === id);
+          if (!dialog.open || dialog.dataset.job !== id) return;
+          if (!job) throw Error("Không tìm thấy tác vụ");
+          $("#job-state").innerHTML =
+            jobBar(job) +
+            "<p>" +
+            esc(jobMessage(JSON.parse(job.result).code)) +
+            "</p>";
+          $("#job-console").textContent =
+            (job.progress || [])
+              .map(
+                (e) =>
+                  controlDate(e.at * 1000,true) +
+                  "  " +
+                  e.percent +
+                  "%  " +
+                  e.label,
+              )
+              .join("\n") || "Đang chờ tác vụ bắt đầu.";
+          if (purge && job.state === "success") {
+            selected = null;
+            clearTimeout(syncTimer);
+            if ($("#modal").open) $("#modal").close();
+            history.replaceState(null, "", location.pathname);
+            await listAfterPurge();
+          }
+          if (job.state === "failed")
+            $("#job-console").textContent +=
+              "\nDừng an toàn: " + jobMessage(JSON.parse(job.result).code);
+          if (
+            ["queued", "running"].includes(job.state) ||
+            (job.action === "provision" &&
+              job.progress?.length &&
+              job.state === "success" &&
+              (job.progress?.at(-1)?.percent || 0) < 100)
+          )
+            timer = setTimeout(() => void load(), 2000);
+        } catch (e) {
+          if (dialog.open && dialog.dataset.job === id)
+            $("#job-state").textContent = e.message;
+        }
+      };
+      await load();
+    }
+    async function backupsPanel() {
+      const sid = selected?.id,
+        root = $("#panel");
+      if (!sid) {
+        root.textContent = "Chọn đơn vị đã cài đặt trước.";
+        return;
+      }
+      root.innerHTML =
+        '<h3>Phục hồi từ sao lưu</h3><p>Danh sách gồm bản sao lưu R2 và bản hoàn tác cục bộ trên VPS. Khóa giải mã nằm trên VPS; không nhập khóa vào trình duyệt.</p><div id="backup-actions" class="toolbar"></div><div id="backup-content">Đang tải…</div>';
+      const render = async () => {
+        const jobs = await api("schools/" + sid + "/jobs");
+        if (selected?.id !== sid || tab !== "backups") return;
+        const latest = jobs.find(
+            (j) => j.action === "backup-list" && j.state === "success",
+          ),
+          items = latest ? JSON.parse(latest.result).backups || [] : [];
+        const content = $("#backup-content");
+        content.innerHTML = items.length
+          ? "<p>" +
+            items.length +
+            " bản gần nhất. Danh sách ghi nhận lúc " +
+            controlDate(latest.created * 1000, true) +
+            ".</p>"
+          : "<p>Chưa có danh sách. Bấm Đọc danh sách từ VPS. Nếu chưa có bản sao lưu, tạo Backup ngay trước.</p>";
+        if (!items.length) return;
+        content.insertAdjacentHTML(
+          "beforeend",
+          '<p class="backup-note">Phục hồi sẽ thay dữ liệu và cấu hình kinh doanh bằng bản đã chọn. Giữ phiên bản mã hiện tại, domain, SFU và R2 đang dùng. Hệ thống kiểm tra đúng đơn vị, tạo bản hoàn tác trước khi ghi dữ liệu và giữ VPS tạm ngưng sau phục hồi.</p><form id="restore-backup"><label>Bản sao lưu<select name="object_key" required><option value="">Chọn bản sao lưu</option>' +
+            items
+              .map(
+                (v) =>
+                  '<option value="' +
+                  esc(v.object_key) +
+                  '">' +
+                  esc(controlDate(v.modified, true)) +
+                  " · " +
+                  (v.bytes / 1024 / 1024).toFixed(2) +
+                  " MB · " +
+                  esc(v.object_key) +
+                  "</option>",
+              )
+              .join("") +
+            "</select></label>" +
+            input("confirm", "Nhập domain xác nhận: " + selected.domain) +
+            input(
+              "password",
+              "Mật khẩu quản trị trung tâm xác nhận",
+              "",
+              "password",
+            ) +
+            (me.mfa_enabled ? input("code", "Mã 2FA hoặc mã khôi phục") : "") +
+            '<label><input type="checkbox" required style="width:auto"> Tôi hiểu dữ liệu phát sinh sau bản sao lưu sẽ được thay thế.</label><button class="primary">Xác nhận phục hồi</button></form>',
+        );
+        const form = $("#restore-backup");
+        if (
+          me.role !== "owner" ||
+          selected.desired_state !== "suspended" ||
+          selected.applied_state !== "suspended"
+        ) {
+          form.querySelector("button").disabled = true;
+          content.insertAdjacentHTML(
+            "afterbegin",
+            "<p>Tạm ngưng tại Hoạt động / Xóa và chờ VPS xác nhận trước khi phục hồi. Chỉ chủ hệ thống được thực hiện.</p>",
+          );
+        }
+        form.onsubmit = async (e) => {
+          e.preventDefault();
+          const submit = form.querySelector("button");
+          submit.disabled = true;
+          try {
+            const payload = Object.fromEntries(new FormData(form));
+            if (
+              !confirm(
+                "Phục hồi dữ liệu của " + selected.domain + " từ bản đã chọn?",
+              )
+            )
+              return;
+            const job = await action("restore", payload);
+            form.reset();
+            await openJobMonitor(job.id);
+          } catch (e) {
+            msg(e.message);
+          } finally {
+            submit.disabled = false;
+          }
+        };
+      };
+      $("#backup-actions").append(
+        button("Đọc danh sách từ VPS", async () => {
+          const job = await action("backup-list");
+          for (let n = 0; n < 150; n++) {
+            if (tab !== "backups" || selected?.id !== sid) return;
+            const list = await api("schools/" + sid + "/jobs"),
+              current = list.find((j) => j.id === job.id);
+            if (current?.state === "success") {
+              await render();
+              return;
+            }
+            if (current?.state === "failed")
+              throw Error(jobMessage(JSON.parse(current.result).code));
+            await new Promise((r) => setTimeout(r, 2000));
+          }
+          throw Error("VPS đang xử lý. Xem Lịch sử rồi tải lại danh sách.");
+        }),
+        button("Backup ngay", () => action("backup")),
+        button("Tải danh sách đã nhận", render),
+      );
+      await render();
+    }
+    async function jobs() {
+      if (!selected) {
+        $("#panel").textContent = "Lưu trường trước";
+        return;
+      }
+      const sid = selected.id;
+      const rows = await api("schools/" + sid + "/jobs");
+      if (tab !== "jobs" || selected?.id !== sid || !viewOpen()) return;
+      $("#panel").innerHTML =
+        '<div class="table"><table><tr><th>Thời gian</th><th>Tác vụ</th><th>Trạng thái</th><th>Kết quả</th><th>Tiến độ</th></tr>' +
+        rows
+          .map(
+            (j) =>
+              `<tr data-job="${esc(j.id)}"><td>${controlDate(j.created * 1000, true)}</td><td>${esc(j.action)}</td><td>${esc(j.state)}</td><td>${esc(jobMessage(JSON.parse(j.result).code))}</td><td>${jobBar(j)}</td></tr>`,
+          )
+          .join("") +
+        "</table></div>";
+      for (const j of rows) {
+        const cell = $('#panel [data-job="' + j.id + '"] td:last-child');
+        cell.append(
+          button(
+            j.action === "provision" ? "Mở màn hình cài đặt" : "Xem tiến độ",
+            () => openJobMonitor(j.id, j.action === "purge"),
+          ),
+        );
+      }
+      $("#panel").append(button("Tải lại", jobs));
+      clearTimeout(jobTimer);
+      if (
+        rows.some(
+          (j) =>
+            ["queued", "running"].includes(j.state) ||
+            (j.action === "provision" &&
+              j.progress?.length &&
+              j.state === "success" &&
+              (j.progress?.at(-1)?.percent || 0) < 100),
+        )
+      )
+        jobTimer = setTimeout(() => {
+          if (tab === "jobs" && selected?.id === sid && viewOpen())
+            void jobs().catch((e) => msg(e.message));
+        }, 6000);
+    }
+    function accounts() {
+      const p = $("#panel");
+      if (!selected) {
+        p.textContent = "Lưu trường trước";
+        return;
+      }
+      const rows = JSON.parse(selected.status).admins || [];
+      p.innerHTML =
+        '<p>Tài khoản do VPS báo về. Nhập đúng ID và revision khi thay đổi. Quản trị gốc được bảo vệ theo chính sách hiện có.</p><div class="table"><table><tr><th>ID</th><th>Email</th><th>Tên</th><th>Revision</th></tr>' +
+        rows
+          .map(
+            (a) =>
+              `<tr><td>${esc(a.id)}</td><td>${esc(a.email)}</td><td>${esc(a.name)}</td><td>${esc(a.revision)}</td></tr>`,
+          )
+          .join("") +
+        '</table></div><form id="account"><div class="grid">' +
+        input("id", "ID (trống để tạo mới)") +
+        input("revision", "Revision", 0, "number") +
+        input("email", "Email", "", "email") +
+        input("name", "Tên") +
+        input("password", "Mật khẩu tài khoản mới", "", "password") +
+        '</div><label>Trạng thái<select name="state"><option value="active">Hoạt động</option><option value="suspended">Tạm ngưng</option><option value="disabled">Vô hiệu hóa</option></select></label><div id="permissions"></div><button>Lưu tài khoản</button></form>';
+      for (const [id, title] of [
+        ["academic", "Học vụ"],
+        ["accounts", "Tài khoản"],
+        ["attendance", "Điểm danh"],
+        ["meetings", "Buổi học"],
+        ["recordings", "Bản ghi"],
+        ["audit", "Nhật ký"],
+        ...(cfg.platform_mode === "academy"
+          ? [
+              ["content", "Nội dung khóa học"],
+              ["finance", "Tài chính / VIP"],
+            ]
+          : []),
+      ])
+        $("#permissions").insertAdjacentHTML(
+          "beforeend",
+          check(id, title, true),
+        );
+      $("#account").onsubmit = async (e) => {
+        e.preventDefault();
+        const fd = new FormData(e.target),
+          data = Object.fromEntries(fd);
+        data.revision = Number(data.revision);
+        data.permissions = [
+          "academic",
+          "accounts",
+          "attendance",
+          "meetings",
+          "recordings",
+          "audit",
+          "content",
+          "finance",
+        ].filter((k) => fd.has(k));
+        for (const k of data.permissions) delete data[k];
+        try {
+          await action("accounts", data);
+          e.target.reset();
+        } catch (e) {
+          msg(e.message);
+        }
+      };
+      if (me.role === "viewer")
+        for (const e of p.querySelectorAll("button,input,select"))
+          e.disabled = true;
+    }
+    async function audit() {
+      const rows = await api("audit");
+      const d = $("#modal");
+      d.innerHTML =
+        '<h2>Nhật ký trung tâm</h2><div class="table"><table><tr><th>Thời gian</th><th>Người thực hiện</th><th>Thao tác</th><th>Đối tượng</th></tr>' +
+        rows
+          .map(
+            (r) =>
+              `<tr><td>${controlDate(r.at * 1000, true)}</td><td>${esc(r.actor)}</td><td>${esc(r.action)}</td><td>${esc(r.target)}</td></tr>`,
+          )
+          .join("") +
+        "</table></div>";
+      d.append(button("Đóng", () => d.close()));
+      if (!d.open) d.showModal();
+    }
+    async function admins() {
+      const rows = await api("admins");
+      const d = $("#modal");
+      d.innerHTML =
+        '<h2>Tài khoản quản trị trung tâm</h2><div class="table"><table><tr><th>ID</th><th>Email</th><th>Quyền</th><th>Hoạt động</th><th></th></tr>' +
+        rows
+          .map(
+            (r) =>
+              `<tr data-admin="${esc(r.id)}"><td>${esc(r.id)}</td><td>${esc(r.email)}</td><td>${esc(r.role)}</td><td>${r.active ? "Có" : "Không"}</td><td></td></tr>`,
+          )
+          .join("") +
+        '</table></div><form id="admins">' +
+        input("id", "ID (trống để tạo mới)") +
+        input("email", "Email", "", "email") +
+        input(
+          "password",
+          "Mật khẩu mới (để trống nếu giữ nguyên)",
+          "",
+          "password",
+        ) +
+        '<label>Quyền<select name="role"><option value="operator">Vận hành</option><option value="viewer">Chỉ xem</option><option value="owner">Chủ hệ thống</option></select></label>' +
+        check("active", "Hoạt động", true) +
+        "<button>Lưu</button></form>";
+      d.append(button("Đóng", () => d.close()));
+      if (!d.open) d.showModal();
+      for (const row of rows) {
+        d.querySelector('[data-admin="' + row.id + '"] td:last-child').append(
+          button("Chỉnh sửa", () => {
+            const f = $("#admins");
+            f.elements.id.value = row.id;
+            f.elements.email.value = row.email;
+            f.elements.password.value = "";
+            f.elements.role.value = row.role;
+            f.elements.active.checked = !!row.active;
+            f.scrollIntoView({ block: "nearest" });
+          }),
+        );
+      }
+      $("#admins").onsubmit = async (e) => {
+        e.preventDefault();
+        const f = new FormData(e.target);
+        try {
+          await api("admins", {
+            ...Object.fromEntries(f),
+            active: f.has("active"),
+          });
+          if (f.get("id") === me.id) {
+            d.close();
+            login();
+            msg("Thông tin tài khoản đã thay đổi. Đăng nhập lại.");
+          } else await admins();
+        } catch (e) {
+          msg(e.message);
+        }
+      };
+    }
+    boot();
+  </script>
+</html>

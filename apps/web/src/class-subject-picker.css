@@ -1,0 +1,418 @@
+.compact-scope {
+  padding: 14px;
+  background: #f7f9f6;
+  border: 1px solid #e2e9e2;
+  border-radius: 10px;
+  margin: 14px 0;
+}
+.scope-selects {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.scope-combo {
+  position: relative;
+  min-width: 0;
+}
+.scope-combo > label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #53675e;
+}
+.scope-input {
+  position: relative;
+}
+.scope-input input {
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 36px 10px 12px;
+  background: white;
+  border: 1px solid #d5dfd8;
+  border-radius: 7px;
+  font-size: 14px;
+}
+.scope-input input:disabled {
+  background: #eef2ef;
+}
+.scope-input .scope-clear {
+  position: absolute;
+  right: 4px;
+  top: 4px;
+  width: 32px;
+  min-height: 32px;
+  height: 32px;
+  border: 0;
+  background: transparent;
+  color: #64766c;
+  padding: 0;
+  font-size: 21px;
+  border-radius: 5px;
+}
+.scope-options {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 5px;
+  padding: 5px;
+  max-height: min(280px, 45dvh);
+  overflow: auto;
+  border: 1px solid #cfdad2;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 10px 30px color-mix(in srgb, var(--brand-navy) 14.12%, transparent);
+  z-index: 60;
+}
+.scope-options button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: white;
+  color: var(--brand-ink);
+  border: 0;
+  border-radius: 5px;
+  padding: 9px 10px;
+  min-height: 44px;
+}
+.scope-options button:hover,
+.scope-options button.keyboard-active {
+  background: #edf4ef;
+}
+.scope-options button[aria-selected="true"] {
+  background: var(--brand-line);
+}
+.scope-options strong,
+.scope-options small {
+  display: block;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.scope-options strong {
+  font-size: 13px;
+}
+.scope-options small {
+  font-size: 11px;
+  font-weight: 400;
+  color: #74857b;
+  margin-top: 3px;
+}
+.scope-options p {
+  font-size: 11px;
+  padding: 8px;
+  color: #7b887e;
+  margin: 0;
+}
+.scope-hint {
+  display: block;
+  margin-top: 8px;
+  color: #7b8a80;
+  font-size: 11px;
+}
+.scope-empty {
+  padding: 24px 14px;
+  margin-top: 14px;
+  border: 1px dashed #d1dcd3;
+  border-radius: 9px;
+  color: #6e7e74;
+  font-size: 13px;
+  text-align: center;
+}
+.recordings-table {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+  font-size: 13px;
+}
+.recordings-table td {
+  overflow-wrap: anywhere;
+}
+.recordings-table small {
+  display: block;
+  margin-top: 4px;
+  color: #738278;
+  font-size: 11px;
+}
+.recording-player {
+  margin: 16px 0;
+  padding: 14px;
+  background: #202124;
+  color: white;
+  border-radius: 10px;
+}
+.recording-player video {
+  display: block;
+  width: 100%;
+  max-height: 65vh;
+  margin: 12px 0;
+}
+.recording-player h3 {
+  color: #fff;
+}
+.recording-player button {
+  min-height: 44px;
+}
+.attendance-report,
+.recording-library {
+  padding: 20px;
+}
+.attendance-report .section-title,
+.recording-library .section-title {
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.attendance-report .section-title h2,
+.recording-library .section-title h2 {
+  font-size: 19px;
+  margin-bottom: 5px;
+}
+.attendance-report .section-title p,
+.recording-library .section-title p {
+  font-size: 12px;
+  line-height: 1.6;
+  margin: 0;
+}
+.attendance-report .section-title .pill,
+.recording-library .section-title .pill {
+  white-space: nowrap;
+  flex: none;
+  font-size: 10px;
+}
+.report-toolbar {
+  display: flex;
+  align-items: end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.attendance-report .attendance-filters {
+  display: block;
+  flex: 1;
+  min-width: 200px;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+}
+.attendance-filters label {
+  display: block;
+  font-size: 12px;
+}
+.attendance-report .report-context {
+  margin: 14px 0 10px;
+  align-items: center;
+}
+.attendance-report .report-context > strong {
+  font-size: 13px;
+}
+.attendance-report .report-context small {
+  font-size: 11px;
+}
+.report-counts {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  color: #738379;
+  font-size: 11px;
+  padding: 9px 0 14px;
+}
+.report-counts strong {
+  color: var(--brand-muted);
+  font-weight: 600;
+}
+.compact-attendance-table {
+  font-size: 12px;
+}
+.compact-attendance-table th:first-child {
+  width: 26%;
+}
+.compact-attendance-table th,
+.compact-attendance-table td {
+  padding: 11px 10px;
+}
+.compact-attendance-table td small {
+  font-size: 11px;
+  margin-top: 3px;
+}
+.compact-details {
+  border: 1px solid #e1e8e2;
+  border-radius: 7px;
+  margin: 10px 0;
+  font-size: 12px;
+  background: #fafcf9;
+}
+.compact-details > summary {
+  padding: 11px 12px;
+  cursor: pointer;
+  font-weight: 500;
+  color: var(--brand-ink);
+}
+.compact-details > p,
+.compact-details > form {
+  margin: 0;
+  padding: 0 12px 12px;
+}
+.compact-details p {
+  font-size: 11px;
+  color: #7c8a80;
+}
+.lesson-timing-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 12px;
+  align-items: end;
+}
+.lesson-timing-form label {
+  font-size: 12px;
+}
+.lesson-timing-form input {
+  width: 100%;
+  min-height: 42px;
+}
+.lesson-timing-form button {
+  min-height: 42px;
+}
+.lesson-timing-hint {
+  font-size: 11px;
+  color: #809085;
+  margin: 8px 0;
+}
+.content:has(.attendance-report) .heading .leaf,
+.content:has(.recording-library) .heading .leaf,
+.content:has(.recording-library) .heading .eyebrow,
+.content:has(.attendance-report) .heading .eyebrow,
+.content:has(.recording-library) .heading p,
+.content:has(.attendance-report) .heading p {
+  display: none;
+}
+.content:has(.attendance-report) .heading,
+.content:has(.recording-library) .heading {
+  margin: 16px 0;
+}
+.content:has(.attendance-report) .heading h1,
+.content:has(.recording-library) .heading h1 {
+  font-size: 25px;
+  margin: 0;
+}
+.content:has(.attendance-report) .preview-switch,
+.content:has(.recording-library) .preview-switch {
+  padding: 10px 12px;
+  margin-bottom: 10px;
+}
+.content:has(.attendance-report) .preview-switch small,
+.content:has(.recording-library) .preview-switch small {
+  display: none;
+}
+.content:has(.attendance-report) .banner,
+.content:has(.recording-library) .banner {
+  padding: 10px 12px;
+  font-size: 11px;
+}
+@media (max-width: 700px) {
+  .attendance-report,
+  .recording-library {
+    padding: 14px;
+  }
+  .scope-selects {
+    gap: 10px;
+  }
+  .scope-input input {
+    font-size: 16px !important;
+    min-height: 44px;
+    padding-left: 9px;
+  }
+  .compact-scope {
+    padding: 10px;
+  }
+  .scope-options {
+    min-width: 150px;
+  }
+  .scope-combo:last-child .scope-options {
+    left: auto;
+    right: 0;
+    width: max(100%, 170px);
+  }
+  .lesson-timing-form {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .lesson-timing-form button {
+    grid-column: 1/-1;
+    width: 100%;
+  }
+  .lesson-timing-form input {
+    min-width: 0;
+    font-size: 13px !important;
+  }
+  .report-toolbar > a {
+    font-size: 12px;
+  }
+  .report-counts {
+    gap: 10px;
+    font-size: 10px;
+  }
+  .compact-details > summary {
+    font-size: 11px;
+  }
+  .attendance-report .report-note {
+    font-size: 10px;
+  }
+}
+
+.lesson-timing-form label {
+  min-width: 0;
+}
+@media (max-width: 700px) {
+  .lesson-timing-form input {
+    font-size: 16px !important;
+  }
+}
+
+.scope-filter-details {
+  margin: 12px 0;
+  border: 1px solid #e2e8e3;
+  border-radius: 8px;
+  background: #fafcf9;
+}
+.scope-filter-details > summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 12px;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--brand-muted);
+  font-weight: 500;
+}
+.scope-filter-details > summary:before {
+  content: "⌄";
+  margin-right: 4px;
+}
+.scope-filter-details > summary > span {
+  font-weight: 400;
+  color: #869387;
+  margin-left: auto;
+  font-size: 11px;
+}
+.scope-filter-details .compact-scope {
+  margin: 0;
+  border: 0;
+  border-top: 1px solid #e3eae4;
+  border-radius: 0 0 8px 8px;
+}
+.compact-attendance-table td small {
+  line-height: 1.5;
+}
+
+.presence-clock > span,
+.presence-clock > small {
+  display: block;
+}
+.compact-attendance-table td .presence-clock small {
+  text-align: inherit;
+}
+@media (max-width: 700px) {
+  .presence-clock {
+    text-align: right;
+  }
+}
