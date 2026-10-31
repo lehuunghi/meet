@@ -47,6 +47,9 @@ func restoreProbe(db *sql.DB) error {
 	if err := configureRedisNamespace(cache); err != nil {
 		return err
 	}
+	if err := cache.Ping(context.Background()).Err(); err != nil {
+		return fmt.Errorf("restore Redis probe unavailable: %w", err)
+	}
 	var school, slug string
 	if err := db.QueryRow("SELECT id,slug FROM schools ORDER BY id LIMIT 1").Scan(&school, &slug); err != nil {
 		return err

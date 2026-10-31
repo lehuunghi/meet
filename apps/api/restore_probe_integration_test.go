@@ -59,6 +59,7 @@ func TestRestoreProbeDisposableIntegration(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	opt.DB = 0 // Shared Redis uses key ACLs; do not grant SELECT to the disposable account.
 	controller := redis.NewClient(opt)
 	defer controller.Close()
 	prefix := "meet:" + uid() + ":"
