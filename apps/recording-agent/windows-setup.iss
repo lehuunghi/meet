@@ -4,7 +4,7 @@
 [Setup]
 AppId={{A0EC10F7-21D9-46BD-AF8B-875042B863F8}
 AppName=Meet Recorder
-AppVersion=0.4.0
+AppVersion=0.5.0
 AppPublisher=Meet Server
 DefaultDirName={commonappdata}\MeetRecorder\app
 DisableDirPage=yes
@@ -35,7 +35,7 @@ begin
 end;
 function ShouldSkipPage(PageID: Integer): Boolean;
 begin
-  Result := ExistingIdentity and (PageID = EnrollPage.ID);
+  Result := False;
 end;
 procedure InitializeWizard();
 begin
@@ -49,6 +49,11 @@ begin
   Result := True;
   if CurPageID <> EnrollPage.ID then Exit;
   Code := Trim(EnrollPage.Values[1]);
+  if ExistingIdentity then begin
+    Result := Pos('https://', Lowercase(Trim(EnrollPage.Values[0]))) = 1;
+    if not Result then MsgBox('Nhập địa chỉ trung tâm HTTPS tin cậy.', mbError, MB_OK);
+    Exit;
+  end;
   Result := (Pos('https://', Lowercase(Trim(EnrollPage.Values[0]))) = 1) and (Length(Code) = 64);
   if Result then for I := 1 to Length(Code) do if Pos(Code[I], '0123456789abcdef') = 0 then Result := False;
   if not Result then MsgBox('Nhập domain HTTPS và mã đăng ký 64 ký tự hợp lệ.', mbError, MB_OK);
@@ -71,3 +76,7 @@ end;
 [UninstallRun]
 Filename: "{sys}\schtasks.exe"; Parameters: "/End /TN MeetRecorder"; Flags: runhidden
 Filename: "{sys}\schtasks.exe"; Parameters: "/Delete /TN MeetRecorder /F"; Flags: runhidden
+
+[UninstallRun]
+Filename: "{sys}\schtasks.exe"; Parameters: "/End /TN MeetRecorderUpdater"; Flags: runhidden
+Filename: "{sys}\schtasks.exe"; Parameters: "/Delete /TN MeetRecorderUpdater /F"; Flags: runhidden

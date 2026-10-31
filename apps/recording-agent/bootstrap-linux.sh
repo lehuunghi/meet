@@ -14,7 +14,7 @@ apt-get install -y curl ca-certificates python3 tar
 stage=$(mktemp -d /tmp/meet-recorder-install.XXXXXXXX)
 trap 'rm -rf -- "$stage"' EXIT
 cd "$stage"
-base='https://github.com/lehuunghi/meet/releases/download/recorder-agent-v0.4.0'
+base='https://github.com/lehuunghi/meet/releases/download/recorder-agent-v0.5.0'
 curl --fail --location --proto '=https' --tlsv1.2 --retry 3 "$base/meet-recorder-linux-x64.tar.gz" -o meet-recorder-linux-x64.tar.gz
 curl --fail --location --proto '=https' --tlsv1.2 --retry 3 "$base/meet-recorder-linux-x64.tar.gz.sha256" -o meet-recorder-linux-x64.tar.gz.sha256
 sha256sum --check meet-recorder-linux-x64.tar.gz.sha256

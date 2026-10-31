@@ -3,7 +3,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 const out=path.resolve("release/meet-recorder-"+process.platform+"-"+process.arch);
 await fs.mkdir(out,{recursive:true});
-for(const entry of ["agent.mjs","protocol.mjs","package.json","package-lock.json","dist","node_modules","install-windows.ps1","install-linux.sh"]){
+for(const entry of ["agent.mjs","protocol.mjs","package.json","package-lock.json","dist","node_modules","install-windows.ps1","install-linux.sh","updater.mjs","unpack-linux.py","unpack-windows.ps1","install-updater-linux.py"]){
  await fs.cp(entry,path.join(out,entry),{recursive:true,verbatimSymlinks:true});
 }
 await fs.mkdir(path.join(out,"runtime"),{recursive:true});

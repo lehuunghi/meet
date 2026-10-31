@@ -46,6 +46,7 @@ if(process.argv.includes("--enroll")){
 }
 cfg=JSON.parse(await fs.readFile(configFile,"utf8"));cfg.origin=validateOrigin(cfg.origin);
 const bundle=await fs.readFile(new URL("./dist/browser.js",import.meta.url),"utf8"),sleep=ms=>new Promise(r=>setTimeout(r,ms));
+let updaterProtocol=0;try{updaterProtocol=JSON.parse((await fs.readFile(new URL('./updater-supported.json',import.meta.url),'utf8')).replace(/^\uFEFF/,'' )).protocol||0}catch{}
 let stopping=false,lastError='',uploading=false,interrupted=0,agentCommands=new Set();
 try{interrupted=JSON.parse(await fs.readFile(path.join(root,'agent-state.json'),'utf8')).interrupted||0}catch{}
 async function saveAgentState(value){await atomic(path.join(root,'agent-state.json'),{interrupted,...value,seen:Date.now()})}
@@ -160,7 +161,7 @@ while(!stopping){
   // Heartbeat even when every slot is busy, so the hub can change the limit.
   const files=(await fs.readdir(root)).filter(name=>/^[a-f0-9]{32}-\d+\.json$/.test(name)&&!writing.has(name));
   let blocked=0;for(const name of files){try{if(JSON.parse(await fs.readFile(path.join(root,name),'utf8')).retry_count>=8)blocked++}catch{}}
-  const telemetry={cpu_percent:cpuPercent,ram_free:os.freemem(),ram_total:os.totalmem(),disk_free:Number(disk.bavail)*Number(disk.bsize),active_jobs:active.size,upload_queue:files.length,blocked_uploads:blocked,interrupted,uploading,last_error:lastError,agent_version:JSON.parse(await fs.readFile(new URL('./package.json',import.meta.url),'utf8')).version};
+  const telemetry={updater_protocol:updaterProtocol,cpu_percent:cpuPercent,ram_free:os.freemem(),ram_total:os.totalmem(),disk_free:Number(disk.bavail)*Number(disk.bsize),active_jobs:active.size,upload_queue:files.length,blocked_uploads:blocked,interrupted,uploading,last_error:lastError,agent_version:JSON.parse(await fs.readFile(new URL('./package.json',import.meta.url),'utf8')).version};
   await saveAgentState(telemetry).catch(()=>{});
   let probe;try{probe=await request("claim",legacy?{Available:false}:{Available:false,Protocol:2,Telemetry:telemetry})}catch(e){if(e.status!==400)throw e;legacy=true;probe=await request("claim",{Available:false})}
   for(const command of probe.commands||[]){

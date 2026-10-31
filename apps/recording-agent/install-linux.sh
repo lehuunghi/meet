@@ -19,7 +19,7 @@ if [[ -z "$meet_origin" ]]; then read -r -p 'Địa chỉ Meet Server hoặc web
 meet_step='chuẩn bị thư mục và tài khoản dịch vụ'
 id meet-recorder >/dev/null 2>&1 || useradd --system --home-dir /var/lib/meet-recorder-agent --shell /usr/sbin/nologin meet-recorder
 install -d -m 755 /opt/meet-recorder-agent
-cp -a "$source_dir/." /opt/meet-recorder-agent/
+if [[ "$source_dir" != /opt/meet-recorder-agent ]]; then cp -a "$source_dir/." /opt/meet-recorder-agent/; fi
 chown -R root:root /opt/meet-recorder-agent
 chmod -R go-w /opt/meet-recorder-agent
 install -d -m 700 -o meet-recorder -g meet-recorder /var/lib/meet-recorder-agent
@@ -82,7 +82,9 @@ ReadWritePaths=/var/lib/meet-recorder-agent
 WantedBy=multi-user.target
 EOF
 meet_step='khởi động dịch vụ máy ghi'
+MEET_ORIGIN="$meet_origin" python3 /opt/meet-recorder-agent/install-updater-linux.py
 systemctl daemon-reload
+systemctl enable --now meet-recorder-updater.timer
 systemctl enable --now meet-recorder-agent
 sleep 2
 systemctl is-active --quiet meet-recorder-agent
