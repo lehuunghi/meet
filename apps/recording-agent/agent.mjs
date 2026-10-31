@@ -136,17 +136,17 @@ let previousCPU=os.cpus().reduce((v,c)=>({idle:v.idle+c.times.idle,total:v.total
 function capacity(){const cpu=os.cpus().reduce((v,c)=>({idle:v.idle+c.times.idle,total:v.total+Object.values(c.times).reduce((a,b)=>a+b,0)}),{idle:0,total:0});const total=cpu.total-previousCPU.total,busy=total>0?1-(cpu.idle-previousCPU.idle)/total:0;previousCPU=cpu;return os.freemem()>=2*1024**3&&busy<0.75;}
 
 const recoveryTimer=setInterval(()=>{if(!recovering&&!stopping){recovering=true;void recover().catch(()=>{}).finally(()=>recovering=false)}},15000);
-const active=new Map();let slots=1;
+const active=new Map();let slots=1,legacy=false;
 while(!stopping){
  try{
   const disk=await fs.statfs(root),available=capacity()&&Number(disk.bavail)*Number(disk.bsize)>=5*1024**3;
   // Heartbeat even when every slot is busy, so the hub can change the limit.
-  const probe=await request("claim",{Available:false,Protocol:2});
+  let probe;try{probe=await request("claim",legacy?{Available:false}:{Available:false,Protocol:2})}catch(e){if(e.status!==400)throw e;legacy=true;probe=await request("claim",{Available:false})}
   slots=Number.isInteger(probe.capacity)?Math.max(1,Math.min(32,probe.capacity)):1;
   if(available){
    const slot=Array.from({length:slots},(_,i)=>i).find(i=>!active.has(i));
    if(slot!==undefined){
-    const {job}=await request("claim",{Available:true,Protocol:2,Slot:slot});
+    const {job}=await request("claim",legacy?{Available:true}:{Available:true,Protocol:2,Slot:slot});
     if(job){const task=record(job).catch(e=>console.error("Lớp ghi cần thử lại",e.status||"LOCAL_OR_NETWORK_ERROR")).finally(()=>active.delete(slot));active.set(slot,task)}
    }
   }
