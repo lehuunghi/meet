@@ -45,7 +45,10 @@ function remove(key: string) {
   tile?.video.remove();
   tiles.delete(key);
 }
-function draw() {
+let frameTrack: CanvasCaptureMediaStreamTrack | undefined;
+let paintedFrames=0;
+function draw(){paint();frameTrack?.requestFrame();paintedFrames++;}
+function paint() {
   ctx.fillStyle = "#202124";
   ctx.fillRect(0, 0, 1280, 720);
   const all = [...tiles.entries()];
@@ -111,7 +114,8 @@ function draw() {
   }
 }
 function startSegment() {
-  const output = canvas.captureStream(15);
+  const output = canvas.captureStream(0);
+  frameTrack=output.getVideoTracks()[0] as CanvasCaptureMediaStreamTrack;
   mix.stream.getAudioTracks().forEach((t) => output.addTrack(t));
   recorder = new MediaRecorder(output, {
     mimeType: "video/webm;codecs=vp8,opus",
@@ -141,7 +145,7 @@ async function finishSegment() {
   recorder.stream.getVideoTracks().forEach((t) => t.stop());
 }
 window.capture = {
-  diagnostics() {return {audio:audio.state,sampleRate:audio.sampleRate,silentSink:"setSinkId" in AudioContext.prototype,recorder:recorder?.state,tracks:recorder?.stream.getTracks().map(t=>({kind:t.kind,state:t.readyState,muted:t.muted}))};},
+  diagnostics() {return {audio:audio.state,audioTime:audio.currentTime,sink:(audio as any).sinkId,paintedFrames,sampleRate:audio.sampleRate,silentSink:"setSinkId" in AudioContext.prototype,recorder:recorder?.state,tracks:recorder?.stream.getTracks().map(t=>({kind:t.kind,state:t.readyState,muted:t.muted}))};},
   async start(id: string) {
     await audio.resume();
     media = new ClassroomMedia(
