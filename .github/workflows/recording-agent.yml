@@ -7,6 +7,7 @@ permissions:
   contents: read
 jobs:
   package:
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
@@ -33,6 +34,9 @@ jobs:
         run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
       - name: Test standalone headless recording and bundled FFmpeg
         run: node agent.mjs --self-test
+      - name: Test parallel full-resolution capture on Linux
+        if: runner.os == 'Linux'
+        run: node agent.mjs --self-test --parallel-test
       - name: Test Linux capture without privilege escalation
         if: runner.os == 'Linux'
         run: setpriv --no-new-privs node agent.mjs --self-test

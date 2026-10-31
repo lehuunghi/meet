@@ -4,7 +4,7 @@ set -euo pipefail
 source_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 [[ -x "$source_dir/runtime/node" ]] || { echo 'Thiếu runtime; dùng gói Linux đầy đủ.' >&2; exit 1; }
 [[ ! -f /var/lib/meet-recorder-agent/identity.json ]] || { echo 'Đã đăng ký. Dừng dịch vụ trước khi cập nhật; giữ thư mục dữ liệu.' >&2; exit 1; }
-read -r -p 'Website trường (https://...): ' meet_origin
+read -r -p 'Địa chỉ Meet Server hoặc website trực tiếp (https://...): ' meet_origin
 id meet-recorder >/dev/null 2>&1 || useradd --system --home-dir /var/lib/meet-recorder-agent --shell /usr/sbin/nologin meet-recorder
 install -d -m 755 /opt/meet-recorder-agent
 cp -a "$source_dir/." /opt/meet-recorder-agent/

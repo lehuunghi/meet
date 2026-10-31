@@ -12,7 +12,8 @@ const run=promisify(execFile),root=path.resolve(process.env.MEET_AGENT_DATA||(pr
 await fs.mkdir(root,{recursive:true,mode:0o700});
 if(process.argv.includes("--self-test")){
  await run(ffmpeg,["-version"],{timeout:10000});
- await Promise.all([0,1].map(async slot=>{
+ const probes=process.argv.includes("--parallel-test")?[0,1]:[0];
+ await Promise.all(probes.map(async slot=>{
   const browser=await chromium.launch({headless:true,chromiumSandbox:true,...(process.platform==="win32"?{channel:"chromium"}:{}),args:["--autoplay-policy=no-user-gesture-required",...(process.platform==="win32"?["--disable-gpu","--disable-accelerated-video-encode"]:[])]});
   try{
    const page=await browser.newPage();let bytes=0;

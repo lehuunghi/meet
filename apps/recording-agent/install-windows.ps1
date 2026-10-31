@@ -5,7 +5,7 @@ $MeetAppRoot = Join-Path $MeetInstallRoot 'app'
 $MeetDataRoot = Join-Path $MeetInstallRoot 'data'
 if (Test-Path -LiteralPath (Join-Path $MeetDataRoot 'identity.json')) { throw 'Máy đã đăng ký. Dừng tác vụ MeetRecorder trước khi cập nhật; giữ nguyên thư mục data.' }
 if (-not (Test-Path -LiteralPath (Join-Path $PSScriptRoot 'runtime/node.exe'))) { throw 'Thiếu runtime. Dùng gói phát hành Windows đầy đủ.' }
-$MeetOrigin = Read-Host 'Website trường (https://...)'
+$MeetOrigin = Read-Host 'Địa chỉ Meet Server hoặc website trực tiếp (https://...)'
 $MeetCode = Read-Host 'Mã đăng ký máy dùng một lần' -AsSecureString
 New-Item -ItemType Directory -Force -Path $MeetAppRoot, $MeetDataRoot | Out-Null
 Get-ChildItem -LiteralPath $PSScriptRoot | Where-Object Name -ne 'data' | Copy-Item -Destination $MeetAppRoot -Recurse -Force

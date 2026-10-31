@@ -1,6 +1,6 @@
 export function validateOrigin(value) {
  const u=new URL(value);
- if(u.protocol!=="https:"||u.username||u.password||u.search||u.hash||u.pathname!=="/")throw Error("Địa chỉ phải là HTTPS của website trường, không có đường dẫn hay mật khẩu.");
+ if(u.protocol!=="https:"||u.username||u.password||u.search||u.hash||u.pathname!=="/")throw Error("Địa chỉ phải là HTTPS của Meet Server hoặc website, không có đường dẫn hay mật khẩu.");
  return u.origin;
 }
 export const partSize=16*1024*1024;
