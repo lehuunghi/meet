@@ -343,6 +343,8 @@ func main() {
 	db.SetConnMaxLifetime(5 * time.Minute)
 	if len(os.Args) > 1 {
 		switch os.Args[1] {
+		case "restore-probe":
+			e = restoreProbe(db)
 		case "migrate":
 			e = migrate(db)
 		case "seed":
