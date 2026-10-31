@@ -164,6 +164,7 @@ window.capture = {
     );
     timer = window.setInterval(draw, 1000 / 15);
     startSegment();
+    draw(); // Prime the canvas before background encoder startup on Windows.
   },
   async tick(
     list: any[],

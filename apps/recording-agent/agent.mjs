@@ -20,7 +20,9 @@ if(process.argv.includes("--self-test")){
    await page.exposeFunction("recorderRPC",()=>({ok:true}));
    await page.exposeFunction("recorderSegment",()=>{});await page.exposeFunction("recorderOpen",()=>{});
    await page.goto("about:blank");await page.addScriptTag({content:await fs.readFile(new URL("./dist/browser.js",import.meta.url),"utf8")});
-   await page.evaluate(()=>window.capture.start("self-test"));await new Promise(r=>setTimeout(r,1000));await page.evaluate(()=>window.capture.stop());
+   await page.evaluate(()=>window.capture.start("self-test"));
+   const deadline=Date.now()+20000;while(bytes<100&&Date.now()<deadline)await new Promise(r=>setTimeout(r,250));
+   await page.evaluate(()=>window.capture.stop());
    if(bytes<100)throw Error("CAPTURE_SELF_TEST_FAILED");console.log("SELF_TEST_OK",slot,bytes);
   }finally{await browser.close()}
  }));
