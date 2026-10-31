@@ -52,15 +52,20 @@ func sendAcademyMail(to, subject, body string) error {
 	if e != nil {
 		return e
 	}
-	c := cfg.Commerce
-	host, _, e := net.SplitHostPort(c.SMTPAddress)
+	c := academySMTP(cfg.Commerce)
+	host, port, e := net.SplitHostPort(c.SMTPAddress)
 	if e != nil || c.SMTPFrom == "" {
 		return fmt.Errorf("Email chưa cấu hình")
 	}
 	if _, e = mail.ParseAddress(c.SMTPFrom); e != nil {
 		return e
 	}
-	conn, e := net.DialTimeout("tcp", c.SMTPAddress, 10*time.Second)
+	var conn net.Conn
+	if port == "465" {
+		conn, e = tls.DialWithDialer(&net.Dialer{Timeout: 10 * time.Second}, "tcp", c.SMTPAddress, &tls.Config{ServerName: host, MinVersion: tls.VersionTLS12})
+	} else {
+		conn, e = net.DialTimeout("tcp", c.SMTPAddress, 10*time.Second)
+	}
 	if e != nil {
 		return e
 	}
@@ -71,8 +76,10 @@ func sendAcademyMail(to, subject, body string) error {
 		return e
 	}
 	defer client.Close()
-	if e = client.StartTLS(&tls.Config{ServerName: host, MinVersion: tls.VersionTLS12}); e != nil {
-		return e
+	if port != "465" {
+		if e = client.StartTLS(&tls.Config{ServerName: host, MinVersion: tls.VersionTLS12}); e != nil {
+			return e
+		}
 	}
 	if c.SMTPUser != "" {
 		if e = client.Auth(smtp.PlainAuth("", c.SMTPUser, c.SMTPPassword, host)); e != nil {

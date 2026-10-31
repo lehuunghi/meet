@@ -190,7 +190,7 @@ func (a *app) academyMailCampaigns(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	cfg, e := loadSettings()
-	if e != nil || cfg.Commerce.SMTPAddress == "" || cfg.Commerce.SMTPFrom == "" {
+	if e != nil || !academySMTPConfigured(cfg.Commerce) {
 		problem(w, 409, "Cấu hình SMTP trước khi gửi email")
 		return
 	}
@@ -247,7 +247,7 @@ func (a *app) academyBroadcasts(w http.ResponseWriter, r *http.Request) {
 	}
 	if in.Email {
 		cfg, e := loadSettings()
-		if e != nil || cfg.Commerce.SMTPAddress == "" || cfg.Commerce.SMTPFrom == "" {
+		if e != nil || !academySMTPConfigured(cfg.Commerce) {
 			problem(w, 409, "Bỏ chọn email hoặc cấu hình SMTP trước khi gửi")
 			return
 		}

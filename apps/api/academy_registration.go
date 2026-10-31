@@ -329,5 +329,5 @@ func (a *app) academyMailStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Cache-Control", "no-store")
-	send(w, 200, map[string]any{"smtp_configured": cfg.Commerce.SMTPAddress != "" && cfg.Commerce.SMTPFrom != "", "pending": pending, "failed": failed})
+	send(w, 200, map[string]any{"smtp_configured": academySMTPConfigured(cfg.Commerce), "pending": pending, "failed": failed})
 }
